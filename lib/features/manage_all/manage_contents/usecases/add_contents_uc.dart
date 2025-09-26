@@ -29,8 +29,7 @@ class AddContentResultModel {
 }
 
 class AddContentsUc {
-  static Future<List<AddContentResultModel>> addToCollection(
-    WidgetRef ref, {
+  static Future<List<AddContentResultModel>> addToCollection({
     required CourseCollection collection,
     required CourseContentType type,
     ValueNotifier<String>? valueNotifier,
@@ -44,7 +43,7 @@ class AddContentsUc {
       UiUtils.showLoadingDialog(
         rootNavigatorKey.currentContext!,
         message: "Consulting system selection",
-        backgroundColor: ref.theme.background.withValues(alpha: 0.8),
+        backgroundColor: Colors.blueGrey.withAlpha(225),
       );
 
       // Redirect to add contents
@@ -63,6 +62,46 @@ class AddContentsUc {
         'rootIsolateToken': rootIsolateToken,
         'collectionId': collection.collectionId,
         'selectedContentsPaths': <String>[for (final value in selectedContents) value.path],
+      });
+
+      return result
+          .map(
+            (element) => AddContentResultModel(
+              hasDuplicate: element['duplicate'] as bool? ?? false,
+              isSuccess: element['success'] as bool? ?? false,
+              contentId: element['contentId'] as String?,
+              fileName: element['fileName'] as String? ?? 'Unknown',
+            ),
+          )
+          .toList();
+    });
+
+    if (outcome.isSuccess && outcome.data is List) {
+      return outcome.data as List<AddContentResultModel>;
+    } else {
+      log("An error occurred while adding to collection! => ${outcome.data}");
+      log("${outcome.message}");
+      return [];
+    }
+  }
+
+  static Future<List<AddContentResultModel>> addToCollectionNoRef({
+    required CourseCollection collection,
+    required List<String> filePaths,
+    ValueNotifier<String>? valueNotifier,
+  }) async {
+    final Result<dynamic> outcome = await Result.tryRunAsync(() async {
+      valueNotifier?.value = "Scanning contents";
+
+      if (filePaths.isEmpty) return "No content was selected!";
+
+      final RootIsolateToken? rootIsolateToken = RootIsolateToken.instance;
+      if (rootIsolateToken == null) return "Unable to process adding content in background";
+      valueNotifier?.value = "Adding contents...\nPlease, do not close app until this is complete";
+      List<Map<String, dynamic>> result = await compute(StoreContentsUc.storeCourseContents, <String, dynamic>{
+        'rootIsolateToken': rootIsolateToken,
+        'collectionId': collection.collectionId,
+        'selectedContentsPaths': filePaths,
       });
 
       return result

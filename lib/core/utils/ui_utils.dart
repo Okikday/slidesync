@@ -1,4 +1,3 @@
-
 import 'package:another_flushbar/flushbar.dart';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart'
     show TransitionType, CustomCurves, ConstantSizing, CustomText, CustomDialog;
@@ -23,7 +22,8 @@ class UiUtils {
       systemNavigationBarColor: systemNavigatorBarColor ?? scaffoldBackgroundColor,
       statusBarColor: statusBarColor ?? scaffoldBackgroundColor,
       statusBarIconBrightness: statusBarIconBrightness ?? (isDarkMode ? Brightness.light : Brightness.dark),
-      systemNavigationBarIconBrightness: systemNavigatorBarIconBrightness ?? (isDarkMode ? Brightness.light : Brightness.dark),
+      systemNavigationBarIconBrightness:
+          systemNavigatorBarIconBrightness ?? (isDarkMode ? Brightness.light : Brightness.dark),
     );
   }
 
@@ -36,8 +36,8 @@ class UiUtils {
     Color? barrierColor,
     Offset? blurSigma,
   }) async {
-    final normalColor = context.theme.primaryColor;
-    final bgColor = context.theme.scaffoldBackgroundColor;
+    final normalColor = context.theme.colorScheme.onSurface;
+    final bgColor = context.theme.colorScheme.surface;
     await CustomDialog.showLoadingDialog(
       context,
       canPop: canPop,

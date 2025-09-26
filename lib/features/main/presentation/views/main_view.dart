@@ -55,14 +55,14 @@ class _MainViewState extends ConsumerState<MainView> with AutomaticKeepAliveClie
             onTap: (index) {
               if (index != ref.read(MainProviders.mainTabViewIndexProvider.notifier).state) {
                 ref.read(MainProviders.mainTabViewIndexProvider.notifier).update((cb) => index);
-                pageController.animateToPage(index, duration: Duration(milliseconds: 600), curve: CustomCurves.defaultIosSpring);
+                pageController.jumpToPage(index);
               }
             },
           ),
 
           drawer: const HomeDrawer(),
-          floatingActionButton:  const LibraryFloatingActionButton(),
-          
+          floatingActionButton: const LibraryFloatingActionButton(),
+
           body: PageView(
             controller: pageController,
             onPageChanged: (index) {
@@ -70,7 +70,6 @@ class _MainViewState extends ConsumerState<MainView> with AutomaticKeepAliveClie
             },
             children: const [HomeTabView(), LibraryTabView(), ExploreTabView()],
           ),
-
         ),
       ),
     );

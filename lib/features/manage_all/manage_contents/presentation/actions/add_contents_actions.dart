@@ -113,8 +113,9 @@ class AddContentsActions {
           if (loadedImages.isNotEmpty) {
             log("Clipboard has ${loadedImages.length} image file(s)");
             final newData = loadedImages.length == 1 ? loadedImages.first : loadedImages;
-            final newContentType =
-                loadedImages.length == 1 ? AppClipboardContentType.image : AppClipboardContentType.images;
+            final newContentType = loadedImages.length == 1
+                ? AppClipboardContentType.image
+                : AppClipboardContentType.images;
             clipboardData = (data: newData, contentType: newContentType);
             return;
           }
@@ -263,24 +264,21 @@ class AddContentsActions {
   }
 
   static void onClickToAddContent(
-    WidgetRef ref, {
+    BuildContext context, {
     required CourseCollection collection,
     required CourseContentType type,
   }) async {
-    final context = ref.context;
     ValueNotifier<String> valueNotifier = ValueNotifier("Loading...");
     final entry = OverlayEntry(
-      builder:
-          (context) => ValueListenableBuilder(
-            valueListenable: valueNotifier,
-            builder: (context, value, child) => LoadingOverlay(message: value),
-          ),
+      builder: (context) => ValueListenableBuilder(
+        valueListenable: valueNotifier,
+        builder: (context, value, child) => LoadingOverlay(message: value),
+      ),
     );
     if (context.mounted) {
       Overlay.of(context).insert(entry);
     }
     final List<AddContentResultModel> result = await AddContentsUc.addToCollection(
-      ref,
       collection: collection,
       type: type,
       valueNotifier: valueNotifier,
@@ -311,5 +309,49 @@ class AddContentsActions {
     }
   }
 
+  static void onClickToAddContentNoRef(
+    {
+    required CourseCollection collection,
+    required List<String> filePaths,
+  }) async {
+    ValueNotifier<String> valueNotifier = ValueNotifier("Offloading contents");
+    final entry = OverlayEntry(
+      builder: (context) => ValueListenableBuilder(
+        valueListenable: valueNotifier,
+        builder: (context, value, child) => LoadingOverlay(message: value),
+      ),
+    );
+    if (rootNavigatorKey.currentState!.overlay!.context.mounted) {
+      rootNavigatorKey.currentState?.overlay?.insert(entry);
+    }
+    final List<AddContentResultModel> result = await AddContentsUc.addToCollectionNoRef(
+      collection: collection,
+      valueNotifier: valueNotifier,
+      filePaths: filePaths,
+    );
 
+    entry.remove();
+    valueNotifier.dispose();
+
+    if (result.isNotEmpty) {
+      await UiUtils.showFlushBar(
+        rootNavigatorKey.currentContext!,
+        msg: "Successfully added course contents!",
+        vibe: FlushbarVibe.success,
+      );
+    } else if (result.isEmpty) {
+      await UiUtils.showFlushBar(
+        rootNavigatorKey.currentContext!,
+        msg: "An error was encountered while adding contents!",
+        flushbarPosition: FlushbarPosition.TOP,
+        vibe: FlushbarVibe.warning,
+      );
+    } else {
+      await UiUtils.showFlushBar(
+        rootNavigatorKey.currentContext!,
+        msg: "An error occured while adding contents",
+        vibe: FlushbarVibe.error,
+      );
+    }
+  }
 }

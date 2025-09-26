@@ -182,7 +182,7 @@ class AddContentCardSection extends ConsumerWidget {
                             icon: Icon(Iconsax.document, color: theme.primaryColor),
                             onTap:
                                 () => AddContentsActions.onClickToAddContent(
-                                  ref,
+                                  context,
                                   collection: collection,
                                   type: typeMap[2] ?? typeMap[0]!,
                                 ),
@@ -193,7 +193,7 @@ class AddContentCardSection extends ConsumerWidget {
                             icon: Icon(Iconsax.autobrightness, color: theme.primaryColor),
                             onTap:
                                 () => AddContentsActions.onClickToAddContent(
-                                  ref,
+                                  context,
                                   collection: collection,
                                   type: typeMap[0] ?? typeMap[0]!,
                                 ),
@@ -204,7 +204,7 @@ class AddContentCardSection extends ConsumerWidget {
                             icon: Icon(Iconsax.image, color: theme.primaryColor),
                             onTap:
                                 () => AddContentsActions.onClickToAddContent(
-                                  ref,
+                                  context,
                                   collection: collection,
                                   type: typeMap[1] ?? typeMap[0]!,
                                 ),

@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:ui';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
@@ -28,16 +29,17 @@ class ContentViewGate extends ConsumerStatefulWidget {
 }
 
 class _ContentViewGateState extends ConsumerState<ContentViewGate> {
-  bool isPushed = false;
+  // bool isPushed = false;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (isPushed) return;
+      // if (isPushed) return;
+      log("Redirecting to viewer");
       await ContentViewGateActions.redirectToViewer(context, widget.content);
-      setState(() {
-        isPushed = true;
-      });
+      // setState(() {
+      //   isPushed = true;
+      // });
     });
   }
 
@@ -52,14 +54,14 @@ class _ContentViewGateState extends ConsumerState<ContentViewGate> {
         children: [
           Positioned.fill(
             child: ColoredBox(
-                color: Colors.black.withAlpha(80),
-                child: GestureDetector(
+              color: Colors.black.withAlpha(140),
+              child: GestureDetector(
                 // child: OrganicBackgroundEffect(),
-                  onTap: () {
+                onTap: () {
                   // context.pop();
-                  },
-                ),
+                },
               ),
+            ),
             // child: BackdropFilter(
 
             //   filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
@@ -157,6 +159,6 @@ class _ContentViewGateState extends ConsumerState<ContentViewGate> {
           ),
         ],
       ),
-    ).animate().blurXY(begin: 0, end: 2, duration: Durations.medium4);
+    );
   }
 }

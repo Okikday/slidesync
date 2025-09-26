@@ -57,9 +57,9 @@ class LibraryTabViewAppBar extends ConsumerWidget {
         ),
         title: GestureDetector(
           onTap: () {
-            PrimaryScrollController.of(
-              context,
-            ).animateTo(0, duration: Durations.extralong1, curve: CustomCurves.defaultIosSpring);
+            // PrimaryScrollController.of(
+            //   context,
+            // ).animateTo(0, duration: Durations.extralong1, curve: CustomCurves.defaultIosSpring);
           },
           child: ClipRRect(
             child: BackdropFilter(

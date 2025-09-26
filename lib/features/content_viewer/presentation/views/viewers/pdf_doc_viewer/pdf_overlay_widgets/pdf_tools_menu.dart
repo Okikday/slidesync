@@ -38,11 +38,11 @@ class PdfToolsMenu extends ConsumerWidget {
               blurRadius: 50,
             ),
           ],
-          gradient: RadialGradient(colors: [theme.primary, theme.onPrimary]),
+          gradient: RadialGradient(colors: [theme.background, theme.primary]),
         ),
         child: Padding(
           padding: const EdgeInsets.all(24.0),
-          child: Icon(Iconsax.magic_star, size: 20, color: theme.supportingText),
+          child: Icon(Iconsax.magic_star, size: 20, color: theme.onBackground),
         ),
       ),
     );

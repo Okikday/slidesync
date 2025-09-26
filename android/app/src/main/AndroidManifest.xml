@@ -22,7 +22,7 @@
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme"
-                />
+            />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -35,7 +35,7 @@
             android:value="2" />
         <provider
             android:name="com.superlist.super_native_extensions.DataProvider"
-            android:authorities="com.example.slides_sync.SuperClipboardDataProvider"
+            android:authorities="com.bubble.slidesync.SuperClipboardDataProvider"
             android:exported="true"
             android:grantUriPermissions="true">
         </provider>

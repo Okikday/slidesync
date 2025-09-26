@@ -11,6 +11,7 @@ import 'package:slidesync/shared/styles/theme/built_in_themes.dart';
 import 'shared/styles/theme/themes.dart';
 
 final NotifierProvider<AppThemeProvider, AppThemeModel> appThemeProvider = NotifierProvider(AppThemeProvider.new);
+final GlobalKey appKey = GlobalKey();
 
 class App extends ConsumerStatefulWidget {
   const App({super.key});
@@ -54,6 +55,7 @@ class _AppState extends ConsumerState<App> {
     
 
     return MaterialApp.router(
+      key: appKey,
       title: "SlideSync",
       routerConfig: Routes.mainRouter,
       debugShowCheckedModeBanner: false,

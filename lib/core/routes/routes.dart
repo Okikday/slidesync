@@ -21,14 +21,14 @@ dynamic defaultTransition(
     pageKey,
     type: TransitionType.paired(
       incoming: defaultIncoming,
-      outgoing: outgoing ?? TransitionType.slide(begin: const Offset(-0.4, 0), end: const Offset(0, 0)),
-      outgoingDuration: Durations.short4,
-      reverseDuration: Durations.short4,
+      outgoing: outgoing ?? TransitionType.slide(begin: const Offset(0, 0), end: const Offset(-0.4, 0)),
+      outgoingDuration: Durations.medium4,
+      reverseDuration: Durations.medium2,
       curve: CustomCurves.defaultIosSpring,
       reverseCurve: CustomCurves.defaultIosSpring,
     ),
     duration: Durations.extralong2,
-    reverseDuration: Durations.medium4,
+    reverseDuration: Durations.medium2,
 
     child: child,
   );
@@ -58,15 +58,14 @@ class Routes {
       // SETTINGS ROUTE
       GoRoute(
         path: RoutesStrings.settingsView,
-        pageBuilder:
-            (context, state) => PageAnimation.buildCustomTransitionPage(
-              state.pageKey,
-              type: TransitionType.rightToLeft,
-              duration: Durations.extralong1,
-              reverseDuration: Durations.medium1,
-              curve: CustomCurves.defaultIosSpring,
-              child: const SettingsView(),
-            ),
+        pageBuilder: (context, state) => PageAnimation.buildCustomTransitionPage(
+          state.pageKey,
+          type: TransitionType.rightToLeft,
+          duration: Durations.extralong1,
+          reverseDuration: Durations.medium1,
+          curve: CustomCurves.defaultIosSpring,
+          child: const SettingsView(),
+        ),
       ),
     ],
   );

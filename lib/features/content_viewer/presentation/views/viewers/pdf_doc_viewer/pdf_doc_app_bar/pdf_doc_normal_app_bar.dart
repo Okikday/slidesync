@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/file_details.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/features/content_viewer/presentation/controllers/doc_viewer_controllers/pdf_doc_viewer_controller.dart';
@@ -63,7 +64,13 @@ class PdfDocNormalAppBar extends ConsumerWidget {
                             );
                           },
                         ),
-                        PopupMenuAction(title: "Horizontal layout", iconData: Iconsax.book_1, onTap: () {}),
+                        PopupMenuAction(
+                          title: "Horizontal layout",
+                          iconData: Iconsax.book_1,
+                          onTap: () {
+                            UiUtils.showFlushBar(context, msg: "Coming soon!");
+                          },
+                        ),
                         () {
                           final isDarkMode =
                               (ref.watch(PdfDocViewerProviders.ispdfViewerInDarkModeNotifier).value ?? false);
@@ -75,6 +82,14 @@ class PdfDocNormalAppBar extends ConsumerWidget {
                             },
                           );
                         }(),
+
+                        PopupMenuAction(
+                          title: "Enable AI button",
+                          iconData: Iconsax.book_1,
+                          onTap: () {
+                            UiUtils.showFlushBar(context, msg: "Coming soon!");
+                          },
+                        ),
                       ],
                     ),
 

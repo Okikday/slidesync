@@ -8,6 +8,7 @@ import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/domain/repos/course_repo/course_repo.dart';
 
 enum CourseSortOption { nameAsc, nameDesc, dateCreatedAsc, dateCreatedDesc, dateModifiedAsc, dateModifiedDesc, none }
+
 enum PlainCourseSortOption { name, dateCreated, dateModified, none }
 
 class CoursesViewActions {
@@ -135,16 +136,14 @@ class CoursesViewActions {
   bool get isBusy => _isFetching;
 }
 
-
-
 extension CourseSortX on CourseSortOption {
   PlainCourseSortOption toPlain() {
     final n = name;
     final core = n.endsWith('Asc')
         ? n.substring(0, n.length - 3)
         : n.endsWith('Desc')
-            ? n.substring(0, n.length - 4)
-            : n;
+        ? n.substring(0, n.length - 4)
+        : n;
     switch (core) {
       case 'name':
         return PlainCourseSortOption.name;
@@ -176,4 +175,3 @@ extension CourseSortX on CourseSortOption {
     }
   }
 }
-

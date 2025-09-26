@@ -66,6 +66,7 @@ class _CoursesViewState extends ConsumerState<CoursesView> {
       setState(() {
         cva;
       });
+      pagingController.refresh();
     });
     ref.listen<AsyncValue<void>>(CoursesViewProviders.watchChanges, (previous, next) {
       if (next.hasValue) {

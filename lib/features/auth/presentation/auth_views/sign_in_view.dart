@@ -1,10 +1,10 @@
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/core/routes/routes.dart';
 import 'package:slidesync/core/routes/routes_strings.dart';
+import 'package:slidesync/core/utils/file_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/auth/domain/services/user_auth/firebase_google_auth.dart';
 import 'package:slidesync/shared/assets/assets.dart';
@@ -41,16 +41,17 @@ class SignInView extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    width: context.deviceWidth/2,
+                    width: context.deviceWidth / 2,
                     decoration: BoxDecoration(color: theme.background, shape: BoxShape.circle),
-                    child: Image.asset("assets/logo/logo.png"),
+                    child: Image.asset("assets/logo/ic_foreground.png"),
                   ),
                   ConstantSizing.columnSpacing(kToolbarHeight),
 
                   CustomText(
-                    "Sign in to Slide..Sync and Simplify your learning journey",
+                    "Sign in to SlideSync to Simplify your learning journey",
                     color: theme.onBackground,
                     textAlign: TextAlign.center,
+                    fontStyle: FontStyle.italic,
                   ),
                   ConstantSizing.columnSpacing(kToolbarHeight),
                   CustomElevatedButton(
@@ -61,6 +62,10 @@ class SignInView extends ConsumerWidget {
                     backgroundColor: primaryPurple,
                     textColor: theme.onPrimary,
                     onClick: () async {
+                      if (Platform.isWindows) {
+                        context.go(RoutesStrings.homeView);
+                        return;
+                      }
                       UiUtils.showCustomDialog(
                         context,
                         canPop: false,
@@ -70,7 +75,12 @@ class SignInView extends ConsumerWidget {
                           fit: StackFit.expand,
                           alignment: Alignment.center,
                           children: [
-                            Positioned.fill(child: OrganicBackgroundEffect(gradientColors: [theme.primaryColor, Color(0xFF008080)], gradientOpacity: 0.1,)),
+                            Positioned.fill(
+                              child: OrganicBackgroundEffect(
+                                gradientColors: [theme.primaryColor, Color(0xFF008080)],
+                                gradientOpacity: 0.1,
+                              ),
+                            ),
                             Positioned.fill(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -83,7 +93,7 @@ class SignInView extends ConsumerWidget {
                                     color: theme.onPrimary,
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
-                                  )
+                                  ),
                                 ],
                               ),
                             ),
@@ -92,13 +102,13 @@ class SignInView extends ConsumerWidget {
                       );
                       final auth = FirebaseGoogleAuth();
                       final result = await auth.signInWithGoogle();
-                      if(context.mounted) {
+                      if (context.mounted) {
                         context.pop();
-                      }else{
+                      } else {
                         rootNavigatorKey.currentContext?.pop();
                       }
 
-                     if(result.isSuccess && context.mounted) context.go(RoutesStrings.homeView);
+                      if (result.isSuccess && context.mounted) context.go(RoutesStrings.homeView);
                     },
                   ),
                 ],
