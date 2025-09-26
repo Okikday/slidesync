@@ -65,7 +65,6 @@ class ListCourseCard extends ConsumerWidget {
                       spreadRadius: -2,
                     ),
                   ],
-          
           ),
           child: Row(
             children: [
@@ -259,32 +258,33 @@ class ListCourseCardProgressIndicator extends ConsumerWidget {
       dimension: 40,
       child: Stack(
         children: [
-          CustomElevatedButton(
-            pixelWidth: 46,
-            pixelHeight: 46,
-            contentPadding: EdgeInsets.zero,
-            shape: CircleBorder(),
-            backgroundColor: theme.background,
-            overlayColor: theme.altBackgroundSecondary,
-            onClick: () {},
-            child: CustomText(
-              "${((progress?.clamp(0, 100) ?? 0.0) * 100.0).toInt()}%",
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
-              color: theme.supportingText.withValues(alpha: 0.5),
-            ),
-          ),
+          // CustomElevatedButton(
+          //   pixelWidth: 46,
+          //   pixelHeight: 46,
+          //   contentPadding: EdgeInsets.zero,
+          //   shape: CircleBorder(),
+          //   backgroundColor: theme.altBackgroundPrimary.withValues(alpha: 0.8),
+          //   overlayColor: theme.altBackgroundSecondary,
+          //   onClick: () {},
+          //   child: Icon(Iconsax.play_circle, color: theme.onPrimary),
+          //   // child: CustomText(
+          //   //   "${((progress?.clamp(0, 100) ?? 0.0) * 100.0).toInt()}%",
+          //   //   fontSize: 11,
+          //   //   fontWeight: FontWeight.bold,
+          //   //   color: theme.supportingText.withValues(alpha: 0.5),
+          //   // ),
+          // ),
 
-          Positioned.fill(
-            child: IgnorePointer(
-              child: CircularProgressIndicator(
-                value: progress?.clamp(0.01, 1.0),
-                strokeCap: StrokeCap.round,
-                color: theme.primaryColor,
-                backgroundColor: theme.altBackgroundPrimary.withValues(alpha: 0.4),
-              ),
-            ),
-          ),
+          // Positioned.fill(
+          //   child: IgnorePointer(
+          //     child: CircularProgressIndicator(
+          //       value: progress?.clamp(0.01, 1.0),
+          //       strokeCap: StrokeCap.round,
+          //       color: theme.primaryColor,
+          //       backgroundColor: theme.altBackgroundPrimary.withValues(alpha: 0.4),
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );

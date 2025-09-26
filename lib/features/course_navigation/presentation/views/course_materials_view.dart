@@ -4,6 +4,9 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
+import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/domain/repos/course_repo/course_collection_repo.dart';
@@ -30,16 +33,22 @@ class CourseMaterialsView extends ConsumerStatefulWidget {
 
 class _CourseMaterialsViewState extends ConsumerState<CourseMaterialsView> {
   late final ScrollController scrollController;
-  late final ValueNotifier<int> sortIndexNotifier;
   @override
   void initState() {
     super.initState();
     scrollController = ScrollController();
-    sortIndexNotifier = ValueNotifier(0);
     scrollController.addListener(scrollListener);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      sortIndexNotifier.value =
-          ref.read(CourseMaterialsProviders.contentsFilterOption(widget.collection.collectionId).notifier).state.index;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      Result.tryRunAsync(() async {
+        final option =
+            CourseSortOption.values[await AppHiveData.instance.getData(key: HiveDataPaths.courseMaterialsSortOption)
+                    as int? ??
+                CourseSortOption.none.index];
+        ref
+            .read(CourseMaterialsProviders.contentsFilterOption(widget.collection.collectionId).notifier)
+            .update((cb) => option);
+      });
     });
   }
 
@@ -57,7 +66,6 @@ class _CourseMaterialsViewState extends ConsumerState<CourseMaterialsView> {
   void dispose() {
     scrollController.removeListener(scrollListener);
     scrollController.dispose();
-    sortIndexNotifier.dispose();
     super.dispose();
   }
 
@@ -70,7 +78,6 @@ class _CourseMaterialsViewState extends ConsumerState<CourseMaterialsView> {
       value: UiUtils.getSystemUiOverlayStyle(context.scaffoldBackgroundColor, context.isDarkMode),
       child: Scaffold(
         appBar: AppBarContainer(
-          
           child: AppBarContainerChild(
             context.isDarkMode,
             title: collection.collectionTitle,
@@ -117,48 +124,63 @@ class _CourseMaterialsViewState extends ConsumerState<CourseMaterialsView> {
                                   ),
                                   ConstantSizing.columnSpacingSmall,
                                   Expanded(
-                                    child: ValueListenableBuilder(
-                                      valueListenable: sortIndexNotifier,
-                                      builder: (context, value, child) {
-                                        return ListView.builder(
-                                          itemCount: CourseSortOption.values.length,
-                                          itemBuilder: (context, index) {
-                                            return CustomElevatedButton(
-                                              pixelHeight: 44,
-                                              backgroundColor: Colors.transparent,
-                                              borderRadius: 0,
-                                              onClick: () {
-                                                sortIndexNotifier.value = index;
-                                                ref
-                                                    .read(
+                                    child: ListView.builder(
+                                      itemCount: CourseSortOption.values.length,
+                                      itemBuilder: (context, index) {
+                                        return CustomElevatedButton(
+                                          pixelHeight: 44,
+                                          backgroundColor: Colors.transparent,
+                                          borderRadius: 0,
+                                          onClick: () async {
+                                            final newValue =
+                                                CourseSortOption.values[index.clamp(0, CourseSortOption.values.length)];
+                                            ref
+                                                .read(
+                                                  CourseMaterialsProviders.contentsFilterOption(
+                                                    collection.collectionId,
+                                                  ).notifier,
+                                                )
+                                                .update((cb) => newValue);
+                                            await Result.tryRunAsync(() async {
+                                              await AppHiveData.instance.setData(
+                                                key: HiveDataPaths.courseMaterialsSortOption,
+                                                value: newValue.index,
+                                              );
+                                            });
+                                            if (context.mounted) UiUtils.hideDialog(context);
+                                          },
+                                          child: Row(
+                                            children: [
+                                              RadioGroup<int>(
+                                                groupValue: ref
+                                                    .watch(
                                                       CourseMaterialsProviders.contentsFilterOption(
                                                         collection.collectionId,
-                                                      ).notifier,
+                                                      ),
                                                     )
-                                                    .update((cb) => CourseSortOption.values[index]);
-                                                UiUtils.hideDialog(context);
-                                              },
-                                              child: Row(
-                                                children: [
-                                                  Radio(
-                                                    value: index,
-                                                    groupValue: value,
-                                                    onChanged: (p) {
-                                                      sortIndexNotifier.value = p ?? 0;
-                                                      ref
-                                                          .read(
-                                                            CourseMaterialsProviders.contentsFilterOption(
-                                                              collection.collectionId,
-                                                            ).notifier,
-                                                          )
-                                                          .update((cb) => CourseSortOption.values[index]);
-                                                    },
-                                                  ),
-                                                  Expanded(child: CustomText(CourseSortOption.values[index].label)),
-                                                ],
+                                                    .index,
+                                                onChanged: (p) async {
+                                                  final newValue = CourseSortOption
+                                                      .values[index.clamp(0, CourseSortOption.values.length)];
+                                                  ref
+                                                      .read(
+                                                        CourseMaterialsProviders.contentsFilterOption(
+                                                          collection.collectionId,
+                                                        ).notifier,
+                                                      )
+                                                      .update((cb) => newValue);
+                                                  await Result.tryRunAsync(() async {
+                                                    await AppHiveData.instance.setData(
+                                                      key: HiveDataPaths.courseMaterialsSortOption,
+                                                      value: newValue.index,
+                                                    );
+                                                  });
+                                                },
+                                                child: Radio(value: index,),
                                               ),
-                                            );
-                                          },
+                                              Expanded(child: CustomText(CourseSortOption.values[index].label)),
+                                            ],
+                                          ),
                                         );
                                       },
                                     ),

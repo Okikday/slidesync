@@ -8,7 +8,6 @@ import 'package:slidesync/features/all_tabs/tab_library/presentation/providers/c
 import 'package:slidesync/features/all_tabs/tab_library/presentation/providers/library_tab_view_providers.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view/library_tab_view_app_bar.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/views/sub/library_tab_body.dart';
-
 class LibraryTabView extends ConsumerStatefulWidget {
   const LibraryTabView({super.key});
 
@@ -27,9 +26,8 @@ class _LibraryTabViewState extends ConsumerState<LibraryTabView> with AutomaticK
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       Result.tryRunAsync(() async {
         final option =
-            CourseSortOption.values[await AppHiveData.instance.getData(key: HiveDataPaths.libraryCourseSortOption)
-                    as int? ??
-                CourseSortOption.none.index];
+            CourseSortOption
+                .values[await AppHiveData.instance.getData(key: HiveDataPaths.libraryCourseSortOption) as int? ?? 0];
         ref.read(CoursesViewProviders.coursesFilterOptions.notifier).update((cb) => option);
       });
     });

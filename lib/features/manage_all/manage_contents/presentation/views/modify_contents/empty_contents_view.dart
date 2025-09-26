@@ -26,6 +26,14 @@ class EmptyContentsView extends ConsumerWidget {
             ),
 
             ConstantSizing.columnSpacingExtraLarge,
+            Center(
+              child: CustomText(
+                "We couldn't find any material over here..",
+                fontSize: 12,
+                color: ref.theme.backgroundSupportingText,
+              ),
+            ),
+            ConstantSizing.columnSpacingMedium,
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: CustomElevatedButton(

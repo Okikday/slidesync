@@ -6,6 +6,7 @@ class HiveDataPaths {
       "library/courseSortOption"; // What kind of filter is used on the Library Tab View
   static const String libraryTabCardViewType = "library/isListView";
   static const String courseMaterialscardViewType = "courseMaterials/cardViewType";
+  static const String courseMaterialsSortOption = "courseMaterials/sortOption";
 
   static const String ispdfViewerInDarkMode = "pdfViewer/isDarkMode";
 }

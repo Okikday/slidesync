@@ -14,6 +14,7 @@ import 'package:slidesync/domain/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/domain/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/course_navigation/presentation/providers/course_materials_providers.dart';
 import 'package:slidesync/features/course_navigation/presentation/views/course_materials/content_card.dart';
+import 'package:slidesync/features/manage_all/manage_contents/presentation/views/modify_contents/empty_contents_view.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 
 class MaterialsView extends ConsumerStatefulWidget {
@@ -46,6 +47,7 @@ class _MaterialsViewState extends ConsumerState<MaterialsView> {
       padding: EdgeInsetsGeometry.fromLTRB(16, 12, 16, 64 + context.bottomPadding + context.viewInsets.bottom),
       sliver: streamedContents.when(
         data: (items) {
+          if (items.isEmpty) return EmptyContentsView(collection: widget.collection);
           if (isGrid) {
             return SliverGrid(
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -75,15 +77,15 @@ class _MaterialsViewState extends ConsumerState<MaterialsView> {
                 final content = items[index];
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 16),
-                  child: ContentCard(
-                    content: content.content,
-                    progress: content.progress?.progress,
-                  ).animate().fadeIn().slideY(
-                    begin: (index / items.length + 1) * 0.4,
-                    end: 0,
-                    curve: Curves.fastEaseInToSlowEaseOut,
-                    duration: Durations.extralong2,
-                  ),
+                  child: ContentCard(content: content.content, progress: content.progress?.progress)
+                      .animate()
+                      .fadeIn()
+                      .slideY(
+                        begin: (index / items.length + 1) * 0.4,
+                        end: 0,
+                        curve: Curves.fastEaseInToSlowEaseOut,
+                        duration: Durations.extralong2,
+                      ),
                   // .animate()
                   // .fadeIn(curve: CustomCurves.defaultIosSpring, duration: Durations.extralong1)
                   // .slideY(begin: 0.1, end: 0, curve: CustomCurves.defaultIosSpring, duration: Durations.extralong4),
@@ -111,10 +113,12 @@ class ListMaterialCardLoadingShimmer extends ConsumerWidget {
       physics: NeverScrollableScrollPhysics(),
       itemCount: itemCount,
       shrinkWrap: true,
-      itemBuilder:
-          (context, index) => Skeletonizer(
-            child: Padding(padding: const EdgeInsets.only(bottom: 8.0), child: ContentCard(content: defaultContent)),
-          ),
+      itemBuilder: (context, index) => Skeletonizer(
+        child: Padding(
+          padding: const EdgeInsets.only(bottom: 8.0),
+          child: ContentCard(content: defaultContent),
+        ),
+      ),
     );
   }
 }
