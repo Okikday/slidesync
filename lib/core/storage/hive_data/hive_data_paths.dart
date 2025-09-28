@@ -1,12 +1,40 @@
-class HiveDataPaths {
-  static const String views = "lib/views";
-  static const String userData = "userData";
-  static const String recentContentsIds = "recentContentsIds"; // the recent content ids for the one on the home page
-  static const String libraryCourseSortOption =
-      "library/courseSortOption"; // What kind of filter is used on the Library Tab View
-  static const String libraryTabCardViewType = "library/isListView";
-  static const String courseMaterialscardViewType = "courseMaterials/cardViewType";
-  static const String courseMaterialsSortOption = "courseMaterials/sortOption";
+enum HiveDataPathKey {
+  /// Miscellaneous
+  
+  // User
+  userData,
 
-  static const String ispdfViewerInDarkMode = "pdfViewer/isDarkMode";
+  // Style
+  appTheme,
+
+
+  /// Welcome View
+  hasOnboarded,
+
+  /// Home Recents View
+  recentContentsIds,
+
+  /// Library Tab View
+  libraryCourseSortOption,
+  libraryTabCardViewType,
+
+  /// Course Materials View
+  courseMaterialscardViewType,
+  courseMaterialsSortOption,
+
+  /// Pdf Viewer view
+  ispdfViewerInDarkMode,
 }
+
+// class HiveDataPaths {
+//   static const Map<HiveDataPathKey, String> values = {
+//     HiveDataPathKey.hasOnboarded: "hasOnboarded",
+//     HiveDataPathKey.userData: "userData",
+//     HiveDataPathKey.recentContentsIds: "recentContentsIds",
+//     HiveDataPathKey.libraryCourseSortOption: "library/courseSortOption",
+//     HiveDataPathKey.libraryTabCardViewType: "library/isListView",
+//     HiveDataPathKey.courseMaterialscardViewType: "courseMaterials/cardViewType",
+//     HiveDataPathKey.courseMaterialsSortOption: "courseMaterials/sortOption",
+//     HiveDataPathKey.ispdfViewerInDarkMode: "pdfViewer/isDarkMode",
+//   };
+// }

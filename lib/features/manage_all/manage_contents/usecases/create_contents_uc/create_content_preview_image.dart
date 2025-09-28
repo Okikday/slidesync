@@ -18,7 +18,11 @@ class CreateContentPreviewImage {
   static Future<String?> _createForTypeImage(String path, PreviewImagePathRecord previewPathRecord) async {
     final Result<String?> result = await Result.tryRunAsync(() async {
       log("Creating preview for Type Image");
-      final Result<File> result = await ImageUtils.compressImage(inputFile: File(path), targetMB: 0.05, outputFormat: 'png');
+      final Result<File> result = await ImageUtils.compressImage(
+        inputFile: File(path),
+        targetMB: 0.05,
+        outputFormat: 'png',
+      );
 
       if (result.isSuccess) {
         final String cachePath = result.data!.path;
@@ -75,7 +79,11 @@ class CreateContentPreviewImage {
         await tempFile.writeAsBytes(bytes);
 
         // Compress the rendered PDF image
-        final Result<File> compressionResult = await ImageUtils.compressImage(inputFile: tempFile, targetMB: 0.05, outputFormat: 'png');
+        final Result<File> compressionResult = await ImageUtils.compressImage(
+          inputFile: tempFile,
+          targetMB: 0.05,
+          outputFormat: 'png',
+        );
 
         if (compressionResult.isSuccess) {
           await Directory(previewPathRecord.previewDirPath).create(recursive: true);
@@ -129,7 +137,8 @@ class CreateContentPreviewImage {
     return;
   }
 
-  static String genPreviewImagePath({required String filePath}) => genPreviewImagePathRecord(filePath: filePath).previewPath;
+  static String genPreviewImagePath({required String filePath}) =>
+      genPreviewImagePathRecord(filePath: filePath).previewPath;
 
   static PreviewImagePathRecord genPreviewImagePathRecord({required String filePath}) {
     final int lastIndexOfPathSep = filePath.lastIndexOf(Platform.pathSeparator);
@@ -154,7 +163,9 @@ class CreateContentPreviewImage {
       final RootIsolateToken rootIsolateToken = args['rootIsolateToken'] as RootIsolateToken;
       BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken);
 
-      final List<CourseContent> allContents = (args['courseContentsJsons'] as List<String>).map((e) => courseContentFromJson(e)).toList();
+      final List<CourseContent> allContents = (args['courseContentsJsons'] as List<String>)
+          .map((e) => courseContentFromJson(e))
+          .toList();
 
       for (int i = 0; i < allContents.length; i++) {
         final content = allContents[i];

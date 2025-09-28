@@ -15,7 +15,7 @@ class ModifyContentsViewProviders {
 
   bool get isEmpty => selectedContentsNotifier.value.isEmpty;
 
-  bool lookup(String value) => selectedContentsNotifier.value.contains(value);
+  bool lookup(CourseContent value) => selectedContentsNotifier.value.contains(value);
 
   // return true only if the id is added
   bool selectContent(CourseContent content) {

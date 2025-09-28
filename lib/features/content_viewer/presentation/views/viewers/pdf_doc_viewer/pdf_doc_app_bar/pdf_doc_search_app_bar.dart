@@ -67,7 +67,7 @@ class _SearchField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return ClipRSuperellipse(
       borderRadius: BorderRadius.circular(10.0),
       child: CustomTextfield(

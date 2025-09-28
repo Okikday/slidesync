@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -8,13 +7,11 @@ import 'package:slidesync/features/manage_all/manage_contents/presentation/views
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 
 class ModifyContentListView extends StatelessWidget {
-  final int courseDbId;
   final String collectionId;
   final List<CourseContent> contentList;
   final ModifyContentsViewProviders mcvp;
   const ModifyContentListView({
     super.key,
-    required this.courseDbId,
     required this.collectionId,
     required this.contentList,
     required this.mcvp,

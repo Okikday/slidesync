@@ -1,8 +1,6 @@
-import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/global_providers/global_providers.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/actions/course_card_actions.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/providers/library_tab_view_providers.dart';
@@ -39,22 +37,21 @@ class CourseCard extends ConsumerWidget {
           }
           CourseCardActions.of(ref).onTapCourseCard(course);
         },
-        child:
-            isGrid
-                ? GridCourseCard(
-                  course,
-                  onTapIcon: () {
-                    CourseCardActions.of(ref).onHoldCourseCard(course);
-                  },
-                  progress: 0.0,
-                )
-                : ListCourseCard(
-                  course,
-                  onTapIcon: () {
-                    CourseCardActions.of(ref).onHoldCourseCard(course);
-                  },
-                  progress: 0.0,
-                ),
+        child: isGrid
+            ? GridCourseCard(
+                course,
+                onTapIcon: () {
+                  CourseCardActions.of(ref).onHoldCourseCard(course);
+                },
+                progress: 0.0,
+              )
+            : ListCourseCard(
+                course,
+                onTapIcon: () {
+                  CourseCardActions.of(ref).onHoldCourseCard(course);
+                },
+                progress: 0.0,
+              ),
       ),
     ).animate().fadeIn();
   }

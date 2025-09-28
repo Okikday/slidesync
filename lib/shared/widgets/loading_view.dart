@@ -1,12 +1,8 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lottie/lottie.dart';
 import 'package:slidesync/shared/components/loading_logo.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:slidesync/shared/assets/strings/icon_strings.dart';
-import 'package:slidesync/shared/styles/colors.dart';
 
 class LoadingView extends ConsumerWidget {
   final String msg;
@@ -21,9 +17,9 @@ class LoadingView extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ConstantSizing.columnSpacingMedium,
-            LoadingLogo(color: ref.theme.primary, size: 64),
+            LoadingLogo(color: ref.primary, size: 64),
             if (msg.isNotEmpty) ConstantSizing.columnSpacingMedium,
-            if (msg.isNotEmpty) CustomText(msg, color: ref.theme.onBackground),
+            if (msg.isNotEmpty) CustomText(msg, color: ref.onBackground),
           ],
         ),
       ),

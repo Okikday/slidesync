@@ -30,7 +30,7 @@ class EmptyContentsView extends ConsumerWidget {
               child: CustomText(
                 "We couldn't find any material over here..",
                 fontSize: 12,
-                color: ref.theme.backgroundSupportingText,
+                color: ref.backgroundSupportingText,
               ),
             ),
             ConstantSizing.columnSpacingMedium,
@@ -46,13 +46,13 @@ class EmptyContentsView extends ConsumerWidget {
                     child: AddContentsBottomSheet(collection: collection),
                   );
                 },
-                backgroundColor: ref.theme.primaryColor,
-                // backgroundColor: context.theme.colorScheme.secondary,
+                backgroundColor: ref.primaryColor,
+                // backgroundColor: ref.secondary,
                 borderRadius: 12,
                 pixelHeight: 44,
                 label: "Add a content",
                 textSize: 15,
-                textColor: ref.theme.onPrimary,
+                textColor: ref.onPrimary,
               ),
             ),
 
@@ -61,7 +61,7 @@ class EmptyContentsView extends ConsumerWidget {
             // Padding(
             //   padding: const EdgeInsets.symmetric(horizontal: 20.0),
             //   child: CustomElevatedButton(
-            //     backgroundColor: ref.theme.primaryColor,
+            //     backgroundColor: ref.primaryColor,
             //     borderRadius: 12,
             //     pixelHeight: 44,
             //     label: "Explore Contents",

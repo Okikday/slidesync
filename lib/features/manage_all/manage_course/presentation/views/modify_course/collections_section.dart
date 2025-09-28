@@ -2,8 +2,10 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/core/routes/app_route_navigator.dart';
+import 'package:slidesync/core/global_notifiers/primitive_type_notifiers.dart';
+import 'package:slidesync/core/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/features/manage_all/manage_collections/presentation/views/modify_collections/collections_list_view/mod_collection_card_tile.dart';
@@ -16,24 +18,29 @@ class CollectionsSection extends ConsumerStatefulWidget {
   final int courseDbId;
   final List<CourseCollection> collections;
   final void Function() onClickNewCollection;
-  const CollectionsSection({super.key, required this.courseDbId, required this.collections, required this.onClickNewCollection});
+  const CollectionsSection({
+    super.key,
+    required this.courseDbId,
+    required this.collections,
+    required this.onClickNewCollection,
+  });
 
   @override
   ConsumerState createState() => _CollectionsSectionState();
 }
 
 class _CollectionsSectionState extends ConsumerState<CollectionsSection> {
-  late final AutoDisposeStateProvider<double> scrollOffsetNotifier;
+  late final NotifierProvider<DoubleNotifier, double> scrollOffsetNotifier;
   int maxCards = 3;
-  // late final AutoDisposeStateProvider<bool> canScrollNotifier;
+  // late final NotifierProvider<BoolNotifier, bool> canScrollNotifier;
   late final PageController pageController;
 
   @override
   void initState() {
     super.initState();
-    scrollOffsetNotifier = AutoDisposeStateProvider<double>((ref) => 0.0);
+    scrollOffsetNotifier = NotifierProvider<DoubleNotifier, double>(DoubleNotifier.new, isAutoDispose: true);
     pageController = PageController(initialPage: maxCards);
-    // canScrollNotifier = AutoDisposeStateProvider<bool>((ref) => false);
+    // canScrollNotifier = NotifierProvider<BoolNotifier, bool>((ref) => false);
     // widget.pageController.addListener(updateScrollOffset);
     pageController.addListener(updateScrollProgress);
   }
@@ -47,10 +54,10 @@ class _CollectionsSectionState extends ConsumerState<CollectionsSection> {
   // }
 
   void updateScrollProgress() {
-    final scrollOffsetNotif = ref.read(scrollOffsetNotifier.notifier);
+    final scrollOffsetNotif = ref.read(scrollOffsetNotifier);
     final double progress = (pageController.page ?? 0.0) / (widget.collections.length - 1).clamp(0, maxCards);
-    if (progress == scrollOffsetNotif.state) return;
-    scrollOffsetNotif.update((cb) => progress);
+    if (progress == scrollOffsetNotif) return;
+    ref.read(scrollOffsetNotifier.notifier).update((cb) => progress);
   }
 
   @override
@@ -79,18 +86,19 @@ class _CollectionsSectionState extends ConsumerState<CollectionsSection> {
           children: [
             NotificationListener(
               onNotification: (notification) => true,
-              child:
-                  ClipRRect(
-                    child: AnimatedSize(
-                      duration: Durations.extralong4,
-                      curve: CustomCurves.bouncySpring,
-                      reverseDuration: Durations.extralong1,
-                      child: Builder(
-                        builder: (context) {
-                          final double safeHeight = double.parse(
-                            (88.0 * widget.collections.length.clamp(0, maxCards) * (1.0 - ref.watch(scrollOffsetNotifier))).toStringAsFixed(
-                              2,
-                            ),
+              child: ClipRRect(
+                child: AnimatedSize(
+                  duration: Durations.extralong4,
+                  curve: CustomCurves.bouncySpring,
+                  reverseDuration: Durations.extralong1,
+                  child: Builder(
+                    builder: (context) {
+                      final double safeHeight =
+                          double.parse(
+                            (88.0 *
+                                    widget.collections.length.clamp(0, maxCards) *
+                                    (1.0 - ref.watch(scrollOffsetNotifier)))
+                                .toStringAsFixed(2),
                           ).clamp(
                             (88.0 + 88 / (5 - widget.collections.length.clamp(0, maxCards))),
                             (88.0 * widget.collections.length).clamp(
@@ -99,54 +107,53 @@ class _CollectionsSectionState extends ConsumerState<CollectionsSection> {
                             ),
                           );
 
-                          return SizedBox(
-                            height: safeHeight,
+                      return SizedBox(
+                        height: safeHeight,
 
-                            // height:
-                            //     (88 +
-                            //     88 / (5 - widget.collections.length.clamp(0, 3)) +
-                            //     (ref.watch(scrollOffsetNotifier) / 2).clamp(0.0, 88 * (widget.collections.length.clamp(0, 3) - 1))),
-                            child: RotatedBox(
-                              quarterTurns: 0,
-                              child: StackedCardCarousel(
-                                initialOffset: 0,
-                                spaceBetweenItems: 72,
-                                pageController: pageController,
-                                items: [
-                                  for (int index = 0; index < widget.collections.length.clamp(0, maxCards); index++)
-                                    Builder(
-                                      builder: (context) {
-                                        final collection = widget.collections[index];
-                                        return RotatedBox(
-                                          quarterTurns: 0,
-                                          child: ModCollectionCardTile(
-                                            title: widget.collections[index].collectionTitle,
-                                            contentCount: widget.collections[index].contents.length,
-                                            onSelected: () {
-                                              UiUtils.showCustomDialog(
-                                                context,
-                                                child: ModCollectionDialog(courseDbId: widget.courseDbId, collection: collection),
-                                              );
-                                            },
-                                            onTap: () async {
-                                              AppRouteNavigator.to(context).modifyContentsRoute((
-                                                collection: collection,
-                                                courseDbId: widget.courseDbId,
-                                                courseTitle: (courseCode: "", courseName: "CourseName"),
-                                              ));
-                                            },
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ).animate().fadeIn(),
+                        // height:
+                        //     (88 +
+                        //     88 / (5 - widget.collections.length.clamp(0, 3)) +
+                        //     (ref.watch(scrollOffsetNotifier) / 2).clamp(0.0, 88 * (widget.collections.length.clamp(0, 3) - 1))),
+                        child: RotatedBox(
+                          quarterTurns: 0,
+                          child: StackedCardCarousel(
+                            initialOffset: 0,
+                            spaceBetweenItems: 72,
+                            pageController: pageController,
+                            items: [
+                              for (int index = 0; index < widget.collections.length.clamp(0, maxCards); index++)
+                                Builder(
+                                  builder: (context) {
+                                    final collection = widget.collections[index];
+                                    return RotatedBox(
+                                      quarterTurns: 0,
+                                      child: ModCollectionCardTile(
+                                        title: widget.collections[index].collectionTitle,
+                                        contentCount: widget.collections[index].contents.length,
+                                        onSelected: () {
+                                          UiUtils.showCustomDialog(
+                                            context,
+                                            child: ModCollectionDialog(
+                                              courseDbId: widget.courseDbId,
+                                              collection: collection,
+                                            ),
+                                          );
+                                        },
+                                        onTap: () async {
+                                          context.pushNamed(Routes.modifyContents.name, extra: collection);
+                                        },
+                                      ),
+                                    );
+                                  },
+                                ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ).animate().fadeIn(),
             ),
           ],
         ),
@@ -161,19 +168,17 @@ Widget _buildNewCollectionTile(WidgetRef ref, {required void Function() onTap}) 
       padding: const EdgeInsets.symmetric(vertical: 12),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        overlayColor: WidgetStatePropertyAll(
-          ref.theme.primaryColor.withAlpha(40),
-        ),
+        overlayColor: WidgetStatePropertyAll(ref.primaryColor.withAlpha(40)),
         onTap: onTap,
         child: Container(
-          decoration: BoxDecoration(color: ref.theme.altBackgroundPrimary, borderRadius: BorderRadius.circular(12)),
+          decoration: BoxDecoration(color: ref.altBackgroundPrimary, borderRadius: BorderRadius.circular(12)),
           padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
 
           child: Row(
             children: [
               Icon(Iconsax.add_circle, size: 30),
               ConstantSizing.rowSpacingMedium,
-              Expanded(child: CustomText("New Collection", color: ref.theme.onBackground)),
+              Expanded(child: CustomText("New Collection", color: ref.onBackground)),
             ],
           ),
         ),

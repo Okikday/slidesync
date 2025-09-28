@@ -10,7 +10,7 @@ class MoreSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 0, vertical: 2),
       margin: EdgeInsets.symmetric(horizontal: 10),
@@ -22,10 +22,7 @@ class MoreSection extends ConsumerWidget {
           image: Assets.images.zigzagWavy.asImageProvider,
           fit: BoxFit.cover,
           opacity: 0.01,
-          colorFilter: ColorFilter.mode(
-            theme.primaryColor,
-            BlendMode.srcIn,
-          ),
+          colorFilter: ColorFilter.mode(theme.primaryColor, BlendMode.srcIn),
         ),
       ),
       child: ConstrainedBox(
@@ -48,7 +45,10 @@ class MoreSection extends ConsumerWidget {
               child: MoreSectionOption(title: "Bookmarks", iconData: Iconsax.menu_copy),
             ),
 
-            Padding(padding: const EdgeInsets.symmetric(horizontal: 12.0), child: MoreSectionOption(title: "", iconData: Iconsax.add_copy)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0),
+              child: MoreSectionOption(title: "", iconData: Iconsax.add_copy),
+            ),
           ],
         ),
       ),
@@ -63,7 +63,7 @@ class MoreSectionOption extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       spacing: 6.0,
@@ -74,7 +74,7 @@ class MoreSectionOption extends ConsumerWidget {
           // contentPadding: EdgeInsets.all(0),
           shape: const CircleBorder(),
           backgroundColor: theme.background,
-          child: Icon(iconData, color: theme.supportingText)
+          child: Icon(iconData, color: theme.supportingText),
         ),
         CustomText(title, color: theme.supportingText, fontSize: 12),
       ],

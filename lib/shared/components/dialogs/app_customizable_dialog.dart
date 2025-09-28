@@ -26,7 +26,7 @@ class AppCustomizableDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return Stack(
       alignment: alignment,
       clipBehavior: Clip.hardEdge,
@@ -55,24 +55,29 @@ class AppCustomizableDialog extends ConsumerWidget {
               borderRadius: BorderRadius.circular(30.0),
               border: Border.fromBorderSide(
                 BorderSide(color: theme.supportingText.withAlpha(40), strokeAlign: BorderSide.strokeAlignOutside),
-              )
+              ),
             ),
             padding: EdgeInsets.only(top: 16.0, bottom: 8.0),
-            child:
-                blurSigma != null
-                    ? BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: blurSigma!.dx, sigmaY: blurSigma!.dy),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [if (leading != null) leading!, Flexible(child: child)],
-                      ),
-                    )
-                    : Column(
+            child: blurSigma != null
+                ? BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: blurSigma!.dx, sigmaY: blurSigma!.dy),
+                    child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
-                      children: [if (leading != null) leading!, Flexible(child: child)],
+                      children: [
+                        if (leading != null) leading!,
+                        Flexible(child: child),
+                      ],
                     ),
+                  )
+                : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (leading != null) leading!,
+                      Flexible(child: child),
+                    ],
+                  ),
           ),
         ),
       ],

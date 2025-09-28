@@ -5,8 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/features/main/presentation/providers/main_providers.dart';
+import 'package:slidesync/features/all_tabs/main/main_view_controller.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
 
 class HomeAppBar extends ConsumerWidget {
   const HomeAppBar({super.key, required this.onClickUserIcon, required this.title, required this.onClickNotification});
@@ -18,8 +19,8 @@ class HomeAppBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final topPadding = context.topPadding;
-    final theme = ref.theme;
-    final bool isScrolled = ref.watch(MainProviders.isMainScrolledProvider);
+    final theme = ref;
+    final bool isScrolled = ref.watch(MainViewController.isMainScrolledProvider);
     return SliverAppBar(
       elevation: 64,
       pinned: true,
@@ -31,7 +32,9 @@ class HomeAppBar extends ConsumerWidget {
       forceMaterialTransparency: true,
       surfaceTintColor: Colors.transparent,
       systemOverlayStyle: SystemUiOverlayStyle(
-        statusBarColor: isScrolled ? theme.bgLightenColor() : context.scaffoldBackgroundColor,
+        statusBarColor: isScrolled
+            ? theme.background.lightenColor(theme.isDarkMode ? .1 : .9)
+            : context.scaffoldBackgroundColor,
         statusBarBrightness: context.isDarkMode ? Brightness.light : Brightness.dark,
         statusBarIconBrightness: context.isDarkMode ? Brightness.light : Brightness.dark,
       ),
@@ -45,21 +48,19 @@ class HomeAppBar extends ConsumerWidget {
           },
           child: Material(
             type: MaterialType.transparency,
-            shape:
-                isScrolled
-                    ? LinearBorder(
-                      bottom: LinearBorderEdge(),
-                      side: BorderSide(color: theme.altBackgroundSecondary.withValues(alpha: 0.4)),
-                    )
-                    : null,
+            shape: isScrolled
+                ? LinearBorder(
+                    bottom: LinearBorderEdge(),
+                    side: BorderSide(color: theme.altBackgroundSecondary.withValues(alpha: 0.4)),
+                  )
+                : null,
             child: AnimatedContainer(
               duration: Durations.medium3,
               clipBehavior: Clip.hardEdge,
               color: isScrolled ? theme.surface.withValues(alpha: 0.75) : theme.background,
-              child:
-                  isScrolled
-                      ? BackdropFilter(filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4), child: const SizedBox.expand())
-                      : null,
+              child: isScrolled
+                  ? BackdropFilter(filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4), child: const SizedBox.expand())
+                  : null,
             ),
           ),
         ),
@@ -101,14 +102,14 @@ class HomeAppBar extends ConsumerWidget {
 
                     // CustomElevatedButton(
                     //   shape: CircleBorder(),
-                    //   backgroundColor: context.theme.secondary.withAlpha(40),
+                    //   backgroundColor: ref.secondary.withAlpha(40),
                     //   overlayColor: theme.primaryColor.withAlpha(20),
                     //   onClick: onToggleFullScreen,
                     //   child: Icon(Iconsax.crop, color: context.isDarkMode ? Colors.white : theme.primaryColor),
                     // ),
                     CustomElevatedButton(
                       onClick: onClickNotification,
-                      overlayColor: context.theme.colorScheme.secondary.withAlpha(40),
+                      overlayColor: ref.secondary.withAlpha(40),
                       shape: CircleBorder(side: BorderSide(color: theme.altBackgroundSecondary.withValues(alpha: 0.4))),
                       backgroundColor: theme.adjustBgAndSecondaryWithLerp,
                       child: Badge(

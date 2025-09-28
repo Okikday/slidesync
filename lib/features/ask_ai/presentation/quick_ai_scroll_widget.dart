@@ -1,4 +1,3 @@
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -22,7 +21,7 @@ class QuickAiScrollWidget extends StatelessWidget {
           QuickAiScrollButton(label: "Explain", iconData: Iconsax.flash_copy),
           ConstantSizing.rowSpacingMedium,
           QuickAiScrollButton(label: "Send documents", iconData: Iconsax.document_copy),
-          ConstantSizing.rowSpacingMedium
+          ConstantSizing.rowSpacingMedium,
         ],
       ).animate().moveX(begin: 40, end: 0),
     );
@@ -36,12 +35,19 @@ class QuickAiScrollButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return CustomElevatedButton(
       contentPadding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
       backgroundColor: theme.altBackgroundPrimary,
       borderRadius: 16,
-      child: Row(mainAxisSize: MainAxisSize.min, spacing: 4.0, children: [Icon(iconData, color: theme.onBackground,), CustomText(label, color: theme.onBackground,)]),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 4.0,
+        children: [
+          Icon(iconData, color: theme.onBackground),
+          CustomText(label, color: theme.onBackground),
+        ],
+      ),
     );
   }
 }

@@ -18,7 +18,7 @@ class EditCourseInputDescriptionField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return SliverToBoxAdapter(
       child: Column(
         mainAxisSize: MainAxisSize.min,

@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/domain/models/file_details.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:slidesync/shared/styles/colors.dart';
+import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
 import 'package:slidesync/shared/widgets/build_image_path_widget.dart';
 
 class EditCourseTile extends ConsumerWidget {
@@ -31,7 +31,7 @@ class EditCourseTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return InkWell(
       borderRadius: BorderRadius.circular(12),
       onTap: onTap,
@@ -39,9 +39,7 @@ class EditCourseTile extends ConsumerWidget {
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         constraints: BoxConstraints(minHeight: 90, maxHeight: 140),
-        decoration: BoxDecoration(
-          color: theme.bgLightenColor(.88, .12)
-        ),
+        decoration: BoxDecoration(color: theme.background.lightenColor(theme.isDarkMode ? .12 : .88)),
         child: Row(
           children: [
             ClipOval(
@@ -51,7 +49,10 @@ class EditCourseTile extends ConsumerWidget {
                 child: Padding(
                   padding: EdgeInsets.all(2),
                   child: ClipOval(
-                    child: SizedBox.square(dimension: 44, child: BuildImagePathWidget(fileDetails: syncImagePath.fileDetails)),
+                    child: SizedBox.square(
+                      dimension: 44,
+                      child: BuildImagePathWidget(fileDetails: syncImagePath.fileDetails),
+                    ),
                   ),
                 ),
               ),
@@ -62,23 +63,19 @@ class EditCourseTile extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (courseCode.isNotEmpty) CustomTextButton(
+                  if (courseCode.isNotEmpty)
+                    CustomTextButton(
                       backgroundColor: theme.primaryColor.withAlpha(80),
-                    pixelHeight: 24,
-                    borderRadius: 12,
-                    contentPadding: EdgeInsets.symmetric(horizontal: 8.0),
-                    child: CustomText(courseCode, fontSize: 12, fontWeight: FontWeight.bold, color: context.theme.colorScheme.outline),
-                  ),
+                      pixelHeight: 24,
+                      borderRadius: 12,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 8.0),
+                      child: CustomText(courseCode, fontSize: 12, fontWeight: FontWeight.bold, color: ref.onPrimary),
+                    ),
 
                   if (courseCode.isNotEmpty) ConstantSizing.columnSpacing(2),
 
                   Flexible(
-                    child: CustomText(
-                      courseName,
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: theme.onBackground,
-                    ),
+                    child: CustomText(courseName, fontSize: 14, fontWeight: FontWeight.bold, color: theme.onBackground),
                   ),
 
                   ConstantSizing.columnSpacing(2.0),
@@ -87,11 +84,7 @@ class EditCourseTile extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // CustomText("This is a Content."),
-                      CustomText(
-                        "$categoriesCount items",
-                        fontSize: 12,
-                        color: theme.supportingText,
-                      ),
+                      CustomText("$categoriesCount items", fontSize: 12, color: theme.supportingText),
                     ],
                   ),
                 ],
@@ -106,16 +99,17 @@ class EditCourseTile extends ConsumerWidget {
                 selectionState.isSelecting && !selectionState.selected
                     ? Icons.circle_outlined
                     : (selectionState.isSelecting && selectionState.selected ? Iconsax.tick_circle : Iconsax.edit_copy),
-                color:
-                    selectionState.isSelecting && !selectionState.selected
-                        ? Colors.grey
-                        : (selectionState.isSelecting && selectionState.selected
-                            ? theme.primaryColor
-                            :
-                            theme.primaryColor),
+                color: selectionState.isSelecting && !selectionState.selected
+                    ? Colors.grey
+                    : (selectionState.isSelecting && selectionState.selected ? theme.primaryColor : theme.primaryColor),
                 size: 26,
               ),
-            ).animate().scale(begin: Offset(0, 0), end: Offset(1, 1), curve: CustomCurves.bouncySpring, duration: Durations.extralong4),
+            ).animate().scale(
+              begin: Offset(0, 0),
+              end: Offset(1, 1),
+              curve: CustomCurves.bouncySpring,
+              duration: Durations.extralong4,
+            ),
           ],
         ),
       ),

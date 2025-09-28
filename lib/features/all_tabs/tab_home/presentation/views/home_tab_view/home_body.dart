@@ -1,10 +1,11 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/routes/app_route_navigator.dart';
+import 'package:go_router/go_router.dart';
+import 'package:slidesync/core/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/repos/course_repo/course_content_repo.dart';
-import 'package:slidesync/features/all_tabs/tab_home/presentation/providers/home_tab_view_providers.dart';
+import 'package:slidesync/features/all_tabs/tab_home/presentation/controllers/home_tab_controller.dart';
 import 'package:slidesync/features/all_tabs/tab_home/presentation/views/home_tab_view/home_body/home_dashboard.dart';
 import 'package:slidesync/features/all_tabs/tab_home/presentation/views/home_tab_view/home_body/more_section.dart';
 import 'package:slidesync/features/all_tabs/tab_home/presentation/views/home_tab_view/home_body/recents_section/recents_section_body.dart';
@@ -16,7 +17,7 @@ class HomeBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncRecentsLast = ref.watch(HomeTabViewProviders.recentProgressTrackProvider);
+    final asyncRecentsLast = ref.watch(HomeTabController.recentProgressTrackProvider);
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
       // physics: const BouncingScrollPhysics(),
@@ -43,7 +44,7 @@ class HomeBody extends ConsumerWidget {
                       }
                       return;
                     }
-                    if (context.mounted) AppRouteNavigator.to(context).contentViewGateRoute(content);
+                    if (context.mounted) context.pushNamed(Routes.contentGate.name, extra: content);
                   },
                 );
               }
@@ -53,7 +54,7 @@ class HomeBody extends ConsumerWidget {
                 progressValue: 0.0,
                 isFirst: true,
                 onReadingBtnTapped: () async {
-                  AppRouteNavigator.to(context).createCourseRoute();
+                  context.pushNamed(Routes.createCourse.name);
                 },
               );
             },
@@ -78,7 +79,9 @@ class HomeBody extends ConsumerWidget {
             Navigator.push(
               context,
               PageAnimation.pageRouteBuilder(
-                Scaffold(body: Center(child: CustomText("No recent reads", color: ref.theme.onBackground))),
+                Scaffold(
+                  body: Center(child: CustomText("No recent reads", color: ref.onBackground)),
+                ),
                 type: TransitionType.rightToLeft,
                 duration: Durations.extralong1,
                 curve: CustomCurves.defaultIosSpring,

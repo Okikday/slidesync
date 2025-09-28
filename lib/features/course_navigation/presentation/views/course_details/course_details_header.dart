@@ -5,6 +5,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/core/global_notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/domain/models/file_details.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/features/course_navigation/presentation/views/course_details/course_details_header/progress_shape_animated_widget.dart';
@@ -12,7 +13,6 @@ import 'package:slidesync/features/course_navigation/presentation/views/course_d
 import 'package:slidesync/features/manage_all/manage_course/presentation/views/modify_course/course_description_dialog.dart';
 import 'package:slidesync/shared/components/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:slidesync/shared/styles/colors.dart';
 
 class CourseDetailsHeader extends ConsumerWidget {
   const CourseDetailsHeader({
@@ -23,15 +23,15 @@ class CourseDetailsHeader extends ConsumerWidget {
   });
 
   final Course course;
-  final AutoDisposeStateProvider<double> scrollOffsetProvider;
+  final NotifierProvider<DoubleNotifier, double> scrollOffsetProvider;
   final double appBarHeight;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appBarCollapsedHeight = kToolbarHeight;
-    final theme = ref.theme;
+    final theme = ref;
 
-    // final topGradColor = theme.background.blendColor(
+    // final topGradColor = theme.background.lightenColor(
     //   context.isDarkMode ? .2 : .8,
     // );
     final topGradColor = theme.altBackgroundPrimary;
@@ -78,14 +78,14 @@ class CourseDetailsHeaderContent extends ConsumerWidget {
   });
 
   final Course course;
-  final AutoDisposeStateProvider<double> scrollOffsetProvider;
+  final NotifierProvider<DoubleNotifier, double> scrollOffsetProvider;
   final double appBarHeight;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final topPadding = context.topPadding;
     final shapeSize = kToolbarHeight * 2;
-    final theme = ref.theme;
+    final theme = ref;
 
     return BackdropFilter(
       filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
@@ -109,16 +109,16 @@ class CourseDetailsHeaderContent extends ConsumerWidget {
 
                         (course.courseCode.isNotEmpty)
                             ? CustomTextButton(
-                              backgroundColor: theme.altBackgroundPrimary,
-                              pixelHeight: 28,
-                              contentPadding: EdgeInsets.symmetric(horizontal: 12.0),
-                              child: CustomText(
-                                course.courseCode,
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: theme.primaryColor,
-                              ),
-                            ).animate().scaleXY(duration: Durations.extralong4, curve: CustomCurves.defaultIosSpring)
+                                backgroundColor: theme.altBackgroundPrimary,
+                                pixelHeight: 28,
+                                contentPadding: EdgeInsets.symmetric(horizontal: 12.0),
+                                child: CustomText(
+                                  course.courseCode,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: theme.primaryColor,
+                                ),
+                              ).animate().scaleXY(duration: Durations.extralong4, curve: CustomCurves.defaultIosSpring)
                             : const SizedBox(),
                       ],
                     ),
@@ -220,14 +220,15 @@ class CourseDetailsHeaderTitle extends ConsumerStatefulWidget {
 
   final String courseName;
   final double appBarHeight;
-  final AutoDisposeStateProvider<double> scrollOffsetProvider;
+  final NotifierProvider<DoubleNotifier, double> scrollOffsetProvider;
   final bool adjustPosition;
 
   @override
   ConsumerState<CourseDetailsHeaderTitle> createState() => _CourseDetailsHeaderTitleState();
 }
 
-class _CourseDetailsHeaderTitleState extends ConsumerState<CourseDetailsHeaderTitle> with SingleTickerProviderStateMixin {
+class _CourseDetailsHeaderTitleState extends ConsumerState<CourseDetailsHeaderTitle>
+    with SingleTickerProviderStateMixin {
   late final AnimationController moveAnimController;
   @override
   void initState() {
@@ -237,9 +238,6 @@ class _CourseDetailsHeaderTitleState extends ConsumerState<CourseDetailsHeaderTi
       reverseDuration: Durations.medium1,
       vsync: this,
     );
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(widget.scrollOffsetProvider.notifier).addListener(listener);
-    });
 
     moveAnimController.forward(from: 0);
   }
@@ -257,7 +255,8 @@ class _CourseDetailsHeaderTitleState extends ConsumerState<CourseDetailsHeaderTi
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.theme;
+    ref.listen(widget.scrollOffsetProvider, (prev, next) => listener(next));
+    final theme = ref;
     final textWidget = Tooltip(
       message: widget.courseName,
       triggerMode: TooltipTriggerMode.tap,
@@ -271,21 +270,21 @@ class _CourseDetailsHeaderTitleState extends ConsumerState<CourseDetailsHeaderTi
     );
     return widget.adjustPosition
         ? textWidget
-            .animate(controller: moveAnimController)
-            .move(
-              begin: Offset(48, -44),
-              end: Offset.zero,
-              duration: Durations.extralong4,
-              curve: CustomCurves.defaultIosSpring,
-            )
+              .animate(controller: moveAnimController)
+              .move(
+                begin: Offset(48, -44),
+                end: Offset.zero,
+                duration: Durations.extralong4,
+                curve: CustomCurves.defaultIosSpring,
+              )
         : textWidget
-            .animate(controller: moveAnimController)
-            .fadeIn()
-            .move(
-          begin: Offset(48, -44),
-          end: Offset.zero,
-          duration: Durations.extralong4,
-          curve: CustomCurves.defaultIosSpring,
-        );
+              .animate(controller: moveAnimController)
+              .fadeIn()
+              .move(
+                begin: Offset(48, -44),
+                end: Offset.zero,
+                duration: Durations.extralong4,
+                curve: CustomCurves.defaultIosSpring,
+              );
   }
 }

@@ -1,6 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/core/global_notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/manage_all/manage_course/presentation/views/select_to_modify_course/select_to_modify_course_outer_section.dart';
 import 'package:slidesync/shared/components/app_bar_container.dart';
@@ -14,14 +14,13 @@ class SelectToModifyCourseView extends ConsumerStatefulWidget {
 }
 
 class _SelectToModifyCourseViewState extends ConsumerState<SelectToModifyCourseView> {
-  
-  late final AutoDisposeStateProvider<Map<int, bool>> selectedCoursesIdProvider;
+  late final NotifierProvider<ImpliedNotifier<Map<int, bool>>, Map<int, bool>> selectedCoursesIdProvider;
 
   @override
   void initState() {
     super.initState();
-    
-    selectedCoursesIdProvider = AutoDisposeStateProvider((ref) => <int, bool>{});
+
+    selectedCoursesIdProvider = NotifierProvider(() => ImpliedNotifier(<int, bool>{}), isAutoDispose: true);
   }
 
   // @override
@@ -31,25 +30,25 @@ class _SelectToModifyCourseViewState extends ConsumerState<SelectToModifyCourseV
 
   @override
   Widget build(BuildContext context) {
-    
     final Map<int, bool> selectedCoursesIdMap = ref.watch(selectedCoursesIdProvider);
     final bool isSelecting = selectedCoursesIdMap.isNotEmpty && selectedCoursesIdMap.containsValue(true);
 
     return PopScope(
       canPop: !isSelecting,
       onPopInvokedWithResult: (didPop, result) {
-        final selectedNotifier = ref.read(selectedCoursesIdProvider.notifier);
-        if (selectedNotifier.state.isNotEmpty) {
-          selectedNotifier.update((cb) => <int, bool>{});
+        final selected = ref.read(selectedCoursesIdProvider);
+        if (selected.isNotEmpty) {
+          ref.read(selectedCoursesIdProvider.notifier).update((cb) => <int, bool>{});
           return;
         }
       },
       child: AnnotatedRegion(
-        value: UiUtils.getSystemUiOverlayStyle(Colors.transparent, context.isDarkMode).copyWith(statusBarIconBrightness: Brightness.light),
+        value: UiUtils.getSystemUiOverlayStyle(
+          Colors.transparent,
+          context.isDarkMode,
+        ).copyWith(statusBarIconBrightness: Brightness.light),
         child: Scaffold(
-          appBar: AppBarContainer(
-            child: AppBarContainerChild(context.isDarkMode, title: 'Select course to modify'),
-          ),
+          appBar: AppBarContainer(child: AppBarContainerChild(context.isDarkMode, title: 'Select course to modify')),
           body: SelectToModifyCourseOuterSection(
             isSelecting: isSelecting,
             selectedCoursesIdProvider: selectedCoursesIdProvider,
@@ -60,4 +59,3 @@ class _SelectToModifyCourseViewState extends ConsumerState<SelectToModifyCourseV
     );
   }
 }
-

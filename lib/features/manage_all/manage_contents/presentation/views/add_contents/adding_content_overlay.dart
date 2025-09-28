@@ -13,7 +13,7 @@ class LoadingOverlay extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     final loadingCard = ClipRSuperellipse(
       borderRadius: BorderRadius.circular(44),
       clipBehavior: Clip.hardEdge,
@@ -37,10 +37,7 @@ class LoadingOverlay extends ConsumerWidget {
                 ),
                 SizedBox.square(
                   dimension: 14,
-                  child: CircularProgressIndicator(
-                    strokeCap: StrokeCap.round,
-                    color: theme.primaryColor,
-                  ),
+                  child: CircularProgressIndicator(strokeCap: StrokeCap.round, color: theme.primaryColor),
                 ),
               ],
             ),

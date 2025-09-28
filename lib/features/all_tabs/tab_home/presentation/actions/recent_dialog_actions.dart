@@ -1,7 +1,8 @@
 import 'dart:collection';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/routes/app_route_navigator.dart';
+import 'package:go_router/go_router.dart';
+import 'package:slidesync/core/routes/routes.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/result.dart';
@@ -31,13 +32,14 @@ class RecentDialogActions {
     return (await Result.tryRunAsync(() async {
           final hiveInstance = AppHiveData.instance;
           // Change to be Map instead
-          final rawOldRecents = (await hiveInstance.getData(key: HiveDataPaths.recentContentsIds)) as List<String>?;
+          final rawOldRecents =
+              (await hiveInstance.getData(key: HiveDataPathKey.recentContentsIds.name)) as List<String>?;
           if (rawOldRecents == null) {
             return false;
           } else {
             final recents = LinkedHashSet<String>.from(rawOldRecents);
             if (recents.remove(contentId)) {
-              await hiveInstance.setData(key: HiveDataPaths.recentContentsIds, value: recents.toList());
+              await hiveInstance.setData(key: HiveDataPathKey.recentContentsIds.name, value: recents.toList());
               return true;
             }
             return false;
@@ -56,6 +58,6 @@ class RecentDialogActions {
       }
       return;
     }
-    if (context.mounted) AppRouteNavigator.to(context).contentViewGateRoute(newContent);
+    if (context.mounted) context.pushNamed(Routes.contentGate.name, extra: newContent);
   }
 }

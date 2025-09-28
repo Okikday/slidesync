@@ -65,12 +65,12 @@ class AppPopupMenuButton extends ConsumerWidget {
     this.child,
     this.splashRadius,
     this.padding,
-    this.buttonStyle
+    this.buttonStyle,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
 
     return PopupMenuTheme(
       data: PopupMenuThemeData(
@@ -143,11 +143,13 @@ class PopupMenuItemChild extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
-    final effectiveIconColor =
-        enabled ? (iconColor ?? theme.supportingText) : (iconColor ?? theme.supportingText).withValues(alpha: 0.38);
-    final effectiveTextColor =
-        enabled ? (textColor ?? theme.onBackground) : (textColor ?? theme.onBackground).withValues(alpha: 0.38);
+    final theme = ref;
+    final effectiveIconColor = enabled
+        ? (iconColor ?? theme.supportingText)
+        : (iconColor ?? theme.supportingText).withValues(alpha: 0.38);
+    final effectiveTextColor = enabled
+        ? (textColor ?? theme.onBackground)
+        : (textColor ?? theme.onBackground).withValues(alpha: 0.38);
 
     return Row(
       mainAxisSize: MainAxisSize.min,

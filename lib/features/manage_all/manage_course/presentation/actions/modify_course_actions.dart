@@ -74,7 +74,7 @@ class ModifyCourseActions {
   /// When user clicks Add Description.
   /// If there's a description, it shows the Description
   /// else, it brings the option to add description
-  void onClickAddDescription(BuildContext context, {required String currDescription}) {
+  void onClickAddDescription(BuildContext context, {required int courseDbId, required String currDescription}) {
     if (currDescription.isNotEmpty) {
       CustomDialog.show(
         context,
@@ -95,7 +95,7 @@ class ModifyCourseActions {
         barrierColor: Colors.black54,
         isScrollControlled: true,
         builder: (context) {
-          return EditCourseBottomSheet(isEditingDescription: true);
+          return EditCourseBottomSheet(courseDbId: courseDbId, isEditingDescription: true);
         },
       );
     }
@@ -126,8 +126,9 @@ class ModifyCourseActions {
     final XFile? pickedImage = await imagePicker.pickImage(source: ImageSource.gallery);
     if (context.mounted) CustomDialog.hide(context);
     if (pickedImage == null) {
-      if (context.mounted)
+      if (context.mounted) {
         UiUtils.showFlushBar(context, msg: "Oops, You didn't select an image!", vibe: FlushbarVibe.warning);
+      }
       return;
     }
 
@@ -146,7 +147,7 @@ class ModifyCourseActions {
   /// When the course image is clicked, it shows some options in a dialog the user can choose from.
   void onClickCourseImage(WidgetRef ref, {required Course course}) {
     final context = ref.context;
-    final iconColor = ref.theme.supportingText;
+    final iconColor = ref.supportingText;
     final List<AppActionDialogModel> dialogModels = [
       AppActionDialogModel(
         title: "View image",
@@ -185,19 +186,20 @@ class ModifyCourseActions {
       reverseTransitionDuration: Durations.short2,
       curve: CustomCurves.defaultIosSpring,
       barrierColor: Colors.black.withAlpha(220),
-      child: AppActionDialog(
-        leading: Padding(
-          padding: const EdgeInsets.only(left: 12, bottom: 16),
-          child: CustomText("Adjust image", fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-        actions: dialogModels,
-      ).animate().fadeIn().scaleXY(
-        begin: 0.9,
-        end: 1,
-        alignment: Alignment.topRight,
-        duration: Duration(milliseconds: 500),
-        curve: CustomCurves.defaultIosSpring,
-      ),
+      child:
+          AppActionDialog(
+            leading: Padding(
+              padding: const EdgeInsets.only(left: 12, bottom: 16),
+              child: CustomText("Adjust image", fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            actions: dialogModels,
+          ).animate().fadeIn().scaleXY(
+            begin: 0.9,
+            end: 1,
+            alignment: Alignment.topRight,
+            duration: Duration(milliseconds: 500),
+            curve: CustomCurves.defaultIosSpring,
+          ),
     );
   }
 }

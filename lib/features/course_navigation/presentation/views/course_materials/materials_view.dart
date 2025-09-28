@@ -1,17 +1,8 @@
-import 'dart:async';
-import 'dart:developer';
-
-import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:isar/isar.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
-import 'package:slidesync/domain/models/file_details.dart';
-import 'package:slidesync/domain/repos/course_repo/course_collection_repo.dart';
-import 'package:slidesync/domain/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/course_navigation/presentation/providers/course_materials_providers.dart';
 import 'package:slidesync/features/course_navigation/presentation/views/course_materials/content_card.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/views/modify_contents/empty_contents_view.dart';

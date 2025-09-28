@@ -1,25 +1,13 @@
 import 'dart:ui';
-import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/core/global_providers/global_providers.dart';
-import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
-import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
-import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/features/all_tabs/tab_library/presentation/actions/courses_view_actions.dart';
-import 'package:slidesync/features/all_tabs/tab_library/presentation/providers/courses_view_providers.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/providers/library_tab_view_providers.dart';
-import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view/library_search_view/library_search_view.dart';
-import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view/library_tab_view_app_bar/library_tab_view_filter_button.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view/library_tab_view_app_bar/library_tab_view_header_text.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view/library_tab_view_app_bar/library_tab_view_layout_button.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view/library_tab_view_app_bar/library_tab_view_search_button.dart';
 import 'package:slidesync/shared/assets/assets.dart';
-import 'package:slidesync/shared/common_widgets/app_popup_menu_button.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
 
 class LibraryTabViewAppBar extends ConsumerWidget {
   const LibraryTabViewAppBar({super.key});
@@ -29,7 +17,7 @@ class LibraryTabViewAppBar extends ConsumerWidget {
     const double maxHeight = 220;
     // const double maxHeight = 200;
     const double minHeight = kToolbarHeight;
-    final theme = ref.theme;
+    final theme = ref;
 
     return SliverAppBar(
       pinned: true,
@@ -91,7 +79,7 @@ class LibraryTabViewAppBar extends ConsumerWidget {
                                   children: [
                                     LibraryTabViewFilterButton(),
                                     LibraryTabViewLayoutButton(
-                                      isListLayoutProvider: LibraryTabViewProviders.cardViewType,
+                                      layoutProvider: LibraryTabViewProviders.cardViewType,
                                     ),
                                   ],
                                 ),

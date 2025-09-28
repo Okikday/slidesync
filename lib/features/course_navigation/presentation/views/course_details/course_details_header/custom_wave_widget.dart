@@ -4,8 +4,6 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:wave/config.dart';
-import 'package:wave/wave.dart';
 
 class CustomShapeWaveFilledWidget extends ConsumerWidget {
   final double progress;
@@ -26,7 +24,7 @@ class CustomShapeWaveFilledWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return Stack(
       children: [
         Positioned(
@@ -57,32 +55,32 @@ class CustomShapeWaveFilledWidget extends ConsumerWidget {
   }
 }
 
-class CustomWaveWidget extends ConsumerWidget {
-  final double progress;
-  final Color? backgroundColor;
-  const CustomWaveWidget({super.key, required this.progress, this.backgroundColor});
+// class CustomWaveWidget extends ConsumerWidget {
+//   final double progress;
+//   final Color? backgroundColor;
+//   const CustomWaveWidget({super.key, required this.progress, this.backgroundColor});
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
-    final double fill;
-    if (progress < 0.0 || progress > 1.0) {
-      fill = 0.0;
-    } else {
-      fill = 1.0 - progress;
-    }
-    return WaveWidget(
-      config: CustomConfig(
-        colors: [theme.primaryColor.withAlpha(50), theme.primaryColor.withAlpha(80), theme.primaryColor.withAlpha(30)],
-        durations: [5000, 4000, 3000],
-        heightPercentages: [fill - 0.01, fill + 0.01, fill + 0.05],
-      ),
-      backgroundColor: backgroundColor ?? theme.primaryColor.withAlpha(40),
-      size: Size(double.infinity, double.infinity),
-      waveAmplitude: 10,
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     final theme = ref;
+//     final double fill;
+//     if (progress < 0.0 || progress > 1.0) {
+//       fill = 0.0;
+//     } else {
+//       fill = 1.0 - progress;
+//     }
+//     return WaveWidget(
+//       config: CustomConfig(
+//         colors: [theme.primaryColor.withAlpha(50), theme.primaryColor.withAlpha(80), theme.primaryColor.withAlpha(30)],
+//         durations: [5000, 4000, 3000],
+//         heightPercentages: [fill - 0.01, fill + 0.01, fill + 0.05],
+//       ),
+//       backgroundColor: backgroundColor ?? theme.primaryColor.withAlpha(40),
+//       size: Size(double.infinity, double.infinity),
+//       waveAmplitude: 10,
+//     );
+//   }
+// }
 
 class Wave extends StatefulWidget {
   final double? value;

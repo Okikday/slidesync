@@ -1,22 +1,17 @@
 import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:another_flushbar/flushbar.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/utils/basic_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
-import 'package:slidesync/domain/models/file_details.dart';
-import 'package:slidesync/domain/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/views/add_contents/adding_content_overlay.dart';
 import 'package:slidesync/features/manage_all/manage_contents/usecases/add_contents_uc.dart';
-import 'package:slidesync/core/routes/routes.dart';
+import 'package:slidesync/core/routes/app_router.dart';
 import 'package:super_clipboard/super_clipboard.dart';
 
 enum AppClipboardContentType { empty, text, image, images, file, files, html, unsupported }
@@ -309,11 +304,7 @@ class AddContentsActions {
     }
   }
 
-  static void onClickToAddContentNoRef(
-    {
-    required CourseCollection collection,
-    required List<String> filePaths,
-  }) async {
+  static void onClickToAddContentNoRef({required CourseCollection collection, required List<String> filePaths}) async {
     ValueNotifier<String> valueNotifier = ValueNotifier("Offloading contents");
     final entry = OverlayEntry(
       builder: (context) => ValueListenableBuilder(

@@ -35,7 +35,7 @@ class StoreContentsUc {
       final String dirToStoreAt = collection.absolutePath;
       log("lol, we got here");
       for (var filePath in selectedContentPaths) {
-        log("${filePath}");
+        log(filePath);
         log("${File(filePath)}");
         final file = File(filePath);
         log("location 1");

@@ -1,18 +1,14 @@
-import 'dart:convert';
 import 'dart:developer';
 
-import 'package:crypto/crypto.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/features/manage_all/manage_contents/usecases/create_contents_uc/select_contents_uc.dart';
 import 'package:slidesync/features/manage_all/manage_contents/usecases/create_contents_uc/store_contents_uc.dart';
-import 'package:slidesync/core/routes/routes.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/core/routes/app_router.dart';
 
 class AddContentResultModel {
   final bool hasDuplicate;

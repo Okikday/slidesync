@@ -4,7 +4,6 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:heroine/heroine.dart';
 import 'package:slidesync/features/auth/presentation/onboarding_views/onboarding_1.dart';
 import 'package:slidesync/shared/assets/assets.dart';
 import 'package:slidesync/shared/common_widgets/scale_click_wrapper.dart';
@@ -15,7 +14,7 @@ class WelcomeView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),

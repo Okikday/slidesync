@@ -1,7 +1,6 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/global_providers/global_providers.dart';
 import 'package:slidesync/core/utils/util_functions.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/providers/library_tab_view_providers.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
@@ -24,7 +23,7 @@ class LibraryTabViewHeaderText extends ConsumerWidget {
           fontSize: (minHeight * percentScroll).clamp(20.0, 26),
           fontWeight: FontWeight.bold,
           textAlign: TextAlign.center,
-          color: ref.theme.onBackground,
+          color: ref.onBackground,
         );
         final Size textSize = UtilFunctions.getTextSize(textWidget.data, textWidget.effectiveStyle(context));
 

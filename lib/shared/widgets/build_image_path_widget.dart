@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -87,9 +86,21 @@ class _BuildImagePathWidgetState extends ConsumerState<BuildImagePathWidget> {
     if (!fileDetails.containsFilePath) return fallbackWidget;
 
     if (fileDetails.filePath.isNotEmpty && imageBytes != null) {
-      return ImageFromMemory(imageBytes: imageBytes, fit: fit, width: width, height: height, fallbackWidget: fallbackWidget).animate().fadeIn();
+      return ImageFromMemory(
+        imageBytes: imageBytes,
+        fit: fit,
+        width: width,
+        height: height,
+        fallbackWidget: fallbackWidget,
+      ).animate().fadeIn();
     } else if (fileDetails.urlPath.isNotEmpty) {
-      return ImageFromNetwork(fileDetails: fileDetails, fit: fit, width: width, height: height, fallbackWidget: fallbackWidget).animate().fadeIn();;
+      return ImageFromNetwork(
+        fileDetails: fileDetails,
+        fit: fit,
+        width: width,
+        height: height,
+        fallbackWidget: fallbackWidget,
+      ).animate().fadeIn();
     }
 
     return fallbackWidget;
@@ -127,7 +138,7 @@ class ImageFromNetwork extends StatelessWidget {
   }
 }
 
-class ImageFromMemory extends StatelessWidget {
+class ImageFromMemory extends ConsumerWidget {
   const ImageFromMemory({
     super.key,
     required this.imageBytes,
@@ -144,23 +155,22 @@ class ImageFromMemory extends StatelessWidget {
   final Widget fallbackWidget;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Image.memory(
       imageBytes!,
       fit: fit,
       width: width,
       height: height,
       frameBuilder: (BuildContext context, Widget child, int? frame, bool wasSynchronouslyLoaded) {
-        
         if (wasSynchronouslyLoaded || frame != null) {
           return child;
         } else {
-          return SizedBox.expand(child: ColoredBox(color: context.theme.primaryColor.withAlpha(40)))
+          return SizedBox.expand(child: ColoredBox(color: ref.primaryColor.withAlpha(40)))
               .animate(onComplete: (controller) => controller.repeat())
               .shimmer(duration: const Duration(seconds: 1), curve: Curves.decelerate)
               .blurXY(begin: 2, end: 0, duration: Duration(seconds: 1))
               .animate(onComplete: (controller) => controller.repeat(reverse: true))
-              .tint(color: context.theme.primaryColor.withAlpha(10), duration: Duration(seconds: 1));
+              .tint(color: ref.primaryColor.withAlpha(10), duration: Duration(seconds: 1));
         }
       },
       errorBuilder: (context, error, stackTrace) => fallbackWidget,

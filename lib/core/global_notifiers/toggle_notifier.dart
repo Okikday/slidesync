@@ -1,7 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/core/global_notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 
-class ToggleNotifier extends AutoDisposeAsyncNotifier<bool> {
+class ToggleNotifier extends AsyncBoolNotifier {
   ToggleNotifier(this._key, {this.defaultValue = false});
 
   final String _key;
@@ -13,6 +14,7 @@ class ToggleNotifier extends AutoDisposeAsyncNotifier<bool> {
     return value is bool ? value : defaultValue;
   }
 
+  @override
   Future<void> toggle() async {
     final current = !(state.value ?? defaultValue);
     state = AsyncData(current);

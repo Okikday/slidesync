@@ -17,15 +17,14 @@ class BuildAddFromClipboardDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final theme = ref.theme;
+    // final theme = ref;
     final contentType = clipboardData.contentType;
 
     switch (contentType) {
       case AppClipboardContentType.image || AppClipboardContentType.images:
-        final Result result =
-            contentType == AppClipboardContentType.image
-                ? Result.tryRun<Uint8List>(() => clipboardData.data as Uint8List)
-                : Result.tryRun<List<Uint8List>>(() => clipboardData.data as List<Uint8List>);
+        final Result result = contentType == AppClipboardContentType.image
+            ? Result.tryRun<Uint8List>(() => clipboardData.data as Uint8List)
+            : Result.tryRun<List<Uint8List>>(() => clipboardData.data as List<Uint8List>);
         if (!result.isSuccess || result.data == null || result.data!.isEmpty) {
           closeOverlay();
           return const SizedBox();
@@ -90,7 +89,7 @@ class _DialogScaffold extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     const double size = 400;
     return Material(
       color: Colors.transparent,
@@ -137,7 +136,7 @@ class _ImageDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return _DialogScaffold(
       closeOverlay: closeOverlay,
       child: Column(
@@ -181,7 +180,7 @@ class _ActionButtons extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [

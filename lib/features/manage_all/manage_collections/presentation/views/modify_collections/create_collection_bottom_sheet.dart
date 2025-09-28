@@ -32,7 +32,7 @@ class _CreateCollectionBottomSheetState extends ConsumerState<CreateCollectionBo
   @override
   Widget build(BuildContext context) {
     final ModifyCollectionActions modifyCollectionActions = ModifyCollectionActions();
-    final theme = ref.theme;
+    final theme = ref;
 
     return Stack(
       children: [
@@ -74,7 +74,12 @@ class _CreateCollectionBottomSheetState extends ConsumerState<CreateCollectionBo
                     // Handle outcome
                     if (outcome == null) {
                       if (context.mounted) CustomDialog.hide(context);
-                      if (context.mounted) await UiUtils.showFlushBar(context, msg: "Added $text to Collections!", vibe: FlushbarVibe.success);
+                      if (context.mounted){
+                        await UiUtils.showFlushBar(
+                          context,
+                          msg: "Added $text to Collections!",
+                          vibe: FlushbarVibe.success,
+                        );}
                     } else if (outcome.isEmpty) {
                       final String message;
                       if (text.isEmpty) {
@@ -104,15 +109,10 @@ class _CreateCollectionBottomSheetState extends ConsumerState<CreateCollectionBo
                     }
                   },
                   inputContentPadding: EdgeInsets.symmetric(horizontal: 12.0),
-                  inputTextStyle: TextStyle(
-                    fontSize: 15,
-                    color: theme.onBackground,
-                  ),
+                  inputTextStyle: TextStyle(fontSize: 15, color: theme.onBackground),
                   cursorColor: theme.primaryColor,
                   backgroundColor: Colors.transparent,
-                  border: UnderlineInputBorder(
-                    borderSide: BorderSide(color: theme.primaryColor),
-                  ),
+                  border: UnderlineInputBorder(borderSide: BorderSide(color: theme.primaryColor)),
                   // alwaysShowSuffixIcon: true,
                   // suffixIcon: Padding(
                   //   padding: const EdgeInsets.only(left: 8.0, right: 10.0),

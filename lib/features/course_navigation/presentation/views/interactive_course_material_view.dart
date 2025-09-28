@@ -10,7 +10,6 @@ import 'package:slidesync/domain/models/file_details.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/sub/course_collection.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:slidesync/shared/styles/colors.dart';
 
 class InteractiveCourseMaterialView extends ConsumerWidget {
   final CourseCollection collection;
@@ -18,9 +17,10 @@ class InteractiveCourseMaterialView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final double boxDimension =
-        context.deviceHeight > context.deviceWidth ? context.deviceWidth.clamp(120, 250) : context.deviceHeight.clamp(120, 250);
-        final theme = ref.theme;
+    final double boxDimension = context.deviceHeight > context.deviceWidth
+        ? context.deviceWidth.clamp(120, 250)
+        : context.deviceHeight.clamp(120, 250);
+    final theme = ref;
 
     return AnnotatedRegion(
       value: UiUtils.getSystemUiOverlayStyle(theme.background.withValues(alpha: 0.4), context.isDarkMode),
@@ -35,7 +35,7 @@ class InteractiveCourseMaterialView extends ConsumerWidget {
                 collection.collectionTitle,
                 fontWeight: FontWeight.bold,
                 fontSize: 16,
-                color: ref.theme.onBackground,
+                color: ref.onBackground,
               ),
               Expanded(
                 child: Center(
@@ -63,7 +63,7 @@ class InteractiveCourseMaterialView extends ConsumerWidget {
                           height: boxDimension,
                           clipBehavior: Clip.antiAlias,
                           decoration: BoxDecoration(
-                            color: ref.theme.altBackgroundPrimary,
+                            color: ref.altBackgroundPrimary,
                             borderRadius: BorderRadius.circular(24),
                           ),
                           child: Stack(
@@ -78,7 +78,10 @@ class InteractiveCourseMaterialView extends ConsumerWidget {
                                 ),
                               ),
                               Positioned.fill(
-                                child: BackdropFilter(filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4), child: SizedBox.expand()),
+                                child: BackdropFilter(
+                                  filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                                  child: SizedBox.expand(),
+                                ),
                               ),
                             ],
                           ),
@@ -96,7 +99,7 @@ class InteractiveCourseMaterialView extends ConsumerWidget {
                     shape: const CircleBorder(),
                     pixelHeight: 56,
                     pixelWidth: 56,
-                    child: Icon(Iconsax.edit_copy, color: ref.theme.onBackground),
+                    child: Icon(Iconsax.edit_copy, color: ref.onBackground),
                   ),
                 ],
               ),

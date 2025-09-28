@@ -6,11 +6,11 @@ class CourseContentRepo {
   static final IsarData<CourseContent> _isarData = IsarData.instance<CourseContent>();
   static Future<Isar> get _isar async => await IsarData.isarFuture;
 
-  static Future<QueryBuilder<CourseContent, CourseContent, QAfterFilterCondition>> _queryById(
-    String contentHash,
-  ) async {
-    return (await _isarData.query<CourseContent>((q) => q.idGreaterThan(0))).filter().contentHashEqualTo(contentHash);
-  }
+  // static Future<QueryBuilder<CourseContent, CourseContent, QAfterFilterCondition>> _queryById(
+  //   String contentHash,
+  // ) async {
+  //   return (await _isarData.query<CourseContent>((q) => q.idGreaterThan(0))).filter().contentHashEqualTo(contentHash);
+  // }
 
   static Future<QueryBuilder<CourseContent, CourseContent, QFilterCondition>> get filter async =>
       (await _isar).courseContents.filter();

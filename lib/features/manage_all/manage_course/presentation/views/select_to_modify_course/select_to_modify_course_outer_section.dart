@@ -3,7 +3,9 @@ import 'dart:developer';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/routes/app_route_navigator.dart';
+import 'package:go_router/go_router.dart';
+import 'package:slidesync/core/global_notifiers/primitive_type_notifiers.dart';
+import 'package:slidesync/core/routes/routes.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/domain/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/manage_all/manage_course/presentation/views/select_to_modify_course/empty_courses_view.dart';
@@ -21,7 +23,7 @@ class SelectToModifyCourseOuterSection extends ConsumerStatefulWidget {
   });
 
   final bool isSelecting;
-  final AutoDisposeStateProvider<Map<int, bool>> selectedCoursesIdProvider;
+  final NotifierProvider<ImpliedNotifier<Map<int, bool>>, Map<int, bool>> selectedCoursesIdProvider;
   final Map<int, bool> selectedCoursesIdMap;
 
   @override
@@ -49,10 +51,11 @@ class _SelectToModifyCourseOuterSectionState extends ConsumerState<SelectToModif
     return CustomScrollView(
       slivers: [
         if (selectedCoursesIdMap.isNotEmpty && selectedCoursesIdMap.containsValue(true))
-          PinnedHeaderSliver(child: SelectedItemsCountPopUp(selectedItemsCount: selectedCoursesIdMap.values.where((v) => v).length)),
+          PinnedHeaderSliver(
+            child: SelectedItemsCountPopUp(selectedItemsCount: selectedCoursesIdMap.values.where((v) => v).length),
+          ),
         asyncStreamedCourses.when(
           data: (data) {
-
             if (data.isEmpty) {
               return EmptyCoursesView();
             }
@@ -74,36 +77,40 @@ class _SelectToModifyCourseOuterSectionState extends ConsumerState<SelectToModif
                     syncImagePath: course.imageLocationJson,
                     onTap: () {
                       if (widget.isSelecting) {
-                        final selectedCoursesIdNotifier = ref.read(widget.selectedCoursesIdProvider.notifier);
-                        if (selectedCoursesIdNotifier.state[course.id] == null) {
-                          selectedCoursesIdNotifier.update((cb) => {...selectedCoursesIdMap, course.id: true});
+                        final selectedCoursesId = ref.read(widget.selectedCoursesIdProvider);
+                        if (selectedCoursesId[course.id] == null) {
+                          ref
+                              .read(widget.selectedCoursesIdProvider.notifier)
+                              .update((cb) => {...selectedCoursesIdMap, course.id: true});
                         } else {
-                          selectedCoursesIdNotifier.update(
-                            (cb) => {...selectedCoursesIdMap, course.id: !selectedCoursesIdNotifier.state[course.id]!},
-                          );
+                          ref
+                              .read(widget.selectedCoursesIdProvider.notifier)
+                              .update((cb) => {...selectedCoursesIdMap, course.id: !selectedCoursesId[course.id]!});
                         }
-                        if (!selectedCoursesIdNotifier.state.containsValue(true)) {
-                          selectedCoursesIdNotifier.update((cb) => <int, bool>{});
+                        if (!selectedCoursesId.containsValue(true)) {
+                          ref.read(widget.selectedCoursesIdProvider.notifier).update((cb) => <int, bool>{});
                         }
                         return;
                       }
                       Navigator.of(context).pop();
 
                       // ref.read(CourseProviders.courseProvider.notifier).update(course);
-                      AppRouteNavigator.to(context).modifyCourseRoute(course);
+                      context.pushNamed(Routes.modifyCourse.name, extra: course);
                     },
                     onSelected: () {
                       log("Selection");
-                      final selectedCoursesIdNotifier = ref.read(widget.selectedCoursesIdProvider.notifier);
-                      if (selectedCoursesIdNotifier.state[course.id] == null) {
-                        selectedCoursesIdNotifier.update((cb) => {...selectedCoursesIdMap, course.id: true});
+                      final selectedCoursesId = ref.read(widget.selectedCoursesIdProvider);
+                      if (selectedCoursesId[course.id] == null) {
+                        ref
+                            .read(widget.selectedCoursesIdProvider.notifier)
+                            .update((cb) => {...selectedCoursesIdMap, course.id: true});
                       } else {
-                        selectedCoursesIdNotifier.update(
-                          (cb) => {...selectedCoursesIdMap, course.id: !selectedCoursesIdNotifier.state[course.id]!},
-                        );
+                        ref
+                            .read(widget.selectedCoursesIdProvider.notifier)
+                            .update((cb) => {...selectedCoursesIdMap, course.id: !selectedCoursesId[course.id]!});
                       }
-                      if (!selectedCoursesIdNotifier.state.containsValue(true)) {
-                        selectedCoursesIdNotifier.update((cb) => <int, bool>{});
+                      if (!selectedCoursesId.containsValue(true)) {
+                        ref.read(widget.selectedCoursesIdProvider.notifier).update((cb) => <int, bool>{});
                       }
                     },
                   ),
@@ -111,14 +118,18 @@ class _SelectToModifyCourseOuterSectionState extends ConsumerState<SelectToModif
               },
             );
           },
-          error:
-              (_, __) => SliverToBoxAdapter(
-                child: SizedBox(height: context.deviceHeight / 2 - 24, child: Center(child: const Icon(Icons.error_rounded))),
-              ),
-          loading:
-              () => SliverToBoxAdapter(
-                child: SizedBox(height: context.deviceHeight / 2 - 48, child: Center(child: LoadingView(msg: "Loading Courses..."))),
-              ),
+          error: (_, __) => SliverToBoxAdapter(
+            child: SizedBox(
+              height: context.deviceHeight / 2 - 24,
+              child: Center(child: const Icon(Icons.error_rounded)),
+            ),
+          ),
+          loading: () => SliverToBoxAdapter(
+            child: SizedBox(
+              height: context.deviceHeight / 2 - 48,
+              child: Center(child: LoadingView(msg: "Loading Courses...")),
+            ),
+          ),
         ),
 
         SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),

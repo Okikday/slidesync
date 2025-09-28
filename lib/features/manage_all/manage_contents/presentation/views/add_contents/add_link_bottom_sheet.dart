@@ -1,23 +1,18 @@
-import 'dart:developer';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_link_previewer/flutter_link_previewer.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/core/routes/routes.dart';
+import 'package:slidesync/core/routes/app_router.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/domain/models/file_details.dart';
-import 'package:slidesync/features/manage_all/manage_contents/presentation/actions/add_contents_actions.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/actions/add_link_actions.dart';
 import 'package:slidesync/features/manage_all/manage_contents/domain/repos/get_content_repo/get_content_repo.dart';
 import 'package:slidesync/shared/common_widgets/input_text_bottom_sheet.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 import 'package:slidesync/shared/widgets/build_image_path_widget.dart';
-
-
 
 class AddLinkBottomSheet extends ConsumerStatefulWidget {
   final CourseCollection collection;
@@ -87,7 +82,7 @@ class _AddLinkBottomSheetState extends ConsumerState<AddLinkBottomSheet> {
             clipBehavior: Clip.antiAlias,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(16),
-              boxShadow: [BoxShadow(color: ref.theme.onBackground.withValues(alpha: 0.2))],
+              boxShadow: [BoxShadow(color: ref.onBackground.withValues(alpha: 0.2))],
             ),
             child: ValueListenableBuilder(
               valueListenable: previewDataNotifier,
@@ -106,7 +101,7 @@ class _AddLinkBottomSheetState extends ConsumerState<AddLinkBottomSheet> {
                         description: previewData?.description ?? prevDetails.description,
                         previewUrl: previewData?.previewUrl ?? prevDetails.previewUrl,
                       );
-                      
+
                       return BuildImagePathWidget(
                         fileDetails: FileDetails(urlPath: snapshot.data!.previewUrl!),
                         fit: BoxFit.cover,
@@ -127,8 +122,8 @@ class _AddLinkBottomSheetState extends ConsumerState<AddLinkBottomSheet> {
           bottom: context.bottomPadding + 120,
           child: CustomElevatedButton(
             label: "Paste from Clipboard",
-            backgroundColor: ref.theme.altBackgroundPrimary,
-            textColor: ref.theme.primaryColor,
+            backgroundColor: ref.altBackgroundPrimary,
+            textColor: ref.primaryColor,
             onClick: () => AddLinkActions.pasteFromClipboard(linkInputController),
           ),
         ),

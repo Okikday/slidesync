@@ -1,9 +1,10 @@
 
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/core/global_notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 
-class CardViewTypeNotifier extends AutoDisposeAsyncNotifier<int> {
+class CardViewTypeNotifier extends AsyncIntNotifier {
   CardViewTypeNotifier(this._key, this._maxType);
 
   final String _key;

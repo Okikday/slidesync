@@ -1,6 +1,7 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/core/global_notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 
 class InputCourseTitleField extends ConsumerWidget {
@@ -10,13 +11,13 @@ class InputCourseTitleField extends ConsumerWidget {
     required this.isCourseCodeFieldVisible,
     this.viewScrollController,
   });
-  final AutoDisposeStateProvider<bool> isCourseCodeFieldVisible;
+  final NotifierProvider<BoolNotifier, bool> isCourseCodeFieldVisible;
   final TextEditingController courseNameController;
   final ScrollController? viewScrollController;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return CustomTextfield(
       controller: courseNameController,
       backgroundColor: theme.surface.withValues(alpha: 0.8),
@@ -43,11 +44,9 @@ class InputCourseTitleField extends ConsumerWidget {
         borderRadius: 12,
         overlayColor: theme.primaryColor.withAlpha(40),
         onClick: () async {
-          final bool isCourseCodeVisible = ref.read(isCourseCodeFieldVisible.notifier).state;
+          final bool isCourseCodeVisible = ref.read(isCourseCodeFieldVisible);
           if (isCourseCodeVisible) FocusScope.of(context).unfocus();
-          ref
-              .read(isCourseCodeFieldVisible.notifier)
-              .update((cb) => !ref.read(isCourseCodeFieldVisible.notifier).state);
+          ref.read(isCourseCodeFieldVisible.notifier).update((cb) => !isCourseCodeVisible);
           if (FocusScope.of(context).hasFocus && viewScrollController != null) {
             viewScrollController?.animateTo(
               viewScrollController!.position.maxScrollExtent + 150,

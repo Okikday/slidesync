@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/features/main/presentation/providers/main_providers.dart';
+import 'package:slidesync/features/all_tabs/main/main_view_controller.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 
 class MainViewAnnotatedRegion extends ConsumerWidget {
@@ -10,16 +10,17 @@ class MainViewAnnotatedRegion extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
-    final Brightness brightness = theme.brightness;
+    final theme = ref;
+    final Brightness brightness = ref.brightness;
     return AnnotatedRegion(
       value: SystemUiOverlayStyle(
-        statusBarColor:
-            ref.watch(MainProviders.isMainScrolledProvider) ? theme.secondaryColor.withAlpha(100) : theme.background,
+        statusBarColor: ref.watch(MainViewController.isMainScrolledProvider)
+            ? theme.secondaryColor.withAlpha(100)
+            : theme.background,
         statusBarBrightness: brightness,
         statusBarIconBrightness: brightness,
         systemNavigationBarIconBrightness: brightness,
-        systemNavigationBarColor: context.theme.cardColor,
+        systemNavigationBarColor: ref.cardColor,
       ),
 
       child: child,

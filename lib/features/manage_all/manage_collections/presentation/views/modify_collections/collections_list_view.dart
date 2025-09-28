@@ -2,8 +2,10 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/core/routes/app_route_navigator.dart';
+import 'package:slidesync/core/global_providers/data_providers/course_providers.dart';
+import 'package:slidesync/core/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/features/course_navigation/presentation/views/course_details/course_details_collection_section.dart';
@@ -20,7 +22,7 @@ class CollectionsListView extends ConsumerWidget {
     required this.searchCollectionTextNotifier,
   });
   final int courseDbId;
-  final AsyncValue<Course> asyncCourseValue;
+  final AsyncValue<Course?> asyncCourseValue;
   final ValueNotifier<String> searchCollectionTextNotifier;
 
   @override
@@ -30,17 +32,18 @@ class CollectionsListView extends ConsumerWidget {
       builder: (context, value, child) {
         return asyncCourseValue.when(
           data: (data) {
+            final course = data ?? defaultCourse;
             final searchText = searchCollectionTextNotifier.value;
             final collections =
                 (searchText.isEmpty
-                        ? data.collections
-                        : data.collections.where(
-                          (e) => e.collectionTitle.toLowerCase().contains(
-                            searchCollectionTextNotifier.value.toLowerCase(),
-                          ),
-                        ))
+                        ? course.collections
+                        : course.collections.where(
+                            (e) => e.collectionTitle.toLowerCase().contains(
+                              searchCollectionTextNotifier.value.toLowerCase(),
+                            ),
+                          ))
                     .toList();
-            if (data.collections.isEmpty) {
+            if (course.collections.isEmpty) {
               return EmptyCollectionsView(
                 onClickAddCollection: () async {
                   // AppRouteNavigator.to(context).modifyCollectionsRoute(course);
@@ -50,7 +53,7 @@ class CollectionsListView extends ConsumerWidget {
                       context,
                       canPop: true,
                       barrierColor: Colors.black.withAlpha(150),
-                      child: CreateCollectionBottomSheet(courseDbId: data.id),
+                      child: CreateCollectionBottomSheet(courseDbId: course.id),
                     );
                   }
                 },
@@ -72,11 +75,7 @@ class CollectionsListView extends ConsumerWidget {
                       );
                     },
                     onTap: () {
-                      AppRouteNavigator.to(context).modifyContentsRoute((
-                        collection: collection,
-                        courseDbId: courseDbId,
-                        courseTitle: (courseCode: "", courseName: "CourseName"),
-                      ));
+                      context.pushNamed(Routes.modifyContents.name, extra: collection);
                     },
                   ).animate().fadeIn().slideY(
                     begin: (index / collections.length + 1) * 0.4,
@@ -88,23 +87,21 @@ class CollectionsListView extends ConsumerWidget {
               ),
             );
           },
-          error:
-              (error, st) => SliverToBoxAdapter(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    RotatedBox(quarterTurns: 2, child: Icon(Iconsax.info_circle, size: 48)),
-                    CustomText("Error loading course!"),
-                  ],
-                ),
-              ),
-          loading:
-              () => SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                sliver: SliverToBoxAdapter(child: LoadingShimmerListView()),
-              ),
+          error: (error, st) => SliverToBoxAdapter(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                RotatedBox(quarterTurns: 2, child: Icon(Iconsax.info_circle, size: 48)),
+                CustomText("Error loading course!"),
+              ],
+            ),
+          ),
+          loading: () => SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            sliver: SliverToBoxAdapter(child: LoadingShimmerListView()),
+          ),
         );
-      }
+      },
     );
   }
 }

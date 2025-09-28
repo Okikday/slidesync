@@ -3,12 +3,14 @@ import 'dart:developer';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/routes/app_route_navigator.dart';
+import 'package:go_router/go_router.dart';
+import 'package:slidesync/core/global_notifiers/primitive_type_notifiers.dart';
+import 'package:slidesync/core/routes/routes.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/features/manage_all/manage_course/usecases/create_course_uc/create_course_uc.dart';
-import 'package:slidesync/core/routes/routes.dart';
+import 'package:slidesync/core/routes/app_router.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 
 class CreateCourseButton extends ConsumerWidget {
@@ -22,8 +24,8 @@ class CreateCourseButton extends ConsumerWidget {
 
   final TextEditingController courseNameController;
   final TextEditingController courseCodeController;
-  final AutoDisposeStateProvider<bool> isCourseCodeFieldVisible;
-  final AutoDisposeStateProvider<String?> courseImagePathProvider;
+  final NotifierProvider<BoolNotifier, bool> isCourseCodeFieldVisible;
+  final NotifierProvider<ImpliedNotifierN, String?> courseImagePathProvider;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -32,7 +34,7 @@ class CreateCourseButton extends ConsumerWidget {
       left: 0,
       right: 0,
       child: CustomElevatedButton(
-        backgroundColor: ref.theme.primaryColor,
+        backgroundColor: ref.primaryColor,
         label: "Create Course",
         textColor: Colors.white,
         textSize: 14,
@@ -42,7 +44,11 @@ class CreateCourseButton extends ConsumerWidget {
         onClick: () async {
           final String courseName = courseNameController.text.trim();
           final String courseCode = courseCodeController.text.trim();
-          final String? errorString = checkIfCanCreateCourse(courseName, courseCode, ref.watch(isCourseCodeFieldVisible));
+          final String? errorString = checkIfCanCreateCourse(
+            courseName,
+            courseCode,
+            ref.watch(isCourseCodeFieldVisible),
+          );
           if (errorString != null) {
             UiUtils.showFlushBar(
               context,
@@ -56,10 +62,15 @@ class CreateCourseButton extends ConsumerWidget {
           FocusScope.of(context).unfocus();
 
           if (context.mounted) {
-            UiUtils.showLoadingDialog(context, message: "Adding Course...", backgroundColor: Colors.white10, blurSigma: Offset(2, 2));
+            UiUtils.showLoadingDialog(
+              context,
+              message: "Adding Course...",
+              backgroundColor: Colors.white10,
+              blurSigma: Offset(2, 2),
+            );
           }
 
-          final String? courseImagePath = ref.read(courseImagePathProvider.notifier).state;
+          final String? courseImagePath = ref.read(courseImagePathProvider);
 
           final Result<Course> createCourseOutcome = await CreateCourseUc().createCourseAction(
             courseName: courseName,
@@ -74,7 +85,7 @@ class CreateCourseButton extends ConsumerWidget {
                 if (context.mounted) {
                   Navigator.of(context).pop();
                   log("${context.mounted}");
-                  AppRouteNavigator.to(context).modifyCourseRoute(value);
+                  context.pushNamed(Routes.modifyCourse.name, extra: value);
                   await Future.delayed(Durations.short4);
                   if (rootNavigatorKey.currentContext != null && rootNavigatorKey.currentContext!.mounted) {
                     await UiUtils.showFlushBar(
@@ -99,8 +110,17 @@ class CreateCourseButton extends ConsumerWidget {
   }
 }
 
-String? checkIfCanCreateCourse(String courseName, String courseCode, bool isCourseCodeVisible, {int minLength = 2, int maxLength = 64}) {
-  if (courseName.isEmpty || courseName.length < minLength || courseName.length > maxLength || double.tryParse(courseName) != null) {
+String? checkIfCanCreateCourse(
+  String courseName,
+  String courseCode,
+  bool isCourseCodeVisible, {
+  int minLength = 2,
+  int maxLength = 64,
+}) {
+  if (courseName.isEmpty ||
+      courseName.length < minLength ||
+      courseName.length > maxLength ||
+      double.tryParse(courseName) != null) {
     if (courseName.isEmpty) return "Kindly fill the course title field!";
     if (courseName.length < 2) return "Course title too short!";
     if (courseName.length > 64) return "Course title too long!";

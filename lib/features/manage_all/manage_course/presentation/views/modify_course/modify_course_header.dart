@@ -1,7 +1,6 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:heroine/heroine.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/domain/models/file_details.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
@@ -36,7 +35,7 @@ class ModifyCourseHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return SliverToBoxAdapter(
       child: Column(
         spacing: 24.0,
@@ -106,31 +105,26 @@ class ModifyCourseHeader extends ConsumerWidget {
                 ),
               ),
               ConstantSizing.rowSpacingLarge,
-              Heroine(
-                tag: "PreviewModifyCourseImageDialog => $courseFileDetails",
-                placeholderBuilder: (context, heroSize, child) => child,
-                spring: Spring.snappy,
-                child: Container(
-                  width: 80,
-                  height: 80,
-                  clipBehavior: Clip.antiAlias,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    boxShadow: [BoxShadow(color: theme.altBackgroundPrimary, spreadRadius: 2, blurRadius: 3)],
-                  ),
-                  child: GestureDetector(
-                    onTap: onClickImage,
-                    onLongPress: onLongPressImage,
-                    child: ColoredBox(
-                      color: theme.altBackgroundPrimary,
-                      child: SizedBox.square(
-                        dimension: 80,
-                        child: BuildImagePathWidget(
-                          fileDetails: courseFileDetails.fileDetails,
-                          fallbackWidget: Icon(
-                            Iconsax.document,
-                            color: context.isDarkMode ? theme.primaryColor : theme.primaryColor,
-                          ),
+              Container(
+                width: 80,
+                height: 80,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  boxShadow: [BoxShadow(color: theme.altBackgroundPrimary, spreadRadius: 2, blurRadius: 3)],
+                ),
+                child: GestureDetector(
+                  onTap: onClickImage,
+                  onLongPress: onLongPressImage,
+                  child: ColoredBox(
+                    color: theme.altBackgroundPrimary,
+                    child: SizedBox.square(
+                      dimension: 80,
+                      child: BuildImagePathWidget(
+                        fileDetails: courseFileDetails.fileDetails,
+                        fallbackWidget: Icon(
+                          Iconsax.document,
+                          color: context.isDarkMode ? theme.primaryColor : theme.primaryColor,
                         ),
                       ),
                     ),

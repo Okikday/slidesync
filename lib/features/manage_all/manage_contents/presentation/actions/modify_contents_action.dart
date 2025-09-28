@@ -4,7 +4,7 @@ import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/sub/course_content.dart';
 import 'package:slidesync/features/manage_all/manage_contents/usecases/modify_content_uc.dart';
-import 'package:slidesync/core/routes/routes.dart';
+import 'package:slidesync/core/routes/app_router.dart';
 
 class ModifyContentsAction {
   Future<String?> onDeleteContent(CourseContent content, {int? courseDbId}) async {

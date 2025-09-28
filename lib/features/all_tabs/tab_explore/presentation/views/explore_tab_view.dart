@@ -18,7 +18,7 @@ class ExploreTabView extends ConsumerStatefulWidget {
 class _ExploreTabViewState extends ConsumerState<ExploreTabView> {
   @override
   Widget build(BuildContext context) {
-    final theme = ref.theme;
+    final theme = ref;
 
     return Stack(
       children: [
@@ -46,7 +46,7 @@ class _ExploreTabViewState extends ConsumerState<ExploreTabView> {
                 onClick: () {},
                 child: CustomText(
                   'Welcome to Explore',
-                  color: ref.theme.onPrimary,
+                  color: ref.onPrimary,
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
@@ -59,7 +59,7 @@ class _ExploreTabViewState extends ConsumerState<ExploreTabView> {
                     onClick: () {
                       Navigator.push(context, PageAnimation.pageRouteBuilder(FileManagerPage()));
                     },
-                    child: CustomText('File Manager page', color: ref.theme.onBackground),
+                    child: CustomText('File Manager page', color: ref.onBackground),
                   ),
                 ),
             ],

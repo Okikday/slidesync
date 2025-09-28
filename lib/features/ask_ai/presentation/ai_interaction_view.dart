@@ -54,7 +54,7 @@ class _AiInteractionViewState extends ConsumerState<AiInteractionView> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.theme;
+    final theme = ref;
     return ref
         .watch(userIdProvider)
         .when(
@@ -200,7 +200,7 @@ class _AiInteractionViewState extends ConsumerState<AiInteractionView> {
                                     hintStyle: TextStyle(color: theme.onBackground.withValues(alpha: 0.6)),
                                     inputTextStyle: TextStyle(fontSize: 16),
                                     inputContentPadding: EdgeInsets.only(left: 12, bottom: 20, top: 20),
-                                    backgroundColor: theme.background.blendColor(ref.isDarkMode ? 0.2 : 0.8),
+                                    backgroundColor: theme.background.lightenColor(ref.isDarkMode ? 0.2 : 0.8),
                                     maxLines: 4,
                                     border: OutlineInputBorder(
                                       borderSide: BorderSide.none,

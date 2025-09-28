@@ -1,10 +1,9 @@
-
 import 'package:another_flushbar/flushbar.dart';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/core/routes/routes.dart';
+import 'package:slidesync/core/routes/app_router.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/sub/course_collection.dart';
 import 'package:slidesync/features/manage_all/manage_collections/presentation/actions/modify_collection_actions.dart';
@@ -37,8 +36,7 @@ class _EditCollectionTitleBottomSheetState extends ConsumerState<EditCollectionT
   Widget build(BuildContext context) {
     final ModifyCollectionActions modifyCollectionActions = ModifyCollectionActions();
     final collection = widget.collection;
-    final theme = ref.theme;
-    
+    final theme = ref;
 
     return Stack(
       children: [
@@ -71,30 +69,31 @@ class _EditCollectionTitleBottomSheetState extends ConsumerState<EditCollectionT
                   selectionHandleColor: theme.primaryColor,
                   // onTapOutside: () {},
                   onSubmitted: (text) async {
-                    
                     // Create new collection
                     final outcome = await modifyCollectionActions.renameCollectionAction(
-                      collection.copyWith(collectionTitle: text)
+                      collection.copyWith(collectionTitle: text),
                     );
-                    
 
                     // Handle outcome
-                    if (outcome == null &&
-                        text.trim() != collection.collectionTitle &&
-                        text.trim().isNotEmpty) {
+                    if (outcome == null && text.trim() != collection.collectionTitle && text.trim().isNotEmpty) {
                       if (context.mounted) {
                         context.pop();
                       } else {
                         rootNavigatorKey.currentContext?.pop();
                       }
-                      if (context.mounted) await UiUtils.showFlushBar(context, msg: "Renamed ${collection.collectionTitle} to $text!", vibe: FlushbarVibe.success);
-                    } else{
+                      if (context.mounted)
+                        {await UiUtils.showFlushBar(
+                          context,
+                          msg: "Renamed ${collection.collectionTitle} to $text!",
+                          vibe: FlushbarVibe.success,
+                        );}
+                    } else {
                       final String message;
                       if (text.isEmpty) {
                         message = "Try typing into the Field!";
                       } else if (text.length < 2) {
                         message = "Text input is too short!";
-                      } else if(text.trim() == collection.collectionTitle){
+                      } else if (text.trim() == collection.collectionTitle) {
                         message = "Try inputting a new different title";
                       } else {
                         message = "Invalid input!";
@@ -110,15 +109,10 @@ class _EditCollectionTitleBottomSheetState extends ConsumerState<EditCollectionT
                     }
                   },
                   inputContentPadding: EdgeInsets.symmetric(horizontal: 12.0),
-                  inputTextStyle: TextStyle(
-                    fontSize: 15,
-                    color: theme.onBackground,
-                  ),
+                  inputTextStyle: TextStyle(fontSize: 15, color: theme.onBackground),
                   cursorColor: theme.primaryColor,
                   backgroundColor: Colors.transparent,
-                  border: UnderlineInputBorder(
-                    borderSide: BorderSide(color: theme.primaryColor),
-                  ),
+                  border: UnderlineInputBorder(borderSide: BorderSide(color: theme.primaryColor)),
                   // alwaysShowSuffixIcon: true,
                   // suffixIcon: Padding(
                   //   padding: const EdgeInsets.only(left: 8.0, right: 10.0),

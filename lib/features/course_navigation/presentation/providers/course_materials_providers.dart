@@ -1,9 +1,10 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:isar/isar.dart';
+import 'package:slidesync/core/global_notifiers/primitive_type_notifiers.dart';
+import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
@@ -11,7 +12,7 @@ import 'package:slidesync/domain/models/file_details.dart';
 import 'package:slidesync/domain/models/progress_track_model.dart';
 import 'package:slidesync/domain/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/actions/courses_view_actions.dart';
-import 'package:slidesync/core/global_notifiers/card_view_type_notifier.dart';
+import 'package:slidesync/core/global_notifiers/common/card_view_type_notifier.dart';
 
 final defaultContent = CourseContent.create(
   contentHash: '_',
@@ -45,99 +46,97 @@ Future<QueryBuilder<CourseContent, CourseContent, QAfterSortBy>> _resolveQueryBu
   }
 }
 
-final _contentsFilterOptionsFamily = AutoDisposeStateProvider.family<CourseSortOption, String>(
-  (ref, collectionId) => CourseSortOption.none,
-);
+final _watchContentsFamily = StreamProvider.family<List<ContentWithProgress>, String>((ref, collectionId) {
+  final sortOption = ref.watch(CourseMaterialsProviders.contentFilterProvider).value ?? CourseSortOption.none;
+  final controller = StreamController<List<ContentWithProgress>>();
 
-final AutoDisposeStreamProviderFamily<List<ContentWithProgress>, String> _watchContentsFamily =
-    AutoDisposeStreamProviderFamily((ref, collectionId) {
-      final sortOption = ref.watch(_contentsFilterOptionsFamily(collectionId));
-      final controller = StreamController<List<ContentWithProgress>>();
+  StreamSubscription<List<CourseContent>>? contentsSub;
+  StreamSubscription<List<ProgressTrackModel>>? progressSub;
 
-      StreamSubscription<List<CourseContent>>? contentsSub;
-      StreamSubscription<List<ProgressTrackModel>>? progressSub;
+  List<CourseContent> latestContents = [];
+  Map<String, ProgressTrackModel> latestProgressMap = {};
 
-      List<CourseContent> latestContents = [];
-      Map<String, ProgressTrackModel> latestProgressMap = {};
+  void emitCombined() {
+    if (controller.isClosed) return;
+    final combined = latestContents
+        .map((c) => ContentWithProgress(content: c, progress: latestProgressMap[c.contentId]))
+        .toList();
+    controller.add(combined);
+  }
 
-      void emitCombined() {
-        if (controller.isClosed) return;
-        final combined =
-            latestContents
-                .map((c) => ContentWithProgress(content: c, progress: latestProgressMap[c.contentId]))
-                .toList();
-        controller.add(combined);
-      }
+  () async {
+    try {
+      final isar = await IsarData.isarFuture;
+      final query = await _resolveQueryBuilder(collectionId, sortOption);
+      final contentsStream = query.watch(fireImmediately: true);
 
-      () async {
-        try {
-          final isar = await IsarData.isarFuture;
-          final query = await _resolveQueryBuilder(collectionId, sortOption);
-          final contentsStream = query.watch(fireImmediately: true);
+      contentsSub = contentsStream.listen(
+        (contents) {
+          latestContents = contents;
+          final ids = contents.map((c) => c.contentId).toList();
 
-          contentsSub = contentsStream.listen(
-            (contents) {
-              latestContents = contents;
-              final ids = contents.map((c) => c.contentId).toList();
+          progressSub?.cancel();
+          progressSub = null;
 
-              progressSub?.cancel();
-              progressSub = null;
+          if (ids.isEmpty) {
+            latestProgressMap = {};
+            emitCombined();
+            return;
+          }
 
-              if (ids.isEmpty) {
-                latestProgressMap = {};
-                emitCombined();
-                return;
-              }
-
-              progressSub = isar.progressTrackModels
-                  .filter()
-                  .anyOf(ids, (q, id) => q.contentIdEqualTo(id))
-                  .watch(fireImmediately: true)
-                  .listen(
-                    (progressList) {
-                      final m = <String, ProgressTrackModel>{for (final p in progressList) p.contentId: p};
-                      latestProgressMap = m;
-                      emitCombined();
-                    },
-                    onError: (e, st) {
-                      if (!controller.isClosed) controller.addError(e, st);
-                    },
-                  );
-            },
-            onError: (e, st) {
-              if (!controller.isClosed) controller.addError(e, st);
-            },
-          );
-        } catch (e, st) {
+          progressSub = isar.progressTrackModels
+              .filter()
+              .anyOf(ids, (q, id) => q.contentIdEqualTo(id))
+              .watch(fireImmediately: true)
+              .listen(
+                (progressList) {
+                  final m = <String, ProgressTrackModel>{for (final p in progressList) p.contentId: p};
+                  latestProgressMap = m;
+                  emitCombined();
+                },
+                onError: (e, st) {
+                  if (!controller.isClosed) controller.addError(e, st);
+                },
+              );
+        },
+        onError: (e, st) {
           if (!controller.isClosed) controller.addError(e, st);
-        }
-      }();
+        },
+      );
+    } catch (e, st) {
+      if (!controller.isClosed) controller.addError(e, st);
+    }
+  }();
 
-      // Cleanup on provider dispose
-      ref.onDispose(() {
-        contentsSub?.cancel();
-        progressSub?.cancel();
-        controller.close();
-      });
+  // Cleanup on provider dispose
+  ref.onDispose(() {
+    contentsSub?.cancel();
+    progressSub?.cancel();
+    controller.close();
+  });
 
-      return controller.stream;
-    });
+  return controller.stream;
+});
 
 class CourseMaterialsProviders {
   /// 0 for Grid, 1 for List, 2 for otherwise
-  static final AutoDisposeAsyncNotifierProvider<CardViewTypeNotifier, int> cardViewType =
-      AutoDisposeAsyncNotifierProvider<CardViewTypeNotifier, int>(
-        () => CardViewTypeNotifier(HiveDataPaths.courseMaterialscardViewType, 2),
+  static final AsyncNotifierProvider<CardViewTypeNotifier, int> cardViewType =
+      AsyncNotifierProvider<CardViewTypeNotifier, int>(
+        () => CardViewTypeNotifier(HiveDataPathKey.courseMaterialscardViewType.name, 2),
+        isAutoDispose: true,
       );
 
-  static AutoDisposeStateProvider<CourseSortOption> contentsFilterOption(String collectionId) =>
-      _contentsFilterOptionsFamily(collectionId);
+  static final AsyncNotifierProvider<ContentSortNotifier, CourseSortOption> contentFilterProvider =
+      AsyncNotifierProvider<ContentSortNotifier, CourseSortOption>(ContentSortNotifier.new, isAutoDispose: true);
 
-  static AutoDisposeStreamProvider<List<ContentWithProgress>> watchContents(String collectionId) =>
+  static StreamProvider<List<ContentWithProgress>> watchContents(String collectionId) =>
       _watchContentsFamily(collectionId);
 
   static final PagingState<int, CourseContent> pagingState = PagingState();
-  static final AutoDisposeStateProvider<double> scrollOffsetProvider = AutoDisposeStateProvider((cb) => 0.0);
+  static final NotifierProvider<DoubleNotifier, double> scrollOffsetProvider = NotifierProvider(
+    DoubleNotifier.new,
+    isAutoDispose: true,
+  );
 }
 
 class ContentWithProgress {
@@ -145,4 +144,19 @@ class ContentWithProgress {
   final ProgressTrackModel? progress; // may be null if no progress yet
 
   ContentWithProgress({required this.content, this.progress});
+}
+
+class ContentSortNotifier extends AsyncNotifier<CourseSortOption> {
+  final CourseSortOption _defaultKey;
+  ContentSortNotifier([this._defaultKey = CourseSortOption.none]);
+  @override
+  FutureOr<CourseSortOption> build() async {
+    final option =
+        CourseSortOption.values[await AppHiveData.instance.getData(key: HiveDataPathKey.courseMaterialsSortOption.name)
+                as int? ??
+            _defaultKey.index];
+    return option;
+  }
+
+  Future<void> set(CourseSortOption value) async => state = AsyncData(value);
 }

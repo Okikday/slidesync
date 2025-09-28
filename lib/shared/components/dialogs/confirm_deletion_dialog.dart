@@ -19,12 +19,12 @@ class ConfirmDeletionDialog extends ConsumerWidget {
     this.onCancel,
     required this.onDelete,
     this.onPop,
-    this.animateFrom
+    this.animateFrom,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return AppAlertDialog(
       title: title,
       content: content,
@@ -45,7 +45,12 @@ class ConfirmDeletionDialog extends ConsumerWidget {
           },
         ),
 
-        _buildDialogButton(label: "Delete", textColor: Colors.red, backgroundColor: Colors.red.withAlpha(40), onClick: onDelete),
+        _buildDialogButton(
+          label: "Delete",
+          textColor: Colors.red,
+          backgroundColor: Colors.red.withAlpha(40),
+          onClick: onDelete,
+        ),
       ],
     ).animate().fadeIn().scaleXY(
       begin: 0.4,
@@ -54,7 +59,6 @@ class ConfirmDeletionDialog extends ConsumerWidget {
       duration: Duration(milliseconds: 500),
       curve: CustomCurves.defaultIosSpring,
     );
-    
   }
 }
 

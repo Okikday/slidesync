@@ -7,6 +7,7 @@ import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/actions/courses_view_actions.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/providers/courses_view_providers.dart';
 import 'package:slidesync/shared/common_widgets/app_popup_menu_button.dart';
+import 'package:slidesync/shared/components/circular_loading_indicator.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 
 class LibraryTabViewFilterButton extends ConsumerWidget {
@@ -49,44 +50,53 @@ class LibraryTabViewFilterButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
-    final notifier = ref.read(CoursesViewProviders.coursesFilterOptions.notifier);
-    final currSortOption = ref.watch(CoursesViewProviders.coursesFilterOptions);
-    final currSortData = parseCourseSortOption(currSortOption);
-    final currPlain = currSortOption.toPlain();
-    final plainList = plainListFromCourseSortOptions();
-    final isSortOptionNone = currSortOption == CourseSortOption.none;
+    final theme = ref;
 
-    return AppPopupMenuButton(
-      icon: isSortOptionNone ? Iconsax.filter : Iconsax.filter_copy,
-      iconColor: isSortOptionNone ? theme.onSurface : theme.onPrimary,
-      buttonStyle: ButtonStyle(
-        backgroundColor: WidgetStatePropertyAll(isSortOptionNone ? Colors.transparent : theme.primary),
-      ),
-      actions: [
-        for (final item in plainList)
-          PopupMenuAction(
-            title: parseCourseSortOption(_fromPlain(item, true)).title,
-            iconData: Icons.circle_outlined,
-            icon: item == currPlain
-                ? Icon(
-                    item == PlainCourseSortOption.none
-                        ? Icons.check
-                        : currSortData.asc
-                        ? Iconsax.arrow_circle_up
-                        : Iconsax.arrow_circle_down,
-                    color: theme.primary,
-                  )
-                : null,
-            onTap: () async {
-              final newOpt = item == currPlain ? _fromPlain(item, !currSortData.asc) : _fromPlain(item, true);
-              notifier.update((cb) => newOpt);
-              Result.tryRun(() async {
-                await AppHiveData.instance.setData(key: HiveDataPaths.libraryCourseSortOption, value: newOpt.index);
-              });
-            },
+    final asyncCurrSortOption = ref.watch(CoursesViewProviders.coursesFilterOptions);
+    return asyncCurrSortOption.when(
+      data: (currSortOption) {
+        final currSortData = parseCourseSortOption(currSortOption);
+        final currPlain = currSortOption.toPlain();
+        final plainList = plainListFromCourseSortOptions();
+        final isSortOptionNone = currSortOption == CourseSortOption.none;
+
+        return AppPopupMenuButton(
+          icon: isSortOptionNone ? Iconsax.filter : Iconsax.filter_copy,
+          iconColor: isSortOptionNone ? theme.onSurface : theme.onPrimary,
+          buttonStyle: ButtonStyle(
+            backgroundColor: WidgetStatePropertyAll(isSortOptionNone ? Colors.transparent : theme.primary),
           ),
-      ],
+          actions: [
+            for (final item in plainList)
+              PopupMenuAction(
+                title: parseCourseSortOption(_fromPlain(item, true)).title,
+                iconData: Icons.circle_outlined,
+                icon: item == currPlain
+                    ? Icon(
+                        item == PlainCourseSortOption.none
+                            ? Icons.check
+                            : currSortData.asc
+                            ? Iconsax.arrow_circle_up
+                            : Iconsax.arrow_circle_down,
+                        color: theme.primary,
+                      )
+                    : null,
+                onTap: () async {
+                  final newOpt = item == currPlain ? _fromPlain(item, !currSortData.asc) : _fromPlain(item, true);
+                  ref.read(CoursesViewProviders.coursesFilterOptions.notifier).set(newOpt);
+                  Result.tryRun(() async {
+                    await AppHiveData.instance.setData(
+                      key: HiveDataPathKey.libraryCourseSortOption.name,
+                      value: newOpt.index,
+                    );
+                  });
+                },
+              ),
+          ],
+        );
+      },
+      error: (e, st) => Icon(Icons.error_rounded),
+      loading: () => CircularLoadingIndicator(),
     );
   }
 }

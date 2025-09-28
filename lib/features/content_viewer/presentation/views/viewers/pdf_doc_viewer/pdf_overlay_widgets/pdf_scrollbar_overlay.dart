@@ -11,7 +11,7 @@ class PdfScrollbarOverlay extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return Transform.translate(
       offset: Offset(16, 0),
       child: Row(

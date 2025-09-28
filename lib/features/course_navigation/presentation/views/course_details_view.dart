@@ -1,8 +1,7 @@
-import 'dart:developer';
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/core/global_notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/core/global_providers/data_providers/course_providers.dart';
@@ -47,7 +46,7 @@ class CourseDetailsOuterSection extends ConsumerStatefulWidget {
 
 class _CourseDetailsOuterSectionState extends ConsumerState<CourseDetailsOuterSection> {
   late final ScrollController viewScrollController;
-  late final AutoDisposeStateProvider<double> scrollOffsetProvider;
+  late final NotifierProvider<DoubleNotifier, double> scrollOffsetProvider;
   late final TextEditingController searchCollectionController;
   late final ValueNotifier<String> searchCollectionTextNotifier;
 
@@ -55,20 +54,20 @@ class _CourseDetailsOuterSectionState extends ConsumerState<CourseDetailsOuterSe
   void initState() {
     super.initState();
     viewScrollController = ScrollController();
-    scrollOffsetProvider = AutoDisposeStateProvider((cb) => 0.0);
+    scrollOffsetProvider = NotifierProvider<DoubleNotifier, double>(DoubleNotifier.new, isAutoDispose: true);
     searchCollectionController = TextEditingController();
     searchCollectionTextNotifier = ValueNotifier("");
     viewScrollController.addListener(updateScrollOffset);
     searchCollectionController.addListener(searchCollectionTextListener);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(CourseProviders.courseProvider.notifier).updateByDate(widget.course);
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   ref.read(CourseProviders.courseProvider(widget.course.id));
+    // });
   }
 
   void updateScrollOffset() {
     final newOffset = viewScrollController.offset;
     final scrollNotifier = ref.read(scrollOffsetProvider.notifier);
-    if (newOffset == scrollNotifier.state) return;
+    if (newOffset == ref.read(scrollOffsetProvider)) return;
     scrollNotifier.update((cb) => newOffset);
   }
 
@@ -89,8 +88,7 @@ class _CourseDetailsOuterSectionState extends ConsumerState<CourseDetailsOuterSe
 
   @override
   Widget build(BuildContext context) {
-    final AsyncValue<Course> courseAsyncValue = ref.watch(CourseProviders.courseProvider);
-    
+    final AsyncValue<Course?> courseAsyncValue = ref.watch(CourseProviders.courseProvider(widget.course.id));
 
     return Stack(
       clipBehavior: Clip.hardEdge,
@@ -98,30 +96,25 @@ class _CourseDetailsOuterSectionState extends ConsumerState<CourseDetailsOuterSe
         NestedScrollView(
           controller: viewScrollController,
           physics: const NeverScrollableScrollPhysics(),
-          headerSliverBuilder:
-              (context, innerBoxIsScrolled) => [
-                courseAsyncValue.when(
-                  data:
-                      (data) => CourseDetailsHeader(
-                        course: data,
-                  scrollOffsetProvider: scrollOffsetProvider,
-                  appBarHeight: appBarHeight,
-                ),
-                  error:
-                      (error, st) => CourseDetailsHeader(
-                        course: widget.course,
-                        scrollOffsetProvider: scrollOffsetProvider,
-                        appBarHeight: appBarHeight,
-                      ),
-                  loading:
-                      () => CourseDetailsHeader(
-                        course: widget.course,
-                        scrollOffsetProvider: scrollOffsetProvider,
-                        appBarHeight: appBarHeight,
-                      ),
-                ),
-                
-              ],
+          headerSliverBuilder: (context, innerBoxIsScrolled) => [
+            courseAsyncValue.when(
+              data: (data) => CourseDetailsHeader(
+                course: data ?? defaultCourse,
+                scrollOffsetProvider: scrollOffsetProvider,
+                appBarHeight: appBarHeight,
+              ),
+              error: (error, st) => CourseDetailsHeader(
+                course: widget.course,
+                scrollOffsetProvider: scrollOffsetProvider,
+                appBarHeight: appBarHeight,
+              ),
+              loading: () => CourseDetailsHeader(
+                course: widget.course,
+                scrollOffsetProvider: scrollOffsetProvider,
+                appBarHeight: appBarHeight,
+              ),
+            ),
+          ],
           body: CustomScrollView(
             slivers: [
               PinnedHeaderSliver(child: AdjustingSpacing(scrollOffsetProvider: scrollOffsetProvider)),
@@ -137,7 +130,10 @@ class _CourseDetailsOuterSectionState extends ConsumerState<CourseDetailsOuterSe
                   },
                 ),
               ),
-              CourseDetailsCollectionSection(courseAsyncValue: courseAsyncValue, searchCollectionTextNotifier: searchCollectionTextNotifier),
+              CourseDetailsCollectionSection(
+                courseAsyncValue: courseAsyncValue,
+                searchCollectionTextNotifier: searchCollectionTextNotifier,
+              ),
 
               SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
             ],
@@ -151,7 +147,7 @@ class _CourseDetailsOuterSectionState extends ConsumerState<CourseDetailsOuterSe
 }
 
 class AdjustingSpacing extends ConsumerWidget {
-  final AutoDisposeStateProvider<double> scrollOffsetProvider;
+  final NotifierProvider<DoubleNotifier, double> scrollOffsetProvider;
   const AdjustingSpacing({super.key, required this.scrollOffsetProvider});
 
   @override

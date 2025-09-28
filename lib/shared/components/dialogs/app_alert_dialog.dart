@@ -25,7 +25,7 @@ class AppAlertDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return AppCustomizableDialog(
       backgroundColor: backgroundColor,
       onPop: onPop,
@@ -36,19 +36,14 @@ class AppAlertDialog extends ConsumerWidget {
           ConstantSizing.columnSpacingSmall,
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: CustomText(title, fontWeight: FontWeight.bold, fontSize: 17, color: theme.onBackground,
-            ),
+            child: CustomText(title, fontWeight: FontWeight.bold, fontSize: 17, color: theme.onBackground),
           ),
           ConstantSizing.columnSpacingSmall,
           Divider(color: theme.supportingText.withValues(alpha: 0.1)),
           ConstantSizing.columnSpacing(4),
           Padding(
             padding: const EdgeInsets.only(left: 20, right: 16),
-            child: CustomText(
-              content,
-              fontSize: 14.5,
-              color: theme.onBackground,
-            ),
+            child: CustomText(content, fontSize: 14.5, color: theme.onBackground),
           ),
           ConstantSizing.columnSpacingExtraLarge,
           Padding(
@@ -88,6 +83,5 @@ class AppAlertDialog extends ConsumerWidget {
         ],
       ),
     );
-
   }
 }

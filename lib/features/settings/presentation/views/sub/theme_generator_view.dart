@@ -55,7 +55,7 @@
 
 //       // Persist selection (same approach as your current code)
 //       try {
-//         await AppHiveData.instance.setData(key: 'appTheme', value: generated.toJson());
+//         await AppHiveData.instance.setData(key: HiveDataPathKey.appTheme.name, value: generated.toJson());
 //       } catch (e) {
 //         // ignore persistence errors here but log if you like
 //       }
@@ -297,7 +297,7 @@
 //                                     ref.read(appThemeProvider.notifier).update(generated);
 //                                   } catch (_) {}
 //                                   try {
-//                                     await AppHiveData.instance.setData(key: 'appTheme', value: generated.toJson());
+//                                     await AppHiveData.instance.setData(key: HiveDataPathKey.appTheme.name, value: generated.toJson());
 //                                   } catch (_) {}
 //                                   // add to runtime list
 //                                   try {

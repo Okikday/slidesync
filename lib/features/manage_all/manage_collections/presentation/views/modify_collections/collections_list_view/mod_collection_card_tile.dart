@@ -32,21 +32,13 @@ class ModCollectionCardTile extends ConsumerWidget {
       child: ModifyingListTile(
         leading: BuildImagePathWidget(
           fileDetails: FileDetails(),
-          fallbackWidget: Icon(
-            Iconsax.document,
-            size: 22,
-            color: ref.theme.primaryColor,
-          ),
+          fallbackWidget: Icon(Iconsax.document, size: 22, color: ref.primaryColor),
         ),
         trailing: CustomElevatedButton(
           backgroundColor: Colors.transparent,
           contentPadding: EdgeInsets.all(12),
           onClick: onSelected,
-          child: Icon(
-            Iconsax.edit_copy,
-            size: 20,
-            color: ref.theme.supportingText,
-          ),
+          child: Icon(Iconsax.edit_copy, size: 20, color: ref.supportingText),
         ),
         title: title,
         subtitle:

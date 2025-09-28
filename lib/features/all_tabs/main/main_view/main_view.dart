@@ -1,17 +1,16 @@
 import 'dart:developer';
 
-import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/views/sub/library_floating_action_button.dart';
-import 'package:slidesync/features/main/presentation/providers/main_providers.dart';
-import 'package:slidesync/features/main/presentation/views/main_view/main_view_annotated_region.dart';
+import 'package:slidesync/features/all_tabs/main/main_view_controller.dart';
 import 'package:slidesync/features/all_tabs/tab_home/presentation/views/home_tab_view/home_drawer.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view.dart';
 import 'package:slidesync/features/all_tabs/tab_explore/presentation/views/explore_tab_view.dart';
 
-import '../../../all_tabs/tab_home/presentation/views/home_tab_view.dart';
-import 'main_view/bottom_nav_bar.dart';
+import '../../tab_home/presentation/views/home_tab_view.dart';
+import 'sub/bottom_nav_bar.dart';
+import 'sub/main_view_annotated_region.dart';
 
 class MainView extends ConsumerStatefulWidget {
   final int tabIndex;
@@ -29,7 +28,7 @@ class _MainViewState extends ConsumerState<MainView> with AutomaticKeepAliveClie
     super.initState();
     pageController = PageController(initialPage: widget.tabIndex);
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => ref.read(MainProviders.mainTabViewIndexProvider.notifier).update((cb) => widget.tabIndex),
+      (_) => ref.read(MainViewController.mainTabViewIndexProvider.notifier).update((cb) => widget.tabIndex),
     );
   }
 
@@ -53,8 +52,8 @@ class _MainViewState extends ConsumerState<MainView> with AutomaticKeepAliveClie
           extendBodyBehindAppBar: true,
           bottomNavigationBar: BottomNavBar(
             onTap: (index) {
-              if (index != ref.read(MainProviders.mainTabViewIndexProvider.notifier).state) {
-                ref.read(MainProviders.mainTabViewIndexProvider.notifier).update((cb) => index);
+              if (index != ref.read(MainViewController.mainTabViewIndexProvider)) {
+                ref.read(MainViewController.mainTabViewIndexProvider.notifier).update((cb) => index);
                 pageController.jumpToPage(index);
               }
             },
@@ -66,7 +65,7 @@ class _MainViewState extends ConsumerState<MainView> with AutomaticKeepAliveClie
           body: PageView(
             controller: pageController,
             onPageChanged: (index) {
-              ref.read(MainProviders.mainTabViewIndexProvider.notifier).update((cb) => index);
+              ref.read(MainViewController.mainTabViewIndexProvider.notifier).update((cb) => index);
             },
             children: const [HomeTabView(), LibraryTabView(), ExploreTabView()],
           ),

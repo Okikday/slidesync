@@ -1,4 +1,3 @@
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -16,19 +15,18 @@ class MaterialsSearchButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return SearchAnchor(
       viewBackgroundColor: theme.background,
       dividerColor: theme.supportingText.withAlpha(40),
-      
-      builder:
-          (context, controller) => BuildButton(
-            onTap: () {
-              controller.openView();
-            },
-            iconData: Iconsax.search_normal_copy,
-            backgroundColor: backgroundColor,
-          ),
+
+      builder: (context, controller) => BuildButton(
+        onTap: () {
+          controller.openView();
+        },
+        iconData: Iconsax.search_normal_copy,
+        backgroundColor: backgroundColor,
+      ),
       suggestionsBuilder: (context, controller) async {
         if (controller.text.isEmpty) {
           return [
@@ -36,26 +34,24 @@ class MaterialsSearchButton extends ConsumerWidget {
               padding: const EdgeInsets.only(top: kToolbarHeight, left: 16, right: 16),
               child: SizedBox(
                 child: Center(
-                  child: CustomText(
-                    "Input a title to search...",
-                    color: theme.backgroundSupportingText.withAlpha(150),
-                  ),
+                  child: CustomText("Input a title to search...", color: theme.backgroundSupportingText.withAlpha(150)),
                 ),
               ),
             ),
           ];
         }
-        final List<CourseContent> searchResults =
-            await (await CourseContentRepo.filter).titleContains(controller.text, caseSensitive: false).findAll();
+        final List<CourseContent> searchResults = await (await CourseContentRepo.filter)
+            .titleContains(controller.text, caseSensitive: false)
+            .findAll();
         return [
           ConstantSizing.columnSpacing(8),
           for (int i = 0; i < searchResults.length; i++)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: CourseMaterialListCard(courseContent: searchResults[i], onTapCard: (){},)
+              child: CourseMaterialListCard(courseContent: searchResults[i], onTapCard: () {}),
             ),
 
-          ConstantSizing.columnSpacing(context.viewInsets.bottom)
+         if(context.mounted) ConstantSizing.columnSpacing(context.viewInsets.bottom),
         ];
       },
     );

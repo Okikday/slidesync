@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:heroine/heroine.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/auth/presentation/auth_views/sign_in_view.dart';
@@ -18,7 +17,7 @@ class Onboarding1 extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final shapeRadius = context.deviceWidth < context.deviceHeight ? context.deviceWidth : context.deviceHeight;
     const Color primaryPurple = Color(0xFF7D19FF);
-    final theme = ref.theme;
+    final theme = ref;
     return Scaffold(
       backgroundColor: Color(0xFFE1E1E0),
       body: Stack(

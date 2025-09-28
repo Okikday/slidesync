@@ -1,8 +1,9 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
-import 'package:slidesync/core/routes/app_route_navigator.dart';
+import 'package:slidesync/core/routes/routes.dart';
 import 'package:slidesync/shared/assets/strings/icon_strings.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 
@@ -19,7 +20,7 @@ class EmptyLibraryView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     final child = SingleChildScrollView(
       physics: NeverScrollableScrollPhysics(),
       child: Column(
@@ -36,7 +37,7 @@ class EmptyLibraryView extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: CustomElevatedButton(
               onClick: () {
-                AppRouteNavigator.to(context).createCourseRoute();
+                context.pushNamed(Routes.createCourse.name);
               },
               backgroundColor: theme.altBackgroundPrimary,
               borderRadius: 12,

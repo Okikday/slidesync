@@ -7,7 +7,7 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/file_details.dart';
 import 'package:slidesync/features/all_tabs/tab_home/presentation/actions/recent_dialog_actions.dart';
-import 'package:slidesync/features/all_tabs/tab_home/presentation/providers/home_tab_view_providers.dart';
+import 'package:slidesync/features/all_tabs/tab_home/presentation/controllers/home_tab_controller.dart';
 import 'package:slidesync/domain/models/progress_track_model.dart';
 import 'package:slidesync/features/all_tabs/tab_home/presentation/views/home_tab_view/home_body/recents_section/recent_dialog.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
@@ -22,9 +22,9 @@ class RecentsSectionBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     final AsyncValue<List<ProgressTrackModel>> asyncProgressTrackValues = ref.watch(
-      HomeTabViewProviders.recentProgressTrackProvider,
+      HomeTabController.recentProgressTrackProvider,
     );
     final rda = RecentDialogActions.of(ref);
     return asyncProgressTrackValues.when(
@@ -51,7 +51,7 @@ class RecentsSectionBody extends ConsumerWidget {
           //     ],
           //   ),
           // );
-          return SliverToBoxAdapter(child: RecommendedSection(theme: theme));
+          return SliverToBoxAdapter(child: RecommendedSection());
         }
         return SliverPadding(
           padding: EdgeInsets.only(bottom: kBottomNavigationBarHeight + context.bottomPadding / 2),
@@ -86,7 +86,7 @@ class RecentsSectionBody extends ConsumerWidget {
                           contentId: content.contentId,
                           imagePreview: BuildImagePathWidget(
                             fileDetails: FileDetails(filePath: previewPath ?? ''),
-                            fallbackWidget: Icon(Iconsax.document_1, size: 26, color: ref.theme.primary),
+                            fallbackWidget: Icon(Iconsax.document_1, size: 26, color: ref.primary),
                           ),
                           isStarred: false,
                           title: content.title ?? "No title",
@@ -141,10 +141,10 @@ class LoadingRecentsSection extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         spacing: 12,
         children: [
-          LoadingLogo(color: ref.theme.primary, rotate: false, size: context.deviceWidth * 0.4),
+          LoadingLogo(color: ref.primary, rotate: false, size: context.deviceWidth * 0.4),
           CustomText(
             "Looking around for your recents...Where could they be?",
-            color: ref.theme.onBackground,
+            color: ref.onBackground,
             textAlign: TextAlign.center,
           ),
         ],
@@ -153,13 +153,12 @@ class LoadingRecentsSection extends ConsumerWidget {
   }
 }
 
-class RecommendedSection extends StatelessWidget {
-  const RecommendedSection({super.key, required this.theme});
-
-  final AppThemeModel theme;
+class RecommendedSection extends ConsumerWidget {
+  const RecommendedSection({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref;
     return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: 220),
       child: Column(
@@ -211,7 +210,7 @@ class RecommendedSection extends StatelessWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              CircleAvatar(radius: 20, backgroundColor: AppThemeModel.lightenColor(theme.surface, 0.5)),
+                              CircleAvatar(radius: 20, backgroundColor: theme.surface.lightenColor(0.5)),
                               Padding(
                                 padding: const EdgeInsets.only(bottom: 8),
                                 child: CustomText(

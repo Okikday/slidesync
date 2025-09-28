@@ -6,15 +6,9 @@ import 'package:slidesync/shared/helpers/extension_helper.dart';
 
 /// COLLECTION SECTION HEADER
 class CollectionsSectionHeader extends ConsumerWidget {
-  const CollectionsSectionHeader({
-    super.key,
-    required this.scaffoldBgColor,
-    
-    this.onClickAddIcon
-  });
+  const CollectionsSectionHeader({super.key, required this.scaffoldBgColor, this.onClickAddIcon});
 
   final Color scaffoldBgColor;
-  
 
   final void Function()? onClickAddIcon;
 
@@ -28,25 +22,25 @@ class CollectionsSectionHeader extends ConsumerWidget {
           child: Row(
             children: [
               Expanded(
-                child: CustomText(
-                  "Collections",
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: ref.theme.onBackground,
-                ),
+                child: CustomText("Collections", fontSize: 18, fontWeight: FontWeight.bold, color: ref.onBackground),
               ),
 
-             if(onClickAddIcon != null) CustomElevatedButton(
-                contentPadding: EdgeInsets.all(12),
-                backgroundColor: context.theme.colorScheme.secondary.withAlpha(40),
-                shape: CircleBorder(),
-                child: Icon(Iconsax.add_circle_copy, size: 20, color: context.isDarkMode ? Colors.white : Colors.black),
-              ),
+              if (onClickAddIcon != null)
+                CustomElevatedButton(
+                  contentPadding: EdgeInsets.all(12),
+                  backgroundColor: ref.secondary.withAlpha(40),
+                  shape: CircleBorder(),
+                  child: Icon(
+                    Iconsax.add_circle_copy,
+                    size: 20,
+                    color: context.isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ),
               ConstantSizing.rowSpacingMedium,
 
               // CustomElevatedButton(
               //   contentPadding: EdgeInsets.all(12),
-              //   backgroundColor: context.theme.colorScheme.secondary.withAlpha(40),
+              //   backgroundColor: ref.secondary.withAlpha(40),
               //   shape: CircleBorder(),
               //   onClick: onTapGridToggle,
               //   child: Icon(

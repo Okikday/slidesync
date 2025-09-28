@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/domain/models/file_details.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:slidesync/shared/styles/colors.dart';
 import 'package:slidesync/shared/widgets/build_image_path_widget.dart';
 
 class RecentListTile extends ConsumerWidget {
@@ -18,20 +17,20 @@ class RecentListTile extends ConsumerWidget {
     return level == ProgressLevel.danger
         ? Colors.red
         : (level == ProgressLevel.warning
-            ? Colors.orange
-            : (level == ProgressLevel.success ? Colors.green : ref.theme.primaryColor));
+              ? Colors.orange
+              : (level == ProgressLevel.success ? Colors.green : ref.primaryColor));
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return DecoratedBox(
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: theme.onBackground.withAlpha(10))),
       ),
 
       child: InkWell(
-        // backgroundColor: context.isDarkMode ? HSLColor.fromColor(context.theme.scaffoldBackgroundColor).withLightness(0.1).toColor() : HSLColor.fromColor(context.theme.scaffoldBackgroundColor).withLightness(0.9).toColor(),
+        // backgroundColor: context.isDarkMode ? HSLColor.fromColor(ref.scaffoldBackgroundColor).withLightness(0.1).toColor() : HSLColor.fromColor(ref.scaffoldBackgroundColor).withLightness(0.9).toColor(),
         overlayColor: WidgetStatePropertyAll(theme.altBackgroundPrimary),
         onTap: () {
           if (dataModel.onTapTile != null) dataModel.onTapTile!();
@@ -66,7 +65,7 @@ class RecentListTile extends ConsumerWidget {
                       width: 48,
                       height: 48,
                       fileDetails: FileDetails(filePath: dataModel.previewPath ?? ''),
-                      fallbackWidget: Icon(Iconsax.document_1, size: 26, color: ref.theme.primary),
+                      fallbackWidget: Icon(Iconsax.document_1, size: 26, color: ref.primary),
                     ),
                   ),
                 ),
@@ -118,13 +117,13 @@ class RecentListTile extends ConsumerWidget {
                     pixelHeight: 40,
                     contentPadding: EdgeInsets.zero,
                     shape: CircleBorder(),
-                    backgroundColor: context.theme.colorScheme.surface,
-                    overlayColor: context.theme.colorScheme.secondary.withAlpha(50),
+                    backgroundColor: ref.surface,
+                    overlayColor: ref.secondary.withAlpha(50),
                     onClick: () {
                       if (dataModel.onTapPlay != null) dataModel.onTapPlay!();
                     },
                     child: dataModel.progress == null
-                        ? Icon(Iconsax.play, color: context.theme.cardColor, size: 26)
+                        ? Icon(Iconsax.play, color: ref.cardColor, size: 26)
                         : CustomText(
                             "${(dataModel.progress! * 100).truncate()}%",
                             fontSize: 11,

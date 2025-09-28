@@ -1,17 +1,16 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/routes/routes.dart';
+import 'package:slidesync/core/routes/app_router.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
-import 'package:slidesync/core/utils/file_utils.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
+import 'package:slidesync/core/utils/result.dart';
+import 'package:slidesync/shared/helpers/extension_helper.dart';
 import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
-import 'package:slidesync/shared/styles/theme/built_in_themes.dart';
 
 import 'shared/styles/theme/themes.dart';
 
 final NotifierProvider<AppThemeProvider, AppThemeModel> appThemeProvider = NotifierProvider(AppThemeProvider.new);
-final GlobalKey appKey = GlobalKey();
 
 class App extends ConsumerStatefulWidget {
   const App({super.key});
@@ -22,10 +21,10 @@ class App extends ConsumerStatefulWidget {
 
 class _AppState extends ConsumerState<App> {
   Future<void> _loadThemeFromHive() async {
-    try {
-      final String? hiveTheme = (await AppHiveData.instance.getData(key: "appTheme")) as String?;
+    await Result.tryRunAsync(() async {
+      final String? hiveTheme = (await AppHiveData.instance.getData(key: HiveDataPathKey.appTheme.name)) as String?;
       if (hiveTheme == null) {
-        ref.read(appThemeProvider.notifier).update(Brightness.dark, defaultUnifiedThemeModels[0]);
+        // ref.read(appThemeProvider.notifier).update(Brightness.dark, defaultUnifiedThemeModels[0]);
         return;
       }
       final UnifiedThemeModel unifiedTheme = UnifiedThemeModel.fromJson(hiveTheme);
@@ -34,30 +33,29 @@ class _AppState extends ConsumerState<App> {
         final currentBrightness = MediaQuery.platformBrightnessOf(context);
         ref.read(appThemeProvider.notifier).update(currentBrightness, unifiedTheme);
       }
-    } catch (e) {
-      debugPrint('Failed to load theme from Hive: $e');
-    }
+    });
   }
 
   @override
   void initState() {
     super.initState();
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
     // if (RootIsolateToken.instance != null) {
     //   compute(FileUtils.deleteEmptyCoursesDirsInIsolate, {'rootIsolateToken': RootIsolateToken.instance});
     // }
-    WidgetsBinding.instance.addPostFrameCallback((_) => _loadThemeFromHive());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      await _loadThemeFromHive();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.watch(appThemeProvider);
-    
+    final theme = ref.theme;
 
     return MaterialApp.router(
-      key: appKey,
       title: "SlideSync",
-      routerConfig: Routes.mainRouter,
+      routerConfig: RouteManager.mainRouter,
       debugShowCheckedModeBanner: false,
       theme: resolveThemeData(theme),
     );

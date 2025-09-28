@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/course_navigation/presentation/views/course_details/course_details_header/animated_shape.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:slidesync/shared/styles/colors.dart';
 
 class CourseCategoriesCard extends ConsumerStatefulWidget {
   final bool isDarkMode;
@@ -36,7 +35,7 @@ class _CourseCategoriesCardState extends ConsumerState<CourseCategoriesCard> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.theme;
+    final theme = ref;
     return InkWell(
       borderRadius: BorderRadius.circular(12),
       onTap: widget.onTap,
@@ -57,17 +56,17 @@ class _CourseCategoriesCardState extends ConsumerState<CourseCategoriesCard> {
                 clipBehavior: Clip.hardEdge,
                 padding: EdgeInsets.all(1),
                 decoration: BoxDecoration(
-                  color: ref.theme.primary.withValues(alpha: 0.1),
+                  color: ref.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
-                  border: Border.fromBorderSide(BorderSide(color: ref.theme.primary.withAlpha(40), width: 1.0)),
+                  border: Border.fromBorderSide(BorderSide(color: ref.primary.withAlpha(40), width: 1.0)),
                 ),
                 child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ClipPath(
-                clipper: MorphClipper(path: shape.toPath(), size: Size(20, 20)),
+                  padding: const EdgeInsets.all(8.0),
+                  child: ClipPath(
+                    clipper: MorphClipper(path: shape.toPath(), size: Size(20, 20)),
                     child: ColoredBox(color: theme.primaryColor),
-              ),
-            ),
+                  ),
+                ),
               ),
               ConstantSizing.rowSpacingMedium,
               Expanded(
@@ -76,11 +75,7 @@ class _CourseCategoriesCardState extends ConsumerState<CourseCategoriesCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   spacing: 4.0,
                   children: [
-                    CustomText(
-                      widget.title,
-                      fontSize: 15,
-                      color: theme.onBackground,
-                    ),
+                    CustomText(widget.title, fontSize: 15, color: theme.onBackground),
                     CustomText(
                       "${widget.contentCount == 0 ? "No" : "${widget.contentCount}"} ${widget.contentCount == 1 ? "item" : "items"}",
                       fontSize: 12,

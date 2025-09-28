@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
@@ -7,24 +5,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:heroine/heroine.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:path/path.dart' as p;
-import 'package:slidesync/core/routes/app_route_navigator.dart';
+import 'package:slidesync/core/routes/app_router.dart';
 import 'package:slidesync/core/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/domain/models/file_details.dart';
-import 'package:slidesync/features/course_navigation/presentation/actions/content_card_actions.dart';
 import 'package:slidesync/features/course_navigation/presentation/providers/content_card_providers.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/actions/modify_contents_action.dart';
-import 'package:slidesync/features/manage_all/manage_contents/usecases/create_contents_uc/create_content_preview_image.dart';
 import 'package:slidesync/features/share_contents/domain/usecases/share_content_uc.dart';
 import 'package:slidesync/shared/common_widgets/app_popup_menu_button.dart';
 import 'package:slidesync/shared/components/dialogs/confirm_deletion_dialog.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 import 'package:slidesync/shared/helpers/widget_helper.dart';
-import 'package:slidesync/shared/styles/colors.dart';
+import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
 import 'package:slidesync/shared/widgets/build_image_path_widget.dart';
 import 'package:slidesync/shared/widgets/loading_view.dart';
 
@@ -41,7 +36,7 @@ class ContentCard extends ConsumerStatefulWidget {
 class _ContentCardState extends ConsumerState<ContentCard> {
   @override
   Widget build(BuildContext context) {
-    final theme = ref.theme;
+    final theme = ref;
     final content = widget.content;
     // final previewDataProvider = ref.watch(ContentCardProviders.fetchLinkPreviewDataProvider(content));
     return Row(
@@ -57,7 +52,7 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                 InkWell(
                   borderRadius: BorderRadius.circular(16),
                   onTap: () {
-                    AppRouteNavigator.to(context).contentViewGateRoute(content);
+                    context.push(Routes.contentGate.name, extra: content);
                   },
                   child: Container(
                     // curve: CustomCurves.defaultIosSpring,
@@ -65,7 +60,7 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                     constraints: BoxConstraints(maxHeight: 200, maxWidth: 320),
                     clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
-                      color: theme.bgLightenColor(),
+                      color: theme.background.lightenColor(theme.isDarkMode ? 0.1 : 0.9),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.fromBorderSide(BorderSide(color: theme.altBackgroundSecondary.withAlpha(100))),
                     ),
@@ -107,11 +102,11 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                         LinearProgressIndicator(
                           value: (widget.progress?.clamp(0, 100) ?? 0.0),
                           color: theme.primaryColor,
-                          backgroundColor: theme.bgLightenColor(0.85, 0.15).withAlpha(200),
+                          backgroundColor: theme.background.lightenColor(theme.isDarkMode ? 0.15 : 0.85).withAlpha(200),
                         ),
 
                         Container(
-                          color: theme.bgLightenColor(0.85, 0.15).withAlpha(200),
+                          color: theme.background.lightenColor(theme.isDarkMode ? 0.15 : 0.85).withAlpha(200),
                           padding: EdgeInsets.fromLTRB(12, 8, 4, 8),
                           child: Row(
                             children: [

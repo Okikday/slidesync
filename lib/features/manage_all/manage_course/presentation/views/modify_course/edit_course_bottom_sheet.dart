@@ -2,18 +2,19 @@ import 'package:flutter/material.dart';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/core/global_notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/core/global_providers/data_providers/course_providers.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/features/manage_all/manage_course/presentation/actions/edit_course_actions.dart';
 import 'package:slidesync/features/manage_all/manage_course/presentation/views/create_course/input_course_code_field.dart';
 import 'package:slidesync/features/manage_all/manage_course/presentation/views/create_course/input_course_title_field.dart';
-import 'package:slidesync/features/manage_all/manage_course/presentation/providers/modify_course_providers.dart';
 import 'package:slidesync/features/manage_all/manage_course/presentation/views/modify_course/edit_course_bottom_sheet/edit_course_input_description_field.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 
 class EditCourseBottomSheet extends ConsumerStatefulWidget {
   final bool isEditingDescription;
-  const EditCourseBottomSheet({super.key, this.isEditingDescription = false});
+  final int courseDbId;
+  const EditCourseBottomSheet({super.key, required this.courseDbId, this.isEditingDescription = false});
 
   @override
   ConsumerState createState() => _EditCourseBottomSheetState();
@@ -23,18 +24,18 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
   late final TextEditingController courseNameTextController;
   late final TextEditingController courseCodeController;
   late final TextEditingController descriptionTextController;
-  late final AutoDisposeStateProvider<bool> canExitProvider;
+  late final NotifierProvider<BoolNotifier, bool> canExitProvider;
   late final FocusNode descriptionFocusNode;
-  late final AutoDisposeStateProvider<bool> isCourseCodeFieldVisible;
+  late final NotifierProvider<BoolNotifier, bool> isCourseCodeFieldVisible;
 
   @override
   void initState() {
     super.initState();
-    canExitProvider = AutoDisposeStateProvider<bool>((ref) => false);
+    canExitProvider = NotifierProvider<BoolNotifier, bool>(BoolNotifier.new, isAutoDispose: true);
     courseNameTextController = TextEditingController();
     descriptionTextController = TextEditingController();
     courseCodeController = TextEditingController();
-    isCourseCodeFieldVisible = AutoDisposeStateProvider((ref) => false);
+    isCourseCodeFieldVisible = NotifierProvider<BoolNotifier, bool>(BoolNotifier.new, isAutoDispose: true);
     if (widget.isEditingDescription) {
       descriptionFocusNode = FocusNode();
     }
@@ -42,7 +43,7 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
   }
 
   void initPostFrame() {
-    final readCourse = ref.watch(CourseProviders.courseProvider).value ?? defaultCourse;
+    final readCourse = ref.watch(CourseProviders.courseProvider(widget.courseDbId)).value ?? defaultCourse;
     courseNameTextController.text = readCourse.courseName;
     if (readCourse.courseCode.isNotEmpty) courseCodeController.text = readCourse.courseCode;
 
@@ -63,7 +64,7 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final Course course = ref.watch(CourseProviders.courseProvider).value ?? defaultCourse;
+    final Course course = ref.watch(CourseProviders.courseProvider(widget.courseDbId)).value ?? defaultCourse;
 
     final double keyboardInsets = double.parse(
       (context.viewInsets.bottom / context.deviceHeight).toStringAsFixed(2),
@@ -71,8 +72,7 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
 
     return PopScope(
       canPop: ref.watch(canExitProvider),
-      onPopInvokedWithResult:
-          (_, __) => EditCourseActions.of(ref).onPopInvokedWithResult(context, ref.read(canExitProvider.notifier)),
+      onPopInvokedWithResult: (_, __) => EditCourseActions.of(ref).onPopInvokedWithResult(context, canExitProvider),
 
       child: AnimatedSize(
         duration: Durations.extralong1,
@@ -99,7 +99,7 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
                               child: CustomText(
                                 "Edit course",
                                 fontSize: 18,
-                                color: ref.theme.primaryColor,
+                                color: ref.primaryColor,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -113,7 +113,7 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               spacing: 6.0,
                               children: [
-                                CustomText("Title", fontSize: 13, color: ref.theme.onBackground),
+                                CustomText("Title", fontSize: 13, color: ref.onBackground),
                                 InputCourseTitleField(
                                   courseNameController: courseNameTextController,
                                   isCourseCodeFieldVisible: isCourseCodeFieldVisible,
@@ -141,6 +141,7 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
                     ),
 
                     PositionedUpdateDetailsButton(
+                      courseDbId: widget.courseDbId,
                       courseNameTextController: courseNameTextController,
                       courseCodeController: courseCodeController,
                       descriptionTextController: descriptionTextController,
@@ -175,23 +176,24 @@ class AnimatedSpacing extends StatelessWidget {
 class PositionedUpdateDetailsButton extends ConsumerWidget {
   const PositionedUpdateDetailsButton({
     super.key,
+    required this.courseDbId,
     required this.courseNameTextController,
     required this.courseCodeController,
     required this.descriptionTextController,
     required this.isCourseCodeFieldVisible,
     required this.canExitProvider,
   });
-
+  final int courseDbId;
   final TextEditingController courseNameTextController;
   final TextEditingController courseCodeController;
   final TextEditingController descriptionTextController;
-  final AutoDisposeStateProvider<bool> isCourseCodeFieldVisible;
-  final AutoDisposeStateProvider<bool> canExitProvider;
+  final NotifierProvider<BoolNotifier, bool> isCourseCodeFieldVisible;
+  final NotifierProvider<BoolNotifier, bool> canExitProvider;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final double bottomPadding = MediaQuery.paddingOf(context).bottom;
-    final theme = ref.theme;
+    final theme = ref;
 
     return AnimatedPositioned(
       duration: Durations.extralong1,
@@ -207,9 +209,9 @@ class PositionedUpdateDetailsButton extends ConsumerWidget {
               courseName: courseNameTextController.text,
               courseCode: courseCodeController.text,
               description: descriptionTextController.text,
-              isCourseCodeFieldVisible: ref.read(isCourseCodeFieldVisible.notifier).state,
-              canExitProvider: ref.read(canExitProvider.notifier),
-              modifyCourseProvider: CourseProviders.courseProvider,
+              isCourseCodeFieldVisible: ref.read(isCourseCodeFieldVisible),
+              canExitProvider: canExitProvider,
+              modifyCourseProvider: CourseProviders.courseProvider(courseDbId),
             );
           },
           contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),

@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
@@ -25,12 +24,12 @@ class PdfDocNormalAppBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return ValueListenableBuilder(
       valueListenable: isSearchingNotifier,
       builder: (context, value, child) {
         return AppBarContainerChild(
-              theme.isDarkTheme,
+              theme.isDarkMode,
               title: title,
               trailing: Padding(
                 padding: const EdgeInsets.only(left: 8.0),

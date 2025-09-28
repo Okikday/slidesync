@@ -2,8 +2,8 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:slidesync/core/routes/app_router.dart';
 import 'package:slidesync/core/routes/routes.dart';
-import 'package:slidesync/core/routes/routes_strings.dart';
 import 'package:slidesync/core/utils/file_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/auth/domain/services/user_auth/firebase_google_auth.dart';
@@ -17,7 +17,7 @@ class SignInView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     const Color primaryPurple = Color(0xFF7D19FF);
-    final theme = ref.theme;
+    final theme = ref;
     return AnnotatedRegion(
       value: UiUtils.getSystemUiOverlayStyle(theme.background, context.isDarkMode),
       child: Scaffold(
@@ -63,7 +63,7 @@ class SignInView extends ConsumerWidget {
                     textColor: theme.onPrimary,
                     onClick: () async {
                       if (Platform.isWindows) {
-                        context.go(RoutesStrings.homeView);
+                        context.goNamed(Routes.home.name);
                         return;
                       }
                       UiUtils.showCustomDialog(
@@ -108,7 +108,7 @@ class SignInView extends ConsumerWidget {
                         rootNavigatorKey.currentContext?.pop();
                       }
 
-                      if (result.isSuccess && context.mounted) context.go(RoutesStrings.homeView);
+                      if (result.isSuccess && context.mounted) context.goNamed(Routes.home.name);
                     },
                   ),
                 ],

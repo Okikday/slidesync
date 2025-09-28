@@ -201,13 +201,13 @@ class PdfDocViewerController extends LeakPrevention {
 
 Future<void> _addToRecentContents(String contentId) async {
   final hiveInstance = AppHiveData.instance;
-  final rawOldRecents = (await hiveInstance.getData(key: HiveDataPaths.recentContentsIds)) as List<String>?;
+  final rawOldRecents = (await hiveInstance.getData(key: HiveDataPathKey.recentContentsIds.name)) as List<String>?;
   if (rawOldRecents == null) {
-    await hiveInstance.setData(key: HiveDataPaths.recentContentsIds, value: [contentId]);
+    await hiveInstance.setData(key: HiveDataPathKey.recentContentsIds.name, value: [contentId]);
   } else {
     final recents = LinkedHashSet<String>.from(rawOldRecents);
     recents.add(contentId);
-    await hiveInstance.setData(key: HiveDataPaths.recentContentsIds, value: recents.toList());
+    await hiveInstance.setData(key: HiveDataPathKey.recentContentsIds.name, value: recents.toList());
   }
   log("Adding pdf to recents");
   return;

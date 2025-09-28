@@ -1,6 +1,6 @@
 import 'package:another_flushbar/flushbar.dart';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart'
-    show TransitionType, CustomCurves, ConstantSizing, CustomText, CustomDialog;
+    show TransitionType, CustomCurves, ConstantSizing, CustomDialog;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
@@ -145,7 +145,7 @@ List<Color> _resolveFlushbarVibe(BuildContext context, FlushbarVibe vibe) {
   //         : const Color(0xFFF5F5F7).withValues(alpha: 0.85); // Soft off-white
 
   final normalColor = context.theme.colorScheme.onSurface;
-  final normalBgColor = context.theme.colorScheme.surface.withValues(alpha: 0.4);
+  final normalBgColor = context.theme.colorScheme.surface;
 
   switch (vibe) {
     case FlushbarVibe.none:

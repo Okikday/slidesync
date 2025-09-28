@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,7 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/all_tabs/tab_home/presentation/views/home_tab_view/home_app_bar.dart';
 import 'package:slidesync/features/all_tabs/tab_home/presentation/views/home_tab_view/home_body.dart';
-import 'package:slidesync/features/main/presentation/providers/main_providers.dart';
+import 'package:slidesync/features/all_tabs/main/main_view_controller.dart';
+
+const double isScrolledLvl = 40.0;
 
 class HomeTabView extends ConsumerStatefulWidget {
   const HomeTabView({super.key});
@@ -26,15 +27,15 @@ class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAli
   }
 
   void scrollListener() {
-    if (scrollController.offset > 40) {
-      final isScrolledProvider = ref.read(MainProviders.isMainScrolledProvider.notifier);
-      if (!isScrolledProvider.state) {
-        isScrolledProvider.update((cb) => true);
+    final isScrolledProvider = MainViewController.isMainScrolledProvider;
+    final isScrolled = ref.read(isScrolledProvider);
+    if (scrollController.offset > isScrolledLvl) {
+      if (!isScrolled) {
+        ref.read(isScrolledProvider.notifier).update((cb) => true);
       }
     } else {
-      final isScrolledProvider = ref.read(MainProviders.isMainScrolledProvider.notifier);
-      if (isScrolledProvider.state) {
-        isScrolledProvider.update((cb) => false);
+      if (isScrolled) {
+        ref.read(isScrolledProvider.notifier).update((cb) => false);
       }
     }
   }
@@ -57,10 +58,9 @@ class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAli
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    ref.listen<bool>(MainProviders.isFocusModeProvider, focusModeListener);
+    ref.listen<bool>(MainViewController.isFocusModeProvider, focusModeListener);
     return NestedScrollView(
       controller: scrollController,
-      // physics: NeverScrollableScrollPhysics(),
       headerSliverBuilder: (context, isInnerBoxScrolled) {
         return [
           HomeAppBar(
@@ -70,10 +70,14 @@ class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAli
               // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(statusBarColor: Theme.of(context).scaffoldBackgroundColor));
             },
             onClickNotification: () {
-              final focusModeProvider = ref.read(MainProviders.isFocusModeProvider.notifier);
-              focusModeProvider.update((cb) => !cb);
+              final focusModeProvider = ref.read(MainViewController.isFocusModeProvider.notifier);
+              late bool prev;
+              focusModeProvider.update((cb) {
+                prev = cb;
+                return !cb;
+              });
 
-              UiUtils.showFlushBar(context, msg: "Focus mode toggled");
+              UiUtils.showFlushBar(context, msg: "Focus mode ${prev ? "disabled" : "enabled"}");
             },
           ),
         ];

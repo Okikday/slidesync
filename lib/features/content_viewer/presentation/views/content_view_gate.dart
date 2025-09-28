@@ -1,23 +1,17 @@
 import 'dart:developer';
-import 'dart:ui';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:heroine/heroine.dart';
-import 'package:slidesync/core/routes/app_route_navigator.dart';
-import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/sub/course_content.dart';
 import 'package:slidesync/domain/models/file_details.dart';
 import 'package:slidesync/features/content_viewer/presentation/actions/content_view_gate_actions.dart';
-import 'package:slidesync/features/course_navigation/presentation/views/course_details/course_details_header/custom_wave_widget.dart';
 import 'package:slidesync/features/manage_all/manage_contents/usecases/create_contents_uc/create_content_preview_image.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 import 'package:slidesync/shared/helpers/formatter.dart';
 import 'package:slidesync/shared/helpers/widget_helper.dart';
-import 'package:slidesync/shared/styles/colors.dart';
+import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
 import 'package:slidesync/shared/widgets/build_image_path_widget.dart';
 
 class ContentViewGate extends ConsumerStatefulWidget {
@@ -46,7 +40,7 @@ class _ContentViewGateState extends ConsumerState<ContentViewGate> {
   @override
   Widget build(BuildContext context) {
     final content = widget.content;
-    final theme = ref.theme;
+    final theme = ref;
     return Material(
       type: MaterialType.transparency,
       child: Stack(
@@ -96,7 +90,7 @@ class _ContentViewGateState extends ConsumerState<ContentViewGate> {
                   clipBehavior: Clip.antiAlias,
                   margin: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
                   decoration: BoxDecoration(
-                    color: theme.bgLightenColor(),
+                    color: theme.background.lightenColor(theme.isDarkMode ? 0.1 : 0.9),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.fromBorderSide(BorderSide(color: theme.altBackgroundSecondary.withAlpha(100))),
                   ),
@@ -122,12 +116,14 @@ class _ContentViewGateState extends ConsumerState<ContentViewGate> {
                           LinearProgressIndicator(
                             value: 0.4,
                             color: theme.primaryColor.withAlpha(60),
-                            backgroundColor: theme.bgLightenColor(0.85, 0.15).withAlpha(200),
+                            backgroundColor: theme.background
+                                .lightenColor(theme.isDarkMode ? 0.15 : 0.85)
+                                .withAlpha(200),
                           ),
 
                           Container(
                             width: double.infinity,
-                            color: theme.bgLightenColor(0.85, 0.15).withAlpha(200),
+                            color: theme.background.lightenColor(theme.isDarkMode ? 0.15 : 0.85).withAlpha(200),
                             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,7 +27,7 @@ class ModifyContentsHeader extends ConsumerWidget {
     // final padding6 = hPadding * .6;
 
     final btnDimension = context.defaultBtnDimension * .8;
-    final theme = ref.theme;
+    final theme = ref;
     return ValueListenableBuilder(
       valueListenable: mcvp.selectedContentsNotifier,
       builder: (context, value, child) {
@@ -72,13 +71,13 @@ class ModifyContentsHeader extends ConsumerWidget {
                     ],
                   ),
                 ),
-                
+
                 Expanded(child: CustomText("${value.length} selected", textAlign: TextAlign.right)),
               ],
             ),
           ),
         );
-      }
+      },
     );
   }
 }

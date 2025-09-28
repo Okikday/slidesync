@@ -55,13 +55,11 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.theme;
+    final theme = ref;
     return AnnotatedRegion(
-      value: UiUtils.getSystemUiOverlayStyle(theme.background, theme.isDarkTheme),
+      value: UiUtils.getSystemUiOverlayStyle(theme.background, theme.isDarkMode),
       child: Scaffold(
-        appBar: AppBarContainer(
-          child: AppBarContainerChild(theme.isDarkTheme, title: widget.content.title),
-        ),
+        appBar: AppBarContainer(child: AppBarContainerChild(theme.isDarkMode, title: widget.content.title)),
         body: PhotoView(
           imageProvider: FileImage(File(widget.content.path.filePath)),
           minScale: PhotoViewComputedScale.contained,

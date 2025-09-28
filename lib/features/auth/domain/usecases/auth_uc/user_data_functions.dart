@@ -7,14 +7,17 @@ import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/features/auth/domain/models/user_credential_model.dart';
 
 class UserDataFunctions {
-  static const String _path = HiveDataPaths.userData;
+  static final _path = HiveDataPathKey.userData.name;
 
   final FlutterSecureStorage _secureStorage = const FlutterSecureStorage();
   final hiveData = AppHiveData.instance;
   static const String pathUserCredentialMap = "user_credential";
 
-  Future<Result<bool>> saveUserDetails(
-      {String? googleIDToken, String? googleAccessToken, required UserCredentialModel userCredentialModel}) async {
+  Future<Result<bool>> saveUserDetails({
+    String? googleIDToken,
+    String? googleAccessToken,
+    required UserCredentialModel userCredentialModel,
+  }) async {
     try {
       if (googleIDToken != null) await _secureStorage.write(key: "googleIDToken", value: googleIDToken);
       if (googleAccessToken != null) await _secureStorage.write(key: "googleAccessToken", value: googleAccessToken);
@@ -39,7 +42,7 @@ class UserDataFunctions {
         log("Error deleting user Data, $e");
       }
       log("Successfully cleared user's data");
-      return Result.success(true, );
+      return Result.success(true);
     } catch (e) {
       return Result.error("Error: $e");
     }
@@ -59,7 +62,7 @@ class UserDataFunctions {
     }
   }
 
-  Future<Result<String>> getUserId() async{
+  Future<Result<String>> getUserId() async {
     try {
       final userData = await hiveData.getData(key: "$_path/$pathUserCredentialMap");
       if (userData == null) return Result.error("Unable to fetch user data");

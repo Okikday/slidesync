@@ -7,14 +7,14 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/core/routes/app_route_navigator.dart';
+import 'package:slidesync/core/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/domain/models/course_model/sub/course_collection.dart';
 import 'package:slidesync/features/course_navigation/presentation/views/course_details/course_details_header/animated_shape.dart';
 import 'package:slidesync/features/manage_all/manage_collections/presentation/views/modify_collections/edit_collection_title_bottom_sheet.dart';
 import 'package:slidesync/features/manage_all/manage_collections/presentation/actions/modify_collection_actions.dart';
-import 'package:slidesync/core/routes/routes.dart';
+import 'package:slidesync/core/routes/app_router.dart';
 import 'package:slidesync/shared/components/dialogs/app_action_dialog.dart';
 import 'package:slidesync/shared/components/dialogs/confirm_deletion_dialog.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
@@ -51,7 +51,7 @@ class _ModCollectionDialogState extends ConsumerState<ModCollectionDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.theme;
+    final theme = ref;
     final collection = widget.collection;
     final mca = ModifyCollectionActions();
     return AppActionDialog(
@@ -117,11 +117,7 @@ class _ModCollectionDialogState extends ConsumerState<ModCollectionDialog> {
           icon: Icon(Iconsax.forward_copy, size: 24, color: theme.supportingText),
           onTap: () {
             CustomDialog.hide(context);
-            AppRouteNavigator.to(context).modifyContentsRoute((
-              collection: collection,
-              courseDbId: widget.courseDbId,
-              courseTitle: (courseCode: "", courseName: "CourseName"),
-            ));
+            context.pushNamed(Routes.modifyContents.name, extra: collection);
           },
         ),
 

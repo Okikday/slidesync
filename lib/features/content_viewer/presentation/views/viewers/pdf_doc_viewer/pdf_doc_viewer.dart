@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 import 'dart:math' as math;
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
@@ -8,8 +7,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdfrx/pdfrx.dart' hide PdfViewerScrollThumb;
 import 'package:screenshot/screenshot.dart';
-import 'package:slidesync/core/global_notifiers/toggle_notifier.dart';
-import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/sub/course_content.dart';
 import 'package:slidesync/domain/models/file_details.dart';
@@ -19,7 +16,7 @@ import 'package:slidesync/features/content_viewer/presentation/providers/pdf_doc
 import 'package:slidesync/features/content_viewer/presentation/views/viewers/pdf_doc_viewer/pdf_doc_app_bar/pdf_doc_viewer_app_bar.dart';
 import 'package:slidesync/features/content_viewer/presentation/views/viewers/pdf_doc_viewer/pdf_overlay_widgets/pdf_scrollbar_overlay.dart';
 import 'package:slidesync/features/content_viewer/presentation/views/viewers/pdf_doc_viewer/pdf_overlay_widgets/pdf_tools_menu.dart';
-import 'package:slidesync/features/main/presentation/providers/main_providers.dart';
+import 'package:slidesync/features/all_tabs/main/main_view_controller.dart';
 import 'package:slidesync/shared/components/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 
@@ -69,7 +66,7 @@ class _PdfDocViewerState extends ConsumerState<PdfDocViewer> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.theme;
+    final theme = ref;
     final content = widget.content;
     return ValueListenableBuilder(
       valueListenable: pdsa.isSearchingNotifier,
@@ -174,7 +171,8 @@ class _PdfDocViewerState extends ConsumerState<PdfDocViewer> {
                                     if (isAppBarVisible) {
                                       SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
                                     } else {
-                                      final bool isFocusMode = ref.read(MainProviders.isFocusModeProvider) ?? false;
+                                      final bool isFocusMode =
+                                          ref.read(MainViewController.isFocusModeProvider) ?? false;
                                       if (isFocusMode) {
                                         SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
                                       } else {
@@ -245,7 +243,7 @@ class _NavigationControls extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     final s = textSearcher;
     final hasMatches = s?.hasMatches == true;
     final inProgress = s?.isSearching == true;

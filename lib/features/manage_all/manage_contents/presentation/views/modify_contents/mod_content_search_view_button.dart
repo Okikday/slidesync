@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
@@ -18,20 +17,19 @@ class ModContentSearchViewButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return SearchAnchor(
       viewBackgroundColor: theme.background,
       dividerColor: theme.supportingText.withAlpha(40),
-      
-      builder:
-          (context, controller) => BuildButton(
-            onTap: () {
-              if(doBeforeTap != null) doBeforeTap!();
-              controller.openView();
-            },
-            iconData: Iconsax.search_normal_copy,
-            backgroundColor: backgroundColor,
-          ),
+
+      builder: (context, controller) => BuildButton(
+        onTap: () {
+          if (doBeforeTap != null) doBeforeTap!();
+          controller.openView();
+        },
+        iconData: Iconsax.search_normal_copy,
+        backgroundColor: backgroundColor,
+      ),
       suggestionsBuilder: (context, controller) async {
         if (controller.text.isEmpty) {
           return [
@@ -48,8 +46,9 @@ class ModContentSearchViewButton extends ConsumerWidget {
             ),
           ];
         }
-        final List<CourseContent> searchResults =
-            await (await CourseContentRepo.filter).titleContains(controller.text, caseSensitive: false).findAll();
+        final List<CourseContent> searchResults = await (await CourseContentRepo.filter)
+            .titleContains(controller.text, caseSensitive: false)
+            .findAll();
         return [
           for (int i = 0; i < searchResults.length; i++)
             Padding(

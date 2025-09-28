@@ -1,4 +1,3 @@
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -18,7 +17,7 @@ class LibraryTabViewSearchButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return SearchAnchor(
       viewBackgroundColor: theme.background,
       dividerColor: theme.supportingText.withAlpha(40),
@@ -41,14 +40,13 @@ class LibraryTabViewSearchButton extends ConsumerWidget {
           ],
         ),
       ],
-      builder:
-          (context, controller) => BuildButton(
-            onTap: () {
-              controller.openView();
-            },
-            iconData: Iconsax.search_normal_copy,
-            backgroundColor: backgroundColor,
-          ),
+      builder: (context, controller) => BuildButton(
+        onTap: () {
+          controller.openView();
+        },
+        iconData: Iconsax.search_normal_copy,
+        backgroundColor: backgroundColor,
+      ),
       suggestionsBuilder: (context, controller) async {
         if (controller.text.isEmpty) {
           return [
@@ -65,8 +63,9 @@ class LibraryTabViewSearchButton extends ConsumerWidget {
             ),
           ];
         }
-        final List<Course> searchResults =
-            await (await CourseRepo.filter).courseTitleContains(controller.text, caseSensitive: false).findAll();
+        final List<Course> searchResults = await (await CourseRepo.filter)
+            .courseTitleContains(controller.text, caseSensitive: false)
+            .findAll();
         return [
           const SizedBox(height: 12),
           for (int i = 0; i < searchResults.length; i++)

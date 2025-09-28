@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:slidesync/core/global_providers/global_providers.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/actions/courses_view_actions.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/providers/courses_view_providers.dart';
@@ -58,9 +57,10 @@ class _CoursesViewState extends ConsumerState<CoursesView> {
     final int isListView = ref.watch(LibraryTabViewProviders.cardViewType).value ?? 0;
     final isGrid = isListView == 0;
 
-    ref.listen(CoursesViewProviders.coursesFilterOptions, (prev, next) {
+    ref.listen(CoursesViewProviders.coursesFilterOptions.future, (prev, next) async {
+      final newValue = await next;
       final oldCva = cva;
-      final newCva = CoursesViewActions.of(sortOption: next);
+      final newCva = CoursesViewActions.of(sortOption: newValue);
       setCourseSort(newCva);
       oldCva.dispose();
       setState(() {

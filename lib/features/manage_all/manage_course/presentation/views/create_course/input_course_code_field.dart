@@ -1,22 +1,22 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/core/global_notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 
 class InputCourseCodeField extends ConsumerWidget {
-  final AutoDisposeStateProvider<bool> isCourseCodeFieldVisible;
+  final NotifierProvider<BoolNotifier, bool> isCourseCodeFieldVisible;
   final TextEditingController courseCodeController;
   const InputCourseCodeField({super.key, required this.courseCodeController, required this.isCourseCodeFieldVisible});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final bool isCourseVisible = ref.watch(isCourseCodeFieldVisible);
-    final theme = ref.theme;
+    final theme = ref;
     return AnimatedSize(
       duration: Durations.extralong4,
       curve: CustomCurves.bouncySpring,
       child: SizedBox(
-        height: isCourseVisible ? 76 : 0,
+        height: ref.watch(isCourseCodeFieldVisible) ? 76 : 0,
         child: Stack(
           clipBehavior: Clip.hardEdge,
           children: [

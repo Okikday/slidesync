@@ -2,7 +2,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:slidesync/shared/styles/colors.dart';
+import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
 
 class ModifyingListTile extends ConsumerWidget {
   final Widget leading;
@@ -28,13 +28,13 @@ class ModifyingListTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final buttonPadding = context.hPadding5;
     final btnDimension = context.defaultBtnDimension;
-    final theme = ref.theme;
+    final theme = ref;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: ColoredBox(
         // color: context.isDarkMode ? Color.fromARGB(255, 52, 33, 79) : Color(0xFFDBF3FF),
-        color: theme.bgLightenColor(),
+        color: theme.background.lightenColor(theme.isDarkMode ? 0.1 : 0.9),
         child: Padding(
           padding: const EdgeInsets.all(4.0),
           child: CustomElevatedButton(
@@ -44,7 +44,7 @@ class ModifyingListTile extends ConsumerWidget {
 
             contentPadding: EdgeInsets.all(buttonPadding),
             // backgroundColor: context.isDarkMode ? Color.fromARGB(255, 46, 29, 70) : Color(0xFFDBF3FF).withValues(alpha: 0.89),
-            backgroundColor: theme.bgLightenColor(.89, .11),
+            backgroundColor: theme.background.lightenColor(theme.isDarkMode ? .11 : .89),
             child: ConstrainedBox(
               constraints: BoxConstraints(maxHeight: 120),
               child: Row(
@@ -69,11 +69,11 @@ class ModifyingListTile extends ConsumerWidget {
                           title,
                           fontWeight: FontWeight.bold,
                           fontSize: 13.5,
-                          color: ref.theme.onBackground,
+                          color: ref.onBackground,
                           overflow: TextOverflow.fade,
                         ),
                         ConstantSizing.columnSpacing(4),
-                        CustomText(subtitle, fontSize: 12, color: ref.theme.supportingText),
+                        CustomText(subtitle, fontSize: 12, color: ref.supportingText),
                       ],
                     ),
                   ),

@@ -12,7 +12,7 @@ class HomeDashboard extends ConsumerWidget {
     this.completed,
     this.onReadingBtnTapped,
     this.onShareTapped,
-    this.isFirst
+    this.isFirst,
   });
 
   final String courseName;
@@ -26,7 +26,7 @@ class HomeDashboard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return Container(
       constraints: BoxConstraints(maxHeight: 160, maxWidth: 400),
       width: context.deviceWidth,
@@ -37,10 +37,7 @@ class HomeDashboard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: theme.adjustBgAndPrimaryWithLerp,
         borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          width: 2,
-          color: theme.adjustBgAndPrimaryWithLerpExtra,
-        ),
+        border: Border.all(width: 2, color: theme.adjustBgAndPrimaryWithLerpExtra),
         // image: DecorationImage(
         //   image: Assets.images.bookSparkleTransparentBg.asImageProvider,
         //   fit: BoxFit.cover,
@@ -50,7 +47,7 @@ class HomeDashboard extends ConsumerWidget {
         //     BlendMode.srcIn,
         //   ),
         // ),
-        // boxShadow: [BoxShadow(color: HSLColor.fromColor(context.theme.scaffoldBackgroundColor).withLightness(0.1).toColor(), blurRadius: 4, spreadRadius: 2)],
+        // boxShadow: [BoxShadow(color: HSLColor.fromColor(ref.scaffoldBackgroundColor).withLightness(0.1).toColor(), blurRadius: 4, spreadRadius: 2)],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -76,12 +73,7 @@ class HomeDashboard extends ConsumerWidget {
             ),
           ),
           if (detail.isNotEmpty) ConstantSizing.columnSpacingSmall,
-          if (detail.isNotEmpty)
-            CustomText(
-              detail,
-              fontSize: 13,
-              color: theme.supportingText.withValues(alpha: 0.9),
-            ),
+          if (detail.isNotEmpty) CustomText(detail, fontSize: 13, color: theme.supportingText.withValues(alpha: 0.9)),
           ConstantSizing.columnSpacingSmall,
 
           // Row(
@@ -115,7 +107,7 @@ class HomeDashboard extends ConsumerWidget {
                     pixelHeight: 48,
                     elevation: 100,
                     borderRadius: 0,
-                    overlayColor: context.theme.colorScheme.onPrimary.withAlpha(20),
+                    overlayColor: ref.onPrimary.withAlpha(20),
                     backgroundColor: theme.primaryColor,
                     child: CustomText(
                       completed != null ? (completed! ? "Read next slide" : "Continue reading...") : "Start Reading",
@@ -132,39 +124,38 @@ class HomeDashboard extends ConsumerWidget {
               // ConstantSizing.rowSpacing(4),
               if (completed != null)
                 Stack(
-                children: [
-                  CustomElevatedButton(
-                    pixelWidth: 46,
-                    pixelHeight: 46,
-                    contentPadding: EdgeInsets.zero,
-                    shape: CircleBorder(),
-                    backgroundColor: theme.background,
-                    onClick: () {},
-                    child: CustomText(
+                  children: [
+                    CustomElevatedButton(
+                      pixelWidth: 46,
+                      pixelHeight: 46,
+                      contentPadding: EdgeInsets.zero,
+                      shape: CircleBorder(),
+                      backgroundColor: theme.background,
+                      onClick: () {},
+                      child: CustomText(
                         "${((progressValue.clamp(0, 100)) * 100.0).toInt()}%",
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: theme.onBackground,
-                    ),
-                  ),
-
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    top: 0,
-                    bottom: 0,
-                    child: IgnorePointer(
-                      child: CircularProgressIndicator(
-                          value: ((progressValue.clamp(0, 100))).toDouble(),
-                        strokeCap: StrokeCap.round,
-                        color: theme.primaryColor,
-                        backgroundColor: theme.altBackgroundSecondary
-                            .withValues(alpha: 0.5),
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: theme.onBackground,
                       ),
                     ),
-                  ),
-                ],
-              ),
+
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                      child: IgnorePointer(
+                        child: CircularProgressIndicator(
+                          value: ((progressValue.clamp(0, 100))).toDouble(),
+                          strokeCap: StrokeCap.round,
+                          color: theme.primaryColor,
+                          backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               // CustomElevatedButton(
               //   pixelHeight: 48,
               //   pixelWidth: 48,

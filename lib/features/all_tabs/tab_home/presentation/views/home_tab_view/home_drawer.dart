@@ -1,10 +1,9 @@
-import 'dart:ui';
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/core/routes/app_route_navigator.dart';
+import 'package:slidesync/core/routes/routes.dart';
 import 'package:slidesync/features/auth/domain/usecases/auth_uc/user_data_functions.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 
@@ -13,7 +12,7 @@ class HomeDrawer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return PopScope(
       onPopInvokedWithResult: (didPop, result) {
         Scaffold.of(context).closeDrawer();
@@ -66,7 +65,7 @@ class HomeDrawer extends ConsumerWidget {
                 leading: Icon(Iconsax.setting, color: theme.supportingText.withValues(alpha: 0.5)),
                 title: CustomText("Settings", color: theme.onBackground),
                 onTap: () {
-                  AppRouteNavigator.to(context).settingsRoute();
+                  context.pushNamed(Routes.settings.name);
                 },
               ),
               ListTile(
@@ -77,7 +76,6 @@ class HomeDrawer extends ConsumerWidget {
                   // Tools like Calculate gpa, Reading Metrics etc
                 },
               ),
-              
             ],
           ),
         ),

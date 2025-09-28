@@ -221,7 +221,7 @@ class FileUtils {
     BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken);
     final Directory baseDir = await getApplicationDocumentsDirectory();
     final empties = await findEmptyDirectories(
-      rootDirPath.isEmpty ? baseDir.path : "${rootDirPath}${Platform.pathSeparator}courses",
+      rootDirPath.isEmpty ? baseDir.path : "$rootDirPath${Platform.pathSeparator}courses",
     );
     for (var dir in empties) {
       try {

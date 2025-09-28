@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/features/main/presentation/providers/main_providers.dart';
+import 'package:slidesync/features/all_tabs/main/main_view_controller.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 
 class BottomNavBar extends ConsumerWidget {
@@ -12,8 +12,7 @@ class BottomNavBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
-    final int currentIndex = ref.watch(MainProviders.mainTabViewIndexProvider);
+    final theme = ref;
 
     return Material(
       type: MaterialType.transparency,
@@ -24,7 +23,7 @@ class BottomNavBar extends ConsumerWidget {
           filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
           child: BottomNavigationBar(
             type: BottomNavigationBarType.fixed,
-            currentIndex: currentIndex,
+            currentIndex: ref.watch(MainViewController.mainTabViewIndexProvider),
             unselectedItemColor: theme.supportingText,
             selectedItemColor: theme.primaryColor,
             onTap: (index) => onTap(index),

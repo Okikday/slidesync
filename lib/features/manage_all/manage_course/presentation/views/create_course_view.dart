@@ -1,7 +1,7 @@
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/core/global_notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/manage_all/manage_course/presentation/views/create_course/add_image_avatar.dart';
 import 'package:slidesync/features/manage_all/manage_course/presentation/views/create_course/create_course_button.dart';
@@ -23,10 +23,7 @@ class _CreateCourseViewState extends ConsumerState<CreateCourseView> with Single
     return AnnotatedRegion(
       value: UiUtils.getSystemUiOverlayStyle(Colors.transparent, context.isDarkMode),
       child: Scaffold(
-        appBar: AppBarContainer(
-          
-          child: AppBarContainerChild(context.isDarkMode, title: "Create Course"),
-        ),
+        appBar: AppBarContainer(child: AppBarContainerChild(context.isDarkMode, title: "Create Course")),
 
         body: CreateCourseOuterSection(),
       ),
@@ -42,17 +39,17 @@ class CreateCourseOuterSection extends ConsumerStatefulWidget {
 }
 
 class _CreateCourseOuterSectionState extends ConsumerState<CreateCourseOuterSection> {
-  late final AutoDisposeStateProvider<bool> isCourseCodeFieldVisible;
+  late final NotifierProvider<BoolNotifier, bool> isCourseCodeFieldVisible;
   late final TextEditingController courseNameController;
   late final TextEditingController courseCodeController;
-  late final AutoDisposeStateProvider<String?> courseImagePathProvider;
+  late final NotifierProvider<ImpliedNotifierN<String>, String?> courseImagePathProvider;
   late final ScrollController scrollController;
 
   @override
   void initState() {
     super.initState();
-    isCourseCodeFieldVisible = AutoDisposeStateProvider((ref) => false);
-    courseImagePathProvider = AutoDisposeStateProvider((ref) => null);
+    isCourseCodeFieldVisible = NotifierProvider<BoolNotifier, bool>(BoolNotifier.new, isAutoDispose: true);
+    courseImagePathProvider = NotifierProvider(ImpliedNotifierN.new, isAutoDispose: true);
     courseNameController = TextEditingController();
     courseCodeController = TextEditingController();
     scrollController = ScrollController();
@@ -95,7 +92,10 @@ class _CreateCourseOuterSectionState extends ConsumerState<CreateCourseOuterSect
 
                     ConstantSizing.columnSpacingLarge,
 
-                    InputCourseCodeField(courseCodeController: courseCodeController, isCourseCodeFieldVisible: isCourseCodeFieldVisible),
+                    InputCourseCodeField(
+                      courseCodeController: courseCodeController,
+                      isCourseCodeFieldVisible: isCourseCodeFieldVisible,
+                    ),
 
                     ConstantSizing.columnSpacing(72),
                   ],

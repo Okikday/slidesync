@@ -39,7 +39,7 @@ class AppActionDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     final divider = Divider(color: theme.supportingText.withAlpha(60), height: 0);
     return AppCustomizableDialog(
       blurSigma: blurSigma,
@@ -49,26 +49,25 @@ class AppActionDialog extends ConsumerWidget {
       leading: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
-        children:
-            leading != null
-                ? [leading!, divider]
-                : [
-                  ConstantSizing.columnSpacingSmall,
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Center(
-                      child: CustomText(
-                        title!,
-                        color: theme.onBackground,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        textAlign: TextAlign.center,
-                      ),
+        children: leading != null
+            ? [leading!, divider]
+            : [
+                ConstantSizing.columnSpacingSmall,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: Center(
+                    child: CustomText(
+                      title!,
+                      color: theme.onBackground,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                      textAlign: TextAlign.center,
                     ),
                   ),
-                  ConstantSizing.columnSpacingSmall,
-                  divider,
-                ],
+                ),
+                ConstantSizing.columnSpacingSmall,
+                divider,
+              ],
       ),
       child: ListView.builder(
         padding: EdgeInsets.zero,
@@ -83,7 +82,10 @@ class AppActionDialog extends ConsumerWidget {
 
           return Column(
             mainAxisSize: MainAxisSize.min,
-            children: [BuildPlainActionButton(title: action.title, icon: action.icon, onTap: action.onTap), divider],
+            children: [
+              BuildPlainActionButton(title: action.title, icon: action.icon, onTap: action.onTap),
+              divider,
+            ],
           );
         },
       ),
@@ -121,11 +123,7 @@ class BuildPlainActionButton extends ConsumerWidget {
         children: [
           icon,
           Expanded(
-            child: CustomText(
-              title,
-              color: ref.theme.onBackground,
-              style: textStyle,
-            ),
+            child: CustomText(title, color: ref.onBackground, style: textStyle),
           ),
         ],
       ),

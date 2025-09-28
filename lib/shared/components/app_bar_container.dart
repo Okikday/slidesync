@@ -90,7 +90,7 @@ class _AppBarContainerWidget extends ConsumerWidget {
         color: scaffoldBgColor ?? context.scaffoldBackgroundColor,
         border: Border(
           bottom: BorderSide(
-            color: (scaffoldBgColor ?? context.scaffoldBackgroundColor).blendColor(ref.isDarkMode ? 0.15 : 0.85),
+            color: (scaffoldBgColor ?? context.scaffoldBackgroundColor).lightenColor(ref.isDarkMode ? 0.15 : 0.85),
           ),
         ),
       ),

@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:slidesync/shared/styles/colors.dart';
-
+import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
 
 class AppBarContainerChild extends ConsumerWidget {
   const AppBarContainerChild(
@@ -17,7 +16,7 @@ class AppBarContainerChild extends ConsumerWidget {
     this.tooltipMessage,
     this.onBackButtonClicked,
     this.trailing,
-    this.padding
+    this.padding,
   });
 
   final bool isDarkMode;
@@ -32,7 +31,7 @@ class AppBarContainerChild extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return Tooltip(
       triggerMode: TooltipTriggerMode.tap,
       message: tooltipMessage ?? title,
@@ -57,7 +56,7 @@ class AppBarContainerChild extends ConsumerWidget {
                       CustomText(
                         subtitle!,
                         fontSize: 12,
-                        color: theme.bgLightenColor(.6, .4),
+                        color: theme.background.lightenColor(theme.isDarkMode ? .4 : .6),
                         overflow: TextOverflow.ellipsis,
                         style: subtitleStyle,
                       ),
@@ -87,7 +86,7 @@ class AppBackButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return IconButton(
       color: theme.supportingText,
       onPressed: () {
@@ -98,15 +97,9 @@ class AppBackButton extends ConsumerWidget {
           onPressed!();
         }
       },
-      icon: Icon(
-        Icons.arrow_back_ios_new_rounded,
-        size: 20,
-        color: theme.supportingText,
-      ),
+      icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: theme.supportingText),
       style: ButtonStyle(
-        backgroundColor: WidgetStatePropertyAll(
-          backgroundColor ?? theme.altBackgroundPrimary.withValues(alpha: 0.9),
-        ),
+        backgroundColor: WidgetStatePropertyAll(backgroundColor ?? theme.altBackgroundPrimary.withValues(alpha: 0.9)),
       ),
     );
   }

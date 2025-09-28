@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,17 +7,14 @@ import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
-import 'package:slidesync/domain/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/actions/courses_view_actions.dart';
-import 'package:slidesync/features/all_tabs/tab_library/presentation/providers/library_tab_view_providers.dart';
-import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view/library_tab_view_app_bar/library_tab_view_layout_button.dart';
 import 'package:slidesync/features/course_navigation/presentation/providers/course_materials_providers.dart';
 import 'package:slidesync/features/course_navigation/presentation/views/course_materials/materials_search_button.dart';
-import 'package:slidesync/features/manage_all/manage_collections/presentation/views/modify_collections/collections_view_search_bar.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/views/add_contents/add_content_fab.dart';
 import 'package:slidesync/features/course_navigation/presentation/views/course_materials/materials_view.dart';
 import 'package:slidesync/shared/common_widgets/app_popup_menu_button.dart';
 import 'package:slidesync/shared/components/app_bar_container.dart';
+import 'package:slidesync/shared/components/circular_loading_indicator.dart';
 import 'package:slidesync/shared/components/dialogs/app_customizable_dialog.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 
@@ -40,15 +35,7 @@ class _CourseMaterialsViewState extends ConsumerState<CourseMaterialsView> {
     scrollController.addListener(scrollListener);
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      Result.tryRunAsync(() async {
-        final option =
-            CourseSortOption.values[await AppHiveData.instance.getData(key: HiveDataPaths.courseMaterialsSortOption)
-                    as int? ??
-                CourseSortOption.none.index];
-        ref
-            .read(CourseMaterialsProviders.contentsFilterOption(widget.collection.collectionId).notifier)
-            .update((cb) => option);
-      });
+      Result.tryRunAsync(() async {});
     });
   }
 
@@ -71,7 +58,7 @@ class _CourseMaterialsViewState extends ConsumerState<CourseMaterialsView> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.theme;
+    final theme = ref;
     // ref.watch(streamedCollection).value ??
     final CourseCollection collection = widget.collection;
     return AnnotatedRegion(
@@ -124,66 +111,62 @@ class _CourseMaterialsViewState extends ConsumerState<CourseMaterialsView> {
                                   ),
                                   ConstantSizing.columnSpacingSmall,
                                   Expanded(
-                                    child: ListView.builder(
-                                      itemCount: CourseSortOption.values.length,
-                                      itemBuilder: (context, index) {
-                                        return CustomElevatedButton(
-                                          pixelHeight: 44,
-                                          backgroundColor: Colors.transparent,
-                                          borderRadius: 0,
-                                          onClick: () async {
-                                            final newValue =
-                                                CourseSortOption.values[index.clamp(0, CourseSortOption.values.length)];
-                                            ref
-                                                .read(
-                                                  CourseMaterialsProviders.contentsFilterOption(
-                                                    collection.collectionId,
-                                                  ).notifier,
-                                                )
-                                                .update((cb) => newValue);
-                                            await Result.tryRunAsync(() async {
-                                              await AppHiveData.instance.setData(
-                                                key: HiveDataPaths.courseMaterialsSortOption,
-                                                value: newValue.index,
-                                              );
-                                            });
-                                            if (context.mounted) UiUtils.hideDialog(context);
-                                          },
-                                          child: Row(
-                                            children: [
-                                              RadioGroup<int>(
-                                                groupValue: ref
-                                                    .watch(
-                                                      CourseMaterialsProviders.contentsFilterOption(
-                                                        collection.collectionId,
+                                    child: ref
+                                        .watch(CourseMaterialsProviders.contentFilterProvider)
+                                        .when(
+                                          data: (data) {
+                                            return ListView.builder(
+                                              itemCount: CourseSortOption.values.length,
+                                              itemBuilder: (context, index) {
+                                                return CustomElevatedButton(
+                                                  pixelHeight: 44,
+                                                  backgroundColor: Colors.transparent,
+                                                  borderRadius: 0,
+                                                  onClick: () async {
+                                                    final newValue = CourseSortOption
+                                                        .values[index.clamp(0, CourseSortOption.values.length)];
+                                                    ref
+                                                        .read(CourseMaterialsProviders.contentFilterProvider.notifier)
+                                                        .set(newValue);
+                                                    await Result.tryRunAsync(() async {
+                                                      await AppHiveData.instance.setData(
+                                                        key: HiveDataPathKey.courseMaterialsSortOption.name,
+                                                        value: newValue.index,
+                                                      );
+                                                    });
+                                                    if (context.mounted) UiUtils.hideDialog(context);
+                                                  },
+                                                  child: Row(
+                                                    children: [
+                                                      RadioGroup<int>(
+                                                        groupValue: data.index,
+                                                        onChanged: (p) async {
+                                                          final newValue = CourseSortOption
+                                                              .values[index.clamp(0, CourseSortOption.values.length)];
+                                                          ref
+                                                              .read(
+                                                                CourseMaterialsProviders.contentFilterProvider.notifier,
+                                                              )
+                                                              .set(newValue);
+                                                          await Result.tryRunAsync(() async {
+                                                            await AppHiveData.instance.setData(
+                                                              key: HiveDataPathKey.courseMaterialsSortOption.name,
+                                                              value: newValue.index,
+                                                            );
+                                                          });
+                                                        },
+                                                        child: Radio(value: index),
                                                       ),
-                                                    )
-                                                    .index,
-                                                onChanged: (p) async {
-                                                  final newValue = CourseSortOption
-                                                      .values[index.clamp(0, CourseSortOption.values.length)];
-                                                  ref
-                                                      .read(
-                                                        CourseMaterialsProviders.contentsFilterOption(
-                                                          collection.collectionId,
-                                                        ).notifier,
-                                                      )
-                                                      .update((cb) => newValue);
-                                                  await Result.tryRunAsync(() async {
-                                                    await AppHiveData.instance.setData(
-                                                      key: HiveDataPaths.courseMaterialsSortOption,
-                                                      value: newValue.index,
-                                                    );
-                                                  });
-                                                },
-                                                child: Radio(value: index,),
-                                              ),
-                                              Expanded(child: CustomText(CourseSortOption.values[index].label)),
-                                            ],
-                                          ),
-                                        );
-                                      },
-                                    ),
+                                                      Expanded(child: CustomText(CourseSortOption.values[index].label)),
+                                                    ],
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          },
+                                          error: (e, st) => Icon(Icons.error_rounded),
+                                          loading: () => CircularLoadingIndicator(),
+                                        ),
                                   ),
                                 ],
                               ),

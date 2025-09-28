@@ -12,14 +12,11 @@ class SettingsView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return AnnotatedRegion(
       value: UiUtils.getSystemUiOverlayStyle(Colors.transparent, context.isDarkMode),
       child: Scaffold(
-        appBar: AppBarContainer(
-          
-          child: AppBarContainerChild(context.isDarkMode, title: "Settings",),
-        ),
+        appBar: AppBarContainer(child: AppBarContainerChild(context.isDarkMode, title: "Settings")),
 
         body: Padding(
           padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
@@ -39,7 +36,12 @@ class SettingsView extends ConsumerWidget {
                   textColor: theme.supportingText,
                   textSize: 14,
                   onClick: () {
-                    CustomDialog.show(context, barrierColor: Colors.black26, blurSigma: Offset(2, 2), child: SettingsAppearanceDialog());
+                    CustomDialog.show(
+                      context,
+                      barrierColor: Colors.black26,
+                      blurSigma: Offset(2, 2),
+                      child: SettingsAppearanceDialog(),
+                    );
                   },
                 ),
               ),
@@ -79,13 +81,11 @@ class SettingsView extends ConsumerWidget {
               SettingsCard(
                 title: "Summarized suggestions",
                 iconData: Iconsax.sun,
-                content:
-                    "Use your materials to suggest what to read",
+                content: "Use your materials to suggest what to read",
                 trailing: Switch(value: false, onChanged: (p) {}),
               ),
 
-
-              // Help: Note, Materials won't be uploaded except you explicitly share them. 
+              // Help: Note, Materials won't be uploaded except you explicitly share them.
               // Option: Always show download size before downloading from SlideSync Repo
 
               // ConstantSizing.columnSpacingMedium,
@@ -106,7 +106,7 @@ class SettingsCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return Container(
       decoration: BoxDecoration(color: theme.supportingText.withAlpha(10), borderRadius: BorderRadius.circular(24)),
       child: Column(
@@ -126,12 +126,7 @@ class SettingsCard extends ConsumerWidget {
                     spacing: 2,
                     children: [
                       CustomText(title, color: theme.onBackground),
-                      if (content != null)
-                        CustomText(
-                          content!,
-                          fontSize: 11,
-                          color: theme.supportingText,
-                        ),
+                      if (content != null) CustomText(content!, fontSize: 11, color: theme.supportingText),
                     ],
                   ),
                 ),

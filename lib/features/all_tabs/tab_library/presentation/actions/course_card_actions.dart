@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/routes/app_route_navigator.dart';
+import 'package:go_router/go_router.dart';
+import 'package:slidesync/core/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/providers/library_tab_view_providers.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view/expand_card_dialog.dart';
-import 'package:slidesync/core/global_providers/data_providers/course_providers.dart';
 
 class CourseCardActions {
   final WidgetRef ref;
@@ -18,10 +18,9 @@ class CourseCardActions {
     final isCourseCardAnimating = LibraryTabViewProviders.isCourseCardAnimating;
     if (isCourseCardAnimating) return;
     LibraryTabViewProviders.isCourseCardAnimating = true; // Tell that a course is currently opened
-    ref.read(CourseProviders.courseProvider.notifier).updateCourse(course);
     await Future.delayed(Durations.short4);
 
-    if (context.mounted) AppRouteNavigator.to(context).courseDetailsRoute(course);
+    if (context.mounted) context.pushNamed(Routes.courseDetails.name, extra: course);
     LibraryTabViewProviders.isCourseCardAnimating = false;
   }
 

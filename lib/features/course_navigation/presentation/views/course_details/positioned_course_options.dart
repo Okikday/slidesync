@@ -1,17 +1,13 @@
-import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 
 class PositionedCourseOptions extends ConsumerWidget {
-  const PositionedCourseOptions({
-    super.key,
-  });
+  const PositionedCourseOptions({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    // final theme = ref;
     return Positioned(
       bottom: context.bottomPadding + 16,
       left: 10,
@@ -41,7 +37,7 @@ class PositionedCourseOptions extends ConsumerWidget {
           //     ],
           //   ),
           // ),
-    
+
           // CustomElevatedButton(
           //   pixelHeight: 48,
           //   pixelWidth: 48,

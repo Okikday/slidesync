@@ -24,7 +24,7 @@ class ListCourseCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return ClipRRect(
       borderRadius: BorderRadius.circular(28),
       child: ColoredBox(
@@ -109,7 +109,7 @@ class ListCourseCardIcon extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return InkWell(
       customBorder: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       onTap: onTapIcon,
@@ -204,7 +204,7 @@ class ListCourseCardTitleColumn extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -253,7 +253,6 @@ class ListCourseCardProgressIndicator extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
     return SizedBox.square(
       dimension: 40,
       child: Stack(

@@ -1,21 +1,12 @@
-import 'dart:developer';
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
-import 'package:firebase_ai/firebase_ai.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_streaming_text_markdown/flutter_streaming_text_markdown.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/features/ask_ai/domain/services/ai_gen_client.dart';
 import 'package:slidesync/features/ask_ai/presentation/ai_interaction_view.dart';
-import 'package:slidesync/features/ask_ai/presentation/quick_ai_scroll_widget.dart';
 import 'package:slidesync/features/content_viewer/presentation/controllers/doc_viewer_controllers/pdf_doc_viewer_controller.dart';
-import 'package:slidesync/shared/components/loading_logo.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 import 'package:dotted_border/dotted_border.dart';
-import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
 
 class AskAiScreen extends ConsumerStatefulWidget {
   const AskAiScreen({super.key});
@@ -51,7 +42,7 @@ class _AskAiScreenState extends ConsumerState<AskAiScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // final theme = ref.theme;
+    // final theme = ref;
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: Align(
@@ -85,7 +76,7 @@ class AiScreenCapture extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return ValueListenableBuilder(
       valueListenable: imageNotifier,
       builder: (context, value, child) {

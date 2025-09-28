@@ -29,16 +29,22 @@ class _CourseDescriptionDialogState extends ConsumerState<CourseDescriptionDialo
 
   @override
   Widget build(BuildContext context) {
-
     return Stack(
       children: [
         Positioned.fill(child: GestureDetector(onTap: () => CustomDialog.hide(context))),
         Align(
           alignment: Alignment.center,
           child: Container(
-            decoration: BoxDecoration(color: context.scaffoldBackgroundColor.withValues(alpha: 0.9), borderRadius: BorderRadius.circular(12)),
-            width: context.deviceWidth > context.deviceHeight ? context.deviceHeight * 0.85 : context.deviceWidth * 0.85,
-            height: context.deviceWidth > context.deviceHeight ? context.deviceHeight * 0.75 : context.deviceWidth * 0.75,
+            decoration: BoxDecoration(
+              color: context.scaffoldBackgroundColor.withValues(alpha: 0.9),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            width: context.deviceWidth > context.deviceHeight
+                ? context.deviceHeight * 0.85
+                : context.deviceWidth * 0.85,
+            height: context.deviceWidth > context.deviceHeight
+                ? context.deviceHeight * 0.75
+                : context.deviceWidth * 0.75,
             padding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
             child: RawScrollbar(
               mainAxisMargin: 0,
@@ -61,7 +67,7 @@ class _CourseDescriptionDialogState extends ConsumerState<CourseDescriptionDialo
                         fontWeight: FontWeight.bold,
                         fontSize: 18,
                         textAlign: TextAlign.center,
-                        color: ref.theme.onBackground,
+                        color: ref.onBackground,
                       ),
                     ),
                   ),
@@ -76,7 +82,7 @@ class _CourseDescriptionDialogState extends ConsumerState<CourseDescriptionDialo
                         widget.description,
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
-                        color: ref.theme.onBackground,
+                        color: ref.onBackground,
                       ),
                     ),
                   ),

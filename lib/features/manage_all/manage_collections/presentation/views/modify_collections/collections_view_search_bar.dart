@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:slidesync/shared/styles/colors.dart';
 
 class CollectionsViewSearchBar extends ConsumerStatefulWidget {
   final TextEditingController? searchController;
@@ -33,7 +32,7 @@ class _CollectionsViewSearchBarState extends ConsumerState<CollectionsViewSearch
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.theme;
+    final theme = ref;
     return ClipRRect(
       child: ColoredBox(
         color: context.scaffoldBackgroundColor.withValues(alpha: 0.6),
@@ -61,12 +60,11 @@ class _CollectionsViewSearchBarState extends ConsumerState<CollectionsViewSearch
                         padding: const EdgeInsets.only(left: 12.0, right: 10.0, top: 12.0, bottom: 12.0),
                         child: Icon(Iconsax.search_normal_copy, size: 20, color: theme.supportingText),
                       ),
-                      onTapOutside:
-                          widget.onTapOutside == null
-                              ? null
-                              : () {
-                                if (widget.onTapOutside != null) widget.onTapOutside!(focusNode);
-                              },
+                      onTapOutside: widget.onTapOutside == null
+                          ? null
+                          : () {
+                              if (widget.onTapOutside != null) widget.onTapOutside!(focusNode);
+                            },
                       ontap: widget.onTap,
                     ),
                   ),

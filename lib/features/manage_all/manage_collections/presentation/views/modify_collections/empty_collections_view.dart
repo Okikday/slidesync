@@ -14,7 +14,7 @@ class EmptyCollectionsView extends ConsumerWidget {
     return SliverToBoxAdapter(
       child: SizedBox(
         height: 400,
-        
+
         child: SingleChildScrollView(
           physics: const NeverScrollableScrollPhysics(),
           child: Column(
@@ -35,12 +35,12 @@ class EmptyCollectionsView extends ConsumerWidget {
                   onClick: () {
                     if (onClickAddCollection != null) onClickAddCollection!();
                   },
-                  backgroundColor: ref.theme.primaryColor,
+                  backgroundColor: ref.primaryColor,
                   borderRadius: 12,
                   pixelHeight: 44,
                   label: "Add a new collection",
                   textSize: 15,
-                  textColor: ref.theme.onPrimary,
+                  textColor: ref.onPrimary,
                 ),
               ),
             ],

@@ -5,10 +5,10 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/content_viewer/domain/services/drive_browser.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// AI GENERATED!
@@ -21,7 +21,7 @@ final driveResourceProvider = FutureProvider.autoDispose.family<DriveResource, S
   if (folderId == null) {
     throw ArgumentError('Folder ID cannot be null');
   }
-  
+
   final apiKey = dotenv.env['DRIVE_API_KEY'] ?? '';
   // Handle both URLs and file IDs
   String linkToFetch;
@@ -32,7 +32,7 @@ final driveResourceProvider = FutureProvider.autoDispose.family<DriveResource, S
     try {
       final metadata = await DriveBrowser.getFileMetadata(folderId, apiKey: apiKey);
       final mimeType = metadata.mimeType ?? '';
-      
+
       if (mimeType == 'application/vnd.google-apps.folder') {
         linkToFetch = 'https://drive.google.com/drive/folders/$folderId';
       } else {
@@ -44,7 +44,7 @@ final driveResourceProvider = FutureProvider.autoDispose.family<DriveResource, S
       linkToFetch = 'https://drive.google.com/drive/folders/$folderId';
     }
   }
-  
+
   return DriveBrowser.fetchResourceFromLink(linkToFetch, apiKey: apiKey);
 });
 
@@ -63,21 +63,14 @@ class DriveListingView extends ConsumerWidget {
   final Function(DriveFile file)? onFileSelected;
   final Function(List<DriveFile> files, bool includeSubfolders)? onImport;
 
-  const DriveListingView({
-    super.key,
-    this.initialFolderId,
-    this.onFileSelected,
-    this.onImport,
-  });
+  const DriveListingView({super.key, this.initialFolderId, this.onFileSelected, this.onImport});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     final currentFolderId = ref.watch(currentFolderIdProvider) ?? initialFolderId;
     final navigationHistory = ref.watch(navigationHistoryProvider);
-    final resourceAsync = currentFolderId != null 
-        ? ref.watch(driveResourceProvider(currentFolderId))
-        : null;
+    final resourceAsync = currentFolderId != null ? ref.watch(driveResourceProvider(currentFolderId)) : null;
 
     return PopScope(
       canPop: navigationHistory.isEmpty,
@@ -109,23 +102,12 @@ class DriveListingView extends ConsumerWidget {
                   fontWeight: FontWeight.w600,
                   color: theme.onSurfaceColor,
                 ),
-                loading: () => CustomText(
-                  'Loading...',
-                  fontSize: 18,
-                  color: theme.onSurfaceColor,
-                ),
-                error: (error, stack) => CustomText(
-                  'Drive Files',
-                  fontSize: 18,
-                  color: theme.onSurfaceColor,
-                ),
+                loading: () => CustomText('Loading...', fontSize: 18, color: theme.onSurfaceColor),
+                error: (error, stack) => CustomText('Drive Files', fontSize: 18, color: theme.onSurfaceColor),
               ),
               actions: [
                 if (resourceAsync?.hasValue == true && resourceAsync!.value!.type == DriveResourceType.folder)
-                  _ImportButton(
-                    resource: resourceAsync.value!,
-                    onImport: onImport,
-                  ),
+                  _ImportButton(resource: resourceAsync.value!, onImport: onImport),
                 const SizedBox(width: 8),
               ],
             ),
@@ -133,17 +115,16 @@ class DriveListingView extends ConsumerWidget {
           body: currentFolderId == null
               ? _EmptyState()
               : resourceAsync?.when(
-                  data: (resource) => _DriveContent(
-                    resource: resource,
-                    onFileSelected: onFileSelected,
-                    onFolderNavigate: (folderId) => _navigateToFolder(ref, folderId),
-                  ),
-                  loading: () => _LoadingState(),
-                  error: (error, stack) => _ErrorState(
-                    error: error,
-                    onRetry: () => ref.refresh(driveResourceProvider(currentFolderId)),
-                  ),
-                ) ?? _EmptyState(),
+                      data: (resource) => _DriveContent(
+                        resource: resource,
+                        onFileSelected: onFileSelected,
+                        onFolderNavigate: (folderId) => _navigateToFolder(ref, folderId),
+                      ),
+                      loading: () => _LoadingState(),
+                      error: (error, stack) =>
+                          _ErrorState(error: error, onRetry: () => ref.refresh(driveResourceProvider(currentFolderId))),
+                    ) ??
+                    _EmptyState(),
         ),
       ),
     );
@@ -172,20 +153,14 @@ class _ImportButton extends ConsumerWidget {
   final DriveResource resource;
   final Function(List<DriveFile> files, bool includeSubfolders)? onImport;
 
-  const _ImportButton({
-    required this.resource,
-    this.onImport,
-  });
+  const _ImportButton({required this.resource, this.onImport});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
-    
+    final theme = ref;
+
     return PopupMenuButton<String>(
-      icon: Icon(
-        Icons.download,
-        color: theme.primaryColor,
-      ),
+      icon: Icon(Icons.download, color: theme.primaryColor),
       tooltip: 'Import Options',
       onSelected: (value) {
         if (onImport != null && resource.children != null) {
@@ -217,11 +192,7 @@ class _ImportButton extends ConsumerWidget {
                     fontWeight: FontWeight.w500,
                     color: theme.onSurfaceColor,
                   ),
-                  CustomText(
-                    'Files in this folder only',
-                    fontSize: 12,
-                    color: theme.supportingText,
-                  ),
+                  CustomText('Files in this folder only', fontSize: 12, color: theme.supportingText),
                 ],
               ),
             ],
@@ -243,11 +214,7 @@ class _ImportButton extends ConsumerWidget {
                     fontWeight: FontWeight.w500,
                     color: theme.onSurfaceColor,
                   ),
-                  CustomText(
-                    'Include all nested files',
-                    fontSize: 12,
-                    color: theme.supportingText,
-                  ),
+                  CustomText('Include all nested files', fontSize: 12, color: theme.supportingText),
                 ],
               ),
             ],
@@ -263,17 +230,13 @@ class _DriveContent extends ConsumerWidget {
   final Function(DriveFile file)? onFileSelected;
   final Function(String folderId)? onFolderNavigate;
 
-  const _DriveContent({
-    required this.resource,
-    this.onFileSelected,
-    this.onFolderNavigate,
-  });
+  const _DriveContent({required this.resource, this.onFileSelected, this.onFolderNavigate});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (resource.type == DriveResourceType.folder) {
       final children = resource.children ?? [];
-      
+
       if (children.isEmpty) {
         return _EmptyFolderState();
       }
@@ -323,16 +286,12 @@ class _DriveItemTile extends ConsumerWidget {
   final VoidCallback? onTap;
   final bool isDetailView;
 
-  const _DriveItemTile({
-    required this.file,
-    this.onTap,
-    this.isDetailView = false,
-  });
+  const _DriveItemTile({required this.file, this.onTap, this.isDetailView = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
-    
+    final theme = ref;
+
     return CustomElevatedButton(
       backgroundColor: theme.cardColor,
       borderRadius: 12,
@@ -370,15 +329,13 @@ class _DriveItemTile extends ConsumerWidget {
 class _FileIcon extends ConsumerWidget {
   final DriveFile file;
 
-  const _FileIcon({
-    required this.file,
-  });
+  const _FileIcon({required this.file});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     final mimeType = file.mimeType ?? '';
-    
+
     // Use thumbnail for images if available
     if (file.thumbnailLink != null && mimeType.startsWith('image/')) {
       return ClipRRect(
@@ -391,25 +348,18 @@ class _FileIcon extends ConsumerWidget {
           placeholder: (context, url) => Container(
             width: 48,
             height: 48,
-            decoration: BoxDecoration(
-              color: Colors.purple.withAlpha(25),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              Icons.image,
-              color: Colors.purple,
-              size: 24,
-            ),
+            decoration: BoxDecoration(color: Colors.purple.withAlpha(25), borderRadius: BorderRadius.circular(12)),
+            child: Icon(Icons.image, color: Colors.purple, size: 24),
           ),
           errorWidget: (context, url, error) => _getDefaultIcon(mimeType, theme),
         ),
       );
     }
-    
+
     return _getDefaultIcon(mimeType, theme);
   }
 
-  Widget _getDefaultIcon(String mimeType, AppThemeModel theme) {
+  Widget _getDefaultIcon(String mimeType, WidgetRef theme) {
     IconData iconData;
     Color iconColor;
 
@@ -448,15 +398,8 @@ class _FileIcon extends ConsumerWidget {
     return Container(
       width: 48,
       height: 48,
-      decoration: BoxDecoration(
-        color: iconColor.withAlpha(25),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Icon(
-        iconData,
-        color: iconColor,
-        size: 24,
-      ),
+      decoration: BoxDecoration(color: iconColor.withAlpha(25), borderRadius: BorderRadius.circular(12)),
+      child: Icon(iconData, color: iconColor, size: 24),
     );
   }
 }
@@ -465,19 +408,16 @@ class _FileMetadata extends ConsumerWidget {
   final DriveFile file;
   final bool isDetailView;
 
-  const _FileMetadata({
-    required this.file,
-    this.isDetailView = false,
-  });
+  const _FileMetadata({required this.file, this.isDetailView = false});
 
   String _formatTimeAgo(String? timeString) {
     if (timeString == null) return '';
-    
+
     try {
       final date = DateTime.parse(timeString);
       final now = DateTime.now();
       final difference = now.difference(date);
-      
+
       if (difference.inDays > 365) {
         final years = (difference.inDays / 365).floor();
         return years == 1 ? '1 year ago' : '$years years ago';
@@ -503,7 +443,7 @@ class _FileMetadata extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     final metadata = <String>[];
 
     // File type description
@@ -534,19 +474,10 @@ class _FileMetadata extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (metadata.isNotEmpty)
-          CustomText(
-            metadata.join(' • '),
-            fontSize: 12,
-            color: theme.supportingText,
-          ),
+        if (metadata.isNotEmpty) CustomText(metadata.join(' • '), fontSize: 12, color: theme.supportingText),
         if (isDetailView && file.ownerDisplayName != null) ...[
           const SizedBox(height: 4),
-          CustomText(
-            'Owner: ${file.ownerDisplayName}',
-            fontSize: 12,
-            color: theme.supportingText,
-          ),
+          CustomText('Owner: ${file.ownerDisplayName}', fontSize: 12, color: theme.supportingText),
         ],
         if (isDetailView && file.description != null && file.description!.isNotEmpty) ...[
           const SizedBox(height: 4),
@@ -566,9 +497,7 @@ class _FileMetadata extends ConsumerWidget {
 class _ActionButton extends ConsumerWidget {
   final DriveFile file;
 
-  const _ActionButton({
-    required this.file,
-  });
+  const _ActionButton({required this.file});
 
   void _openInDrive(String? webViewLink) async {
     if (webViewLink != null) {
@@ -586,13 +515,10 @@ class _ActionButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
-    
+    final theme = ref;
+
     return PopupMenuButton<String>(
-      icon: Icon(
-        Icons.more_vert,
-        color: theme.supportingText,
-      ),
+      icon: Icon(Icons.more_vert, color: theme.supportingText),
       tooltip: 'More options',
       onSelected: (value) {
         switch (value) {
@@ -653,7 +579,7 @@ class _FileDetailsDialog extends ConsumerWidget {
     if (size == null) return 'Unknown';
     final bytes = int.tryParse(size);
     if (bytes == null) return 'Unknown';
-    
+
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
     if (bytes < 1024 * 1024 * 1024) return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
@@ -672,19 +598,14 @@ class _FileDetailsDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
 
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: Container(
         constraints: const BoxConstraints(maxWidth: 400),
         padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: theme.cardColor,
-          borderRadius: BorderRadius.circular(16),
-        ),
+        decoration: BoxDecoration(color: theme.cardColor, borderRadius: BorderRadius.circular(16)),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -710,35 +631,20 @@ class _FileDetailsDialog extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 24),
-            _DetailRow('Type', file.mimeType?.split('/').last ?? 'Unknown', theme),
-            if (file.size != null && !file.isGoogleNative)
-              _DetailRow('Size', _formatFileSize(file.size), theme),
-            if (file.ownerDisplayName != null)
-              _DetailRow('Owner', file.ownerDisplayName!, theme),
-            if (file.createdTime != null)
-              _DetailRow('Created', _formatDateTime(file.createdTime), theme),
-            if (file.modifiedTime != null)
-              _DetailRow('Modified', _formatDateTime(file.modifiedTime), theme),
+            _detailRow('Type', file.mimeType?.split('/').last ?? 'Unknown', theme),
+            if (file.size != null && !file.isGoogleNative) _detailRow('Size', _formatFileSize(file.size), theme),
+            if (file.ownerDisplayName != null) _detailRow('Owner', file.ownerDisplayName!, theme),
+            if (file.createdTime != null) _detailRow('Created', _formatDateTime(file.createdTime), theme),
+            if (file.modifiedTime != null) _detailRow('Modified', _formatDateTime(file.modifiedTime), theme),
             if (file.lastModifyingUserDisplayName != null)
-              _DetailRow('Last modified by', file.lastModifyingUserDisplayName!, theme),
-            if (file.shared == true)
-              _DetailRow('Sharing', 'Shared', theme),
-            if (file.starred == true)
-              _DetailRow('Status', 'Starred', theme),
+              _detailRow('Last modified by', file.lastModifyingUserDisplayName!, theme),
+            if (file.shared == true) _detailRow('Sharing', 'Shared', theme),
+            if (file.starred == true) _detailRow('Status', 'Starred', theme),
             if (file.description != null && file.description!.isNotEmpty) ...[
               const SizedBox(height: 16),
-              CustomText(
-                'Description',
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: theme.onCardColor,
-              ),
+              CustomText('Description', fontSize: 14, fontWeight: FontWeight.w600, color: theme.onCardColor),
               const SizedBox(height: 8),
-              CustomText(
-                file.description!,
-                fontSize: 14,
-                color: theme.supportingText,
-              ),
+              CustomText(file.description!, fontSize: 14, color: theme.supportingText),
             ],
             if (file.webViewLink != null) ...[
               const SizedBox(height: 24),
@@ -772,7 +678,7 @@ class _FileDetailsDialog extends ConsumerWidget {
     );
   }
 
-  Widget _DetailRow(String label, String value, AppThemeModel theme) {
+  Widget _detailRow(String label, String value, WidgetRef theme) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Row(
@@ -780,20 +686,9 @@ class _FileDetailsDialog extends ConsumerWidget {
         children: [
           SizedBox(
             width: 100,
-            child: CustomText(
-              label,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: theme.supportingText,
-            ),
+            child: CustomText(label, fontSize: 14, fontWeight: FontWeight.w500, color: theme.supportingText),
           ),
-          Expanded(
-            child: CustomText(
-              value,
-              fontSize: 14,
-              color: theme.onCardColor,
-            ),
-          ),
+          Expanded(child: CustomText(value, fontSize: 14, color: theme.onCardColor)),
         ],
       ),
     );
@@ -814,21 +709,15 @@ class _LoadingState extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
-    
+    final theme = ref;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CircularProgressIndicator(
-            color: theme.primaryColor,
-          ),
+          CircularProgressIndicator(color: theme.primaryColor),
           const SizedBox(height: 16),
-          CustomText(
-            'Loading files...',
-            fontSize: 14,
-            color: theme.supportingText,
-          ),
+          CustomText('Loading files...', fontSize: 14, color: theme.supportingText),
         ],
       ),
     );
@@ -839,26 +728,19 @@ class _ErrorState extends ConsumerWidget {
   final Object error;
   final VoidCallback onRetry;
 
-  const _ErrorState({
-    required this.error,
-    required this.onRetry,
-  });
+  const _ErrorState({required this.error, required this.onRetry});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
-    
+    final theme = ref;
+
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.error_outline,
-              size: 64,
-              color: Colors.red,
-            ),
+            Icon(Icons.error_outline, size: 64, color: Colors.red),
             const SizedBox(height: 16),
             CustomText(
               'Error loading files',
@@ -868,22 +750,12 @@ class _ErrorState extends ConsumerWidget {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
-            CustomText(
-              error.toString(),
-              fontSize: 14,
-              color: theme.supportingText,
-              textAlign: TextAlign.center,
-            ),
+            CustomText(error.toString(), fontSize: 14, color: theme.supportingText, textAlign: TextAlign.center),
             const SizedBox(height: 24),
             CustomElevatedButton(
               backgroundColor: theme.primaryColor,
               onClick: onRetry,
-              child: CustomText(
-                'Try Again',
-                color: theme.onPrimaryColor,
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+              child: CustomText('Try Again', color: theme.onPrimaryColor, fontSize: 14, fontWeight: FontWeight.w500),
             ),
           ],
         ),
@@ -897,17 +769,13 @@ class _EmptyState extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
-    
+    final theme = ref;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.folder_open,
-            size: 64,
-            color: theme.supportingText.withAlpha(100),
-          ),
+          Icon(Icons.folder_open, size: 64, color: theme.supportingText.withAlpha(100)),
           const SizedBox(height: 16),
           CustomText(
             'No folder selected',
@@ -934,17 +802,13 @@ class _EmptyFolderState extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
-    
+    final theme = ref;
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.folder_open,
-            size: 64,
-            color: theme.supportingText.withAlpha(100),
-          ),
+          Icon(Icons.folder_open, size: 64, color: theme.supportingText.withAlpha(100)),
           const SizedBox(height: 16),
           CustomText(
             'Empty folder',
@@ -963,4 +827,5 @@ class _EmptyFolderState extends ConsumerWidget {
         ],
       ),
     );
-  }}
+  }
+}

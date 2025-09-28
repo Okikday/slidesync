@@ -102,7 +102,7 @@ class InnerScaleClickWrapper extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
 
     return Material(
       type: MaterialType.transparency,

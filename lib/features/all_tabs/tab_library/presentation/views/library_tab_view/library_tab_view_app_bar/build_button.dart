@@ -12,7 +12,7 @@ class BuildButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     return CustomElevatedButton(
       contentPadding: EdgeInsets.all(12),
       backgroundColor: backgroundColor ?? theme.altBackgroundPrimary,

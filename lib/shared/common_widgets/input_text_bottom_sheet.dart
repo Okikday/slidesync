@@ -45,7 +45,7 @@ class _InputTextBottomSheetState extends ConsumerState<InputTextBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.theme;
+    final theme = ref;
     return Stack(
       children: [
         Positioned.fill(child: GestureDetector(onTap: () => CustomDialog.hide(context))),
@@ -56,7 +56,7 @@ class _InputTextBottomSheetState extends ConsumerState<InputTextBottomSheet> {
             padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0, bottom: 4.0),
             decoration: BoxDecoration(
               color: theme.background,
-              border: Border(top: BorderSide(color: ref.theme.supportingText.withValues(alpha: 0.1))),
+              border: Border(top: BorderSide(color: ref.supportingText.withValues(alpha: 0.1))),
             ),
 
             child: Column(

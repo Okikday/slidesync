@@ -1,4 +1,3 @@
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,7 +7,7 @@ import 'package:slidesync/features/manage_all/manage_contents/usecases/create_co
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 import 'package:slidesync/shared/helpers/formatter.dart';
 import 'package:slidesync/shared/helpers/widget_helper.dart';
-import 'package:slidesync/shared/styles/colors.dart';
+import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
 import 'package:slidesync/shared/widgets/build_image_path_widget.dart';
 
 class CourseMaterialListCard extends ConsumerStatefulWidget {
@@ -60,18 +59,19 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
 
   @override
   Widget build(BuildContext context) {
-
     List<CourseMaterialListCardActionModel> courseMaterialListCardActionModels = [
       CourseMaterialListCardActionModel(label: "Open", icon: Icons.play_circle, onTap: () {}),
     ];
-    
 
     final CourseContent courseContent = widget.courseContent;
-    final theme = ref.theme;
+    final theme = ref;
     return AnimatedContainer(
       duration: Durations.extralong4,
       margin: const EdgeInsets.symmetric(vertical: 10),
-      decoration: BoxDecoration(color: theme.bgLightenColor(), borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        color: theme.background.lightenColor(theme.isDarkMode ? 0.1 : 0.9),
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Material(
         type: MaterialType.transparency,
         child: InkWell(
@@ -180,7 +180,7 @@ class AnimatedCourseMaterialListCardMenu extends ConsumerStatefulWidget {
 class _AnimatedCourseMaterialListCardMenuState extends ConsumerState<AnimatedCourseMaterialListCardMenu> {
   @override
   Widget build(BuildContext context) {
-    final theme = ref.theme;
+    final theme = ref;
     return Builder(
       builder: (context) {
         final cam = widget.courseMaterialListCardActionModels;

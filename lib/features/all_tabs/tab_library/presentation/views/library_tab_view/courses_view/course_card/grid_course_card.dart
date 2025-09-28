@@ -30,11 +30,9 @@ class GridCourseCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = ref;
     final courseCode = course.courseCode;
     final categoriesCount = course.collections.length;
-    final isDarkMode = theme.isDarkTheme;
-    final dimension = 50;
     return Container(
       clipBehavior: Clip.antiAlias,
       margin: const EdgeInsets.all(1.5),
@@ -54,14 +52,14 @@ class GridCourseCard extends ConsumerWidget {
         // ),
         boxShadow: [
           BoxShadow(
-            color: AppThemeModel.lightenColor(theme.surface, 0.5).withAlpha(200),
+            color: theme.surface.lightenColor(0.5).withAlpha(200),
             offset: Offset(-2.5, 2.2),
             spreadRadius: -2,
             blurRadius: 10,
             blurStyle: BlurStyle.inner,
           ),
           BoxShadow(
-            color: AppThemeModel.lightenColor(theme.surface, 0.5).withAlpha(200),
+            color: theme.surface.lightenColor(0.5).withAlpha(200),
             offset: Offset(2.1, -2.2),
             spreadRadius: -2,
             blurRadius: 10,
@@ -106,13 +104,10 @@ class GridCourseCard extends ConsumerWidget {
               width: 120,
               height: 120,
               decoration: BoxDecoration(
-                color: AppThemeModel.lightenColor(
-                  theme.surface.withValues(alpha: 0.4 + (i * 0.3)),
-                  context.isDarkMode ? 0.3 : 0.75,
-                ),
+                color: theme.surface.withValues(alpha: 0.4 + (i * 0.3)).lightenColor(context.isDarkMode ? 0.3 : 0.75),
                 borderRadius: BorderRadius.circular(20),
                 // border: i == 2
-                //     ? Border.all(color: AppThemeModel.lightenColor(theme.surface, 0.5).withAlpha(200))
+                //     ? Border.all(color: theme.surface.lightenColor(0.5).withAlpha(200))
                 //     : null
               ),
               padding: EdgeInsets.all(12).copyWith(bottom: 40),
@@ -176,7 +171,7 @@ class GridCourseCard extends ConsumerWidget {
                             fallbackWidget: Icon(
                               Iconsax.star,
                               size: 16,
-                              color: isDarkMode ? Colors.white : Colors.black,
+                              color: theme.isDarkMode ? Colors.white : Colors.black,
                             ),
                           ),
                         ),
@@ -216,7 +211,7 @@ class GridCourseCard extends ConsumerWidget {
                       //       ),
                       //   ],
                       // ),
-                  ),
+                    ),
                 ],
               ),
             ),
@@ -232,7 +227,7 @@ class GridCourseCard extends ConsumerWidget {
               padding: EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: theme.adjustBgAndPrimaryWithLerpExtra.withValues(alpha: 0.9),
-                border: Border(top: BorderSide(color: AppThemeModel.lightenColor(theme.surface, 0.5).withAlpha(200))),
+                border: Border(top: BorderSide(color: theme.surface.lightenColor(0.5).withAlpha(200))),
               ),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
@@ -283,11 +278,11 @@ class GridCourseCard extends ConsumerWidget {
       //               onTap: onTapIcon,
       //               child: CircleAvatar(
       //                 radius: dimension / 2 - 3,
-      //                 backgroundColor: context.theme.cardColor.withAlpha(80),
+      //                 backgroundColor: ref.cardColor.withAlpha(80),
       //                 child: ClipOval(
       //                   child: CircleAvatar(
       //                     radius: dimension / 2 - 4,
-      //                     // backgroundColor: theme.bgLightenColor(.88, .12),
+      //                     // backgroundColor: theme.background.lightenColor(theme.isDarkMode ? .12 : .88),
       //                     backgroundColor: theme.altBackgroundPrimary,
       //                     child: SizedBox.square(
       //                       dimension: dimension - 8,
@@ -363,7 +358,7 @@ class GridCourseCard extends ConsumerWidget {
 
       //         value: (progress).clamp(0.1, 1.0),
       //         backgroundColor: theme.altBackgroundPrimary.withValues(alpha: 0.2),
-      //         // color: theme.bgLightenColor(.88, .12), //.withAlpha(40)
+      //         // color: theme.background.lightenColor(theme.isDarkMode ? .12 : .88), //.withAlpha(40)
       //         color: theme.altBackgroundPrimary,
       //       ),
       //     ],

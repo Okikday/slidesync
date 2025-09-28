@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/app.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/shared/components/dialogs/app_customizable_dialog.dart';
 import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
 import 'package:slidesync/shared/styles/theme/built_in_themes.dart';
@@ -155,7 +156,7 @@ class ThemePairPicker extends ConsumerWidget {
     }
 
     try {
-      await AppHiveData.instance.setData(key: "appTheme", value: pair.unifiedModel.toJson());
+      await AppHiveData.instance.setData(key: HiveDataPathKey.appTheme.name, value: pair.unifiedModel.toJson());
     } catch (e) {
       debugPrint('Failed to save theme to Hive: $e');
     }
