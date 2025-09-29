@@ -77,7 +77,7 @@ const ContentTrackSchema = CollectionSchema(
     r'contentId': IndexSchema(
       id: -332487537278013663,
       name: r'contentId',
-      unique: false,
+      unique: true,
       replace: false,
       properties: [
         IndexPropertySchema(
@@ -101,7 +101,14 @@ const ContentTrackSchema = CollectionSchema(
       ],
     )
   },
-  links: {},
+  links: {
+    r'courseTrackLink': LinkSchema(
+      id: 8347721624759983311,
+      name: r'courseTrackLink',
+      target: r'CourseTrack',
+      single: true,
+    )
+  },
   embeddedSchemas: {},
   getId: _contentTrackGetId,
   getLinks: _contentTrackGetLinks,
@@ -221,12 +228,69 @@ Id _contentTrackGetId(ContentTrack object) {
 }
 
 List<IsarLinkBase<dynamic>> _contentTrackGetLinks(ContentTrack object) {
-  return [];
+  return [object.courseTrackLink];
 }
 
 void _contentTrackAttach(
     IsarCollection<dynamic> col, Id id, ContentTrack object) {
   object.id = id;
+  object.courseTrackLink
+      .attach(col, col.isar.collection<CourseTrack>(), r'courseTrackLink', id);
+}
+
+extension ContentTrackByIndex on IsarCollection<ContentTrack> {
+  Future<ContentTrack?> getByContentId(String contentId) {
+    return getByIndex(r'contentId', [contentId]);
+  }
+
+  ContentTrack? getByContentIdSync(String contentId) {
+    return getByIndexSync(r'contentId', [contentId]);
+  }
+
+  Future<bool> deleteByContentId(String contentId) {
+    return deleteByIndex(r'contentId', [contentId]);
+  }
+
+  bool deleteByContentIdSync(String contentId) {
+    return deleteByIndexSync(r'contentId', [contentId]);
+  }
+
+  Future<List<ContentTrack?>> getAllByContentId(List<String> contentIdValues) {
+    final values = contentIdValues.map((e) => [e]).toList();
+    return getAllByIndex(r'contentId', values);
+  }
+
+  List<ContentTrack?> getAllByContentIdSync(List<String> contentIdValues) {
+    final values = contentIdValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'contentId', values);
+  }
+
+  Future<int> deleteAllByContentId(List<String> contentIdValues) {
+    final values = contentIdValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'contentId', values);
+  }
+
+  int deleteAllByContentIdSync(List<String> contentIdValues) {
+    final values = contentIdValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'contentId', values);
+  }
+
+  Future<Id> putByContentId(ContentTrack object) {
+    return putByIndex(r'contentId', object);
+  }
+
+  Id putByContentIdSync(ContentTrack object, {bool saveLinks = true}) {
+    return putByIndexSync(r'contentId', object, saveLinks: saveLinks);
+  }
+
+  Future<List<Id>> putAllByContentId(List<ContentTrack> objects) {
+    return putAllByIndex(r'contentId', objects);
+  }
+
+  List<Id> putAllByContentIdSync(List<ContentTrack> objects,
+      {bool saveLinks = true}) {
+    return putAllByIndexSync(r'contentId', objects, saveLinks: saveLinks);
+  }
 }
 
 extension ContentTrackQueryWhereSort
@@ -1765,7 +1829,21 @@ extension ContentTrackQueryObject
     on QueryBuilder<ContentTrack, ContentTrack, QFilterCondition> {}
 
 extension ContentTrackQueryLinks
-    on QueryBuilder<ContentTrack, ContentTrack, QFilterCondition> {}
+    on QueryBuilder<ContentTrack, ContentTrack, QFilterCondition> {
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+      courseTrackLink(FilterQuery<CourseTrack> q) {
+    return QueryBuilder.apply(this, (query) {
+      return query.link(q, r'courseTrackLink');
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+      courseTrackLinkIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.linkLength(r'courseTrackLink', 0, true, 0, true);
+    });
+  }
+}
 
 extension ContentTrackQuerySortBy
     on QueryBuilder<ContentTrack, ContentTrack, QSortBy> {

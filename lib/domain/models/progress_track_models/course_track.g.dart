@@ -62,7 +62,7 @@ const CourseTrackSchema = CollectionSchema(
     r'courseId': IndexSchema(
       id: -4937057111615935929,
       name: r'courseId',
-      unique: false,
+      unique: true,
       replace: false,
       properties: [
         IndexPropertySchema(
@@ -188,6 +188,61 @@ void _courseTrackAttach(
   object.id = id;
   object.contentTracks
       .attach(col, col.isar.collection<ContentTrack>(), r'contentTracks', id);
+}
+
+extension CourseTrackByIndex on IsarCollection<CourseTrack> {
+  Future<CourseTrack?> getByCourseId(String courseId) {
+    return getByIndex(r'courseId', [courseId]);
+  }
+
+  CourseTrack? getByCourseIdSync(String courseId) {
+    return getByIndexSync(r'courseId', [courseId]);
+  }
+
+  Future<bool> deleteByCourseId(String courseId) {
+    return deleteByIndex(r'courseId', [courseId]);
+  }
+
+  bool deleteByCourseIdSync(String courseId) {
+    return deleteByIndexSync(r'courseId', [courseId]);
+  }
+
+  Future<List<CourseTrack?>> getAllByCourseId(List<String> courseIdValues) {
+    final values = courseIdValues.map((e) => [e]).toList();
+    return getAllByIndex(r'courseId', values);
+  }
+
+  List<CourseTrack?> getAllByCourseIdSync(List<String> courseIdValues) {
+    final values = courseIdValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'courseId', values);
+  }
+
+  Future<int> deleteAllByCourseId(List<String> courseIdValues) {
+    final values = courseIdValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'courseId', values);
+  }
+
+  int deleteAllByCourseIdSync(List<String> courseIdValues) {
+    final values = courseIdValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'courseId', values);
+  }
+
+  Future<Id> putByCourseId(CourseTrack object) {
+    return putByIndex(r'courseId', object);
+  }
+
+  Id putByCourseIdSync(CourseTrack object, {bool saveLinks = true}) {
+    return putByIndexSync(r'courseId', object, saveLinks: saveLinks);
+  }
+
+  Future<List<Id>> putAllByCourseId(List<CourseTrack> objects) {
+    return putAllByIndex(r'courseId', objects);
+  }
+
+  List<Id> putAllByCourseIdSync(List<CourseTrack> objects,
+      {bool saveLinks = true}) {
+    return putAllByIndexSync(r'courseId', objects, saveLinks: saveLinks);
+  }
 }
 
 extension CourseTrackQueryWhereSort

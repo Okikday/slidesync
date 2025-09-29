@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 import 'package:isar/isar.dart';
+import 'package:slidesync/domain/models/progress_track_models/course_track.dart';
 
 part 'content_track.g.dart';
 
@@ -10,7 +11,7 @@ part 'content_track.g.dart';
 class ContentTrack {
   Id id = Isar.autoIncrement;
 
-  @Index()
+  @Index(unique: true)
   late String contentId;
 
   String? title;
@@ -25,6 +26,8 @@ class ContentTrack {
   DateTime? lastRead;
 
   String metadataJson = '{}';
+
+  final IsarLink<CourseTrack> courseTrackLink = IsarLink<CourseTrack>();
 
   ContentTrack();
 
@@ -47,7 +50,7 @@ class ContentTrack {
       ..progress = progress
       ..additionalDetail = additionalDetail
       ..pages = pages ?? <String>[]
-      ..lastRead = lastRead ?? DateTime.now()
+      ..lastRead = lastRead
       ..metadataJson = metadataJson ?? '{}';
   }
 

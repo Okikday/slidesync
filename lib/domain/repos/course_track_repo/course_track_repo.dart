@@ -1,6 +1,5 @@
 import 'package:isar/isar.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
-import 'package:slidesync/domain/models/progress_track_models/content_track.dart';
 import 'package:slidesync/domain/models/progress_track_models/course_track.dart';
 
 class CourseTrackRepo {
@@ -12,9 +11,7 @@ class CourseTrackRepo {
   static Future<QueryBuilder<CourseTrack, CourseTrack, QFilterCondition>> get filter async =>
       (await _isar).courseTracks.filter();
 
-  static Future<QueryBuilder<CourseTrack, CourseTrack, QAfterFilterCondition>> _queryByCourseId(
-    String courseId,
-  ) async {
+  static Future<QueryBuilder<CourseTrack, CourseTrack, QAfterFilterCondition>> _queryByCourseId(String courseId) async {
     return (await _isarData.query<CourseTrack>((q) => q.idGreaterThan(0))).filter().courseIdEqualTo(courseId);
   }
 
@@ -24,15 +21,15 @@ class CourseTrackRepo {
 
   static Future<void> deleteByDbId(int dbId) async => await _isarData.deleteById(dbId);
 
-  static Future<CourseTrack?> deleteByCourseId(String courseId) async {
-    final isar = await _isar;
-    final CourseTrack? course = await getByCourseId(courseId);
-    return await isar.writeTxn<CourseTrack?>(() async {
-      if (course != null) {
-        final idQuery = await _queryByCourseId(courseId);
-        await idQuery.deleteFirst();
-      }
-      return course;
-    });
-  }
+  // static Future<CourseTrack?> deleteByCourseId(String courseId) async {
+  //   final isar = await _isar;
+  //   final CourseTrack? course = await getByCourseId(courseId);
+  //   return await isar.writeTxn<CourseTrack?>(() async {
+  //     if (course != null) {
+  //       final idQuery = await _queryByCourseId(courseId);
+  //       await idQuery.deleteFirst();
+  //     }
+  //     return course;
+  //   });
+  // }
 }

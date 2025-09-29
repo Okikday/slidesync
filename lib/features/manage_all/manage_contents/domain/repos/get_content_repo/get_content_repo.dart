@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:convert';
 import 'package:html/dom.dart' show Document, Element;
 import 'package:html/parser.dart' as parser show parse;
@@ -10,20 +9,14 @@ class GetContentRepo {
   static Future<PreviewLinkDetails?> getLinkPreviewData(String? link) async {
     if (link == null || link.isEmpty) return null;
     final data = await getPreviewData(link);
-    log("lmao: ${data?.previewUrl}");
     return (title: data?.title, description: data?.description, previewUrl: data?.previewUrl);
   }
 }
 
 extension PreviewLinkDetailsExtension on PreviewLinkDetails {
   bool _checkIsNullOrEmpty(String? value) => value == null && (value != null && value.isEmpty);
-  bool get isEmpty =>
-      _checkIsNullOrEmpty(title) && _checkIsNullOrEmpty(description) && _checkIsNullOrEmpty(previewUrl);
+  bool get isEmpty => _checkIsNullOrEmpty(title) && _checkIsNullOrEmpty(description) && _checkIsNullOrEmpty(previewUrl);
 }
-
-
-
-
 
 String _calculateUrl(String baseUrl, String? proxy) {
   if (proxy != null) {

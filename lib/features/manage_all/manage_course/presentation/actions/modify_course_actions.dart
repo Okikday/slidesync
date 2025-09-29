@@ -29,7 +29,7 @@ class ModifyCourseActions {
       await ModifyCollectionUc().deleteCollection(item);
     }
 
-    await CourseRepo.deleteCourseByDbId(course.id);
+    await CourseRepo.deleteCourseById(courseId);
   }
 
   /// When the user Modifies image

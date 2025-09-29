@@ -9,7 +9,7 @@ part 'course_track.g.dart';
 class CourseTrack {
   Id id = Isar.autoIncrement;
 
-  @Index()
+  @Index(unique: true)
   late String courseId;
   String? title;
   String? description;

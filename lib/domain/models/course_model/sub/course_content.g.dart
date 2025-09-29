@@ -96,7 +96,7 @@ const CourseContentSchema = CollectionSchema(
     r'contentId': IndexSchema(
       id: -332487537278013663,
       name: r'contentId',
-      unique: false,
+      unique: true,
       replace: false,
       properties: [
         IndexPropertySchema(
@@ -267,6 +267,61 @@ List<IsarLinkBase<dynamic>> _courseContentGetLinks(CourseContent object) {
 void _courseContentAttach(
     IsarCollection<dynamic> col, Id id, CourseContent object) {
   object.id = id;
+}
+
+extension CourseContentByIndex on IsarCollection<CourseContent> {
+  Future<CourseContent?> getByContentId(String contentId) {
+    return getByIndex(r'contentId', [contentId]);
+  }
+
+  CourseContent? getByContentIdSync(String contentId) {
+    return getByIndexSync(r'contentId', [contentId]);
+  }
+
+  Future<bool> deleteByContentId(String contentId) {
+    return deleteByIndex(r'contentId', [contentId]);
+  }
+
+  bool deleteByContentIdSync(String contentId) {
+    return deleteByIndexSync(r'contentId', [contentId]);
+  }
+
+  Future<List<CourseContent?>> getAllByContentId(List<String> contentIdValues) {
+    final values = contentIdValues.map((e) => [e]).toList();
+    return getAllByIndex(r'contentId', values);
+  }
+
+  List<CourseContent?> getAllByContentIdSync(List<String> contentIdValues) {
+    final values = contentIdValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'contentId', values);
+  }
+
+  Future<int> deleteAllByContentId(List<String> contentIdValues) {
+    final values = contentIdValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'contentId', values);
+  }
+
+  int deleteAllByContentIdSync(List<String> contentIdValues) {
+    final values = contentIdValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'contentId', values);
+  }
+
+  Future<Id> putByContentId(CourseContent object) {
+    return putByIndex(r'contentId', object);
+  }
+
+  Id putByContentIdSync(CourseContent object, {bool saveLinks = true}) {
+    return putByIndexSync(r'contentId', object, saveLinks: saveLinks);
+  }
+
+  Future<List<Id>> putAllByContentId(List<CourseContent> objects) {
+    return putAllByIndex(r'contentId', objects);
+  }
+
+  List<Id> putAllByContentIdSync(List<CourseContent> objects,
+      {bool saveLinks = true}) {
+    return putAllByIndexSync(r'contentId', objects, saveLinks: saveLinks);
+  }
 }
 
 extension CourseContentQueryWhereSort

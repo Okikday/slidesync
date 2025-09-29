@@ -67,11 +67,24 @@ const CourseCollectionSchema = CollectionSchema(
     r'collectionId': IndexSchema(
       id: -7489395134515229581,
       name: r'collectionId',
-      unique: false,
+      unique: true,
       replace: false,
       properties: [
         IndexPropertySchema(
           name: r'collectionId',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    ),
+    r'parentId': IndexSchema(
+      id: -809199838039056779,
+      name: r'parentId',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'parentId',
           type: IndexType.hash,
           caseSensitive: true,
         )
@@ -183,6 +196,63 @@ void _courseCollectionAttach(
   object.id = id;
   object.contents
       .attach(col, col.isar.collection<CourseContent>(), r'contents', id);
+}
+
+extension CourseCollectionByIndex on IsarCollection<CourseCollection> {
+  Future<CourseCollection?> getByCollectionId(String collectionId) {
+    return getByIndex(r'collectionId', [collectionId]);
+  }
+
+  CourseCollection? getByCollectionIdSync(String collectionId) {
+    return getByIndexSync(r'collectionId', [collectionId]);
+  }
+
+  Future<bool> deleteByCollectionId(String collectionId) {
+    return deleteByIndex(r'collectionId', [collectionId]);
+  }
+
+  bool deleteByCollectionIdSync(String collectionId) {
+    return deleteByIndexSync(r'collectionId', [collectionId]);
+  }
+
+  Future<List<CourseCollection?>> getAllByCollectionId(
+      List<String> collectionIdValues) {
+    final values = collectionIdValues.map((e) => [e]).toList();
+    return getAllByIndex(r'collectionId', values);
+  }
+
+  List<CourseCollection?> getAllByCollectionIdSync(
+      List<String> collectionIdValues) {
+    final values = collectionIdValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'collectionId', values);
+  }
+
+  Future<int> deleteAllByCollectionId(List<String> collectionIdValues) {
+    final values = collectionIdValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'collectionId', values);
+  }
+
+  int deleteAllByCollectionIdSync(List<String> collectionIdValues) {
+    final values = collectionIdValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'collectionId', values);
+  }
+
+  Future<Id> putByCollectionId(CourseCollection object) {
+    return putByIndex(r'collectionId', object);
+  }
+
+  Id putByCollectionIdSync(CourseCollection object, {bool saveLinks = true}) {
+    return putByIndexSync(r'collectionId', object, saveLinks: saveLinks);
+  }
+
+  Future<List<Id>> putAllByCollectionId(List<CourseCollection> objects) {
+    return putAllByIndex(r'collectionId', objects);
+  }
+
+  List<Id> putAllByCollectionIdSync(List<CourseCollection> objects,
+      {bool saveLinks = true}) {
+    return putAllByIndexSync(r'collectionId', objects, saveLinks: saveLinks);
+  }
 }
 
 extension CourseCollectionQueryWhereSort
@@ -302,6 +372,51 @@ extension CourseCollectionQueryWhere
               indexName: r'collectionId',
               lower: [],
               upper: [collectionId],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<CourseCollection, CourseCollection, QAfterWhereClause>
+      parentIdEqualTo(String parentId) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'parentId',
+        value: [parentId],
+      ));
+    });
+  }
+
+  QueryBuilder<CourseCollection, CourseCollection, QAfterWhereClause>
+      parentIdNotEqualTo(String parentId) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'parentId',
+              lower: [],
+              upper: [parentId],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'parentId',
+              lower: [parentId],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'parentId',
+              lower: [parentId],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'parentId',
+              lower: [],
+              upper: [parentId],
               includeUpper: false,
             ));
       }

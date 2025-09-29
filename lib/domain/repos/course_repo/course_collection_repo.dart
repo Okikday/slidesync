@@ -1,9 +1,14 @@
 import 'dart:developer';
 
+import 'package:collection/collection.dart';
 import 'package:isar/isar.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
+import 'package:slidesync/domain/models/progress_track_models/content_track.dart';
+import 'package:slidesync/domain/models/progress_track_models/course_track.dart';
 import 'package:slidesync/domain/repos/course_repo/course_repo.dart';
+import 'package:slidesync/domain/repos/course_track_repo/content_track_repo.dart';
+import 'package:slidesync/domain/repos/course_track_repo/course_track_repo.dart';
 
 class CourseCollectionRepo {
   static final IsarData<CourseCollection> _isarData = IsarData.instance<CourseCollection>();
@@ -52,12 +57,9 @@ class CourseCollectionRepo {
     });
   }
 
-
-
   ////////////////////////////////////////////////////////////////////////////////////
 
-
-    // Check
+  // Check
   static Future<bool> addCollection(CourseCollection collection) async {
     try {
       if (collection.parentId.isEmpty) return false;
@@ -91,14 +93,31 @@ class CourseCollectionRepo {
       final isar = (await _isar);
 
       await collection.contents.load();
-      final contentIds = collection.contents.map((c) => c.id).toList();
+      final contentIds = collection.contents.map((c) => c.contentId).toList();
       await course.collections.load();
       course.collections.removeWhere((c) => c.id == collection.id);
+      final courseTrack = await (await CourseTrackRepo.filter).courseIdEqualTo(collection.parentId).findFirst();
 
+      if (courseTrack != null) {
+        for (final id in contentIds) {
+          courseTrack.contentTracks.removeWhere((c) => c.contentId == id);
+        }
+      }
+      // final contentTrackQuery = (await ContentTrackRepo.filter).contentIdEqualTo(collection.parentId);
+      // final contentTrack = await contentTrackQuery.findFirst();
+      // final parentCourseTrack = contentTrack?.courseTrackLink.value;
+      // if (parentCourseTrack != null) {
+      //   await parentCourseTrack.contentTracks.load();
+      //   parentCourseTrack.contentTracks.remove(contentTrack);
+      // }
       await isar.writeTxn(() async {
         await course.collections.save();
         if (contentIds.isNotEmpty) {
-          await isar.courseContents.deleteAll(contentIds);
+          await isar.courseContents.deleteAllByContentId(contentIds);
+          if (courseTrack != null) {
+            await courseTrack.contentTracks.save();
+            isar.contentTracks.deleteAllByContentId(contentIds);
+          }
         }
 
         await isar.courseCollections.delete(collection.id);
@@ -112,7 +131,6 @@ class CourseCollectionRepo {
     }
   }
 
-  
   static Future<String?> addCollectionNoDuplicateTitle(CourseCollection collection) async {
     final isar = (await _isar);
     final CourseCollection? duplicate = await (isar.courseCollections

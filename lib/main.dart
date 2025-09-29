@@ -23,5 +23,7 @@ void main() async {
   if (!kIsWeb) await IsarData.initialize(collectionSchemas: isarSchemas);
   pdfrxFlutterInitialize();
 
-  runApp(ProviderScope(observers: [obs], child: const App()));
+  runApp(ProviderScope(
+    // observers: [obs], 
+  child: const App()));
 }

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/domain/models/file_details.dart';
+import 'package:slidesync/domain/models/progress_track_models/course_track.dart';
 import 'package:slidesync/domain/repos/course_track_repo/course_track_repo.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 import 'package:slidesync/shared/widgets/build_image_path_widget.dart';
@@ -249,20 +250,32 @@ class ListCourseCardTitleColumn extends ConsumerWidget {
   }
 }
 
-class ListCourseCardProgressIndicator extends ConsumerWidget {
+class ListCourseCardProgressIndicator extends ConsumerStatefulWidget {
   const ListCourseCardProgressIndicator({super.key, required this.courseId});
 
   final String courseId;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ListCourseCardProgressIndicator> createState() => _ListCourseCardProgressIndicatorState();
+}
+
+class _ListCourseCardProgressIndicatorState extends ConsumerState<ListCourseCardProgressIndicator> {
+  late Future<CourseTrack?> _courseTrackFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _courseTrackFuture = CourseTrackRepo.getByCourseId(widget.courseId);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = ref;
-    return FutureBuilder(
-      future: CourseTrackRepo.getByCourseId(courseId),
+    return FutureBuilder<CourseTrack?>(
+      future: _courseTrackFuture,
       builder: (context, asyncSnapshot) {
         if (asyncSnapshot.connectionState == ConnectionState.done) {
-          log("Where we at");
-          final progress = asyncSnapshot.data?.progress ?? 0.0;
+          final progress = asyncSnapshot.data?.progress;
           return SizedBox.square(
             dimension: 40,
             child: Stack(
@@ -276,17 +289,16 @@ class ListCourseCardProgressIndicator extends ConsumerWidget {
                   overlayColor: theme.altBackgroundSecondary,
                   onClick: () {},
                   child: CustomText(
-                    "${((progress?.clamp(0, 100) ?? 0.0) * 100.0).toInt()}%",
+                    "${((progress?.clamp(0, 1.0) ?? 0.0) * 100.0).toInt()}%",
                     fontSize: 11,
                     fontWeight: FontWeight.bold,
                     color: theme.supportingText.withValues(alpha: 0.5),
                   ),
                 ),
-
                 Positioned.fill(
                   child: IgnorePointer(
                     child: CircularProgressIndicator(
-                      value: progress?.clamp(0.01, 1.0),
+                      value: progress?.clamp(0.01, 1.0) ?? 0.01,
                       strokeCap: StrokeCap.round,
                       color: theme.primaryColor,
                       backgroundColor: theme.altBackgroundPrimary.withValues(alpha: 0.4),

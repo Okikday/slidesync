@@ -4,9 +4,10 @@ import 'package:isar/isar.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
-import 'package:slidesync/domain/models/course_model/sub/course_content.dart';
-import 'package:slidesync/domain/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/domain/models/progress_track_models/content_track.dart';
 import 'package:slidesync/domain/repos/course_repo/course_repo.dart';
+import 'package:slidesync/domain/repos/course_track_repo/content_track_repo.dart';
+import 'package:slidesync/domain/repos/course_track_repo/course_track_repo.dart';
 
 class CourseContentRepo {
   static final IsarData<CourseContent> _isarData = IsarData.instance<CourseContent>();
@@ -27,9 +28,23 @@ class CourseContentRepo {
 
   static Stream<CourseContent?> watchByDbId(int dbId) => _isarData.watchById(dbId);
 
-  static Future<int> add(CourseContent content) async => await _isarData.store(content);
+  static Future<int> add(CourseContent content) async {
+    final existingContentTrack = await (await ContentTrackRepo.filter).contentIdEqualTo(content.contentId).findFirst();
+    if (existingContentTrack == null) {
+      final parentCourseTrack = await CourseTrackRepo.getByCourseId(content.parentId);
+      if (parentCourseTrack == null) return -1;
+      final newContentTrack = ContentTrack.create(
+        contentId: content.contentId,
+        contentHash: content.contentHash,
+        title: content.title,
+        description: content.description,
+      );
+      newContentTrack.courseTrackLink.value = parentCourseTrack;
+      await ContentTrackRepo.isarData.store(newContentTrack);
+    }
 
-  // static Future<List<int>> addMultiple(List<CourseContent> courses) async => await _isarData.storeAll(courses);
+    return await _isarData.store(content);
+  }
 
   static Future<List<CourseContent>> getAll() async => _isarData.getAll();
 
@@ -79,19 +94,21 @@ class CourseContentRepo {
       final fetchResult = await _fetchCourseAndCollection(isar, collection, content.parentId);
       final getCollection = fetchResult.$2;
       final course = fetchResult.$1;
+      log("message");
 
       if (getCollection == null || course == null) return false;
 
+      final addContentRes = await add(content);
+      if (addContentRes == -1) return false;
+
       await getCollection.contents.load();
-      // Load collections from the course
-      await course.collections.load();
+      // // Load collections from the course
+      // await course.collections.load();
       //Add content to the collection
       getCollection.contents.add(content);
+
       await isar.writeTxn(() async {
-        await isar.courseContents.put(content);
-
         await getCollection.contents.save();
-
         await isar.courseCollections.put(getCollection);
       });
 
@@ -114,12 +131,26 @@ class CourseContentRepo {
 
       await getCollection.contents.load();
       await course.collections.load();
+      final contentTrackQuery = (await ContentTrackRepo.filter).contentIdEqualTo(content.contentId);
+      final contentTrack = await contentTrackQuery.findFirst();
+      final parentCourseTrack = contentTrack?.courseTrackLink.value;
+      if (parentCourseTrack != null) {
+        await parentCourseTrack.contentTracks.load();
+        parentCourseTrack.contentTracks.remove(contentTrack);
+      }
       await isar.writeTxn(() async {
         getCollection.contents.remove(content);
         await getCollection.contents.save();
 
         await isar.courseContents.delete(content.id);
         await isar.courseCollections.put(getCollection);
+        if (contentTrack != null) {
+          final parentCourseTrack = contentTrack.courseTrackLink.value;
+          if (parentCourseTrack != null) {
+            await parentCourseTrack.contentTracks.save();
+          }
+          await isar.contentTracks.delete(contentTrack.id);
+        }
       });
       return true;
     } catch (e) {
@@ -128,25 +159,25 @@ class CourseContentRepo {
     }
   }
 
-  static Future<bool> deleteAllContents(CourseCollection collection) async {
-    try {
-      final isar = await _isar;
-      await collection.contents.load();
+  // static Future<bool> deleteAllContents(CourseCollection collection) async {
+  //   try {
+  //     final isar = await _isar;
+  //     await collection.contents.load();
 
-      final contentIds = collection.contents.map((c) => c.id).toList();
-      await isar.writeTxn(() async {
-        await isar.courseContents.deleteAll(contentIds);
-        collection.contents.clear();
-        await collection.contents.save();
-        await isar.courseCollections.put(collection);
-      });
+  //     final contentIds = collection.contents.map((c) => c.id).toList();
+  //     await isar.writeTxn(() async {
+  //       await isar.courseContents.deleteAll(contentIds);
+  //       collection.contents.clear();
+  //       await collection.contents.save();
+  //       await isar.courseCollections.put(collection);
+  //     });
 
-      return true;
-    } catch (e) {
-      log("Error deleting all contents: $e");
-      return false;
-    }
-  }
+  //     return true;
+  //   } catch (e) {
+  //     log("Error deleting all contents: $e");
+  //     return false;
+  //   }
+  // }
 
   static Future<(Course? course, CourseCollection? collection)> _fetchCourseAndCollection(
     Isar isar,
