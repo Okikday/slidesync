@@ -16,7 +16,7 @@ import 'package:slidesync/core/utils/leak_prevention.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/domain/models/course_model/sub/course_content.dart';
 import 'package:slidesync/domain/models/file_details.dart';
-import 'package:slidesync/domain/models/progress_track_model.dart';
+import 'package:slidesync/domain/models/progress_track_models/content_track.dart';
 import 'package:slidesync/features/manage_all/manage_contents/usecases/create_contents_uc/create_content_preview_image.dart';
 
 const Duration readValidityDuration = Duration(seconds: 5);
@@ -25,7 +25,7 @@ class PdfDocViewerController extends LeakPrevention {
   static final ScreenshotController screenshotController = ScreenshotController();
   final CourseContent content;
   final PdfViewerController pdfViewerController;
-  final ValueNotifier<ProgressTrackModel?> progressTrackNotifier = ValueNotifier(null);
+  final ValueNotifier<ContentTrack?> progressTrackNotifier = ValueNotifier(null);
   final ValueNotifier<bool> isAppBarVisibleNotifier = ValueNotifier(true);
   final ValueNotifier<bool> isToolsMenuVisible = ValueNotifier(true);
   final Stopwatch pageStayStopWatch = Stopwatch();
@@ -40,20 +40,23 @@ class PdfDocViewerController extends LeakPrevention {
       PdfDocViewerController._(content, pdfViewerController);
 
   static final Future<Isar> _isar = IsarData.isarFuture;
-  static final IsarData<ProgressTrackModel> _isarData = IsarData.instance();
+  static final IsarData<ContentTrack> _isarData = IsarData.instance();
 
   Future<bool> initialize() async {
-    final ProgressTrackModel? progressTrack = await getLastProgressTrack(content);
+    final ContentTrack? progressTrack = await getLastProgressTrack(content);
     if (progressTrack == null) return false;
     progressTrackNotifier.value = progressTrack;
-    initialPage = progressTrack.lastPosition == 0 ? 1 : progressTrack.lastPosition;
-    pdfViewerController.addListener(monitorPageListener);
+    if (progressTrack.pages.isNotEmpty) {
+      initialPage = (int.tryParse(progressTrack.pages.last) ?? 1);
+      pdfViewerController.addListener(monitorPageListener);
+    }
+
     return true;
   }
 
   /// Gets the progress of the current document from last session
-  static Future<ProgressTrackModel?> getLastProgressTrack(CourseContent content) async {
-    final ptm = (await (await _isar).progressTrackModels.where().contentIdEqualTo(content.contentId).findFirst());
+  static Future<ContentTrack?> getLastProgressTrack(CourseContent content) async {
+    final ptm = (await (await _isar).contentTracks.where().contentIdEqualTo(content.contentId).findFirst());
     if (ptm == null) {
       final result = await _createProgressTrackModel(content);
       if (result == null) return null; // A critical error occured!
@@ -65,9 +68,9 @@ class PdfDocViewerController extends LeakPrevention {
   }
 
   /// Creates a new progress track model if it didn't exist
-  static Future<ProgressTrackModel?> _createProgressTrackModel(CourseContent content) async {
+  static Future<ContentTrack?> _createProgressTrackModel(CourseContent content) async {
     final result = await Result.tryRunAsync(() async {
-      final ProgressTrackModel newPtm = ProgressTrackModel.create(
+      final ContentTrack newPtm = ContentTrack.create(
         contentId: content.contentId,
         title: content.title,
         description: content.description.substring(0, math.min(content.description.length, 1024)),
@@ -85,7 +88,7 @@ class PdfDocViewerController extends LeakPrevention {
   }
 
   /// Update progress track
-  static Future<ProgressTrackModel> _updateProgressTrack(ProgressTrackModel ptm) async =>
+  static Future<ContentTrack> _updateProgressTrack(ContentTrack ptm) async =>
       await _isarData.getById(await _isarData.store(ptm)) ?? ptm;
 
   void monitorPageListener() async {
@@ -135,7 +138,6 @@ class PdfDocViewerController extends LeakPrevention {
             await _updateProgressTrack(
               progressTrack.copyWith(
                 pages: newPages.toList(),
-                lastPosition: pageNumber,
                 progress: newPages.length / totalPageCount,
                 lastRead: DateTime.now(),
               ),
@@ -158,7 +160,7 @@ class PdfDocViewerController extends LeakPrevention {
             return;
           }
 
-          await _updateProgressTrack(progressTrack.copyWith(lastPosition: pageNumber, lastRead: DateTime.now()));
+          await _updateProgressTrack(progressTrack.copyWith(lastRead: DateTime.now()));
           isUpdatingProgressTrack = false;
           currentPageNumber = pageNumber;
           lastUpdatedPage = pageNumber;

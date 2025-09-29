@@ -2,10 +2,11 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/core/routes/all/auth_route.dart';
+import 'package:slidesync/core/routes/all/content_viewer_route.dart';
 import 'package:slidesync/core/routes/all/course_nav_routes.dart';
 import 'package:slidesync/core/routes/all/settings_route.dart';
 import 'package:slidesync/core/routes/all/course_mgmt_routes.dart';
-import 'package:slidesync/core/routes/all/home_tabs_routes.dart';
+import 'package:slidesync/core/routes/all/main_route.dart';
 import 'package:slidesync/core/routes/routes.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
@@ -33,6 +34,7 @@ class RouteManager {
       // -> MODIFY COURSE
       //    -> EDIT COURSE
       ...courseMgmtRoutes,
+      contentViewerRoute,
 
       courseNavRoute,
 

@@ -8,7 +8,7 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/sub/course_content.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:slidesync/domain/models/file_details.dart';
-import 'package:slidesync/domain/models/progress_track_model.dart';
+import 'package:slidesync/domain/models/progress_track_models/content_track.dart';
 import 'package:slidesync/shared/components/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 
@@ -33,10 +33,10 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
     });
   }
 
-  static Future<ProgressTrackModel?> _createProgressTrackModel(CourseContent content) async {
-    final isarData = IsarData.instance<ProgressTrackModel>();
+  static Future<ContentTrack?> _createProgressTrackModel(CourseContent content) async {
+    final isarData = IsarData.instance<ContentTrack>();
     final result = await Result.tryRunAsync(() async {
-      final ProgressTrackModel newPtm = ProgressTrackModel.create(
+      final ContentTrack newPtm = ContentTrack.create(
         contentId: content.contentId,
         title: content.title,
         description: content.description.substring(0, content.description.length.clamp(0, 1024)),

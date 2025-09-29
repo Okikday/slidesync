@@ -20,12 +20,12 @@ class CourseContent {
   @Index()
   late String contentHash;
 
-  @Index()
+  @Index(unique: true)
   late String contentId;
 
   @Index()
   late String parentId;
-  
+
   @Index(caseSensitive: false)
   late String title;
 
@@ -55,18 +55,17 @@ class CourseContent {
     String description = '',
     String metadataJson = '{}',
   }) {
-    final content =
-        CourseContent()
-          ..contentHash = contentHash
-          ..contentId = contentId ?? const Uuid().v4()
-          ..parentId = parentId
-          ..title = title
-          ..path = path.toJson()
-          ..createdAt = createdAt ?? DateTime.now()
-          ..lastModified = lastModified ?? DateTime.now()
-          ..courseContentType = courseContentType
-          ..description = description
-          ..metadataJson = metadataJson;
+    final content = CourseContent()
+      ..contentHash = contentHash
+      ..contentId = contentId ?? const Uuid().v4()
+      ..parentId = parentId
+      ..title = title
+      ..path = path.toJson()
+      ..createdAt = createdAt ?? DateTime.now()
+      ..lastModified = lastModified ?? DateTime.now()
+      ..courseContentType = courseContentType
+      ..description = description
+      ..metadataJson = metadataJson;
     return content;
   }
 

@@ -22,7 +22,7 @@ class App extends ConsumerStatefulWidget {
 class _AppState extends ConsumerState<App> {
   Future<void> _loadThemeFromHive() async {
     await Result.tryRunAsync(() async {
-      final String? hiveTheme = (await AppHiveData.instance.getData(key: HiveDataPathKey.appTheme.name)) as String?;
+      final String? hiveTheme = (await AppHiveData.instance.getData<String>(key: HiveDataPathKey.appTheme.name));
       if (hiveTheme == null) {
         // ref.read(appThemeProvider.notifier).update(Brightness.dark, defaultUnifiedThemeModels[0]);
         return;

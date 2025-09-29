@@ -20,7 +20,7 @@ class MainView extends ConsumerStatefulWidget {
   ConsumerState createState() => _MainViewState();
 }
 
-class _MainViewState extends ConsumerState<MainView> with AutomaticKeepAliveClientMixin {
+class _MainViewState extends ConsumerState<MainView> {
   late final PageController pageController;
 
   @override
@@ -40,7 +40,7 @@ class _MainViewState extends ConsumerState<MainView> with AutomaticKeepAliveClie
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
+    // super.build(context);
 
     log("Main View build...");
 
@@ -74,6 +74,6 @@ class _MainViewState extends ConsumerState<MainView> with AutomaticKeepAliveClie
     );
   }
 
-  @override
-  bool get wantKeepAlive => true;
+  // @override
+  // bool get wantKeepAlive => true;
 }

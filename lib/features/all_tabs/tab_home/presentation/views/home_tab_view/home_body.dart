@@ -10,90 +10,82 @@ import 'package:slidesync/features/all_tabs/tab_home/presentation/views/home_tab
 import 'package:slidesync/features/all_tabs/tab_home/presentation/views/home_tab_view/home_body/more_section.dart';
 import 'package:slidesync/features/all_tabs/tab_home/presentation/views/home_tab_view/home_body/recents_section/recents_section_body.dart';
 import 'package:slidesync/features/all_tabs/tab_home/presentation/views/home_tab_view/home_body/recents_section/recents_section_header.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
 
 class HomeBody extends ConsumerWidget {
   const HomeBody({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final asyncRecentsLast = ref.watch(HomeTabController.recentProgressTrackProvider);
     return CustomScrollView(
       physics: const BouncingScrollPhysics(),
-      // physics: const BouncingScrollPhysics(),
-      // controller: scrollController,
       slivers: [
-        SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
+        const SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
 
         SliverToBoxAdapter(
-          child: asyncRecentsLast.when(
-            data: (data) {
-              final recentsLast = data.isNotEmpty ? data.first : null;
-              if (recentsLast != null) {
-                return HomeDashboard(
-                  courseName: recentsLast.title ?? "Unknown material",
-                  detail: '',
-                  progressValue: recentsLast.progress ?? 0.0,
-                  completed: recentsLast.progress == 1.0,
-                  isFirst: true,
-                  onReadingBtnTapped: () async {
-                    final content = await CourseContentRepo.getByContentId(recentsLast.contentId);
-                    if (content == null) {
-                      if (context.mounted) {
-                        UiUtils.showFlushBar(context, msg: "Unable to open material");
-                      }
-                      return;
-                    }
-                    if (context.mounted) context.pushNamed(Routes.contentGate.name, extra: content);
-                  },
-                );
-              }
-              return HomeDashboard(
-                courseName: "Add a course material",
-                detail: '',
-                progressValue: 0.0,
-                isFirst: true,
-                onReadingBtnTapped: () async {
-                  context.pushNamed(Routes.createCourse.name);
+          child: Consumer(
+            child: HomeDashboard(
+              courseName: "Add a course material",
+              detail: '',
+              progressValue: 0.0,
+              isFirst: true,
+              onReadingBtnTapped: () async {
+                context.pushNamed(Routes.createCourse.name);
+              },
+            ),
+            builder: (context, ref, child) {
+              final asyncMostRecent = ref.watch(
+                HomeTabController.recentContentsTrackProvider.select(
+                  (s) => s.whenData((v) => v.isEmpty ? null : v.last),
+                ),
+              );
+              return asyncMostRecent.when(
+                data: (data) {
+                  if (data != null) {
+                    return HomeDashboard(
+                      courseName: data.title ?? "Unknown material",
+                      detail: '',
+                      progressValue: data.progress ?? 0.0,
+                      completed: data.progress == 1.0,
+                      isFirst: true,
+                      onReadingBtnTapped: () async {
+                        final content = await CourseContentRepo.getByContentId(data.contentId);
+                        if (content == null) {
+                          if (context.mounted) {
+                            UiUtils.showFlushBar(context, msg: "Unable to open material");
+                          }
+                          return;
+                        }
+                        if (context.mounted) context.pushNamed(Routes.contentGate.name, extra: content);
+                      },
+                    );
+                  }
+                  return child!;
+                },
+                loading: () {
+                  return const SizedBox();
+                },
+                error: (e, st) {
+                  return const Center(child: Icon(Icons.error));
                 },
               );
-            },
-            loading: () {
-              return const SizedBox();
-            },
-            error: (e, st) {
-              return const Center(child: Icon(Icons.error));
             },
           ),
         ),
 
-        SliverToBoxAdapter(child: ConstantSizing.columnSpacingLarge),
-        SliverToBoxAdapter(child: MoreSection()),
+        const SliverToBoxAdapter(child: ConstantSizing.columnSpacingLarge),
 
-        SliverToBoxAdapter(child: ConstantSizing.columnSpacingLarge),
+        const SliverToBoxAdapter(child: MoreSection()),
+
+        const SliverToBoxAdapter(child: ConstantSizing.columnSpacingLarge),
 
         // Recents Section Header
         // Won't show up if the recent courses is empty
-        RecentsSectionHeader(
-          onClickSeeAll: () {
-            Navigator.push(
-              context,
-              PageAnimation.pageRouteBuilder(
-                Scaffold(
-                  body: Center(child: CustomText("No recent reads", color: ref.onBackground)),
-                ),
-                type: TransitionType.rightToLeft,
-                duration: Durations.extralong1,
-                curve: CustomCurves.defaultIosSpring,
-              ),
-            );
-          },
-        ),
+        const RecentsSectionHeader(),
 
-        SliverToBoxAdapter(child: ConstantSizing.columnSpacingSmall),
+        const SliverToBoxAdapter(child: ConstantSizing.columnSpacingSmall),
 
         // Recents Section Body
-        RecentsSectionBody(),
+        const RecentsSectionBody(),
       ],
     );
   }

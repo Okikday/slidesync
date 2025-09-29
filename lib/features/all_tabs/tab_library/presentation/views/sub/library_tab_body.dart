@@ -7,20 +7,16 @@ import 'package:slidesync/shared/helpers/extension_helper.dart';
 class LibraryTabBody extends ConsumerWidget {
   const LibraryTabBody({super.key});
 
-
-  
-@override
+  @override
   Widget build(BuildContext context, WidgetRef ref) {
     return CustomScrollView(
       slivers: [
-        SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
+        const SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
 
-        CoursesView(),
+        const CoursesView(),
 
         SliverToBoxAdapter(child: ConstantSizing.columnSpacing(kBottomNavigationBarHeight + context.topPadding + 24)),
       ],
     );
   }
 }
-
-

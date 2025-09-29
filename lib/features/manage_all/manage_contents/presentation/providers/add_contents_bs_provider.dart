@@ -10,7 +10,7 @@ import 'package:slidesync/features/manage_all/manage_contents/presentation/views
 
 class AddContentsBsProvider {
   static final AsyncNotifierProvider<AppClipboardNotifier, AppClipboardData?> lastClipboardDataProvider =
-      AsyncNotifierProvider<AppClipboardNotifier, AppClipboardData?>(AppClipboardNotifier.new, isAutoDispose: true);
+      AsyncNotifierProvider<AppClipboardNotifier, AppClipboardData?>(AppClipboardNotifier.new);
 
   static final NotifierProvider<OverlayEntryNotifier, OverlayEntry?> addFromClipboardOverlayEntry =
       NotifierProvider<OverlayEntryNotifier, OverlayEntry?>(OverlayEntryNotifier.new);

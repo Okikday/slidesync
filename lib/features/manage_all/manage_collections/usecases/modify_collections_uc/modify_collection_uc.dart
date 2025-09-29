@@ -19,9 +19,9 @@ class ModifyCollectionUc {
         await FileUtils.deleteFileAtPath(CreateContentPreviewImage.genPreviewImagePath(filePath: filePath));
       }
     }
-    await CourseCollectionRepo.deleteMultipleContents(collection.contents.toList(), collection);
-    log("Successfully deleted multiple contents");
-    final bool deleteOutcome = await CourseRepo.deleteCollection(collection);
+    // await CourseCollectionRepo.deleteMultipleContents(collection.contents.toList(), collection);
+    // log("Successfully deleted multiple contents");
+    final bool deleteOutcome = await CourseCollectionRepo.deleteCollection(collection);
     if (!deleteOutcome) return "An error occured while deleting!";
     return null;
   }

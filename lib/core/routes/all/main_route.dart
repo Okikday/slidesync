@@ -1,7 +1,9 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:go_router/go_router.dart';
+import 'package:slidesync/core/routes/app_router.dart';
 import 'package:slidesync/features/all_tabs/main/main_view/main_view.dart';
 import 'package:slidesync/core/routes/routes.dart';
+import 'package:slidesync/features/all_tabs/tab_home/presentation/views/home_tab_view/home_body/recents_view.dart';
 
 final mainRoute = GoRoute(
   path: '/',
@@ -13,6 +15,13 @@ final mainRoute = GoRoute(
       path: Routes.home.subPath,
       pageBuilder: (context, state) =>
           PageAnimation.buildCustomTransitionPage(state.pageKey, child: const MainView(tabIndex: 0)),
+      routes: [
+        GoRoute(
+          name: Routes.recentsView.name,
+          path: Routes.recentsView.subPath,
+          pageBuilder: (context, state) => defaultTransition(state.pageKey, child: const RecentsView()),
+        ),
+      ],
     ),
 
     // LIBRARY ROUTE

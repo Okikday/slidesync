@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
@@ -6,10 +7,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/file_details.dart';
+import 'package:slidesync/domain/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/all_tabs/tab_home/presentation/actions/recent_dialog_actions.dart';
 import 'package:slidesync/features/all_tabs/tab_home/presentation/controllers/home_tab_controller.dart';
-import 'package:slidesync/domain/models/progress_track_model.dart';
+import 'package:slidesync/domain/models/progress_track_models/content_track.dart';
 import 'package:slidesync/features/all_tabs/tab_home/presentation/views/home_tab_view/home_body/recents_section/recent_dialog.dart';
+import 'package:slidesync/features/share_contents/domain/usecases/share_content_uc.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
 import 'package:slidesync/shared/widgets/build_image_path_widget.dart';
@@ -23,34 +26,13 @@ class RecentsSectionBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    final AsyncValue<List<ProgressTrackModel>> asyncProgressTrackValues = ref.watch(
-      HomeTabController.recentProgressTrackProvider,
+    final AsyncValue<List<ContentTrack>> asyncProgressTrackValues = ref.watch(
+      HomeTabController.recentContentsTrackProvider,
     );
     final rda = RecentDialogActions.of(ref);
     return asyncProgressTrackValues.when(
       data: (data) {
         if (data.isEmpty) {
-          // return SliverToBoxAdapter(
-          //   child: ListView(
-          //     shrinkWrap: true,
-          //     physics: const NeverScrollableScrollPhysics(),
-          //     children: [
-
-          //       ConstantSizing.columnSpacingHuge,
-          //       Padding(
-          //         padding: const EdgeInsets.symmetric(horizontal: 20.0),
-          //         child: CustomElevatedButton(
-          //           backgroundColor: theme.primaryColor,
-          //           borderRadius: 12,
-          //           pixelHeight: 44,
-          //           label: "Explore Courses",
-          //           textSize: 15,
-          //           textColor: theme.onPrimary,
-          //         ),
-          //       ),
-          //     ],
-          //   ),
-          // );
           return SliverToBoxAdapter(child: RecommendedSection());
         }
         return SliverPadding(
@@ -93,6 +75,15 @@ class RecentsSectionBody extends ConsumerWidget {
                           description: content.description ?? "",
                           onContinueReading: () async {
                             await rda.onContinueReading(content.contentId);
+                          },
+                          onShare: () async {
+                            UiUtils.hideDialog(context);
+                            UiUtils.showFlushBar(context, msg: "Preparing file...");
+                            final load = await CourseContentRepo.getByContentId(content.contentId);
+                            if (load == null) return;
+                            if (context.mounted) {
+                              await ShareContentUc().shareFile(context, File(load.path.filePath), filename: load.title);
+                            }
                           },
                           onDelete: () async {
                             await rda.onRemoveFromRecents(content.contentId);
@@ -168,7 +159,7 @@ class RecommendedSection extends ConsumerWidget {
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 16, right: 16),
-            child: CustomText("Recommended", fontWeight: FontWeight.bold, fontSize: 16),
+            child: CustomText("Recommended", fontWeight: FontWeight.bold, fontSize: 16, color: theme.onBackground),
           ),
           Expanded(
             child: ListView.builder(

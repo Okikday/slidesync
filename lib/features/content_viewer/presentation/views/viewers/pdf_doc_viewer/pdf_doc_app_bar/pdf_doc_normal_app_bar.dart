@@ -56,6 +56,7 @@ class PdfDocNormalAppBar extends ConsumerWidget {
                           title: "Share",
                           iconData: Icons.share_rounded,
                           onTap: () {
+                            UiUtils.showFlushBar(context, msg: "Preparing file...");
                             ShareContentUc().shareFile(
                               context,
                               File(pdva.content.path.filePath),

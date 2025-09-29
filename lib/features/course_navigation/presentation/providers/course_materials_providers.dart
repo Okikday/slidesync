@@ -9,9 +9,9 @@ import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/domain/models/file_details.dart';
-import 'package:slidesync/domain/models/progress_track_model.dart';
+import 'package:slidesync/domain/models/progress_track_models/content_track.dart';
 import 'package:slidesync/domain/repos/course_repo/course_content_repo.dart';
-import 'package:slidesync/features/all_tabs/tab_library/presentation/actions/courses_view_actions.dart';
+import 'package:slidesync/features/all_tabs/tab_library/presentation/controllers/courses_view_controller/courses_pagination.dart';
 import 'package:slidesync/core/global_notifiers/common/card_view_type_notifier.dart';
 
 final defaultContent = CourseContent.create(
@@ -51,10 +51,10 @@ final _watchContentsFamily = StreamProvider.family<List<ContentWithProgress>, St
   final controller = StreamController<List<ContentWithProgress>>();
 
   StreamSubscription<List<CourseContent>>? contentsSub;
-  StreamSubscription<List<ProgressTrackModel>>? progressSub;
+  StreamSubscription<List<ContentTrack>>? progressSub;
 
   List<CourseContent> latestContents = [];
-  Map<String, ProgressTrackModel> latestProgressMap = {};
+  Map<String, ContentTrack> latestProgressMap = {};
 
   void emitCombined() {
     if (controller.isClosed) return;
@@ -84,13 +84,13 @@ final _watchContentsFamily = StreamProvider.family<List<ContentWithProgress>, St
             return;
           }
 
-          progressSub = isar.progressTrackModels
+          progressSub = isar.contentTracks
               .filter()
               .anyOf(ids, (q, id) => q.contentIdEqualTo(id))
               .watch(fireImmediately: true)
               .listen(
                 (progressList) {
-                  final m = <String, ProgressTrackModel>{for (final p in progressList) p.contentId: p};
+                  final m = <String, ContentTrack>{for (final p in progressList) p.contentId: p};
                   latestProgressMap = m;
                   emitCombined();
                 },
@@ -141,7 +141,7 @@ class CourseMaterialsProviders {
 
 class ContentWithProgress {
   final CourseContent content;
-  final ProgressTrackModel? progress; // may be null if no progress yet
+  final ContentTrack? progress; // may be null if no progress yet
 
   ContentWithProgress({required this.content, this.progress});
 }

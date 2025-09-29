@@ -1,4 +1,3 @@
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
@@ -7,15 +6,19 @@ import 'package:share_plus/share_plus.dart';
 import 'package:slidesync/core/utils/file_utils.dart';
 
 class ShareContentUc {
-  Future<void> shareText(BuildContext context, String text) async {
-    final box = context.findRenderObject() as RenderBox?;
+  Future<void> shareText(BuildContext context, String text, {String? title, File? previewThumbnail}) async {
     await SharePlus.instance.share(
-      ShareParams(text: text, subject: "SlideSync", sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size),
+      ShareParams(text: text, subject: title ?? "SlideSync", previewThumbnail: await _genPreview(previewThumbnail)),
     );
   }
 
-  Future<void> shareFile(BuildContext context, File file, {String? filename}) async {
-    final box = context.findRenderObject() as RenderBox?;
+  Future<void> shareFile(
+    BuildContext context,
+    File file, {
+    String? filename,
+    String? title,
+    File? previewThumbnail,
+  }) async {
     final String path;
 
     if (filename != null) {
@@ -25,18 +28,26 @@ class ShareContentUc {
       path = file.path;
     }
 
-    // Use XFile for files
     final xf = XFile(path);
 
     await SharePlus.instance.share(
-      ShareParams(files: [xf], text: "SlideSync", sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size),
+      ShareParams(
+        files: [xf],
+        title: "Sharing from SlideSync",
+        text: title,
+        subject: title ?? "SlideSync",
+        previewThumbnail: await _genPreview(previewThumbnail),
+      ),
     );
   }
 
-  Future<void> shareFileFromBytes(BuildContext context, Uint8List bytes, String filename) async {
-    final box = context.findRenderObject() as RenderBox?;
-
-    // Create a temporary file in cache
+  Future<void> shareFileFromBytes(
+    BuildContext context,
+    Uint8List bytes,
+    String filename, {
+    String? title,
+    File? previewThumbnail,
+  }) async {
     final tempDir = await getTemporaryDirectory();
     final path = '${tempDir.path}/$filename';
     final tempFile = File(path);
@@ -45,13 +56,11 @@ class ShareContentUc {
     final xf = XFile(tempFile.path);
 
     await SharePlus.instance.share(
-      ShareParams(
-        files: [xf],
-        text: "Here is a dynamic file",
-        sharePositionOrigin: box!.localToGlobal(Offset.zero) & box.size,
-      ),
+      ShareParams(files: [xf], text: title, subject: title, previewThumbnail: await _genPreview(previewThumbnail)),
     );
   }
 
-
+  Future<XFile?> _genPreview(File? previewThumbnail) async {
+    return previewThumbnail != null && await previewThumbnail.exists() ? XFile(previewThumbnail.path) : null;
+  }
 }

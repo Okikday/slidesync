@@ -243,6 +243,7 @@ const _CourseContentcourseContentTypeEnumValueMap = {
   'audio': 4,
   'video': 5,
   'note': 6,
+  'reference': 7,
 };
 const _CourseContentcourseContentTypeValueEnumMap = {
   0: CourseContentType.unknown,
@@ -252,6 +253,7 @@ const _CourseContentcourseContentTypeValueEnumMap = {
   4: CourseContentType.audio,
   5: CourseContentType.video,
   6: CourseContentType.note,
+  7: CourseContentType.reference,
 };
 
 Id _courseContentGetId(CourseContent object) {

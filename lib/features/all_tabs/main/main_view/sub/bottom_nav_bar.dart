@@ -18,28 +18,35 @@ class BottomNavBar extends ConsumerWidget {
       type: MaterialType.transparency,
       clipBehavior: Clip.antiAlias,
       shape: Border(top: BorderSide(color: theme.onBackground.withAlpha(40))),
-      child: RepaintBoundary(
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-          child: BottomNavigationBar(
-            type: BottomNavigationBarType.fixed,
-            currentIndex: ref.watch(MainViewController.mainTabViewIndexProvider),
-            unselectedItemColor: theme.supportingText,
-            selectedItemColor: theme.primaryColor,
-            onTap: (index) => onTap(index),
-            backgroundColor: theme.background.withValues(alpha: 0.8),
-            elevation: 0,
-            landscapeLayout: BottomNavigationBarLandscapeLayout.linear,
-            items: [
-              BottomNavigationBarItem(icon: Icon(Iconsax.home), label: "Home", tooltip: "Home"),
-              BottomNavigationBarItem(
-                icon: Icon(Iconsax.folder),
-                label: "Library",
-                tooltip: "Library holding all your courses",
-              ),
-              BottomNavigationBarItem(icon: Icon(Icons.explore_rounded), label: "Explore", tooltip: "Explore courses"),
-            ],
-          ),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+        child: Consumer(
+          builder: (context, ref, child) {
+            final currIndex = ref.watch(MainViewController.mainTabViewIndexProvider);
+            return BottomNavigationBar(
+              type: BottomNavigationBarType.fixed,
+              currentIndex: currIndex,
+              unselectedItemColor: theme.supportingText,
+              selectedItemColor: theme.primaryColor,
+              onTap: (index) => onTap(index),
+              backgroundColor: theme.background.withValues(alpha: 0.8),
+              elevation: 0,
+              landscapeLayout: BottomNavigationBarLandscapeLayout.linear,
+              items: const [
+                BottomNavigationBarItem(icon: Icon(Iconsax.home), label: "Home", tooltip: "Home"),
+                BottomNavigationBarItem(
+                  icon: Icon(Iconsax.folder),
+                  label: "Library",
+                  tooltip: "Library holding all your courses",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.explore_rounded),
+                  label: "Explore",
+                  tooltip: "Explore courses",
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

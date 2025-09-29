@@ -4,6 +4,7 @@ import 'dart:collection';
 
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:isar/isar.dart';
+import 'package:slidesync/core/utils/leak_prevention.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/domain/repos/course_repo/course_repo.dart';
 
@@ -11,20 +12,27 @@ enum CourseSortOption { nameAsc, nameDesc, dateCreatedAsc, dateCreatedDesc, date
 
 enum PlainCourseSortOption { name, dateCreated, dateModified, none }
 
-class CoursesViewActions {
+const int limit = 20;
+
+class CoursesPagination extends LeakPrevention {
+  late final PagingController<int, Course> pagingController;
   final CourseSortOption sortOption;
 
   bool _isFetching = false;
   final Queue<Completer<List<Course>>> _waitingQueue = Queue();
   dynamic lastItemSortId;
 
-  CoursesViewActions._({required this.sortOption});
+  CoursesPagination._({required this.sortOption}) {
+    pagingController = PagingController(
+      getNextPageKey: getNextPageKey,
+      fetchPage: (pageKey) => fetchPage(pageKey, limit),
+    );
+  }
 
-  static CoursesViewActions of({CourseSortOption? sortOption}) =>
-      CoursesViewActions._(sortOption: sortOption ?? CourseSortOption.none);
+  static CoursesPagination of({CourseSortOption? sortOption}) =>
+      CoursesPagination._(sortOption: sortOption ?? CourseSortOption.none);
 
   Future<List<Course>> fetchPage(int pageKey, int limit) async {
-    // If already fetching, queue this request
     if (_isFetching) {
       final completer = Completer<List<Course>>();
       _waitingQueue.add(completer);
@@ -128,12 +136,15 @@ class CoursesViewActions {
     }
   }
 
-  void dispose() {
-    clearQueue();
-  }
-
   int get queueLength => _waitingQueue.length;
   bool get isBusy => _isFetching;
+
+  @override
+  void onDispose() {
+    clearQueue();
+    pagingController.dispose();
+    log("Disposed Courses Pagination");
+  }
 }
 
 extension CourseSortX on CourseSortOption {

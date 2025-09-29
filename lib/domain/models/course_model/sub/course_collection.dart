@@ -13,9 +13,10 @@ part 'course_collection.g.dart';
 class CourseCollection {
   Id id = Isar.autoIncrement;
 
-  @Index()
+  @Index(unique: true)
   late String collectionId;
-  
+
+  @Index()
   late String parentId;
   late String collectionTitle;
 
@@ -36,19 +37,16 @@ class CourseCollection {
     String imageLocationJson = '{}',
     String collectionMetadataJson = '{}',
   }) {
-    final collection =
-        CourseCollection()
-          ..collectionId = const Uuid().v4()
-          ..parentId = parentId
-          ..collectionTitle = collectionTitle
-          ..description = description
-          ..createdAt = createdAt ?? DateTime.now()
-          ..imageLocationJson = imageLocationJson
-          ..collectionMetadataJson = collectionMetadataJson;
+    final collection = CourseCollection()
+      ..collectionId = const Uuid().v4()
+      ..parentId = parentId
+      ..collectionTitle = collectionTitle
+      ..description = description
+      ..createdAt = createdAt ?? DateTime.now()
+      ..imageLocationJson = imageLocationJson
+      ..collectionMetadataJson = collectionMetadataJson;
     return collection;
   }
-
-
 
   Map<String, dynamic> toMap() {
     return {
@@ -74,7 +72,7 @@ class CourseCollection {
     collection.createdAt = map['createdAt'] != null ? DateTime.tryParse(map['createdAt']) : null;
     collection.imageLocationJson = map['imageLocationJson'] ?? '{}';
     collection.collectionMetadataJson = map['collectionMetadataJson'] ?? '{}';
-    
+
     return collection;
   }
 

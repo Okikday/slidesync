@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,8 +21,7 @@ class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAli
   @override
   void initState() {
     super.initState();
-    scrollController = ScrollController();
-    scrollController.addListener(scrollListener);
+    scrollController = ScrollController()..addListener(scrollListener);
   }
 
   void scrollListener() {
@@ -64,7 +62,7 @@ class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAli
       headerSliverBuilder: (context, isInnerBoxScrolled) {
         return [
           HomeAppBar(
-            title: 'Welcome back',
+            title: 'SlideSync',
             onClickUserIcon: () {
               Scaffold.of(context).openDrawer();
               // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(statusBarColor: Theme.of(context).scaffoldBackgroundColor));

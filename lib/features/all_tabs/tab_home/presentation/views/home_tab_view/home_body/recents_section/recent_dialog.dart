@@ -167,7 +167,9 @@ class _RecentDialogState extends ConsumerState<RecentDialog> {
                               title: "Share",
                               icon: Icon(Icons.share_outlined, size: 24, color: theme.supportingText),
                               textStyle: TextStyle(fontSize: 15, color: theme.onBackground),
-                              onTap: () {},
+                              onTap: () {
+                                if (widget.recentDialogModel.onShare != null) widget.recentDialogModel.onShare!();
+                              },
                             ),
 
                             divider,

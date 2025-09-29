@@ -1,9 +1,12 @@
+import 'dart:developer';
+
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/domain/models/file_details.dart';
+import 'package:slidesync/domain/repos/course_track_repo/course_track_repo.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 import 'package:slidesync/shared/widgets/build_image_path_widget.dart';
 
@@ -84,7 +87,7 @@ class ListCourseCard extends ConsumerWidget {
                 ),
               ),
 
-              ListCourseCardProgressIndicator(),
+              ListCourseCardProgressIndicator(courseId: course.courseId),
             ],
           ),
         ),
@@ -247,45 +250,62 @@ class ListCourseCardTitleColumn extends ConsumerWidget {
 }
 
 class ListCourseCardProgressIndicator extends ConsumerWidget {
-  const ListCourseCardProgressIndicator({super.key, this.progress = 0.0});
+  const ListCourseCardProgressIndicator({super.key, required this.courseId});
 
-  final double? progress;
+  final String courseId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return SizedBox.square(
-      dimension: 40,
-      child: Stack(
-        children: [
-          // CustomElevatedButton(
-          //   pixelWidth: 46,
-          //   pixelHeight: 46,
-          //   contentPadding: EdgeInsets.zero,
-          //   shape: CircleBorder(),
-          //   backgroundColor: theme.altBackgroundPrimary.withValues(alpha: 0.8),
-          //   overlayColor: theme.altBackgroundSecondary,
-          //   onClick: () {},
-          //   child: Icon(Iconsax.play_circle, color: theme.onPrimary),
-          //   // child: CustomText(
-          //   //   "${((progress?.clamp(0, 100) ?? 0.0) * 100.0).toInt()}%",
-          //   //   fontSize: 11,
-          //   //   fontWeight: FontWeight.bold,
-          //   //   color: theme.supportingText.withValues(alpha: 0.5),
-          //   // ),
-          // ),
+    final theme = ref;
+    return FutureBuilder(
+      future: CourseTrackRepo.getByCourseId(courseId),
+      builder: (context, asyncSnapshot) {
+        if (asyncSnapshot.connectionState == ConnectionState.done) {
+          log("Where we at");
+          final progress = asyncSnapshot.data?.progress ?? 0.0;
+          return SizedBox.square(
+            dimension: 40,
+            child: Stack(
+              children: [
+                CustomElevatedButton(
+                  pixelWidth: 46,
+                  pixelHeight: 46,
+                  contentPadding: EdgeInsets.zero,
+                  shape: CircleBorder(),
+                  backgroundColor: theme.background,
+                  overlayColor: theme.altBackgroundSecondary,
+                  onClick: () {},
+                  child: CustomText(
+                    "${((progress?.clamp(0, 100) ?? 0.0) * 100.0).toInt()}%",
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: theme.supportingText.withValues(alpha: 0.5),
+                  ),
+                ),
 
-          // Positioned.fill(
-          //   child: IgnorePointer(
-          //     child: CircularProgressIndicator(
-          //       value: progress?.clamp(0.01, 1.0),
-          //       strokeCap: StrokeCap.round,
-          //       color: theme.primaryColor,
-          //       backgroundColor: theme.altBackgroundPrimary.withValues(alpha: 0.4),
-          //     ),
-          //   ),
-          // ),
-        ],
-      ),
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: CircularProgressIndicator(
+                      value: progress?.clamp(0.01, 1.0),
+                      strokeCap: StrokeCap.round,
+                      color: theme.primaryColor,
+                      backgroundColor: theme.altBackgroundPrimary.withValues(alpha: 0.4),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+        return SizedBox.square(
+          dimension: 40,
+          child: CircularProgressIndicator(
+            strokeCap: StrokeCap.round,
+            color: theme.primaryColor,
+            backgroundColor: theme.altBackgroundPrimary.withValues(alpha: 0.4),
+          ),
+        );
+      },
     );
   }
 }

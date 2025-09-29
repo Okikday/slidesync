@@ -1,20 +1,23 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:slidesync/core/routes/routes.dart';
 import 'package:slidesync/features/all_tabs/tab_home/presentation/controllers/home_tab_controller.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 
 class RecentsSectionHeader extends ConsumerWidget {
-  final void Function() onClickSeeAll;
-  const RecentsSectionHeader({super.key, required this.onClickSeeAll});
+  const RecentsSectionHeader({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    final asyncRecentsValue = ref.watch(HomeTabController.recentProgressTrackProvider);
-    return asyncRecentsValue.when(
+    final asyncMostRecent = ref.watch(
+      HomeTabController.recentContentsTrackProvider.select((s) => s.whenData((v) => v.isEmpty ? null : v.last)),
+    );
+    return asyncMostRecent.when(
       data: (data) {
-        if (data.isEmpty) return const SliverToBoxAdapter();
+        if (data == null) return const SliverToBoxAdapter();
         return SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: ConstantSizing.spaceMedium, vertical: 0),
@@ -30,7 +33,9 @@ class RecentsSectionHeader extends ConsumerWidget {
                   textColor: theme.supportingText.withValues(alpha: 0.9),
                   textSize: 14,
                   pixelHeight: 32,
-                  onClick: onClickSeeAll,
+                  onClick: () {
+                    context.pushNamed(Routes.recentsView.name);
+                  },
                 ),
               ],
             ),

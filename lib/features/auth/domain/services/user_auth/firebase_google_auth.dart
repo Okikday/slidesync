@@ -12,30 +12,24 @@ import 'package:slidesync/features/auth/domain/usecases/auth_uc/user_data_functi
 class FirebaseGoogleAuth {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final CollectionReference _collectionReference = FirebaseFirestore.instance.collection('users');
-  final GoogleSignIn _googleAuth = GoogleSignIn(
-    scopes: ['email', 'profile', 'openid'],
-  );
+  final GoogleSignIn _googleAuth = GoogleSignIn.instance;
   final FirebaseAuthData _firebaseData = FirebaseAuthData();
   UserCredential? _userCredential;
   final UserDataFunctions userData = UserDataFunctions();
 
   Future<Result<UserCredentialModel>> signInWithGoogle({String? phoneNumber}) async {
-    
     try {
       // Triggering the authentication flow
-      final GoogleSignInAccount? googleUser = await _googleAuth.signIn();
-      if (googleUser == null) {
-        return Result.error("Google Sign-In was canceled by the user.");
-      }
+      final GoogleSignInAccount googleUser = await _googleAuth.authenticate(scopeHint: ['email', 'profile', 'openid']);
+      // if (googleUser == null) {
+      //   return Result.error("Google Sign-In was canceled by the user.");
+      // }
 
       // Obtain the auth details from the request
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
 
       // Create a new credential
-      final OAuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
+      final OAuthCredential credential = GoogleAuthProvider.credential(idToken: googleAuth.idToken);
 
       // Sign in to Firebase with the Google credential
       final UserCredential userCredential = await _firebaseAuth.signInWithCredential(credential);
@@ -54,11 +48,7 @@ class FirebaseGoogleAuth {
       );
 
       if (outcomeCreateUser.isSuccess) {
-        await userData.saveUserDetails(
-          googleAccessToken: googleAuth.accessToken,
-          googleIDToken: googleAuth.idToken,
-          userCredentialModel: outcomeCreateUser.data,
-        );
+        await userData.saveUserDetails(googleIDToken: googleAuth.idToken, userCredentialModel: outcomeCreateUser.data);
         return Result.success(outcomeCreateUser.data);
       } else {
         return Result.error("Unable to create User Data");

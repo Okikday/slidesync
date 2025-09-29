@@ -52,7 +52,7 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                 InkWell(
                   borderRadius: BorderRadius.circular(16),
                   onTap: () {
-                    context.push(Routes.contentGate.name, extra: content);
+                    context.pushNamed(Routes.contentGate.name, extra: content);
                   },
                   child: Container(
                     // curve: CustomCurves.defaultIosSpring,
@@ -157,11 +157,19 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                                     title: "Share",
                                     iconData: Iconsax.share_copy,
                                     onTap: () {
-                                      ShareContentUc().shareFile(
-                                        context,
-                                        File(content.path.filePath),
-                                        filename: content.title,
-                                      );
+                                      UiUtils.showFlushBar(context, msg: "Preparing content...");
+                                      if (content.courseContentType == CourseContentType.document ||
+                                          content.courseContentType == CourseContentType.image) {
+                                        ShareContentUc().shareFile(
+                                          context,
+                                          File(content.path.filePath),
+                                          filename: content.title,
+                                        );
+                                      } else if (content.courseContentType == CourseContentType.link) {
+                                        ShareContentUc().shareText(context, content.path.urlPath);
+                                      } else {
+                                        UiUtils.showFlushBar(context, msg: "Unable to share content!");
+                                      }
                                     },
                                   ),
                                   PopupMenuAction(

@@ -17,9 +17,9 @@ part 'course.g.dart';
 class Course {
   Id id = Isar.autoIncrement;
 
-  @Index()
+  @Index(unique: true)
   late String courseId;
-  
+
   @Index(caseSensitive: false)
   late String courseTitle;
   String description = '';

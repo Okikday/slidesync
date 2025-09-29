@@ -6,6 +6,7 @@ import 'package:slidesync/core/utils/basic_utils.dart';
 import 'package:slidesync/domain/models/course_model/sub/course_content.dart';
 import 'package:slidesync/domain/models/file_details.dart';
 import 'package:slidesync/domain/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/domain/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/manage_all/manage_contents/domain/repos/get_content_repo/get_content_repo.dart';
 import 'package:super_clipboard/super_clipboard.dart';
 
@@ -20,7 +21,7 @@ class AddLinkActions {
     final collection = await CourseCollectionRepo.getById(parentId);
     if (collection == null) return false;
     final contentHash = BasicUtils.calculateStringHash(link);
-    final CourseContent? sameHashedContent = await CourseCollectionRepo.findFirstDuplicateContentByHash(
+    final CourseContent? sameHashedContent = await CourseContentRepo.findFirstDuplicateContentByHash(
       collection,
       contentHash,
     );
@@ -46,7 +47,7 @@ class AddLinkActions {
             'previewUrl': previewLinkDetails.previewUrl,
           }),
         );
-        return await CourseCollectionRepo.addContent(newContent);
+        return await CourseContentRepo.addContent(newContent);
       }
     } else {
       newContent = CourseContent.create(
@@ -58,7 +59,7 @@ class AddLinkActions {
         courseContentType: CourseContentType.link,
         metadataJson: jsonEncode({'previewUrl': previewLinkDetails.previewUrl}),
       );
-      return await CourseCollectionRepo.addContent(newContent);
+      return await CourseContentRepo.addContent(newContent);
     }
     return false;
   }

@@ -33,26 +33,18 @@ class StoreContentsUc {
       if (collection == null) return "Unable to load collection";
 
       final String dirToStoreAt = collection.absolutePath;
-      log("lol, we got here");
       for (var filePath in selectedContentPaths) {
         log(filePath);
         log("${File(filePath)}");
         final file = File(filePath);
-        log("location 1");
         // potentialPurgePaths.add(file.path);
         final fileName = p.basename(file.path);
-        log("location 2");
         final fileNameWithoutExt = p.basenameWithoutExtension(fileName);
-        log("location 3");
         final hash = await BasicUtils.calculateFileHash(file.path);
-        log("location 4");
         final CourseContent? sameHashedContent = await CourseContentRepo.getByHash(hash);
-        log("location 5");
         final CourseContentType contentType = checkContentType(fileName);
-        log("location 6");
 
         final Result<String?> addContentResult = await Result.tryRunAsync(() async {
-          log("location 7");
           //
           if (sameHashedContent == null) {
             final String contentId = const Uuid().v4();
@@ -78,10 +70,10 @@ class StoreContentsUc {
               courseContentType: contentType,
               genPreviewPathRecord: CreateContentPreviewImage.genPreviewImagePathRecord(filePath: storedAt.path),
             );
-            await CourseCollectionRepo.addContent(content);
+            await CourseContentRepo.addContent(content);
             return content.contentId;
           } else {
-            final CourseContent? sameHashedContentInColl = await CourseCollectionRepo.findFirstDuplicateContentByHash(
+            final CourseContent? sameHashedContentInColl = await CourseContentRepo.findFirstDuplicateContentByHash(
               collection,
               hash,
             );
@@ -93,7 +85,7 @@ class StoreContentsUc {
                 path: sameHashedContent.path.fileDetails,
                 courseContentType: contentType,
               );
-              await CourseCollectionRepo.addContent(content);
+              await CourseContentRepo.addContent(content);
               return content.contentId;
             } else {
               log("A duplicate exists!");

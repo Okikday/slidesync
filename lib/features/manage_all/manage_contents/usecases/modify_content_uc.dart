@@ -4,16 +4,16 @@ import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/domain/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/domain/repos/course_repo/course_content_repo.dart';
-import 'package:slidesync/domain/repos/progress_track_repo.dart';
+import 'package:slidesync/domain/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/features/all_tabs/tab_home/presentation/actions/recent_dialog_actions.dart';
 import 'package:slidesync/features/manage_all/manage_contents/usecases/create_contents_uc/create_content_preview_image.dart';
 
 class ModifyContentUc {
   Future<String?> deleteContentAction(CourseContent content) async {
     final bool dupHashExists = await CourseContentRepo.doesDuplicateHashExists(content.contentHash);
-    await CourseCollectionRepo.deleteContent(content);
+    await CourseContentRepo.deleteContent(content);
     await RecentDialogActions.removeIdFromRecents(content.contentId);
-    await ProgressTrackRepo.deleteByContentId(content.contentId);
+    await ContentTrackRepo.deleteByContentId(content.contentId);
 
     if (!dupHashExists) {
       await FileUtils.deleteFileAtPath(content.path.filePath);

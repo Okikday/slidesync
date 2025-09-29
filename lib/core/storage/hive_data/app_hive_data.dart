@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:typed_data';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:slidesync/core/utils/result.dart';
 
 class AppHiveData {
   static AppHiveData instance = AppHiveData._internal();
@@ -42,20 +43,22 @@ class AppHiveData {
     }
   }
 
-  Future<dynamic> getData({required String key}) async => await _box.get(key);
+  Future<T?> getData<T>({required String key}) async =>
+      (await Result.tryRunAsync(() async => await _box.get(key))).data as T?;
 
-  Future<void> setData({required String key, required dynamic value}) async => await _box.put(key, value);
+  Future<void> setData({required String key, required dynamic value}) async =>
+      await Result.tryRunAsync(() async => await _box.put(key, value));
 
-  Future<void> deleteData({required String key}) async => await _box.delete(key);
+  Future<void> deleteData({required String key}) async => await Result.tryRunAsync(() async => await _box.delete(key));
 
   Stream<dynamic> watchChanges<T>({required String key}) async* {
     yield* _box.watch(key: key);
   }
 
-  Stream<T> watchData<T>({required String key}) async* {
-    yield (await getData(key: key)) as T;
+  Stream<T?> watchData<T>({required String key}) async* {
+    yield (await getData(key: key)) as T?;
     yield* _box.watch(key: key).asyncMap((_) async {
-      return (await getData(key: key)) as T;
+      return (await getData(key: key)) as T?;
     });
   }
 

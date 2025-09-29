@@ -14,6 +14,9 @@ enum Routes {
   library,
   explore,
 
+  // Under home
+  recentsView,
+
   /// Course Nav screens
   courseDetails,
   courseMaterials,

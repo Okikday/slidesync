@@ -1,6 +1,12 @@
+import 'dart:developer';
+
 import 'package:isar/isar.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
+import 'package:slidesync/core/utils/result.dart';
+import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/domain/models/course_model/sub/course_content.dart';
+import 'package:slidesync/domain/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/domain/repos/course_repo/course_repo.dart';
 
 class CourseContentRepo {
   static final IsarData<CourseContent> _isarData = IsarData.instance<CourseContent>();
@@ -57,5 +63,104 @@ class CourseContentRepo {
   /// Gets Duplicate Coursecontents, or contents with same hash
   static Future<List<CourseContent>> findAllDuplicatesByHash(String contentHash) async {
     return await (await _isar).courseContents.filter().contentHashEqualTo(contentHash).findAll();
+  }
+
+  static Future<CourseContent?> findFirstDuplicateContentByHash(CourseCollection collection, String contentHash) async {
+    await collection.contents.load();
+    return (collection.contents.where((content) => content.contentHash == contentHash)).firstOrNull;
+  }
+
+  // Check
+  static Future<bool> addContent(CourseContent content, [CourseCollection? collection]) async {
+    if (content.parentId.isEmpty) return false;
+    final result = await Result.tryRunAsync<bool>(() async {
+      final isar = (await _isar);
+
+      final fetchResult = await _fetchCourseAndCollection(isar, collection, content.parentId);
+      final getCollection = fetchResult.$2;
+      final course = fetchResult.$1;
+
+      if (getCollection == null || course == null) return false;
+
+      await getCollection.contents.load();
+      // Load collections from the course
+      await course.collections.load();
+      //Add content to the collection
+      getCollection.contents.add(content);
+      await isar.writeTxn(() async {
+        await isar.courseContents.put(content);
+
+        await getCollection.contents.save();
+
+        await isar.courseCollections.put(getCollection);
+      });
+
+      return true;
+    });
+
+    return result.data ?? false;
+  }
+
+  // Check
+  static Future<bool> deleteContent(CourseContent content, [CourseCollection? collection]) async {
+    try {
+      final isar = (await _isar);
+
+      final fetchResult = await _fetchCourseAndCollection(isar, collection, content.parentId);
+      final getCollection = fetchResult.$2;
+      final course = fetchResult.$1;
+
+      if (getCollection == null || course == null) return false;
+
+      await getCollection.contents.load();
+      await course.collections.load();
+      await isar.writeTxn(() async {
+        getCollection.contents.remove(content);
+        await getCollection.contents.save();
+
+        await isar.courseContents.delete(content.id);
+        await isar.courseCollections.put(getCollection);
+      });
+      return true;
+    } catch (e) {
+      log("$e");
+      return false;
+    }
+  }
+
+  static Future<bool> deleteAllContents(CourseCollection collection) async {
+    try {
+      final isar = await _isar;
+      await collection.contents.load();
+
+      final contentIds = collection.contents.map((c) => c.id).toList();
+      await isar.writeTxn(() async {
+        await isar.courseContents.deleteAll(contentIds);
+        collection.contents.clear();
+        await collection.contents.save();
+        await isar.courseCollections.put(collection);
+      });
+
+      return true;
+    } catch (e) {
+      log("Error deleting all contents: $e");
+      return false;
+    }
+  }
+
+  static Future<(Course? course, CourseCollection? collection)> _fetchCourseAndCollection(
+    Isar isar,
+    CourseCollection? collection,
+    String contentParentId,
+  ) async {
+    CourseCollection? getCollection = collection != null
+        ? (await isar.courseCollections.get(collection.id))
+        : (await isar.courseCollections.filter().collectionIdEqualTo(contentParentId).findFirst());
+    if (getCollection == null) return (null, null);
+
+    if (getCollection.parentId.isEmpty) return (null, null);
+    final Course? course = await CourseRepo.getCourseById(getCollection.parentId);
+    if (course == null) return (null, null);
+    return (course, getCollection);
   }
 }

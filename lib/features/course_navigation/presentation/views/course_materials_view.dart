@@ -7,7 +7,7 @@ import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
-import 'package:slidesync/features/all_tabs/tab_library/presentation/actions/courses_view_actions.dart';
+import 'package:slidesync/features/all_tabs/tab_library/presentation/controllers/courses_view_controller/courses_pagination.dart';
 import 'package:slidesync/features/course_navigation/presentation/providers/course_materials_providers.dart';
 import 'package:slidesync/features/course_navigation/presentation/views/course_materials/materials_search_button.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/views/add_contents/add_content_fab.dart';

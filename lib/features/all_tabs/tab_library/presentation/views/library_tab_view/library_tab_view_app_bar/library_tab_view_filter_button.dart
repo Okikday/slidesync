@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
-import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
-import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/features/all_tabs/tab_library/presentation/actions/courses_view_actions.dart';
-import 'package:slidesync/features/all_tabs/tab_library/presentation/providers/courses_view_providers.dart';
+import 'package:slidesync/features/all_tabs/tab_library/presentation/controllers/courses_view_controller/courses_pagination.dart';
+import 'package:slidesync/features/all_tabs/tab_library/presentation/controllers/courses_view_controller.dart';
 import 'package:slidesync/shared/common_widgets/app_popup_menu_button.dart';
 import 'package:slidesync/shared/components/circular_loading_indicator.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
@@ -52,7 +49,7 @@ class LibraryTabViewFilterButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
 
-    final asyncCurrSortOption = ref.watch(CoursesViewProviders.coursesFilterOptions);
+    final asyncCurrSortOption = ref.watch(CoursesViewController.coursesFilterOption);
     return asyncCurrSortOption.when(
       data: (currSortOption) {
         final currSortData = parseCourseSortOption(currSortOption);
@@ -83,13 +80,7 @@ class LibraryTabViewFilterButton extends ConsumerWidget {
                     : null,
                 onTap: () async {
                   final newOpt = item == currPlain ? _fromPlain(item, !currSortData.asc) : _fromPlain(item, true);
-                  ref.read(CoursesViewProviders.coursesFilterOptions.notifier).set(newOpt);
-                  Result.tryRun(() async {
-                    await AppHiveData.instance.setData(
-                      key: HiveDataPathKey.libraryCourseSortOption.name,
-                      value: newOpt.index,
-                    );
-                  });
+                  ref.read(CoursesViewController.coursesFilterOption.notifier).set(newOpt);
                 },
               ),
           ],
