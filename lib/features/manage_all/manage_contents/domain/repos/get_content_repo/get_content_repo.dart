@@ -14,8 +14,8 @@ class GetContentRepo {
 }
 
 extension PreviewLinkDetailsExtension on PreviewLinkDetails {
-  bool _checkIsNullOrEmpty(String? value) => value == null && (value != null && value.isEmpty);
-  bool get isEmpty => _checkIsNullOrEmpty(title) && _checkIsNullOrEmpty(description) && _checkIsNullOrEmpty(previewUrl);
+  bool checkIsNullOrEmpty(String? value) => value == null || (value.isEmpty);
+  bool get isEmpty => checkIsNullOrEmpty(title) && checkIsNullOrEmpty(description) && checkIsNullOrEmpty(previewUrl);
 }
 
 String _calculateUrl(String baseUrl, String? proxy) {

@@ -1,4 +1,5 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
+import 'package:flutter/gestures.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/core/routes/app_router.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
@@ -12,10 +13,10 @@ final courseNavRoute = GoRoute(
 
   pageBuilder: (context, state) => defaultTransition(
     state.pageKey,
-    defaultIncoming: TransitionType.fade,
+    defaultIncoming: TransitionType.slide(begin: Offset(0, 0.2), end: Offset.zero, fade: true),
     // defaultIncomingDuration: Durations.medium2,
     // defaultIncomingCurve: Curves.fastEaseInToSlowEaseOut,
-    child: CourseDetailsView(course: state.extra as Course),
+    child: CourseDetailsView(courseDbId: state.extra as int),
   ),
   routes: [
     GoRoute(

@@ -66,6 +66,7 @@ class _AddLinkBottomSheetState extends ConsumerState<AddLinkBottomSheet> {
               parentId: widget.collection.collectionId,
               previewLinkDetails: additionalDetails.value,
             );
+            
             if (result) {
               if (context.mounted) UiUtils.showFlushBar(context, msg: "Successfully added link");
             } else {

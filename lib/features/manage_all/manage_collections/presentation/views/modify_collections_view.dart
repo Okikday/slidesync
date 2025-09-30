@@ -95,7 +95,6 @@ class _ModifyCollectionsViewState extends ConsumerState<ModifyCollectionsView> {
             if (course.collections.isNotEmpty)
               PinnedHeaderSliver(
                 child: CollectionsViewSearchBar(
-                  searchController: searchCollectionController,
                   onTap: () {
                     // scrollController.animateTo(
                     //   appBarHeight + 8,

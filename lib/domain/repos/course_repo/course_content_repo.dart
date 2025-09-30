@@ -5,6 +5,7 @@ import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/domain/models/progress_track_models/content_track.dart';
+import 'package:slidesync/domain/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/domain/repos/course_repo/course_repo.dart';
 import 'package:slidesync/domain/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/domain/repos/course_track_repo/course_track_repo.dart';
@@ -12,6 +13,8 @@ import 'package:slidesync/domain/repos/course_track_repo/course_track_repo.dart'
 class CourseContentRepo {
   static final IsarData<CourseContent> _isarData = IsarData.instance<CourseContent>();
   static Future<Isar> get _isar async => await IsarData.isarFuture;
+  static IsarData<CourseContent> get isarData => _isarData;
+  static Future<Isar> get isar async => await IsarData.isarFuture;
 
   // static Future<QueryBuilder<CourseContent, CourseContent, QAfterFilterCondition>> _queryById(
   //   String contentHash,
@@ -31,7 +34,9 @@ class CourseContentRepo {
   static Future<int> add(CourseContent content) async {
     final existingContentTrack = await (await ContentTrackRepo.filter).contentIdEqualTo(content.contentId).findFirst();
     if (existingContentTrack == null) {
-      final parentCourseTrack = await CourseTrackRepo.getByCourseId(content.parentId);
+      final collection = await CourseCollectionRepo.getById(content.parentId);
+      if (collection == null) return -1;
+      final parentCourseTrack = await CourseTrackRepo.getByCourseId(collection.parentId);
       if (parentCourseTrack == null) return -1;
       final newContentTrack = ContentTrack.create(
         contentId: content.contentId,
@@ -42,7 +47,6 @@ class CourseContentRepo {
       newContentTrack.courseTrackLink.value = parentCourseTrack;
       await ContentTrackRepo.isarData.store(newContentTrack);
     }
-
     return await _isarData.store(content);
   }
 
@@ -94,16 +98,14 @@ class CourseContentRepo {
       final fetchResult = await _fetchCourseAndCollection(isar, collection, content.parentId);
       final getCollection = fetchResult.$2;
       final course = fetchResult.$1;
-      log("message");
 
       if (getCollection == null || course == null) return false;
-
       final addContentRes = await add(content);
       if (addContentRes == -1) return false;
 
       await getCollection.contents.load();
       // // Load collections from the course
-      // await course.collections.load();
+      await course.collections.load();
       //Add content to the collection
       getCollection.contents.add(content);
 

@@ -4,13 +4,13 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:slidesync/features/course_navigation/presentation/providers/course_details_controller.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 
 class CollectionsViewSearchBar extends ConsumerStatefulWidget {
-  final TextEditingController? searchController;
   final void Function() onTap;
   final void Function(FocusNode focusNode)? onTapOutside;
-  const CollectionsViewSearchBar({super.key, this.searchController, required this.onTap, this.onTapOutside});
+  const CollectionsViewSearchBar({super.key, required this.onTap, this.onTapOutside});
 
   @override
   ConsumerState<CollectionsViewSearchBar> createState() => _CollectionsViewSearchBarState();
@@ -49,7 +49,6 @@ class _CollectionsViewSearchBarState extends ConsumerState<CollectionsViewSearch
                     child: CustomTextfield(
                       hint: "Search collections",
                       focusNode: focusNode,
-                      controller: widget.searchController,
                       autoDispose: false,
                       hintStyle: TextStyle(color: theme.supportingText),
                       selectionHandleColor: theme.primaryColor,
@@ -60,6 +59,16 @@ class _CollectionsViewSearchBarState extends ConsumerState<CollectionsViewSearch
                         padding: const EdgeInsets.only(left: 12.0, right: 10.0, top: 12.0, bottom: 12.0),
                         child: Icon(Iconsax.search_normal_copy, size: 20, color: theme.supportingText),
                       ),
+                      onchanged: (text) {
+                        ref
+                                .read(
+                                  CourseDetailsController.courseDetailsStateProvider.select(
+                                    (s) => s.searchCollectionTextNotifier,
+                                  ),
+                                )
+                                .value =
+                            text;
+                      },
                       onTapOutside: widget.onTapOutside == null
                           ? null
                           : () {
@@ -69,13 +78,6 @@ class _CollectionsViewSearchBarState extends ConsumerState<CollectionsViewSearch
                     ),
                   ),
                 ),
-
-                // CustomElevatedButton(
-                //   pixelHeight: 48,
-                //   shape: CircleBorder(),
-                //   backgroundColor: theme.altBackgroundPrimary,
-                //   child: Icon(Iconsax.filter_copy, size: 20, color: theme.supportingText),
-                // ),
               ],
             ),
           ),

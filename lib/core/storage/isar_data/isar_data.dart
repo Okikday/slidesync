@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
@@ -89,14 +90,19 @@ class IsarData<T> {
     yield* isar.collection<T>().where().watch(fireImmediately: fireImmediately);
   }
 
-  Future<Stream<List<T>>> watchAllLazily() async {
+  Future<Stream<List<T>>> watchAllLazily({bool fireImmediately = true}) async {
     final isar = await isarFuture;
-    return isar.collection<T>().where().watchLazy(fireImmediately: true).asyncMap((_) => getAll());
+    return isar.collection<T>().where().watchLazy(fireImmediately: fireImmediately).asyncMap((_) => getAll());
   }
 
   Future<Stream<void>> watchForChanges({bool fireImmediately = true}) async {
     final isar = await isarFuture;
     return isar.collection<T>().where().watchLazy(fireImmediately: fireImmediately);
+  }
+
+  Future<Stream<void>> watchAllForChanges() async {
+    final isar = await isarFuture;
+    return isar.collection<T>().where().watchLazy(fireImmediately: true);
   }
 
   Future<Stream<void>> watchForChangesById(String collectionId, {bool fireImmediately = true}) async {

@@ -28,7 +28,7 @@ final _watchCourseChanges = StreamProvider((ref) async* {
 
 // final coursesChangeListenerProvider = Provider.autoDispose<void>((ref) {
 //   ref.listen<AsyncValue<dynamic>>(
-//     _watchCourseChanges, 
+//     _watchCourseChanges,
 //     (previous, next) {
 //       if (next is AsyncData) {
 //         ref.invalidate(_coursesPaginationFutureProvider);
@@ -43,8 +43,6 @@ final AsyncNotifierProvider<CardViewTypeNotifier, int> _cardViewTypeProvider =
       () => CardViewTypeNotifier(HiveDataPathKey.libraryTabCardViewType.name, 2),
       isAutoDispose: true,
     );
-
-
 
 class CoursesViewController {
   /// Outer Getters

@@ -21,8 +21,8 @@ class ContentCardActions {
           log("After checking internet: $previewMap");
           if (previewMap == null) return FileDetails();
           final PreviewLinkDetails previewLinkDetails = (
-            title: previewMap['title'],
             description: previewMap['description'],
+            title: previewMap['title'],
             previewUrl: previewMap['previewUrl'],
           );
           if (previewLinkDetails.isEmpty) {

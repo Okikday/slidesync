@@ -36,11 +36,7 @@ class AddContentsUc {
         // ignore: use_build_context_synchronously
         Navigator.pop(rootNavigatorKey.currentContext!);
       }
-      UiUtils.showLoadingDialog(
-        rootNavigatorKey.currentContext!,
-        message: "Consulting system selection",
-        backgroundColor: Colors.blueGrey.withAlpha(225),
-      );
+      UiUtils.showLoadingDialog(rootNavigatorKey.currentContext!, message: "Consulting system selection");
 
       // Redirect to add contents
       final selectedContents = await SelectContentsUc(collection).referToAddContents(type);

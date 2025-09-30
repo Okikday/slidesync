@@ -8,7 +8,7 @@ import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/controllers/courses_view_controller/courses_pagination.dart';
-import 'package:slidesync/features/course_navigation/presentation/providers/course_materials_providers.dart';
+import 'package:slidesync/features/course_navigation/presentation/providers/course_materials_controller.dart';
 import 'package:slidesync/features/course_navigation/presentation/views/course_materials/materials_search_button.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/views/add_contents/add_content_fab.dart';
 import 'package:slidesync/features/course_navigation/presentation/views/course_materials/materials_view.dart';
@@ -40,7 +40,7 @@ class _CourseMaterialsViewState extends ConsumerState<CourseMaterialsView> {
   }
 
   void scrollListener() {
-    final scrollOffsetNotifier = ref.read(CourseMaterialsProviders.scrollOffsetProvider.notifier);
+    final scrollOffsetNotifier = ref.read(CourseMaterialsController.scrollOffsetProvider.notifier);
     scrollOffsetNotifier.update((cb) => scrollController.offset); //
     // final prevOffset = scrollOffsetNotifier.state;
     // final currOffset = scrollController.offset;
@@ -59,15 +59,16 @@ class _CourseMaterialsViewState extends ConsumerState<CourseMaterialsView> {
   @override
   Widget build(BuildContext context) {
     final theme = ref;
-    // ref.watch(streamedCollection).value ??
-    final CourseCollection collection = widget.collection;
+    // ref.watch(
+    //   CourseMaterialsController.contentPaginationProvider(widget.collection.collectionId),
+    // );
     return AnnotatedRegion(
       value: UiUtils.getSystemUiOverlayStyle(context.scaffoldBackgroundColor, context.isDarkMode),
       child: Scaffold(
         appBar: AppBarContainer(
           child: AppBarContainerChild(
             context.isDarkMode,
-            title: collection.collectionTitle,
+            title: widget.collection.collectionTitle,
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -76,7 +77,7 @@ class _CourseMaterialsViewState extends ConsumerState<CourseMaterialsView> {
                   menuPadding: EdgeInsets.only(right: 16),
                   actions: [
                     ref
-                        .watch(CourseMaterialsProviders.cardViewType)
+                        .watch(CourseMaterialsController.cardViewType)
                         .when(
                           data: (data) {
                             final isGrid = data == 0;
@@ -84,7 +85,7 @@ class _CourseMaterialsViewState extends ConsumerState<CourseMaterialsView> {
                               title: "View",
                               iconData: isGrid ? Iconsax.grid_1 : Iconsax.arrange_square,
                               onTap: () {
-                                ref.read(CourseMaterialsProviders.cardViewType.notifier).toggle();
+                                ref.read(CourseMaterialsController.cardViewType.notifier).toggle();
                               },
                             );
                           },
@@ -112,7 +113,7 @@ class _CourseMaterialsViewState extends ConsumerState<CourseMaterialsView> {
                                   ConstantSizing.columnSpacingSmall,
                                   Expanded(
                                     child: ref
-                                        .watch(CourseMaterialsProviders.contentFilterProvider)
+                                        .watch(CourseMaterialsController.contentFilterOptionProvider)
                                         .when(
                                           data: (data) {
                                             return ListView.builder(
@@ -126,7 +127,11 @@ class _CourseMaterialsViewState extends ConsumerState<CourseMaterialsView> {
                                                     final newValue = CourseSortOption
                                                         .values[index.clamp(0, CourseSortOption.values.length)];
                                                     ref
-                                                        .read(CourseMaterialsProviders.contentFilterProvider.notifier)
+                                                        .read(
+                                                          CourseMaterialsController
+                                                              .contentFilterOptionProvider
+                                                              .notifier,
+                                                        )
                                                         .set(newValue);
                                                     await Result.tryRunAsync(() async {
                                                       await AppHiveData.instance.setData(
@@ -145,7 +150,9 @@ class _CourseMaterialsViewState extends ConsumerState<CourseMaterialsView> {
                                                               .values[index.clamp(0, CourseSortOption.values.length)];
                                                           ref
                                                               .read(
-                                                                CourseMaterialsProviders.contentFilterProvider.notifier,
+                                                                CourseMaterialsController
+                                                                    .contentFilterOptionProvider
+                                                                    .notifier,
                                                               )
                                                               .set(newValue);
                                                           await Result.tryRunAsync(() async {
@@ -183,14 +190,14 @@ class _CourseMaterialsViewState extends ConsumerState<CourseMaterialsView> {
         ),
 
         floatingActionButton: AddContentFAB(
-          collection: collection,
-          scrollOffsetProvider: CourseMaterialsProviders.scrollOffsetProvider,
+          collection: widget.collection,
+          scrollOffsetProvider: CourseMaterialsController.scrollOffsetProvider,
         ),
 
         body: CustomScrollView(
           controller: scrollController,
           physics: const BouncingScrollPhysics(),
-          slivers: [MaterialsView(collection: collection)],
+          slivers: [MaterialsView(collection: widget.collection)],
         ),
       ),
     );

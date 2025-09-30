@@ -28,16 +28,18 @@ class AddLinkActions {
     final CourseContent newContent;
     if (sameHashedContent != null) {
       if (contentHash == sameHashedContent.contentHash && link == sameHashedContent.path.fileDetails.urlPath) {
-        // log("They are the same, modify");
-        if (previewLinkDetails.isEmpty ||
-            ((previewLinkDetails.title != null && previewLinkDetails.title == sameHashedContent.title) &&
-                (previewLinkDetails.description != null &&
-                    previewLinkDetails.description == sameHashedContent.description) &&
-                (previewLinkDetails.previewUrl != null &&
-                    previewLinkDetails.previewUrl == jsonDecode(sameHashedContent.metadataJson)['previewUrl']))) {
-          log("Nothing to update on storage");
-          return false;
+        if (previewLinkDetails.isEmpty) return false;
+        if ((previewLinkDetails.title != null && previewLinkDetails.title == sameHashedContent.title)) {
+          if (previewLinkDetails.description != null &&
+              previewLinkDetails.description == sameHashedContent.description) {
+            if ((previewLinkDetails.previewUrl != null &&
+                previewLinkDetails.previewUrl == jsonDecode(sameHashedContent.metadataJson)['previewUrl'])) {
+              return false;
+            }
+          }
         }
+        // log("They are the same, modify");
+
         newContent = sameHashedContent.copyWith(
           contentHash: contentHash,
           title: previewLinkDetails.title != "Unknown link" ? previewLinkDetails.title : "Unknown link",

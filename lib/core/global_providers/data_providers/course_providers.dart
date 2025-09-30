@@ -9,5 +9,4 @@ final _courseByDbId = StreamProvider.family<Course?, int>((ref, arg) {
 
 class CourseProviders {
   static StreamProvider<Course?> courseProvider(int dbId) => _courseByDbId(dbId);
-  
 }

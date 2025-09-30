@@ -32,7 +32,8 @@ class CourseRepo {
         title: course.courseTitle,
         description: course.description,
       );
-      await CourseTrackRepo.isarData.store(newCourseTrack);
+      final storeTrackRes = await CourseTrackRepo.isarData.store(newCourseTrack);
+      log("STored courseTrack: ${(await _isar).courseTracks.get(storeTrackRes)}");
     }
 
     return await _isarData.store(course);
