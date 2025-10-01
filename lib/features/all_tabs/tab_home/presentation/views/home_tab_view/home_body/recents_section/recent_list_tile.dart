@@ -97,7 +97,7 @@ class RecentListTile extends ConsumerWidget {
                       Flexible(
                         child: CustomText(
                           dataModel.subtitle,
-                          fontSize: dataModel.extraContent.isEmpty ? 14 : 12,
+                          fontSize: 12,
                           color: theme.supportingText.withValues(alpha: 0.8),
                         ),
                       ),

@@ -45,8 +45,7 @@ class RecentsSectionBody extends ConsumerWidget {
               return RecentListTile(
                 dataModel: RecentListTileModel(
                   title: content.title ?? "No title",
-                  subtitle:
-                      content.description?.substring(0, content.description?.length).padRight(3, '.') ?? "No subtitle",
+                  subtitle: content.pages.isEmpty ? "Last page unavailable!" : "Page ${content.pages.last}",
                   // extraContent: DummySlides.dummySlides[index]['extraContent'] as String? ?? "",
                   previewPath: previewPath,
                   progressLevel: ProgressLevel.neutral,
@@ -56,7 +55,6 @@ class RecentsSectionBody extends ConsumerWidget {
                     UiUtils.showCustomDialog(
                       context,
                       canPop: true,
-                      blurSigma: Offset(2.0, 2.0),
                       transitionType: TransitionType.cupertinoDialog,
                       barrierColor: Colors.black.withValues(alpha: 0.6),
                       transitionDuration: Durations.short4,

@@ -36,7 +36,7 @@ class _CoursesViewState extends ConsumerState<CoursesView> {
     return cp.when(
       data: (data) {
         return SliverPadding(
-          padding: EdgeInsetsGeometry.symmetric(horizontal: 12),
+          padding: EdgeInsetsGeometry.symmetric(horizontal: 16),
           sliver: PagingListener(
             controller: data.pagingController,
             builder: (context, state, fetchNextPage) {

@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -35,166 +37,120 @@ class _RecentDialogState extends ConsumerState<RecentDialog> {
                     horizontal: 32,
                     vertical: context.deviceHeight > context.deviceWidth ? 0 : 32,
                   ),
-                  width: context.deviceHeight > context.deviceWidth ? context.deviceWidth : context.deviceWidth * 0.5,
-                  height: context.deviceHeight > context.deviceWidth
-                      ? (context.deviceWidth * 1.25) - 64
-                      : context.deviceHeight * 0.9,
+
                   constraints: BoxConstraints(maxHeight: 320, maxWidth: 320),
                   decoration: BoxDecoration(
-                    color: theme.surface.withValues(alpha: 0.8),
+                    color: theme.surface.withValues(alpha: 0.9),
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: theme.surface.withValues(alpha: 0.9)),
+                    border: Border.all(color: theme.surface.withValues(alpha: 0.95)),
                   ),
-                  child: SingleChildScrollView(
-                    physics: BouncingScrollPhysics(),
-                    child: Column(
-                      children: [
-                        ConstantSizing.columnSpacing(24),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2, tileMode: TileMode.decal),
+                    child: SingleChildScrollView(
+                      physics: BouncingScrollPhysics(),
+                      child: Column(
+                        children: [
+                          ConstantSizing.columnSpacing(24),
 
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 80,
-                                height: 80,
-                                clipBehavior: Clip.hardEdge,
-                                margin: EdgeInsets.only(left: 12),
-                                decoration: BoxDecoration(
-                                  color: theme.primary.withAlpha(40),
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: widget.recentDialogModel.imagePreview,
-                              ),
-                              Expanded(
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    CustomElevatedButton(
-                                      backgroundColor: theme.adjustBgAndSecondaryWithLerp,
-                                      shape: CircleBorder(),
-                                      contentPadding: EdgeInsets.all(12),
-                                      child: Icon(Iconsax.star_copy, size: 26, color: theme.supportingText),
-                                    ),
-                                    CustomElevatedButton(
-                                      backgroundColor: theme.adjustBgAndSecondaryWithLerp,
-                                      shape: CircleBorder(),
-                                      contentPadding: EdgeInsets.all(12),
-                                      child: Icon(Iconsax.note_add_copy, size: 26, color: theme.supportingText),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        ConstantSizing.columnSpacingLarge,
-
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 24.0, right: 12.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                            child: Row(
                               children: [
-                                CustomText(
-                                  widget.recentDialogModel.title,
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.onBackground,
+                                Container(
+                                  width: 80,
+                                  height: 80,
+                                  clipBehavior: Clip.hardEdge,
+                                  margin: EdgeInsets.only(left: 12),
+                                  decoration: BoxDecoration(
+                                    color: theme.primary.withAlpha(40),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: widget.recentDialogModel.imagePreview,
                                 ),
-                                ConstantSizing.columnSpacingSmall,
-                                CustomText("Short detail", fontSize: 12.0, color: theme.supportingText),
+                                Expanded(
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    children: [
+                                      CustomElevatedButton(
+                                        backgroundColor: theme.adjustBgAndSecondaryWithLerp,
+                                        shape: CircleBorder(),
+                                        contentPadding: EdgeInsets.all(12),
+                                        child: Icon(Iconsax.star_copy, size: 26, color: theme.supportingText),
+                                      ),
+                                      CustomElevatedButton(
+                                        backgroundColor: theme.adjustBgAndSecondaryWithLerp,
+                                        shape: CircleBorder(),
+                                        contentPadding: EdgeInsets.all(12),
+                                        child: Icon(Iconsax.note_add_copy, size: 26, color: theme.supportingText),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               ],
                             ),
                           ),
-                        ),
 
-                        if (widget.recentDialogModel.description.isNotEmpty) ConstantSizing.columnSpacingSmall,
+                          ConstantSizing.columnSpacingLarge,
 
-                        if (widget.recentDialogModel.description.isNotEmpty)
-                          Padding(padding: const EdgeInsets.symmetric(horizontal: 12.0), child: divider),
-
-                        if (widget.recentDialogModel.description.isNotEmpty)
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Padding(
-                              padding: const EdgeInsets.only(left: 24, top: 8.0, right: 12.0),
+                              padding: const EdgeInsets.only(left: 24.0, right: 12.0),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   CustomText(
-                                    "Description",
-                                    fontSize: 15,
+                                    widget.recentDialogModel.title,
+                                    fontSize: 17,
                                     fontWeight: FontWeight.bold,
                                     color: theme.onBackground,
                                   ),
                                   ConstantSizing.columnSpacingSmall,
-                                  CustomText(
-                                    widget.recentDialogModel.description
-                                        .substring(0, widget.recentDialogModel.description.length.clamp(0, 128))
-                                        .padRight(3, "."),
-                                    fontSize: 13,
-                                    color: theme.supportingText,
-                                  ),
+                                  CustomText("Short detail", fontSize: 12.0, color: theme.supportingText),
                                 ],
                               ),
                             ),
                           ),
 
-                        ConstantSizing.columnSpacingMedium,
+                          if (widget.recentDialogModel.description.isNotEmpty) ConstantSizing.columnSpacingSmall,
 
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            divider,
+                          if (widget.recentDialogModel.description.isNotEmpty)
+                            Padding(padding: const EdgeInsets.symmetric(horizontal: 12.0), child: divider),
 
-                            BuildPlainActionButton(
-                              title: "Continue reading",
-                              icon: Icon(Iconsax.play_copy, size: 24, color: theme.supportingText),
-                              textStyle: TextStyle(fontSize: 16, color: theme.onBackground),
-                              onTap: () {
-                                if (widget.recentDialogModel.onContinueReading != null) {
-                                  widget.recentDialogModel.onContinueReading!();
-                                }
-                              },
+                          if (widget.recentDialogModel.description.isNotEmpty)
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 24, top: 8.0, right: 12.0),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    CustomText(
+                                      "Description",
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: theme.onBackground,
+                                    ),
+                                    ConstantSizing.columnSpacingSmall,
+                                    CustomText(
+                                      widget.recentDialogModel.description
+                                          .substring(0, widget.recentDialogModel.description.length.clamp(0, 128))
+                                          .padRight(3, "."),
+                                      fontSize: 13,
+                                      color: theme.supportingText,
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
 
-                            divider,
+                          ConstantSizing.columnSpacingMedium,
 
-                            BuildPlainActionButton(
-                              title: "Share",
-                              icon: Icon(Icons.share_outlined, size: 24, color: theme.supportingText),
-                              textStyle: TextStyle(fontSize: 15, color: theme.onBackground),
-                              onTap: () {
-                                if (widget.recentDialogModel.onShare != null) widget.recentDialogModel.onShare!();
-                              },
-                            ),
+                          RecentDialogSelectionOptions(divider: divider, theme: theme, widget: widget),
 
-                            divider,
-
-                            BuildPlainActionButton(
-                              title: "Remove from recents",
-                              icon: Icon(Iconsax.box_remove_copy, size: 24, color: Colors.redAccent),
-                              textStyle: TextStyle(fontSize: 15, color: theme.onBackground),
-                              onTap: () {
-                                if (widget.recentDialogModel.onDelete != null) widget.recentDialogModel.onDelete!();
-                              },
-                            ),
-
-                            // BuildPlainActionButton(
-                            //   title: "Delete",
-                            //   icon: Icon(Iconsax.trash_copy, size: 24, color: Colors.redAccent),
-                            //   textStyle: TextStyle(fontSize: 16, color: Colors.redAccent),
-                            //   onTap: () {},
-                            // ),
-                            divider,
-                          ],
-                        ),
-
-                        ConstantSizing.columnSpacing(24),
-                      ],
+                          ConstantSizing.columnSpacing(24),
+                        ],
+                      ),
                     ),
                   ),
                 ).animate().fadeIn().scaleXY(
@@ -202,10 +158,70 @@ class _RecentDialogState extends ConsumerState<RecentDialog> {
                   end: 1,
                   duration: Duration(milliseconds: 800),
                   curve: CustomCurves.bouncySpring,
+                  alignment: Alignment.bottomCenter
                 ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class RecentDialogSelectionOptions extends StatelessWidget {
+  const RecentDialogSelectionOptions({super.key, required this.divider, required this.theme, required this.widget});
+
+  final Divider divider;
+  final WidgetRef theme;
+  final RecentDialog widget;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        divider,
+
+        BuildPlainActionButton(
+          title: "Continue reading",
+          icon: Icon(Iconsax.play_copy, size: 24, color: theme.supportingText),
+          textStyle: TextStyle(fontSize: 16, color: theme.onBackground),
+          onTap: () {
+            if (widget.recentDialogModel.onContinueReading != null) {
+              widget.recentDialogModel.onContinueReading!();
+            }
+          },
+        ),
+
+        divider,
+
+        BuildPlainActionButton(
+          title: "Share",
+          icon: Icon(Icons.share_outlined, size: 24, color: theme.supportingText),
+          textStyle: TextStyle(fontSize: 15, color: theme.onBackground),
+          onTap: () {
+            if (widget.recentDialogModel.onShare != null) widget.recentDialogModel.onShare!();
+          },
+        ),
+
+        divider,
+
+        BuildPlainActionButton(
+          title: "Remove from recents",
+          icon: Icon(Iconsax.box_remove_copy, size: 24, color: Colors.redAccent),
+          textStyle: TextStyle(fontSize: 15, color: theme.onBackground),
+          onTap: () {
+            if (widget.recentDialogModel.onDelete != null) widget.recentDialogModel.onDelete!();
+          },
+        ),
+
+        // BuildPlainActionButton(
+        //   title: "Delete",
+        //   icon: Icon(Iconsax.trash_copy, size: 24, color: Colors.redAccent),
+        //   textStyle: TextStyle(fontSize: 16, color: Colors.redAccent),
+        //   onTap: () {},
+        // ),
+        divider,
+      ],
     );
   }
 }

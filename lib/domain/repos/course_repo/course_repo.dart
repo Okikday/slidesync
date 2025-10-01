@@ -45,7 +45,7 @@ class CourseRepo {
 
   static Stream<List<Course>> watchAllCourses() => _isarData.watchAll();
 
-  static Future<Stream<List<Course>>> watchAllCoursesLazily() async => await _isarData.watchAllLazily();
+  // static Future<Stream<List<Course>>> watchAllCoursesLazily() async => await _isarData.watchAllLazily();
 
   static Future<Course?> getCourseById(String courseId) async {
     return await (await _isar).courses.filter().courseIdEqualTo(courseId).findFirst();

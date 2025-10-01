@@ -90,10 +90,10 @@ class IsarData<T> {
     yield* isar.collection<T>().where().watch(fireImmediately: fireImmediately);
   }
 
-  Future<Stream<List<T>>> watchAllLazily({bool fireImmediately = true}) async {
-    final isar = await isarFuture;
-    return isar.collection<T>().where().watchLazy(fireImmediately: fireImmediately).asyncMap((_) => getAll());
-  }
+  // Future<Stream<List<T>>> watchAllLazily({bool fireImmediately = true}) async {
+  //   final isar = await isarFuture;
+  //   return isar.collection<T>().where().watchLazy(fireImmediately: fireImmediately).asyncMap((_) => getAll());
+  // }
 
   Future<Stream<void>> watchForChanges({bool fireImmediately = true}) async {
     final isar = await isarFuture;

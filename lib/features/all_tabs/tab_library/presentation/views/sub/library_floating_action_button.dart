@@ -20,39 +20,46 @@ class LibraryFloatingActionButton extends ConsumerWidget {
     final theme = ref;
     final offset = ref.watch(LibraryTabController.scrollOffsetProvider);
     if (offset > libraryAppBarMaxHeight) {
-      return CustomElevatedButton(
-        pixelHeight: 32,
-        pixelWidth: 32,
-        contentPadding: EdgeInsets.zero,
-        shape: const CircleBorder(),
-        backgroundColor: ref.primary,
-        onClick: () {
-          ref
-              .read(LibraryTabController.libraryTabStateProvider)
-              .scrollController
-              .animateTo(0, duration: Durations.extralong1, curve: CustomCurves.defaultIosSpring);
-        },
-        child: Icon(Iconsax.arrow_up, color: theme.onPrimary),
-      ).animate().scaleXY(begin: 1.2).fadeIn();
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 80),
+        child: CustomElevatedButton(
+          pixelHeight: 32,
+          pixelWidth: 32,
+          contentPadding: EdgeInsets.zero,
+          shape: const CircleBorder(),
+          backgroundColor: ref.primary,
+          onClick: () {
+            ref
+                .read(LibraryTabController.libraryTabStateProvider)
+                .scrollController
+                .animateTo(0, duration: Durations.extralong1, curve: CustomCurves.defaultIosSpring);
+          },
+          child: Icon(Iconsax.arrow_up, color: theme.onPrimary),
+        ).animate().scaleXY(begin: 1.2).fadeIn(),
+      );
     }
     // if(value > 240), Show an up arrow
-    return FloatingActionButton(
-      onPressed: () {
-        context.pushNamed(Routes.createCourse.name);
-      },
-      tooltip: "Create course",
-      shape: const CircleBorder(),
-      backgroundColor: theme.primaryColor,
-      child: ClipOval(
-        child: ColoredBox(
-          color: ref.primary,
-          child: SizedBox.square(dimension: 51, child: Icon(Iconsax.add_copy, color: theme.onPrimary)),
-        ),
-      ),
-    ).animate().scale(
-      alignment: Alignment.bottomRight,
-      curve: CustomCurves.bouncySpring,
-      duration: Durations.extralong3,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 80),
+      child:
+          FloatingActionButton(
+            onPressed: () {
+              context.pushNamed(Routes.createCourse.name);
+            },
+            tooltip: "Create course",
+            shape: const CircleBorder(),
+            backgroundColor: theme.primaryColor,
+            child: ClipOval(
+              child: ColoredBox(
+                color: ref.primary,
+                child: SizedBox.square(dimension: 51, child: Icon(Iconsax.add_copy, color: theme.onPrimary)),
+              ),
+            ),
+          ).animate().scale(
+            alignment: Alignment.bottomRight,
+            curve: CustomCurves.bouncySpring,
+            duration: Durations.extralong3,
+          ),
     );
   }
 }

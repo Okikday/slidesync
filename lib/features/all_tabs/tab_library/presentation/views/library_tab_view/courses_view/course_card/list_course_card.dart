@@ -9,6 +9,7 @@ import 'package:slidesync/domain/models/file_details.dart';
 import 'package:slidesync/domain/models/progress_track_models/course_track.dart';
 import 'package:slidesync/domain/repos/course_track_repo/course_track_repo.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
 import 'package:slidesync/shared/widgets/build_image_path_widget.dart';
 
 class ListCourseCard extends ConsumerWidget {
@@ -30,67 +31,65 @@ class ListCourseCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
     return ClipRRect(
-      borderRadius: BorderRadius.circular(28),
-      child: ColoredBox(
-        color: theme.onSurface.withAlpha(25),
-        child: Container(
-          margin: EdgeInsets.all(2.0),
-          padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-          constraints: BoxConstraints(minHeight: 100, maxHeight: 140, maxWidth: 500),
-          decoration: BoxDecoration(
-            color: theme.surface,
-            borderRadius: BorderRadius.circular(26),
-            boxShadow: context.isDarkMode
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      offset: Offset(0, 1),
-                      blurRadius: 3,
-                      spreadRadius: 0,
-                    ),
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.06),
-                      offset: Offset(0, 4),
-                      blurRadius: 6,
-                      spreadRadius: 0,
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: Colors.white.withValues(alpha: 0.05),
-                      offset: Offset(0, 1),
-                      blurRadius: 2,
-                      spreadRadius: 0,
-                    ),
-                    BoxShadow(
-                      color: Colors.white.withValues(alpha: 0.04),
-                      offset: Offset(0, 6),
-                      blurRadius: 12,
-                      spreadRadius: -2,
-                    ),
-                  ],
-          ),
-          child: Row(
-            children: [
-              ListCourseCardIcon(
-                onTapIcon: onTapIcon,
-                isStarred: isStarred,
-                fileDetails: course.imageLocationJson.fileDetails,
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        margin: EdgeInsets.all(2.0),
+        padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+        height: 100,
+        constraints: BoxConstraints(maxWidth: 500),
+        decoration: BoxDecoration(
+          color: theme.surface,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: context.isDarkMode
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    offset: Offset(0, 1),
+                    blurRadius: 3,
+                    spreadRadius: 0,
+                  ),
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    offset: Offset(0, 4),
+                    blurRadius: 6,
+                    spreadRadius: 0,
+                  ),
+                ]
+              : [
+                  BoxShadow(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    offset: Offset(0, 1),
+                    blurRadius: 2,
+                    spreadRadius: 0,
+                  ),
+                  BoxShadow(
+                    color: Colors.white.withValues(alpha: 0.04),
+                    offset: Offset(0, 6),
+                    blurRadius: 12,
+                    spreadRadius: -2,
+                  ),
+                ],
+        ),
+        child: Row(
+          children: [
+            ListCourseCardIcon(
+              onTapIcon: onTapIcon,
+              isStarred: isStarred,
+              fileDetails: course.imageLocationJson.fileDetails,
+              courseCode: course.courseCode,
+            ),
+
+            Expanded(
+              child: ListCourseCardTitleColumn(
                 courseCode: course.courseCode,
+                courseName: course.courseName,
+                categoriesCount: course.collections.length,
+                hasImage: course.imageLocationJson.fileDetails.containsFilePath,
               ),
+            ),
 
-              Expanded(
-                child: ListCourseCardTitleColumn(
-                  courseCode: course.courseCode,
-                  courseName: course.courseName,
-                  categoriesCount: course.collections.length,
-                  hasImage: course.imageLocationJson.fileDetails.containsFilePath,
-                ),
-              ),
-
-              ListCourseCardProgressIndicator(courseId: course.courseId),
-            ],
-          ),
+            ListCourseCardProgressIndicator(courseId: course.courseId),
+          ],
         ),
       ),
     );
@@ -132,40 +131,12 @@ class ListCourseCardIcon extends ConsumerWidget {
           padding: EdgeInsets.all(2),
           clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
-            color: theme.altBackgroundPrimary.withValues(alpha: 0.8),
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: context.isDarkMode
-                ? [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      offset: Offset(0, 1),
-                      blurRadius: 3,
-                      spreadRadius: 0,
-                    ),
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.06),
-                      offset: Offset(0, 4),
-                      blurRadius: 6,
-                      spreadRadius: 0,
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: Colors.white.withValues(alpha: 0.05),
-                      offset: Offset(0, 1),
-                      blurRadius: 2,
-                      spreadRadius: 0,
-                    ),
-                    BoxShadow(
-                      color: Colors.white.withValues(alpha: 0.04),
-                      offset: Offset(0, 6),
-                      blurRadius: 12,
-                      spreadRadius: -2,
-                    ),
-                  ],
+            shape: BoxShape.circle,
+            color: theme.background.lightenColor(context.isDarkMode ? 0.1 : 0.8).withValues(alpha: 0.8),
+            // borderRadius: BorderRadius.circular(12),
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(18),
+            // borderRadius: BorderRadius.circular(18),
             child: BuildImagePathWidget(
               height: 64,
               width: 64,
@@ -173,14 +144,14 @@ class ListCourseCardIcon extends ConsumerWidget {
               fallbackWidget: Padding(
                 padding: const EdgeInsets.all(8.0),
                 child: courseCode.isEmpty
-                    ? Icon(Iconsax.document_1, color: theme.primary)
+                    ? Icon(Iconsax.document_1, color: theme.onBackground.withValues(alpha: 0.4))
                     : Center(
                         child: CustomText(
                           courseCode.substring(0, courseCode.length.clamp(0, 8)),
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
                           textAlign: TextAlign.center,
-                          color: theme.primary,
+                          color: theme.onBackground.withValues(alpha: 0.5),
                         ),
                       ),
               ),
@@ -241,7 +212,7 @@ class ListCourseCardTitleColumn extends ConsumerWidget {
           child: CustomText(
             "${categoriesCount < 1 ? "No" : categoriesCount} ${categoriesCount == 1 ? "category" : "categories"}",
             fontSize: 10,
-            fontWeight: FontWeight.w600,
+            // fontWeight: FontWeight.w600,
             color: theme.supportingText.withValues(alpha: 0.6),
           ),
         ),

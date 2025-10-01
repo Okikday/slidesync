@@ -17,7 +17,9 @@ class BottomNavBar extends ConsumerWidget {
     return Material(
       type: MaterialType.transparency,
       clipBehavior: Clip.antiAlias,
-      shape: Border(top: BorderSide(color: theme.onBackground.withAlpha(40))),
+
+      shape: Border(top: BorderSide(color: theme.onBackground.withAlpha(20))),
+
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
         child: Consumer(

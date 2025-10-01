@@ -50,24 +50,34 @@ class _MainViewState extends ConsumerState<MainView> {
         child: Scaffold(
           extendBody: true,
           extendBodyBehindAppBar: true,
-          bottomNavigationBar: BottomNavBar(
-            onTap: (index) {
-              if (index != ref.read(MainViewController.mainTabViewIndexProvider)) {
-                ref.read(MainViewController.mainTabViewIndexProvider.notifier).update((cb) => index);
-                pageController.jumpToPage(index);
-              }
-            },
-          ),
 
           drawer: const HomeDrawer(),
           floatingActionButton: const LibraryFloatingActionButton(),
 
-          body: PageView(
-            controller: pageController,
-            onPageChanged: (index) {
-              ref.read(MainViewController.mainTabViewIndexProvider.notifier).update((cb) => index);
-            },
-            children: const [HomeTabView(), LibraryTabView(), ExploreTabView()],
+          body: Stack(
+            children: [
+              PageView(
+                controller: pageController,
+                onPageChanged: (index) {
+                  ref.read(MainViewController.mainTabViewIndexProvider.notifier).update((cb) => index);
+                },
+                children: const [HomeTabView(), LibraryTabView(), ExploreTabView()],
+              ),
+
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: BottomNavBar(
+                  onTap: (index) {
+                    if (index != ref.read(MainViewController.mainTabViewIndexProvider)) {
+                      ref.read(MainViewController.mainTabViewIndexProvider.notifier).update((cb) => index);
+                      pageController.jumpToPage(index);
+                    }
+                  },
+                ),
+              ),
+            ],
           ),
         ),
       ),

@@ -63,7 +63,9 @@ class PdfDocViewerController extends LeakPrevention {
       if (result == null) return null; // A critical error occured!
       return result;
     } else {
-      final updatedPtm = await _updateProgressTrack(ptm.copyWith(lastRead: DateTime.now()));
+      final updatedPtm = await _updateProgressTrack(
+        ptm.copyWith(lastRead: DateTime.now(), pages: ptm.pages.isEmpty ? const ["1"] : null),
+      );
       return updatedPtm;
     }
   }
@@ -83,6 +85,7 @@ class PdfDocViewerController extends LeakPrevention {
         description: content.description,
         contentHash: content.contentHash,
         progress: 0.0,
+        pages: const ["1"],
         lastRead: DateTime.now(),
         metadataJson: jsonEncode({
           'previewPath': CreateContentPreviewImage.genPreviewImagePath(filePath: content.path.filePath),
@@ -140,6 +143,7 @@ class PdfDocViewerController extends LeakPrevention {
 
             // log("Updating read pages: $newPages");
             final totalPageCount = pdfViewerController.pageCount;
+            log("new page count: $newPages");
 
             await _updateProgressTrack(
               progressTrack.copyWith(
@@ -166,7 +170,14 @@ class PdfDocViewerController extends LeakPrevention {
             return;
           }
 
-          await _updateProgressTrack(progressTrack.copyWith(lastRead: DateTime.now()));
+          await _updateProgressTrack(
+            progressTrack.copyWith(
+              lastRead: DateTime.now(),
+              pages: progressTrack.pages.isEmpty
+                  ? const ["1"]
+                  : [...progressTrack.pages, if (pageNumber != null) pageNumber.toString()],
+            ),
+          );
           isUpdatingProgressTrack = false;
           currentPageNumber = pageNumber;
           lastUpdatedPage = pageNumber;

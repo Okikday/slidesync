@@ -13,6 +13,7 @@ import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/core/storage/isar_data/isar_schemas.dart';
 
 final obs = ActiveProvidersObserver();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
@@ -23,7 +24,10 @@ void main() async {
   if (!kIsWeb) await IsarData.initialize(collectionSchemas: isarSchemas);
   pdfrxFlutterInitialize();
 
-  runApp(ProviderScope(
-    // observers: [obs], 
-  child: const App()));
+  runApp(
+    ProviderScope(
+      // observers: [obs],
+      child: const App(),
+    ),
+  );
 }
