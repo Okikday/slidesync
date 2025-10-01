@@ -7,6 +7,9 @@ class CircularLoadingIndicator extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return ClipRRect(child: SizedBox.square(dimension: 20, child: CircularProgressIndicator()));
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [SizedBox.square(dimension: 20, child: CircularProgressIndicator())],
+    );
   }
 }

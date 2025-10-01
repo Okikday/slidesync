@@ -1,6 +1,10 @@
 import 'package:isar/isar.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
+import 'package:slidesync/domain/models/course_model/sub/course_content.dart';
 import 'package:slidesync/domain/models/progress_track_models/content_track.dart';
+import 'package:slidesync/domain/models/progress_track_models/course_track.dart';
+import 'package:slidesync/domain/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/domain/repos/course_track_repo/course_track_repo.dart';
 
 class ContentTrackRepo {
   static final IsarData<ContentTrack> _isarData = IsarData.instance<ContentTrack>();
@@ -15,6 +19,25 @@ class ContentTrackRepo {
     String contentId,
   ) async {
     return (await _isarData.query<ContentTrack>((q) => q.idGreaterThan(0))).filter().contentIdEqualTo(contentId);
+  }
+
+  static Future<int> add(ContentTrack contentTrack) async {
+    final existingContentTrack = await (await ContentTrackRepo.filter)
+        .contentIdEqualTo(contentTrack.contentId)
+        .findFirst();
+    if (existingContentTrack == null) {
+      final courseTrack = await (await CourseTrackRepo.filter).courseIdEqualTo(contentTrack.parentId).findFirst();
+      if (courseTrack == null) return -1;
+      await courseTrack.contentTracks.load();
+      courseTrack.contentTracks.add(contentTrack);
+      final isar = (await _isar);
+      return isar.writeTxn(() async {
+        await isar.courseTracks.put(courseTrack);
+        return await isar.contentTracks.put(contentTrack);
+      });
+    } else {
+      return ContentTrackRepo.isarData.store(contentTrack);
+    }
   }
 
   static Future<ContentTrack?> getByContentId(String contentId) async {
@@ -34,5 +57,4 @@ class ContentTrackRepo {
       return course;
     });
   }
-  
 }

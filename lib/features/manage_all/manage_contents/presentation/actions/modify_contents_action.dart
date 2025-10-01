@@ -1,17 +1,21 @@
-
 import 'package:flutter/material.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/sub/course_content.dart';
+import 'package:slidesync/domain/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/manage_all/manage_contents/usecases/modify_content_uc.dart';
 import 'package:slidesync/core/routes/app_router.dart';
 
 class ModifyContentsAction {
-  Future<String?> onDeleteContent(CourseContent content, {int? courseDbId}) async {
+  Future<String?> onDeleteContent(String contentId, {int? courseDbId}) async {
     if (rootNavigatorKey.currentContext!.mounted) {
       UiUtils.showLoadingDialog(rootNavigatorKey.currentContext!, message: "Deleting content...");
     }
-    final Result<String?> delOutcome = await Result.tryRunAsync(() async => await ModifyContentUc().deleteContentAction(content));
+    final content = await CourseContentRepo.getByContentId(contentId);
+    if (content == null) return "Couldn't find content";
+    final Result<String?> delOutcome = await Result.tryRunAsync(
+      () async => await ModifyContentUc().deleteContentAction(content),
+    );
     Navigator.pop(rootNavigatorKey.currentContext!);
 
     if (delOutcome.isSuccess) {
@@ -26,11 +30,9 @@ class ModifyContentsAction {
     if (rootNavigatorKey.currentContext!.mounted) {
       UiUtils.showLoadingDialog(rootNavigatorKey.currentContext!, message: "Renaming content...");
     }
-    final Result<String?> renameOutcome = await Result.tryRunAsync(
-      () async {
-        return await ModifyContentUc().renameContentAction(content, newTitle);
-      },
-    );
+    final Result<String?> renameOutcome = await Result.tryRunAsync(() async {
+      return await ModifyContentUc().renameContentAction(content, newTitle);
+    });
     Navigator.pop(rootNavigatorKey.currentContext!);
 
     if (renameOutcome.isSuccess) {

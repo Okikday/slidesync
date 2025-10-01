@@ -7,11 +7,11 @@ import 'package:slidesync/domain/models/file_details.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 import 'package:slidesync/shared/widgets/build_image_path_widget.dart';
 
+enum ProgressLevel { neutral, warning, danger, success }
+
 class RecentListTile extends ConsumerWidget {
-  final bool isDarkMode;
-  final double tilePadding;
   final RecentListTileModel dataModel;
-  const RecentListTile({super.key, required this.isDarkMode, required this.dataModel, required this.tilePadding});
+  const RecentListTile({super.key, required this.dataModel});
 
   Color _resolveLevelColor(WidgetRef ref, ProgressLevel level) {
     return level == ProgressLevel.danger
@@ -39,7 +39,7 @@ class RecentListTile extends ConsumerWidget {
           if (dataModel.onLongTapTile != null) dataModel.onLongTapTile!();
         },
         child: Padding(
-          padding: EdgeInsets.all(tilePadding).copyWith(left: tilePadding + 8, right: tilePadding + 8),
+          padding: EdgeInsets.only(left: 16, right: 16, bottom: 12, top: 12),
           child: Row(
             children: [
               Badge(
@@ -119,34 +119,28 @@ class RecentListTile extends ConsumerWidget {
                     shape: CircleBorder(),
                     backgroundColor: ref.surface,
                     overlayColor: ref.secondary.withAlpha(50),
-                    onClick: () {
-                      if (dataModel.onTapPlay != null) dataModel.onTapPlay!();
-                    },
-                    child: dataModel.progress == null
-                        ? Icon(Iconsax.play, color: ref.cardColor, size: 26)
-                        : CustomText(
-                            "${(dataModel.progress! * 100).truncate()}%",
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: theme.supportingText.withValues(alpha: 0.5),
-                          ),
+                    child: CustomText(
+                      "${((dataModel.progress ?? 0.0) * 100).truncate()}%",
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: theme.supportingText.withValues(alpha: 0.5),
+                    ),
                   ),
 
-                  if (dataModel.progress != null)
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      top: 0,
-                      bottom: 0,
-                      child: IgnorePointer(
-                        child: CircularProgressIndicator(
-                          value: dataModel.progress,
-                          strokeCap: StrokeCap.round,
-                          color: _resolveLevelColor(ref, dataModel.progressLevel),
-                          backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.4),
-                        ),
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: IgnorePointer(
+                      child: CircularProgressIndicator(
+                        value: dataModel.progress?.clamp(.0, 1.0) ?? .01,
+                        strokeCap: StrokeCap.round,
+                        color: _resolveLevelColor(ref, dataModel.progressLevel),
+                        backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.4),
                       ),
                     ),
+                  ),
                 ],
               ),
             ],
@@ -156,8 +150,6 @@ class RecentListTile extends ConsumerWidget {
     );
   }
 }
-
-enum ProgressLevel { neutral, warning, danger, success }
 
 class RecentListTileModel {
   final String title;
@@ -169,7 +161,6 @@ class RecentListTileModel {
   final bool isStarred;
   final void Function()? onTapTile;
   final void Function()? onLongTapTile;
-  final void Function()? onTapPlay;
 
   RecentListTileModel({
     required this.title,
@@ -181,7 +172,6 @@ class RecentListTileModel {
     required this.isStarred,
     this.onTapTile,
     this.onLongTapTile,
-    this.onTapPlay,
   });
 
   RecentListTileModel copyWith({
@@ -194,7 +184,6 @@ class RecentListTileModel {
     bool? isStarred,
     void Function()? onTapTile,
     void Function()? onLongTapTile,
-    void Function()? onTapPlay,
   }) {
     return RecentListTileModel(
       title: title ?? this.title,
@@ -206,7 +195,6 @@ class RecentListTileModel {
       isStarred: isStarred ?? this.isStarred,
       onTapTile: onTapTile ?? this.onTapTile,
       onLongTapTile: onLongTapTile ?? this.onLongTapTile,
-      onTapPlay: onTapPlay ?? this.onTapPlay,
     );
   }
 
@@ -222,8 +210,7 @@ class RecentListTileModel {
         other.progressLevel == progressLevel &&
         other.isStarred == isStarred &&
         other.onTapTile == onTapTile &&
-        other.onLongTapTile == onLongTapTile &&
-        other.onTapPlay == onTapPlay;
+        other.onLongTapTile == onLongTapTile;
   }
 
   @override
@@ -236,7 +223,6 @@ class RecentListTileModel {
         progressLevel.hashCode ^
         isStarred.hashCode ^
         onTapTile.hashCode ^
-        onLongTapTile.hashCode ^
-        onTapPlay.hashCode;
+        onLongTapTile.hashCode;
   }
 }

@@ -7,19 +7,25 @@ import 'package:slidesync/features/all_tabs/tab_library/presentation/controllers
 
 class CourseSortNotifier extends AsyncNotifier<CourseSortOption> {
   final CourseSortOption _defaultKey;
-  CourseSortNotifier([this._defaultKey = CourseSortOption.none]);
+  final String path;
+  CourseSortNotifier(this.path, [this._defaultKey = CourseSortOption.dateModifiedDesc]);
   @override
   FutureOr<CourseSortOption> build() async {
-    final data = await AppHiveData.instance.getData<int>(key: HiveDataPathKey.libraryCourseSortOption.name);
-    final option = CourseSortOption.values[data ?? _defaultKey.index];
+    final data = await AppHiveData.instance.getData<int>(key: path);
+    final options = CourseSortOption.values;
+    final option = options[data?.clamp(0, options.length - 1) ?? _defaultKey.index];
     return option;
   }
 
   Future<void> set(CourseSortOption value) async {
+    if (state.value == value) return;
     state = AsyncData(value);
-    await Result.tryRunAsync(
-      () async =>
-          await AppHiveData.instance.setData(key: HiveDataPathKey.libraryCourseSortOption.name, value: value.index),
-    );
+    await Result.tryRunAsync(() async => await AppHiveData.instance.setData(key: path, value: value.index));
   }
+
+  // Future<void> updateSort(CourseSortOption value) async {
+  //   if (value == state.value) return;
+  //   state = AsyncData(value);
+  //   await Result.tryRunAsync(() async => await AppHiveData.instance.setData(key: path, value: value.index));
+  // }
 }

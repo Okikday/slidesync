@@ -4,6 +4,7 @@ import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:path/path.dart' as p;
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/domain/models/file_details.dart';
 import 'package:slidesync/features/manage_all/manage_contents/domain/repos/get_content_repo/get_content_repo.dart';
@@ -66,5 +67,19 @@ class ContentCardActions {
 
     if (data == null) return null;
     return {'title': data.title, 'description': data.description, 'previewUrl': data.previewUrl};
+  }
+
+  static String resolveExtension(CourseContent content) {
+    final res = p.extension(content.path.filePath).replaceAll('.', '').toUpperCase();
+    switch (content.courseContentType) {
+      case CourseContentType.image:
+        return res;
+      case CourseContentType.document:
+        return res;
+      case CourseContentType.link:
+        return "link";
+      default:
+        return '';
+    }
   }
 }

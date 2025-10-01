@@ -34,8 +34,6 @@ class _MaterialsViewState extends ConsumerState<MaterialsView> {
 
   @override
   Widget build(BuildContext context) {
-    final int cardViewType = ref.watch(CourseMaterialsController.cardViewType).value ?? 0;
-    final isGrid = cardViewType == 0 ? true : false;
     // final streamedContents = ref.watch(CourseMaterialsController.watchContents(widget.collection.collectionId));
     final pagingControllerProvider = ref.watch(
       CourseMaterialsController.contentPaginationProvider(
@@ -49,40 +47,18 @@ class _MaterialsViewState extends ConsumerState<MaterialsView> {
         data: (data) {
           return Consumer(
             builder: (context, ref, child) {
+              final int cardViewType = ref.watch(CourseMaterialsController.cardViewType).value ?? 0;
+              final isGrid = cardViewType == 0 ? true : false;
               return PagingListener(
                 controller: data,
                 builder: (context, state, fetchNextPage) {
-                  if (isGrid) {
-                    return PagedSliverGridView(
-                      state: state,
-                      pagingController: data,
-                      fetchNextPage: fetchNextPage,
-                      collectionId: widget.collection.collectionId,
-                    );
-                  } else {
-                    return PagedSliverList<int, CourseContent>(
-                      state: state,
-                      itemExtent: 160,
-                      fetchNextPage: fetchNextPage,
-                      builderDelegate: PagedChildBuilderDelegate(
-                        itemBuilder: (context, item, index) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: ContentCard(content: item),
-                            // .animate().fadeIn().slideY(
-                            //   begin: (index / (20) + 1) * 0.4,
-                            //   end: 0,
-                            //   curve: Curves.fastEaseInToSlowEaseOut,
-                            //   duration: Durations.extralong2,
-                            // ),
-                          );
-                        },
-                        // noItemsFoundIndicatorBuilder: (context) {
-                        //   return SliverToBoxAdapter(child: EmptyContentsView(collection: widget.collection));
-                        // },
-                      ),
-                    );
-                  }
+                  return PagedSliverContentView(
+                    state: state,
+                    pagingController: data,
+                    fetchNextPage: fetchNextPage,
+                    collectionId: widget.collection.collectionId,
+                    isGrid: isGrid,
+                  );
                 },
               );
             },
@@ -95,41 +71,63 @@ class _MaterialsViewState extends ConsumerState<MaterialsView> {
   }
 }
 
-class PagedSliverGridView extends ConsumerWidget {
+class PagedSliverContentView extends ConsumerWidget {
   final PagingState<int, CourseContent> state;
   final VoidCallback fetchNextPage;
   final PagingController pagingController;
   final String collectionId;
-  const PagedSliverGridView({
+  final bool isGrid;
+  const PagedSliverContentView({
     super.key,
     required this.state,
     required this.pagingController,
     required this.fetchNextPage,
     required this.collectionId,
+    required this.isGrid,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(CourseMaterialsController.watchContentsChange(collectionId), (prev, next) {
-      next.whenData((_) {
-        log("Contents stream signal");
-        pagingController.refresh();
-      });
-    });
-    return PagedSliverGrid<int, CourseContent>(
-      state: state,
-      fetchNextPage: fetchNextPage,
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: context.deviceWidth ~/ 160,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 20,
-      ),
-      builderDelegate: PagedChildBuilderDelegate(
-        itemBuilder: (context, item, index) {
-          return ContentCard(content: item);
-        },
-      ),
-    );
+    if (isGrid) {
+      return PagedSliverGrid<int, CourseContent>(
+        state: state,
+        fetchNextPage: fetchNextPage,
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: context.deviceWidth ~/ 160,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 20,
+        ),
+        builderDelegate: PagedChildBuilderDelegate(
+          itemBuilder: (context, item, index) {
+            return ContentCard(content: item).animate().fadeIn().moveY(
+              begin: index.isEven ? 40 : 20,
+              end: 0,
+              curve: Curves.fastEaseInToSlowEaseOut,
+              duration: Durations.medium3,
+            );
+          },
+        ),
+      );
+    } else {
+      return PagedSliverList<int, CourseContent>(
+        state: state,
+        itemExtent: 180,
+        fetchNextPage: fetchNextPage,
+        builderDelegate: PagedChildBuilderDelegate(
+          itemBuilder: (context, item, index) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: ContentCard(content: item).animate().fadeIn().moveY(
+                begin: index.isEven ? 40 : 20,
+                end: 0,
+                curve: Curves.fastEaseInToSlowEaseOut,
+                duration: Durations.medium3,
+              ),
+            );
+          },
+        ),
+      );
+    }
   }
 }
 

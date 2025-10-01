@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -9,6 +10,9 @@ import 'package:slidesync/domain/models/course_model/sub/course_content.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:slidesync/domain/models/file_details.dart';
 import 'package:slidesync/domain/models/progress_track_models/content_track.dart';
+import 'package:slidesync/domain/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/domain/repos/course_repo/course_repo.dart';
+import 'package:slidesync/features/manage_all/manage_contents/usecases/create_contents_uc/create_content_preview_image.dart';
 import 'package:slidesync/shared/components/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 
@@ -36,12 +40,22 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
   static Future<ContentTrack?> _createProgressTrackModel(CourseContent content) async {
     final isarData = IsarData.instance<ContentTrack>();
     final result = await Result.tryRunAsync(() async {
+      final courseId = (await CourseCollectionRepo.getById(content.parentId))?.parentId;
+      if (courseId == null) return null;
+
+      final parentId = (await CourseRepo.getCourseById(courseId))?.courseId;
+      if (parentId == null) return null;
       final ContentTrack newPtm = ContentTrack.create(
         contentId: content.contentId,
+        parentId: parentId,
         title: content.title,
-        description: content.description.substring(0, content.description.length.clamp(0, 1024)),
+        description: content.description,
         contentHash: content.contentHash,
         progress: 0.0,
+        lastRead: DateTime.now(),
+        metadataJson: jsonEncode({
+          'previewPath': CreateContentPreviewImage.genPreviewImagePath(filePath: content.path.filePath),
+        }),
       );
       return (await isarData.getById(await isarData.store(newPtm)));
     });

@@ -9,6 +9,7 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/controllers/courses_view_controller/courses_pagination.dart';
 import 'package:slidesync/features/course_navigation/presentation/providers/course_materials_controller.dart';
+import 'package:slidesync/features/course_navigation/presentation/views/course_materials/course_materials_view_app_bar.dart';
 import 'package:slidesync/features/course_navigation/presentation/views/course_materials/materials_search_button.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/views/add_contents/add_content_fab.dart';
 import 'package:slidesync/features/course_navigation/presentation/views/course_materials/materials_view.dart';
@@ -69,123 +70,7 @@ class _CourseMaterialsViewState extends ConsumerState<CourseMaterialsView> {
           child: AppBarContainerChild(
             context.isDarkMode,
             title: widget.collection.collectionTitle,
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                MaterialsSearchButton(),
-                AppPopupMenuButton(
-                  menuPadding: EdgeInsets.only(right: 16),
-                  actions: [
-                    ref
-                        .watch(CourseMaterialsController.cardViewType)
-                        .when(
-                          data: (data) {
-                            final isGrid = data == 0;
-                            return PopupMenuAction(
-                              title: "View",
-                              iconData: isGrid ? Iconsax.grid_1 : Iconsax.arrange_square,
-                              onTap: () {
-                                ref.read(CourseMaterialsController.cardViewType.notifier).toggle();
-                              },
-                            );
-                          },
-                          error: (e, st) => PopupMenuAction(title: "View", iconData: Icons.error_rounded, onTap: () {}),
-                          loading: () => PopupMenuAction(title: "View", iconData: Icons.circle_outlined, onTap: () {}),
-                        ),
-                    PopupMenuAction(
-                      title: "Sort",
-                      iconData: Iconsax.arrange_circle,
-                      onTap: () {
-                        UiUtils.showCustomDialog(
-                          context,
-                          child: AppCustomizableDialog(
-                            backgroundColor: theme.background.withValues(alpha: 0.9),
-                            child: ConstrainedBox(
-                              constraints: BoxConstraints(maxHeight: 250),
-                              child: Column(
-                                children: [
-                                  CustomText(
-                                    "Sort by",
-                                    color: theme.onSurface,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                  ConstantSizing.columnSpacingSmall,
-                                  Expanded(
-                                    child: ref
-                                        .watch(CourseMaterialsController.contentFilterOptionProvider)
-                                        .when(
-                                          data: (data) {
-                                            return ListView.builder(
-                                              itemCount: CourseSortOption.values.length,
-                                              itemBuilder: (context, index) {
-                                                return CustomElevatedButton(
-                                                  pixelHeight: 44,
-                                                  backgroundColor: Colors.transparent,
-                                                  borderRadius: 0,
-                                                  onClick: () async {
-                                                    final newValue = CourseSortOption
-                                                        .values[index.clamp(0, CourseSortOption.values.length)];
-                                                    ref
-                                                        .read(
-                                                          CourseMaterialsController
-                                                              .contentFilterOptionProvider
-                                                              .notifier,
-                                                        )
-                                                        .set(newValue);
-                                                    await Result.tryRunAsync(() async {
-                                                      await AppHiveData.instance.setData(
-                                                        key: HiveDataPathKey.courseMaterialsSortOption.name,
-                                                        value: newValue.index,
-                                                      );
-                                                    });
-                                                    if (context.mounted) UiUtils.hideDialog(context);
-                                                  },
-                                                  child: Row(
-                                                    children: [
-                                                      RadioGroup<int>(
-                                                        groupValue: data.index,
-                                                        onChanged: (p) async {
-                                                          final newValue = CourseSortOption
-                                                              .values[index.clamp(0, CourseSortOption.values.length)];
-                                                          ref
-                                                              .read(
-                                                                CourseMaterialsController
-                                                                    .contentFilterOptionProvider
-                                                                    .notifier,
-                                                              )
-                                                              .set(newValue);
-                                                          await Result.tryRunAsync(() async {
-                                                            await AppHiveData.instance.setData(
-                                                              key: HiveDataPathKey.courseMaterialsSortOption.name,
-                                                              value: newValue.index,
-                                                            );
-                                                          });
-                                                        },
-                                                        child: Radio(value: index),
-                                                      ),
-                                                      Expanded(child: CustomText(CourseSortOption.values[index].label)),
-                                                    ],
-                                                  ),
-                                                );
-                                              },
-                                            );
-                                          },
-                                          error: (e, st) => Icon(Icons.error_rounded),
-                                          loading: () => CircularLoadingIndicator(),
-                                        ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
+            trailing: CourseMaterialsViewAppBar(collectionId: widget.collection.collectionId),
           ),
         ),
 
@@ -194,10 +79,17 @@ class _CourseMaterialsViewState extends ConsumerState<CourseMaterialsView> {
           scrollOffsetProvider: CourseMaterialsController.scrollOffsetProvider,
         ),
 
-        body: CustomScrollView(
-          controller: scrollController,
-          physics: const BouncingScrollPhysics(),
-          slivers: [MaterialsView(collection: widget.collection)],
+        body: RefreshIndicator(
+          onRefresh: () async {
+            (await ref.read(
+              CourseMaterialsController.contentPaginationProvider(widget.collection.collectionId).future,
+            )).pagingController.refresh();
+          },
+          child: CustomScrollView(
+            controller: scrollController,
+            physics: const BouncingScrollPhysics(),
+            slivers: [MaterialsView(collection: widget.collection)],
+          ),
         ),
       ),
     );

@@ -57,13 +57,18 @@ const ContentTrackSchema = CollectionSchema(
       name: r'pages',
       type: IsarType.stringList,
     ),
-    r'progress': PropertySchema(
+    r'parentId': PropertySchema(
       id: 8,
+      name: r'parentId',
+      type: IsarType.string,
+    ),
+    r'progress': PropertySchema(
+      id: 9,
       name: r'progress',
       type: IsarType.double,
     ),
     r'title': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'title',
       type: IsarType.string,
     )
@@ -87,6 +92,19 @@ const ContentTrackSchema = CollectionSchema(
         )
       ],
     ),
+    r'parentId': IndexSchema(
+      id: -809199838039056779,
+      name: r'parentId',
+      unique: false,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'parentId',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
+    ),
     r'contentHash': IndexSchema(
       id: -8004451629925743238,
       name: r'contentHash',
@@ -101,14 +119,7 @@ const ContentTrackSchema = CollectionSchema(
       ],
     )
   },
-  links: {
-    r'courseTrackLink': LinkSchema(
-      id: 8347721624759983311,
-      name: r'courseTrackLink',
-      target: r'CourseTrack',
-      single: true,
-    )
-  },
+  links: {},
   embeddedSchemas: {},
   getId: _contentTrackGetId,
   getLinks: _contentTrackGetLinks,
@@ -144,6 +155,7 @@ int _contentTrackEstimateSize(
       bytesCount += value.length * 3;
     }
   }
+  bytesCount += 3 + object.parentId.length * 3;
   {
     final value = object.title;
     if (value != null) {
@@ -167,8 +179,9 @@ void _contentTrackSerialize(
   writer.writeDateTime(offsets[5], object.lastRead);
   writer.writeString(offsets[6], object.metadataJson);
   writer.writeStringList(offsets[7], object.pages);
-  writer.writeDouble(offsets[8], object.progress);
-  writer.writeString(offsets[9], object.title);
+  writer.writeString(offsets[8], object.parentId);
+  writer.writeDouble(offsets[9], object.progress);
+  writer.writeString(offsets[10], object.title);
 }
 
 ContentTrack _contentTrackDeserialize(
@@ -186,8 +199,9 @@ ContentTrack _contentTrackDeserialize(
   object.lastRead = reader.readDateTimeOrNull(offsets[5]);
   object.metadataJson = reader.readString(offsets[6]);
   object.pages = reader.readStringList(offsets[7]) ?? [];
-  object.progress = reader.readDoubleOrNull(offsets[8]);
-  object.title = reader.readStringOrNull(offsets[9]);
+  object.parentId = reader.readString(offsets[8]);
+  object.progress = reader.readDoubleOrNull(offsets[9]);
+  object.title = reader.readStringOrNull(offsets[10]);
   return object;
 }
 
@@ -215,8 +229,10 @@ P _contentTrackDeserializeProp<P>(
     case 7:
       return (reader.readStringList(offset) ?? []) as P;
     case 8:
-      return (reader.readDoubleOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 9:
+      return (reader.readDoubleOrNull(offset)) as P;
+    case 10:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -228,14 +244,12 @@ Id _contentTrackGetId(ContentTrack object) {
 }
 
 List<IsarLinkBase<dynamic>> _contentTrackGetLinks(ContentTrack object) {
-  return [object.courseTrackLink];
+  return [];
 }
 
 void _contentTrackAttach(
     IsarCollection<dynamic> col, Id id, ContentTrack object) {
   object.id = id;
-  object.courseTrackLink
-      .attach(col, col.isar.collection<CourseTrack>(), r'courseTrackLink', id);
 }
 
 extension ContentTrackByIndex on IsarCollection<ContentTrack> {
@@ -410,6 +424,51 @@ extension ContentTrackQueryWhere
               indexName: r'contentId',
               lower: [],
               upper: [contentId],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterWhereClause> parentIdEqualTo(
+      String parentId) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'parentId',
+        value: [parentId],
+      ));
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterWhereClause>
+      parentIdNotEqualTo(String parentId) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'parentId',
+              lower: [],
+              upper: [parentId],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'parentId',
+              lower: [parentId],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'parentId',
+              lower: [parentId],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'parentId',
+              lower: [],
+              upper: [parentId],
               includeUpper: false,
             ));
       }
@@ -1589,6 +1648,142 @@ extension ContentTrackQueryFilter
   }
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+      parentIdEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'parentId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+      parentIdGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'parentId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+      parentIdLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'parentId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+      parentIdBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'parentId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+      parentIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'parentId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+      parentIdEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'parentId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+      parentIdContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'parentId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+      parentIdMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'parentId',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+      parentIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'parentId',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+      parentIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'parentId',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
       progressIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -1829,21 +2024,7 @@ extension ContentTrackQueryObject
     on QueryBuilder<ContentTrack, ContentTrack, QFilterCondition> {}
 
 extension ContentTrackQueryLinks
-    on QueryBuilder<ContentTrack, ContentTrack, QFilterCondition> {
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-      courseTrackLink(FilterQuery<CourseTrack> q) {
-    return QueryBuilder.apply(this, (query) {
-      return query.link(q, r'courseTrackLink');
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-      courseTrackLinkIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'courseTrackLink', 0, true, 0, true);
-    });
-  }
-}
+    on QueryBuilder<ContentTrack, ContentTrack, QFilterCondition> {}
 
 extension ContentTrackQuerySortBy
     on QueryBuilder<ContentTrack, ContentTrack, QSortBy> {
@@ -1933,6 +2114,18 @@ extension ContentTrackQuerySortBy
       sortByMetadataJsonDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'metadataJson', Sort.desc);
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> sortByParentId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'parentId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> sortByParentIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'parentId', Sort.desc);
     });
   }
 
@@ -2064,6 +2257,18 @@ extension ContentTrackQuerySortThenBy
     });
   }
 
+  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> thenByParentId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'parentId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> thenByParentIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'parentId', Sort.desc);
+    });
+  }
+
   QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> thenByProgress() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'progress', Sort.asc);
@@ -2145,6 +2350,13 @@ extension ContentTrackQueryWhereDistinct
     });
   }
 
+  QueryBuilder<ContentTrack, ContentTrack, QDistinct> distinctByParentId(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'parentId', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<ContentTrack, ContentTrack, QDistinct> distinctByProgress() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'progress');
@@ -2213,6 +2425,12 @@ extension ContentTrackQueryProperty
   QueryBuilder<ContentTrack, List<String>, QQueryOperations> pagesProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'pages');
+    });
+  }
+
+  QueryBuilder<ContentTrack, String, QQueryOperations> parentIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'parentId');
     });
   }
 

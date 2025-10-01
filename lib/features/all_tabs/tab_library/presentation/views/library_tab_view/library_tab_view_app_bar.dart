@@ -72,7 +72,10 @@ class LibraryTabViewAppBar extends ConsumerWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               const LibraryTabViewFilterButton(),
-                              LibraryTabViewLayoutButton(layoutProvider: CoursesViewController.cardViewTypeProvider),
+                              LibraryTabViewLayoutButton(
+                                layoutProvider: CoursesViewController.cardViewTypeProvider,
+                                backgroundColor: Colors.transparent,
+                              ),
                             ],
                           ),
                         ),

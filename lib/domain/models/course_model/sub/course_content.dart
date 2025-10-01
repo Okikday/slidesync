@@ -170,3 +170,17 @@ extension CourseContentExtension on CourseContent {
       ..metadataJson = metadataJson ?? this.metadataJson;
   }
 }
+
+extension CourseContentMapX on Map<String, dynamic> {
+  int get id => this['id'] as int? ?? -1;
+  String get contentHash => this['contentHash'] as String? ?? '';
+  String get contentId => this['contentId'] as String? ?? '';
+  String get parentId => this['parentId'] as String? ?? '';
+  String get title => this['title'] as String? ?? '';
+  String get path => this['path'] as String? ?? '{}';
+  DateTime? get createdAt => this['createdAt'] != null ? DateTime.tryParse(this['createdAt'] as String) : null;
+  DateTime? get lastModified => this['lastModified'] != null ? DateTime.tryParse(this['lastModified'] as String) : null;
+  String get description => this['description'] as String? ?? '';
+  int get courseContentTypeIndex => this['courseContentType'] as int? ?? 0;
+  String get metadataJson => this['metadataJson'] as String? ?? '{}';
+}

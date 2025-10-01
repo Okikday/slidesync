@@ -91,7 +91,10 @@ class _CoursesViewState extends ConsumerState<CoursesView> {
         );
       },
       loading: () => SliverToBoxAdapter(child: LoadingLogo()),
-      error: (error, stackTrace) => SliverToBoxAdapter(child: Icon(Icons.error)),
+      error: (error, stackTrace) {
+        log("error: ${error.toString()}");
+        return SliverToBoxAdapter(child: Icon(Icons.error));
+      },
     );
   }
 }

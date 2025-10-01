@@ -1,28 +1,38 @@
 import 'dart:developer';
 import 'dart:async';
 import 'dart:collection';
+import 'dart:ui';
 
+import 'package:flutter/services.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:isar/isar.dart';
 import 'package:slidesync/core/utils/leak_prevention.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/domain/repos/course_repo/course_repo.dart';
 
-enum CourseSortOption { nameAsc, nameDesc, dateCreatedAsc, dateCreatedDesc, dateModifiedAsc, dateModifiedDesc, none }
+enum CourseSortOption { nameAsc, nameDesc, dateCreatedAsc, dateCreatedDesc, dateModifiedAsc, dateModifiedDesc }
 
-enum PlainCourseSortOption { name, dateCreated, dateModified, none }
+enum PlainCourseSortOption { name, dateCreated, dateModified }
+
+class DoFetchInIsolateArgs {
+  final int pageKey;
+  final int limit;
+  final CourseSortOption sortOption;
+  final RootIsolateToken token;
+
+  DoFetchInIsolateArgs(this.pageKey, this.limit, this.sortOption, this.token);
+}
 
 const int limit = 20;
 
 class CoursesPagination extends LeakPrevention {
   late final PagingController<int, Course> pagingController;
-  final CourseSortOption sortOption;
+  CourseSortOption sortOption;
 
-  bool _isFetching = false;
+  bool _fetching = false;
   final Queue<Completer<List<Course>>> _waitingQueue = Queue();
-  dynamic lastItemSortId;
 
-  CoursesPagination._({required this.sortOption}) {
+  CoursesPagination._({this.sortOption = CourseSortOption.dateModifiedDesc}) {
     pagingController = PagingController(
       getNextPageKey: getNextPageKey,
       fetchPage: (pageKey) => fetchPage(pageKey, limit),
@@ -30,18 +40,20 @@ class CoursesPagination extends LeakPrevention {
   }
 
   static CoursesPagination of({CourseSortOption? sortOption}) =>
-      CoursesPagination._(sortOption: sortOption ?? CourseSortOption.none);
+      CoursesPagination._(sortOption: sortOption ?? CourseSortOption.dateModifiedDesc);
 
   Future<List<Course>> fetchPage(int pageKey, int limit) async {
-    if (_isFetching) {
+    if (_fetching) {
       final completer = Completer<List<Course>>();
       _waitingQueue.add(completer);
       return completer.future;
     }
 
-    _isFetching = true;
+    _fetching = true;
     try {
-      final result = await _doFetch(pageKey, limit, sortOption);
+      final token = RootIsolateToken.instance;
+      if (token == null) return const [];
+      final result = _doFetch(pageKey, limit, sortOption);
 
       while (_waitingQueue.isNotEmpty) {
         _waitingQueue.removeFirst().complete(result);
@@ -54,7 +66,7 @@ class CoursesPagination extends LeakPrevention {
       }
       rethrow;
     } finally {
-      _isFetching = false;
+      _fetching = false;
     }
   }
 
@@ -80,23 +92,6 @@ class CoursesPagination extends LeakPrevention {
       case CourseSortOption.dateModifiedDesc:
         result = await _fetchByDateModified(pageKey, limit, false);
         break;
-      default:
-        result = await _fetchDefault(pageKey, limit);
-    }
-
-    return result;
-  }
-
-  Future<List<Course>> _fetchDefault(int pageKey, int limit) async {
-    lastItemSortId ??= (pageKey - 1) * limit;
-
-    final idGreaterThan = lastItemSortId;
-    log("Fetching page $pageKey with ID > $idGreaterThan");
-
-    final result = await (await CourseRepo.filter).idGreaterThan(idGreaterThan).limit(limit).findAll();
-
-    if (result.isNotEmpty) {
-      lastItemSortId = result.last.id;
     }
 
     return result;
@@ -136,8 +131,13 @@ class CoursesPagination extends LeakPrevention {
     }
   }
 
+  void updateSortOption(CourseSortOption newSortOption, [bool refresh = false]) {
+    sortOption = newSortOption;
+    if (refresh) pagingController.refresh();
+  }
+
   int get queueLength => _waitingQueue.length;
-  bool get isBusy => _isFetching;
+  bool get isBusy => _fetching;
 
   @override
   void onDispose() {
@@ -163,7 +163,7 @@ extension CourseSortX on CourseSortOption {
       case 'dateModified':
         return PlainCourseSortOption.dateModified;
       default:
-        return PlainCourseSortOption.none;
+        return PlainCourseSortOption.dateModified;
     }
   }
 
@@ -181,8 +181,6 @@ extension CourseSortX on CourseSortOption {
         return 'Date Modified (Ascending)';
       case CourseSortOption.dateModifiedDesc:
         return 'Date Modified (Descending)';
-      case CourseSortOption.none:
-        return 'None';
     }
   }
 }

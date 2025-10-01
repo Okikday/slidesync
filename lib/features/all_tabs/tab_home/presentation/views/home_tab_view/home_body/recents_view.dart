@@ -37,8 +37,6 @@ class RecentsView extends ConsumerWidget {
                   final content = data[index];
                   final previewPath = jsonDecode(content.metadataJson)['previewPath'];
                   return RecentListTile(
-                    isDarkMode: context.isDarkMode,
-                    tilePadding: context.hPadding5,
                     dataModel: RecentListTileModel(
                       title: content.title ?? "No title",
                       subtitle:

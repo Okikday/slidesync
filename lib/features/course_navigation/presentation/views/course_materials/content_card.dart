@@ -12,8 +12,10 @@ import 'package:slidesync/core/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/domain/models/file_details.dart';
+import 'package:slidesync/features/course_navigation/presentation/actions/content_card_actions.dart';
 import 'package:slidesync/features/course_navigation/presentation/providers/content_card_providers.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/actions/modify_contents_action.dart';
+import 'package:slidesync/features/manage_all/manage_contents/usecases/create_contents_uc/create_content_preview_image.dart';
 import 'package:slidesync/features/share_contents/domain/usecases/share_content_uc.dart';
 import 'package:slidesync/shared/common_widgets/app_popup_menu_button.dart';
 import 'package:slidesync/shared/components/dialogs/confirm_deletion_dialog.dart';
@@ -21,7 +23,6 @@ import 'package:slidesync/shared/helpers/extension_helper.dart';
 import 'package:slidesync/shared/helpers/widget_helper.dart';
 import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
 import 'package:slidesync/shared/widgets/build_image_path_widget.dart';
-import 'package:slidesync/shared/widgets/loading_view.dart';
 
 class ContentCard extends ConsumerStatefulWidget {
   const ContentCard({super.key, required this.content, this.progress});
@@ -44,7 +45,7 @@ class _ContentCardState extends ConsumerState<ContentCard> {
       children: [
         Flexible(
           child: ConstrainedBox(
-            constraints: BoxConstraints.tightFor(width: 440, height: 160),
+            constraints: BoxConstraints.tightFor(width: 440, height: 180),
             child: Stack(
               clipBehavior: Clip.antiAlias,
               fit: StackFit.expand,
@@ -73,33 +74,7 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                                 topLeft: Radius.circular(15),
                                 topRight: Radius.circular(15),
                               ),
-                              child: ImageFiltered(
-                                imageFilter: ColorFilter.mode(Colors.black.withAlpha(10), BlendMode.color),
-                                child: Consumer(
-                                  builder: (context, ref, child) {
-                                    return ref
-                                        .watch(ContentCardProviders.fetchLinkPreviewDataProvider(content))
-                                        .when(
-                                          data: (data) => BuildImagePathWidget(
-                                            fileDetails: data,
-                                            fit: BoxFit.cover,
-                                            fallbackWidget: Icon(
-                                              WidgetHelper.resolveIconData(content.courseContentType, false),
-                                              size: 36,
-                                            ),
-                                          ),
-                                          error: (e, st) => BuildImagePathWidget(
-                                            fileDetails: FileDetails(),
-                                            fallbackWidget: Icon(
-                                              WidgetHelper.resolveIconData(content.courseContentType, false),
-                                              size: 36,
-                                            ),
-                                          ),
-                                          loading: () => LoadingView(msg: ''),
-                                        );
-                                  },
-                                ),
-                              ),
+                              child: ContentCardPreviewImage(content: content),
                             ),
                           ),
                         ),
@@ -145,88 +120,7 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                                 ),
                               ),
 
-                              AppPopupMenuButton(
-                                iconSize: 16,
-                                actions: [
-                                  PopupMenuAction(title: "Add to Group", iconData: Iconsax.additem, onTap: () {}),
-                                  if (content.courseContentType == CourseContentType.link)
-                                    PopupMenuAction(
-                                      title: "Copy",
-                                      iconData: Icons.copy,
-                                      onTap: () {
-                                        Clipboard.setData(ClipboardData(text: content.path.fileDetails.urlPath));
-                                      },
-                                    ),
-                                  PopupMenuAction(
-                                    title: "Share",
-                                    iconData: Iconsax.share_copy,
-                                    onTap: () {
-                                      UiUtils.showFlushBar(context, msg: "Preparing content...");
-                                      if (content.courseContentType == CourseContentType.document ||
-                                          content.courseContentType == CourseContentType.image) {
-                                        ShareContentUc().shareFile(
-                                          context,
-                                          File(content.path.filePath),
-                                          filename: content.title,
-                                        );
-                                      } else if (content.courseContentType == CourseContentType.link) {
-                                        ShareContentUc().shareText(context, content.path.urlPath);
-                                      } else {
-                                        UiUtils.showFlushBar(context, msg: "Unable to share content!");
-                                      }
-                                    },
-                                  ),
-                                  PopupMenuAction(
-                                    title: "Delete",
-                                    iconData: Icons.delete,
-                                    onTap: () async {
-                                      UiUtils.showCustomDialog(
-                                        context,
-                                        child: ConfirmDeletionDialog(
-                                          content: "Are you sure you want to delete this item?",
-                                          onPop: () {
-                                            if (context.mounted) {
-                                              UiUtils.hideDialog(context);
-                                            } else {
-                                              rootNavigatorKey.currentContext?.pop();
-                                            }
-                                          },
-                                          onCancel: () {
-                                            rootNavigatorKey.currentContext?.pop();
-                                          },
-                                          onDelete: () async {
-                                            UiUtils.hideDialog(context);
-
-                                            if (context.mounted) {
-                                              UiUtils.showLoadingDialog(
-                                                rootNavigatorKey.currentContext!,
-                                                message: "Removing content",
-                                              );
-                                            }
-                                            final outcome = await ModifyContentsAction().onDeleteContent(content);
-
-                                            rootNavigatorKey.currentContext?.pop();
-
-                                            if (context.mounted) {
-                                              if (outcome == null) {
-                                                UiUtils.showFlushBar(
-                                                  context,
-                                                  msg: "Deleted content!",
-                                                  vibe: FlushbarVibe.success,
-                                                );
-                                              } else if (outcome.toLowerCase().contains("error")) {
-                                                UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.error);
-                                              } else {
-                                                UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.warning);
-                                              }
-                                            }
-                                          },
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
+                              ContentCardPopUpMenuButton(content: content),
                             ],
                           ),
                         ),
@@ -234,25 +128,7 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                     ),
                   ),
                 ),
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Builder(
-                    builder: (context) {
-                      final res = resolveExtension(content);
-                      if (res.isEmpty) return const SizedBox();
-                      return Container(
-                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        clipBehavior: Clip.hardEdge,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(20),
-                          color: theme.altBackgroundPrimary,
-                        ),
-                        child: CustomText(res, color: theme.primaryColor, fontSize: 11, fontWeight: FontWeight.bold),
-                      );
-                    },
-                  ),
-                ),
+                ContentTypeBadge(content: content),
               ],
             ),
           ),
@@ -262,16 +138,131 @@ class _ContentCardState extends ConsumerState<ContentCard> {
   }
 }
 
-String resolveExtension(CourseContent content) {
-  final res = p.extension(content.path.filePath).replaceAll('.', '').toUpperCase();
-  switch (content.courseContentType) {
-    case CourseContentType.image:
-      return res;
-    case CourseContentType.document:
-      return res;
-    case CourseContentType.link:
-      return "link";
-    default:
-      return '';
+class ContentCardPopUpMenuButton extends StatelessWidget {
+  const ContentCardPopUpMenuButton({super.key, required this.content});
+
+  final CourseContent content;
+
+  @override
+  Widget build(BuildContext context) {
+    return AppPopupMenuButton(
+      iconSize: 16,
+      actions: [
+        PopupMenuAction(title: "Add to Group", iconData: Iconsax.additem, onTap: () {}),
+        if (content.courseContentType == CourseContentType.link)
+          PopupMenuAction(
+            title: "Copy",
+            iconData: Icons.copy,
+            onTap: () {
+              Clipboard.setData(ClipboardData(text: content.path.fileDetails.urlPath));
+            },
+          ),
+        PopupMenuAction(
+          title: "Share",
+          iconData: Iconsax.share_copy,
+          onTap: () {
+            UiUtils.showFlushBar(context, msg: "Preparing content...");
+            if (content.courseContentType == CourseContentType.document ||
+                content.courseContentType == CourseContentType.image) {
+              ShareContentUc().shareFile(context, File(content.path.filePath), filename: content.title);
+            } else if (content.courseContentType == CourseContentType.link) {
+              ShareContentUc().shareText(context, content.path.urlPath);
+            } else {
+              UiUtils.showFlushBar(context, msg: "Unable to share content!");
+            }
+          },
+        ),
+        PopupMenuAction(
+          title: "Delete",
+          iconData: Icons.delete,
+          onTap: () async {
+            UiUtils.showCustomDialog(
+              context,
+              child: ConfirmDeletionDialog(
+                content: "Are you sure you want to delete this item?",
+                onPop: () {
+                  if (context.mounted) {
+                    UiUtils.hideDialog(context);
+                  } else {
+                    rootNavigatorKey.currentContext?.pop();
+                  }
+                },
+                onCancel: () {
+                  rootNavigatorKey.currentContext?.pop();
+                },
+                onDelete: () async {
+                  UiUtils.hideDialog(context);
+
+                  if (context.mounted) {
+                    UiUtils.showLoadingDialog(rootNavigatorKey.currentContext!, message: "Removing content");
+                  }
+                  final outcome = await ModifyContentsAction().onDeleteContent(content.contentId);
+
+                  rootNavigatorKey.currentContext?.pop();
+
+                  if (context.mounted) {
+                    if (outcome == null) {
+                      UiUtils.showFlushBar(context, msg: "Deleted content!", vibe: FlushbarVibe.success);
+                    } else if (outcome.toLowerCase().contains("error")) {
+                      UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.error);
+                    } else {
+                      UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.warning);
+                    }
+                  }
+                },
+              ),
+            );
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class ContentCardPreviewImage extends StatelessWidget {
+  const ContentCardPreviewImage({super.key, required this.content});
+
+  final CourseContent content;
+
+  @override
+  Widget build(BuildContext context) {
+    return ImageFiltered(
+      imageFilter: ColorFilter.mode(Colors.black.withAlpha(10), BlendMode.color),
+      child: BuildImagePathWidget(
+        fileDetails: FileDetails(
+          filePath: CreateContentPreviewImage.genPreviewImagePath(filePath: content.path.filePath),
+        ),
+        fit: BoxFit.cover,
+        fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, false), size: 36),
+      ),
+    );
+  }
+}
+
+class ContentTypeBadge extends ConsumerWidget {
+  const ContentTypeBadge({super.key, required this.content});
+
+  final CourseContent content;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref;
+    return Positioned(
+      top: 8,
+      right: 8,
+      child: Builder(
+        builder: (context) {
+          final res = ContentCardActions.resolveExtension(content);
+          if (res.isEmpty) return const SizedBox();
+          return DecoratedBox(
+            decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: theme.altBackgroundPrimary),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              child: CustomText(res, color: theme.primaryColor, fontSize: 11, fontWeight: FontWeight.bold),
+            ),
+          );
+        },
+      ),
+    );
   }
 }

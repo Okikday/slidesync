@@ -14,6 +14,9 @@ class ContentTrack {
   @Index(unique: true)
   late String contentId;
 
+  @Index()
+  late String parentId;
+
   String? title;
   String? description;
 
@@ -27,12 +30,11 @@ class ContentTrack {
 
   String metadataJson = '{}';
 
-  final IsarLink<CourseTrack> courseTrackLink = IsarLink<CourseTrack>();
-
   ContentTrack();
 
   factory ContentTrack.create({
     required String contentId,
+    required String parentId,
     String? title,
     String? description,
     required String contentHash,
@@ -44,6 +46,7 @@ class ContentTrack {
   }) {
     return ContentTrack()
       ..contentId = contentId
+      ..parentId = parentId
       ..title = title
       ..description = description
       ..contentHash = contentHash
@@ -58,6 +61,7 @@ class ContentTrack {
     return <String, dynamic>{
       'id': id,
       'contentId': contentId,
+      'parentId': parentId,
       'title': title,
       'description': description,
       'contentHash': contentHash,
@@ -73,6 +77,7 @@ class ContentTrack {
     return ContentTrack()
       ..id = map['id'] as int
       ..contentId = map['contentId'] as String
+      ..parentId = map['parentId'] as String
       ..title = map['title'] as String?
       ..description = map['description'] as String?
       ..contentHash = map['contentHash'] as String? ?? ''
@@ -89,7 +94,7 @@ class ContentTrack {
 
   @override
   String toString() {
-    return 'ProgressTrackModel(id: $id, contentId: $contentId, title: $title, description: $description, contentHash: $contentHash, progress: $progress, additionalDetail: $additionalDetail, pages: $pages, lastRead: $lastRead, metadataJson: $metadataJson)';
+    return 'ProgressTrackModel(id: $id, contentId: $contentId, parentId: $parentId, title: $title, description: $description, contentHash: $contentHash, progress: $progress, additionalDetail: $additionalDetail, pages: $pages, lastRead: $lastRead, metadataJson: $metadataJson)';
   }
 
   @override
@@ -98,6 +103,7 @@ class ContentTrack {
 
     return other.id == id &&
         other.contentId == contentId &&
+        other.parentId == parentId &&
         other.title == title &&
         other.description == description &&
         other.contentHash == contentHash &&
@@ -112,6 +118,7 @@ class ContentTrack {
   int get hashCode {
     return id.hashCode ^
         contentId.hashCode ^
+        parentId.hashCode ^
         title.hashCode ^
         description.hashCode ^
         contentHash.hashCode ^
@@ -144,7 +151,7 @@ extension ProgressTrackModelExtension on ContentTrack {
       ..progress = progress ?? this.progress
       ..additionalDetail = additionalDetail ?? this.additionalDetail
       ..pages = pages ?? this.pages
-      ..lastRead = lastRead ?? this.lastRead
+      ..lastRead = lastRead
       ..metadataJson = metadataJson ?? this.metadataJson;
   }
 }

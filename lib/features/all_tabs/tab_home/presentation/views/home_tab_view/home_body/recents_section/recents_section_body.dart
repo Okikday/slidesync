@@ -43,8 +43,6 @@ class RecentsSectionBody extends ConsumerWidget {
               final content = data[index];
               final previewPath = jsonDecode(content.metadataJson)['previewPath'];
               return RecentListTile(
-                isDarkMode: context.isDarkMode,
-                tilePadding: context.hPadding5,
                 dataModel: RecentListTileModel(
                   title: content.title ?? "No title",
                   subtitle:
@@ -86,7 +84,7 @@ class RecentsSectionBody extends ConsumerWidget {
                             }
                           },
                           onDelete: () async {
-                            await rda.onRemoveFromRecents(content.contentId);
+                            await rda.onRemoveFromRecents(content);
                           },
                         ),
                       ),

@@ -42,7 +42,7 @@ class LibraryTabViewFilterButton extends ConsumerWidget {
         if (!asc && n.endsWith('Desc')) return o;
       }
     }
-    return CourseSortOption.none;
+    return CourseSortOption.dateModifiedDesc;
   }
 
   @override
@@ -55,7 +55,7 @@ class LibraryTabViewFilterButton extends ConsumerWidget {
         final currSortData = parseCourseSortOption(currSortOption);
         final currPlain = currSortOption.toPlain();
         final plainList = plainListFromCourseSortOptions();
-        final isSortOptionNone = currSortOption == CourseSortOption.none;
+        final isSortOptionNone = currSortOption == CourseSortOption.dateModifiedDesc;
 
         return AppPopupMenuButton(
           icon: isSortOptionNone ? Iconsax.filter : Iconsax.filter_copy,
@@ -70,7 +70,7 @@ class LibraryTabViewFilterButton extends ConsumerWidget {
                 iconData: Icons.circle_outlined,
                 icon: item == currPlain
                     ? Icon(
-                        item == PlainCourseSortOption.none
+                        item == PlainCourseSortOption.dateModified
                             ? Icons.check
                             : currSortData.asc
                             ? Iconsax.arrow_circle_up
@@ -81,6 +81,9 @@ class LibraryTabViewFilterButton extends ConsumerWidget {
                 onTap: () async {
                   final newOpt = item == currPlain ? _fromPlain(item, !currSortData.asc) : _fromPlain(item, true);
                   ref.read(CoursesViewController.coursesFilterOption.notifier).set(newOpt);
+                  (await ref.read(
+                    CoursesViewController.coursesPaginationFutureProvider.future,
+                  )).updateSortOption(newOpt, true);
                 },
               ),
           ],

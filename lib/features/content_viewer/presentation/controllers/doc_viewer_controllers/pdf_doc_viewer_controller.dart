@@ -17,6 +17,8 @@ import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/domain/models/course_model/sub/course_content.dart';
 import 'package:slidesync/domain/models/file_details.dart';
 import 'package:slidesync/domain/models/progress_track_models/content_track.dart';
+import 'package:slidesync/domain/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/domain/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/manage_all/manage_contents/usecases/create_contents_uc/create_content_preview_image.dart';
 
 const Duration readValidityDuration = Duration(seconds: 5);
@@ -50,7 +52,6 @@ class PdfDocViewerController extends LeakPrevention {
       initialPage = (int.tryParse(progressTrack.pages.last) ?? 1);
       pdfViewerController.addListener(monitorPageListener);
     }
-
     return true;
   }
 
@@ -69,17 +70,22 @@ class PdfDocViewerController extends LeakPrevention {
 
   /// Creates a new progress track model if it didn't exist
   static Future<ContentTrack?> _createProgressTrackModel(CourseContent content) async {
-    final result = await Result.tryRunAsync(() async {
+    final result = await Result.tryRunAsync<ContentTrack?>(() async {
+      final courseId = (await CourseCollectionRepo.getById(content.parentId))?.parentId;
+      if (courseId == null) return null;
+
+      final parentId = (await CourseRepo.getCourseById(courseId))?.courseId;
+      if (parentId == null) return null;
       final ContentTrack newPtm = ContentTrack.create(
         contentId: content.contentId,
+        parentId: parentId,
         title: content.title,
-        description: content.description.substring(0, math.min(content.description.length, 1024)),
+        description: content.description,
         contentHash: content.contentHash,
         progress: 0.0,
+        lastRead: DateTime.now(),
         metadataJson: jsonEncode({
-          'previewPath': CreateContentPreviewImage.genPreviewImagePathRecord(
-            filePath: content.path.filePath,
-          ).previewPath,
+          'previewPath': CreateContentPreviewImage.genPreviewImagePath(filePath: content.path.filePath),
         }),
       );
       return (await _isarData.getById(await _isarData.store(newPtm)));
@@ -196,21 +202,21 @@ class PdfDocViewerController extends LeakPrevention {
     pageStayStopWatch
       ..reset()
       ..stop();
-    Future.microtask(() => Result.tryRunAsync(() async => await _addToRecentContents(content.contentId)));
+    // Future.microtask(() => Result.tryRunAsync(() async => await _addToRecentContents(content.contentId)));
     log("Disposed pdf viewer actions ");
   }
 }
 
-Future<void> _addToRecentContents(String contentId) async {
-  final hiveInstance = AppHiveData.instance;
-  final rawOldRecents = (await hiveInstance.getData(key: HiveDataPathKey.recentContentsIds.name)) as List<String>?;
-  if (rawOldRecents == null) {
-    await hiveInstance.setData(key: HiveDataPathKey.recentContentsIds.name, value: [contentId]);
-  } else {
-    final recents = LinkedHashSet<String>.from(rawOldRecents);
-    recents.add(contentId);
-    await hiveInstance.setData(key: HiveDataPathKey.recentContentsIds.name, value: recents.toList());
-  }
-  log("Adding pdf to recents");
-  return;
-}
+// Future<void> _addToRecentContents(String contentId) async {
+//   final hiveInstance = AppHiveData.instance;
+//   final rawOldRecents = (await hiveInstance.getData(key: HiveDataPathKey.recentContentsIds.name)) as List<String>?;
+//   // if (rawOldRecents == null) {
+//   //   await hiveInstance.setData(key: HiveDataPathKey.recentContentsIds.name, value: [contentId]);
+//   // } else {
+//   //   final recents = LinkedHashSet<String>.from(rawOldRecents);
+//   //   recents.add(contentId);
+//   //   await hiveInstance.setData(key: HiveDataPathKey.recentContentsIds.name, value: recents.toList());
+//   // }
+//   log("Adding pdf to recents");
+//   return;
+// }

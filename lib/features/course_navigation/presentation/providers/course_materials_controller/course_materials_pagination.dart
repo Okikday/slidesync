@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:isar/isar.dart';
@@ -19,12 +20,12 @@ const int limit = 20;
 
 class CourseMaterialsPagination extends LeakPrevention {
   late final PagingController<int, CourseContent> pagingController;
-  final CourseSortOption sortOption;
+  CourseSortOption sortOption;
   final String parentId;
 
-  bool _isFetching = false;
+  bool _fetching = false;
+  bool isFirstTime = true;
   final Queue<Completer<List<CourseContent>>> _waitingQueue = Queue();
-  dynamic _lastItemSortId;
 
   CourseMaterialsPagination._(this.parentId, {required this.sortOption}) {
     pagingController = PagingController(
@@ -34,23 +35,25 @@ class CourseMaterialsPagination extends LeakPrevention {
   }
 
   static CourseMaterialsPagination of(String parentId, {CourseSortOption? sortOption}) =>
-      CourseMaterialsPagination._(parentId, sortOption: sortOption ?? CourseSortOption.none);
+      CourseMaterialsPagination._(parentId, sortOption: sortOption ?? CourseSortOption.dateModifiedDesc);
 
   Future<List<CourseContent>> fetchPage(int pageKey, int limit) async {
-    if (_isFetching) {
+    if (isFirstTime && pageKey == 0) {
+      await Future.delayed(Durations.extralong1); // Wait for the page to finish animating - approx...
+      isFirstTime = false;
+    }
+    if (_fetching) {
       final completer = Completer<List<CourseContent>>();
       _waitingQueue.add(completer);
       return completer.future;
     }
 
-    _isFetching = true;
+    _fetching = true;
     try {
-      log("About to enter isolate");
       final resultFromIsolate = await compute(
         doFetchInIsolate,
         DoFetchInIsolateArgs(parentId, pageKey, limit, sortOption, RootIsolateToken.instance!),
       );
-      log("Computed with isolate");
       final result = resultFromIsolate.map((e) => CourseContent.fromJson(e)).toList();
 
       while (_waitingQueue.isNotEmpty) {
@@ -64,7 +67,7 @@ class CourseMaterialsPagination extends LeakPrevention {
       }
       rethrow;
     } finally {
-      _isFetching = false;
+      _fetching = false;
     }
   }
 
@@ -117,8 +120,13 @@ class CourseMaterialsPagination extends LeakPrevention {
     }
   }
 
+  void updateSortOption(CourseSortOption newSortOption, [bool refresh = false]) {
+    sortOption = newSortOption;
+    if (refresh) pagingController.refresh();
+  }
+
   int get queueLength => _waitingQueue.length;
-  bool get isBusy => _isFetching;
+  bool get isBusy => _fetching;
 
   @override
   void onDispose() {
@@ -142,9 +150,8 @@ Future<List<String>> doFetchInIsolate(DoFetchInIsolateArgs args) async {
   final RootIsolateToken rootIsolateToken = args.token;
   BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken);
   await IsarData.initialize(collectionSchemas: isarSchemas, inspector: false);
-  log("Inside result");
   final result = await _doFetch(args.parentId, args.pageKey, args.limit, args.sortOption);
-  log("Got result");
+  await IsarData.close();
   final jsonList = result.map((e) => e.toJson()).toList();
   return jsonList;
   // log("Result: $result");
@@ -173,17 +180,8 @@ Future<List<CourseContent>> _doFetch(String parentId, int pageKey, int limit, Co
     case CourseSortOption.dateModifiedDesc:
       result = await _doFetchByDateModified(parentId, pageKey, limit, false);
       break;
-    default:
-      result = await _doFetchByDateModified(parentId, pageKey, limit);
   }
 
-  return result;
-}
-
-Future<List<CourseContent>> _doFetchDefault(String parentId, int pageKey, int limit) async {
-  final idGreaterThan = (pageKey - 1) * limit;
-  final query = (await CourseContentRepo.filter).parentIdEqualTo(parentId);
-  final result = await query.idGreaterThan(idGreaterThan).limit(limit).findAll();
   return result;
 }
 
