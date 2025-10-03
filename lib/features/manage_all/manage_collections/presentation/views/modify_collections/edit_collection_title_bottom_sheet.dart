@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:slidesync/core/routes/app_router.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/sub/course_collection.dart';
+import 'package:slidesync/features/manage_all/manage_collections/presentation/actions/edit_collection_actions.dart';
 import 'package:slidesync/features/manage_all/manage_collections/presentation/actions/modify_collection_actions.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 
@@ -69,41 +70,29 @@ class _EditCollectionTitleBottomSheetState extends ConsumerState<EditCollectionT
                   selectionHandleColor: theme.primaryColor,
                   // onTapOutside: () {},
                   onSubmitted: (text) async {
+                    final collectionTitle = collection.collectionTitle;
+                    final isValid = await EditCollectionActions().validateCollectionTitle(
+                      context,
+                      text: text,
+                      collectionTitle: collectionTitle,
+                    );
+                    if (isValid != null) return;
                     // Create new collection
                     final outcome = await modifyCollectionActions.renameCollectionAction(
                       collection.copyWith(collectionTitle: text),
                     );
-
                     // Handle outcome
-                    if (outcome == null && text.trim() != collection.collectionTitle && text.trim().isNotEmpty) {
+                    if (outcome == null) {
                       if (context.mounted) {
                         context.pop();
                       } else {
                         rootNavigatorKey.currentContext?.pop();
                       }
-                      if (context.mounted)
-                        {await UiUtils.showFlushBar(
-                          context,
-                          msg: "Renamed ${collection.collectionTitle} to $text!",
-                          vibe: FlushbarVibe.success,
-                        );}
-                    } else {
-                      final String message;
-                      if (text.isEmpty) {
-                        message = "Try typing into the Field!";
-                      } else if (text.length < 2) {
-                        message = "Text input is too short!";
-                      } else if (text.trim() == collection.collectionTitle) {
-                        message = "Try inputting a new different title";
-                      } else {
-                        message = "Invalid input!";
-                      }
                       if (context.mounted) {
                         await UiUtils.showFlushBar(
                           context,
-                          msg: message,
-                          flushbarPosition: FlushbarPosition.TOP,
-                          vibe: FlushbarVibe.warning,
+                          msg: "Renamed ${collectionTitle} to $text!",
+                          vibe: FlushbarVibe.success,
                         );
                       }
                     }

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -30,6 +32,7 @@ class CollectionsListView extends ConsumerWidget {
     return ValueListenableBuilder(
       valueListenable: searchCollectionTextNotifier,
       builder: (context, value, child) {
+        log("Search collection updated");
         return asyncCourseValue.when(
           data: (data) {
             final course = data ?? defaultCourse;

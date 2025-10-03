@@ -10,7 +10,13 @@ import 'package:slidesync/shared/helpers/extension_helper.dart';
 class CollectionsViewSearchBar extends ConsumerStatefulWidget {
   final void Function() onTap;
   final void Function(FocusNode focusNode)? onTapOutside;
-  const CollectionsViewSearchBar({super.key, required this.onTap, this.onTapOutside});
+  final ValueNotifier<String> searchCollectionTextNotifier;
+  const CollectionsViewSearchBar({
+    super.key,
+    required this.onTap,
+    required this.searchCollectionTextNotifier,
+    this.onTapOutside,
+  });
 
   @override
   ConsumerState<CollectionsViewSearchBar> createState() => _CollectionsViewSearchBarState();
@@ -60,14 +66,7 @@ class _CollectionsViewSearchBarState extends ConsumerState<CollectionsViewSearch
                         child: Icon(Iconsax.search_normal_copy, size: 20, color: theme.supportingText),
                       ),
                       onchanged: (text) {
-                        ref
-                                .read(
-                                  CourseDetailsController.courseDetailsStateProvider.select(
-                                    (s) => s.searchCollectionTextNotifier,
-                                  ),
-                                )
-                                .value =
-                            text;
+                        widget.searchCollectionTextNotifier.value = text;
                       },
                       onTapOutside: widget.onTapOutside == null
                           ? null

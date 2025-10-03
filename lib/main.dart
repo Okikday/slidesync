@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:slidesync/test/provider_observer.dart';
+import 'package:worker_manager/worker_manager.dart';
 import 'firebase_options.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:pdfrx/pdfrx.dart';
@@ -23,6 +24,7 @@ void main() async {
 
   if (!kIsWeb) await IsarData.initialize(collectionSchemas: isarSchemas);
   pdfrxFlutterInitialize();
+  await workerManager.init(isolatesCount: 1);
 
   runApp(
     ProviderScope(

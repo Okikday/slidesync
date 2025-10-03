@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:ui';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
@@ -18,13 +19,11 @@ class ListCourseCard extends ConsumerWidget {
     super.key,
     this.progress = 0.0,
     // this.dotColor = Colors.transparent,
-    this.isStarred = false,
     required this.onTapIcon,
   });
   final Course course;
   final double progress;
   // final Color dotColor;
-  final bool isStarred;
   final void Function() onTapIcon;
 
   @override
@@ -74,7 +73,7 @@ class ListCourseCard extends ConsumerWidget {
           children: [
             ListCourseCardIcon(
               onTapIcon: onTapIcon,
-              isStarred: isStarred,
+              isStarred: (course.createdAt?.difference(DateTime.now()).inMinutes.abs() ?? 10) <= 5,
               fileDetails: course.imageLocationJson.fileDetails,
               courseCode: course.courseCode,
             ),
@@ -119,12 +118,25 @@ class ListCourseCardIcon extends ConsumerWidget {
       child: Badge(
         isLabelVisible: isStarred,
         backgroundColor: Colors.transparent,
-        label: CircleAvatar(
-          radius: 10.5,
-          backgroundColor: Color(0xff0e1d27),
-          child: Icon(Iconsax.star_1, size: 16, color: theme.primaryColor),
+        label: CustomTextButton(
+          pixelWidth: 37,
+          contentPadding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+          backgroundColor: theme.onBackground.withValues(alpha: 0.4),
+          child: ClipRRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
+              child: Row(
+                spacing: 1,
+                children: [
+                  Icon(Iconsax.star_1, size: 10, color: theme.primaryColor),
+                  CustomText("New", fontSize: 8, fontWeight: FontWeight.bold, color: theme.background),
+                ],
+              ),
+            ),
+          ),
         ),
-        offset: Offset(0, -2),
+        alignment: Alignment.topLeft,
+        offset: Offset(-12, 0),
         child: Container(
           height: 64,
           width: 64,
@@ -186,7 +198,7 @@ class ListCourseCardTitleColumn extends ConsumerWidget {
       children: [
         if (courseCode.isNotEmpty && hasImage)
           Padding(
-            padding: const EdgeInsets.only(left: 12.0),
+            padding: const EdgeInsets.only(left: 4.0),
             child: CustomTextButton(
               backgroundColor: theme.altBackgroundSecondary,
               pixelHeight: 24,

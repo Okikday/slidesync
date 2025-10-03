@@ -8,7 +8,7 @@ import 'package:slidesync/features/manage_all/manage_course/presentation/actions
 import 'package:slidesync/shared/components/dialogs/confirm_deletion_dialog.dart';
 
 class ModifyCourseViewActions {
-  void showDeleteCourseDialog(BuildContext context, Course course) {
+  void showDeleteCourseDialog(BuildContext context, String courseId) {
     UiUtils.showCustomDialog(
       context,
       barrierColor: Colors.black.withAlpha(140),
@@ -25,7 +25,7 @@ class ModifyCourseViewActions {
           if (context.mounted) {
             UiUtils.showLoadingDialog(context, message: "Deleting course...");
           }
-          await ModifyCourseActions().onDeleteCourse(courseId: course.courseId);
+          await ModifyCourseActions().onDeleteCourse(courseId: courseId);
           if (context.mounted) UiUtils.hideDialog(context);
           if (context.mounted) context.pop();
           if (context.mounted) UiUtils.showFlushBar(context, msg: "Successfully deleted course");

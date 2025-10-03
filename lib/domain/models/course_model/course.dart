@@ -90,8 +90,10 @@ class Course {
         other.courseId == courseId &&
         other.courseTitle == courseTitle &&
         other.description == description &&
+        other.imageLocationJson == imageLocationJson &&
         other.createdAt == createdAt &&
-        other.lastUpdated == lastUpdated;
+        other.lastUpdated == lastUpdated &&
+        other.courseMetadataJson == courseMetadataJson;
   }
 
   @override
@@ -129,7 +131,7 @@ extension CourseExtension on Course {
       ..description = description ?? this.description
       ..imageLocationJson = imageLocationJson ?? this.imageLocationJson
       ..createdAt = createdAt ?? this.createdAt
-      ..lastUpdated = lastUpdated ?? this.lastUpdated
+      ..lastUpdated = lastUpdated ?? DateTime.now()
       ..courseMetadataJson = courseMetadataJson ?? this.courseMetadataJson;
   }
 }

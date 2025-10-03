@@ -53,7 +53,7 @@ final courseMgmtRoutes = [
         pageBuilder: (context, state) => defaultTransition(
           state.pageKey,
           defaultIncoming: TransitionType.slide(begin: const Offset(0, 0.6), end: Offset(0, 0), fade: true),
-          child: ModifyCollectionsView(courseDbId: (state.extra as Course).id),
+          child: ModifyCollectionsView(courseId: (state.extra as String)),
         ),
         routes: [
           //MODIFY CONTENTS VIEW NAVIGATION

@@ -1,4 +1,4 @@
-import 'dart:developer';
+
 import 'dart:ui';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
@@ -54,6 +54,9 @@ class CourseDetailsView extends ConsumerWidget {
                       const PinnedHeaderSliver(child: AdjustSpacing()),
                       PinnedHeaderSliver(
                         child: CollectionsViewSearchBar(
+                          searchCollectionTextNotifier: ref
+                              .watch(CourseDetailsController.courseDetailsStateProvider)
+                              .searchCollectionTextNotifier,
                           onTap: () {
                             PrimaryScrollController.of(context).animateTo(
                               (courseDetailsAppBarHeight + 8),

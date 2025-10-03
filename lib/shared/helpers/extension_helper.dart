@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/app.dart';
+import 'package:slidesync/features/all_tabs/tab_library/presentation/controllers/courses_view_controller/courses_pagination.dart';
 import 'package:slidesync/shared/helpers/device_helper.dart';
 import 'package:slidesync/shared/helpers/responsiveness_helper.dart';
 import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
@@ -89,4 +90,44 @@ extension AppProviderTheme on WidgetRef {
 
 extension StringExtension on String {
   Map get decodeJson => jsonDecode(this);
+}
+
+/// Others
+///
+extension CourseSortX on CourseSortOption {
+  PlainCourseSortOption toPlain() {
+    final n = name;
+    final core = n.endsWith('Asc')
+        ? n.substring(0, n.length - 3)
+        : n.endsWith('Desc')
+        ? n.substring(0, n.length - 4)
+        : n;
+    switch (core) {
+      case 'name':
+        return PlainCourseSortOption.name;
+      case 'dateCreated':
+        return PlainCourseSortOption.dateCreated;
+      case 'dateModified':
+        return PlainCourseSortOption.dateModified;
+      default:
+        return PlainCourseSortOption.dateModified;
+    }
+  }
+
+  String get label {
+    switch (this) {
+      case CourseSortOption.nameAsc:
+        return 'Name (Ascending)';
+      case CourseSortOption.nameDesc:
+        return 'Name (Descending)';
+      case CourseSortOption.dateCreatedAsc:
+        return 'Date Created (Ascending)';
+      case CourseSortOption.dateCreatedDesc:
+        return 'Date Created (Descending)';
+      case CourseSortOption.dateModifiedAsc:
+        return 'Date Modified (Ascending)';
+      case CourseSortOption.dateModifiedDesc:
+        return 'Date Modified (Descending)';
+    }
+  }
 }

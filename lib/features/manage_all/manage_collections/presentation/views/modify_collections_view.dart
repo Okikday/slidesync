@@ -15,9 +15,9 @@ import '../../../../../core/utils/ui_utils.dart';
 import '../../../../../shared/components/app_bar_container.dart';
 
 class ModifyCollectionsView extends ConsumerStatefulWidget {
-  final int courseDbId;
+  final String courseId;
 
-  const ModifyCollectionsView({super.key, required this.courseDbId});
+  const ModifyCollectionsView({super.key, required this.courseId});
 
   @override
   ConsumerState createState() => _ModifyCollectionsViewState();
@@ -65,7 +65,7 @@ class _ModifyCollectionsViewState extends ConsumerState<ModifyCollectionsView> {
 
   @override
   Widget build(BuildContext context) {
-    final asyncCourseValue = ref.watch(CourseProviders.courseProvider(widget.courseDbId));
+    final asyncCourseValue = ref.watch(CourseProviders.courseProvider(widget.courseId));
     final Course course = asyncCourseValue.value ?? defaultCourse;
 
     return AnnotatedRegion(
@@ -95,6 +95,7 @@ class _ModifyCollectionsViewState extends ConsumerState<ModifyCollectionsView> {
             if (course.collections.isNotEmpty)
               PinnedHeaderSliver(
                 child: CollectionsViewSearchBar(
+                  searchCollectionTextNotifier: searchCollectionTextNotifier,
                   onTap: () {
                     // scrollController.animateTo(
                     //   appBarHeight + 8,

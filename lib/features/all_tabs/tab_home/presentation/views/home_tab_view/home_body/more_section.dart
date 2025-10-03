@@ -32,22 +32,12 @@ class MoreSection extends ConsumerWidget {
           padding: EdgeInsets.zero,
           children: [
             Padding(
-              padding: const EdgeInsets.only(left: 20.0, right: 12.0),
-              child: MoreSectionOption(title: "Timetable", iconData: Iconsax.heart_copy),
-            ),
-            Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12.0),
               child: MoreSectionOption(title: "Tasks", iconData: Iconsax.menu_copy),
             ),
-
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: MoreSectionOption(title: "Bookmarks", iconData: Iconsax.menu_copy),
-            ),
-
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12.0),
-              child: MoreSectionOption(title: "", iconData: Iconsax.add_copy),
+              padding: const EdgeInsets.only(left: 20.0, right: 12.0),
+              child: MoreSectionOption(title: "Timetable", iconData: Iconsax.heart_copy),
             ),
           ],
         ),

@@ -126,7 +126,7 @@ extension CourseCollectionExtension on CourseCollection {
     String? imageLocationJson,
     String? collectionMetadataJson,
   }) {
-    return CourseCollection()
+    return this
       ..collectionId = collectionId ?? this.collectionId
       ..parentId = parentId ?? this.parentId
       ..collectionTitle = collectionTitle ?? this.collectionTitle

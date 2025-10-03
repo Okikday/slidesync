@@ -13,8 +13,8 @@ import 'package:slidesync/shared/helpers/extension_helper.dart';
 
 class EditCourseBottomSheet extends ConsumerStatefulWidget {
   final bool isEditingDescription;
-  final int courseDbId;
-  const EditCourseBottomSheet({super.key, required this.courseDbId, this.isEditingDescription = false});
+  final String courseId;
+  const EditCourseBottomSheet({super.key, required this.courseId, this.isEditingDescription = false});
 
   @override
   ConsumerState createState() => _EditCourseBottomSheetState();
@@ -43,7 +43,7 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
   }
 
   void initPostFrame() {
-    final readCourse = ref.watch(CourseProviders.courseProvider(widget.courseDbId)).value ?? defaultCourse;
+    final readCourse = ref.watch(CourseProviders.courseProvider(widget.courseId)).value ?? defaultCourse;
     courseNameTextController.text = readCourse.courseName;
     if (readCourse.courseCode.isNotEmpty) courseCodeController.text = readCourse.courseCode;
 
@@ -64,7 +64,7 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final Course course = ref.watch(CourseProviders.courseProvider(widget.courseDbId)).value ?? defaultCourse;
+    final Course course = ref.watch(CourseProviders.courseProvider(widget.courseId)).value ?? defaultCourse;
 
     final double keyboardInsets = double.parse(
       (context.viewInsets.bottom / context.deviceHeight).toStringAsFixed(2),
@@ -141,7 +141,7 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
                     ),
 
                     PositionedUpdateDetailsButton(
-                      courseDbId: widget.courseDbId,
+                      courseId: widget.courseId,
                       courseNameTextController: courseNameTextController,
                       courseCodeController: courseCodeController,
                       descriptionTextController: descriptionTextController,
@@ -176,14 +176,14 @@ class AnimatedSpacing extends StatelessWidget {
 class PositionedUpdateDetailsButton extends ConsumerWidget {
   const PositionedUpdateDetailsButton({
     super.key,
-    required this.courseDbId,
+    required this.courseId,
     required this.courseNameTextController,
     required this.courseCodeController,
     required this.descriptionTextController,
     required this.isCourseCodeFieldVisible,
     required this.canExitProvider,
   });
-  final int courseDbId;
+  final String courseId;
   final TextEditingController courseNameTextController;
   final TextEditingController courseCodeController;
   final TextEditingController descriptionTextController;
@@ -211,7 +211,7 @@ class PositionedUpdateDetailsButton extends ConsumerWidget {
               description: descriptionTextController.text,
               isCourseCodeFieldVisible: ref.read(isCourseCodeFieldVisible),
               canExitProvider: canExitProvider,
-              modifyCourseProvider: CourseProviders.courseProvider(courseDbId),
+              modifyCourseProvider: CourseProviders.courseProvider(courseId),
             );
           },
           contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),

@@ -74,7 +74,7 @@ class ModifyCourseActions {
   /// When user clicks Add Description.
   /// If there's a description, it shows the Description
   /// else, it brings the option to add description
-  void onClickAddDescription(BuildContext context, {required int courseDbId, required String currDescription}) {
+  void onClickAddDescription(BuildContext context, {required String courseId, required String currDescription}) {
     if (currDescription.isNotEmpty) {
       CustomDialog.show(
         context,
@@ -95,7 +95,7 @@ class ModifyCourseActions {
         barrierColor: Colors.black54,
         isScrollControlled: true,
         builder: (context) {
-          return EditCourseBottomSheet(courseDbId: courseDbId, isEditingDescription: true);
+          return EditCourseBottomSheet(courseId: courseId, isEditingDescription: true);
         },
       );
     }

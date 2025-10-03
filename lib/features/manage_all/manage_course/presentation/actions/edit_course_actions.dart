@@ -5,6 +5,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/global_notifiers/primitive_type_notifiers.dart';
+import 'package:slidesync/core/global_providers/data_providers/course_providers.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/domain/repos/course_repo/course_repo.dart';
@@ -66,7 +67,7 @@ class EditCourseActions {
     required String description,
     required bool isCourseCodeFieldVisible,
     required NotifierProvider<BoolNotifier, bool> canExitProvider,
-    required StreamProvider<Course?> modifyCourseProvider,
+    required StreamNotifierProvider<CourseStreamNotifier, Course> modifyCourseProvider,
   }) async {
     final context = ref.context;
     final String? errorMsg = checkIfCanUpdateCourse(

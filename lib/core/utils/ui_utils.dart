@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/shared/helpers/extension_helper.dart';
 
+export 'package:another_flushbar/flushbar.dart';
+
 enum FlushbarVibe { none, error, success, warning }
 
 class UiUtils {
@@ -43,6 +45,7 @@ class UiUtils {
       canPop: canPop,
       msg: message,
       msgTextColor: normalColor,
+      progressIndicatorColor: context.theme.colorScheme.primary,
       backgroundColor: backgroundColor ?? bgColor,
       barrierColor: barrierColor ?? Colors.black.withAlpha(140),
       transitionDuration: Durations.medium2,

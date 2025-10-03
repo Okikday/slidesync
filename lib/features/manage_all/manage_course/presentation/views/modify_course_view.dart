@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 // ignore: unnecessary_import
 import 'package:flutter/cupertino.dart';
@@ -58,63 +60,26 @@ class _ModifyCourseState extends ConsumerState<ModifyCourseView> with TickerProv
             // },
           ),
         ),
-        body: ModifyCourseViewOuterSection(courseDbId: widget.course.id),
+        body: ModifyCourseViewOuterSection(courseId: widget.course.courseId),
       ),
     );
   }
 }
 
 class ModifyCourseViewOuterSection extends ConsumerWidget {
-  final int courseDbId;
-  const ModifyCourseViewOuterSection({super.key, required this.courseDbId});
+  final String courseId;
+  const ModifyCourseViewOuterSection({super.key, required this.courseId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Course course = ref.watch(CourseProviders.courseProvider(courseDbId)).value ?? defaultCourse;
-    final ModifyCourseActions modifyCourseActions = ModifyCourseActions();
+    final Course course = ref.watch(CourseProviders.courseProvider(courseId)).value ?? defaultCourse;
+    ref.listen(CourseProviders.courseProvider(courseId), (p, n) {
+      log("Soemthings");
+    });
     return CustomScrollView(
       slivers: [
         // HEADER
-        ModifyCourseHeader(
-          title: course.courseName,
-          description: course.description.trim(),
-          courseCode: course.courseCode.trim(),
-          courseFileDetails: course.imageLocationJson,
-          onClickEditCourse: () async {
-            await showModalBottomSheet(
-              context: context,
-              enableDrag: false,
-              showDragHandle: false,
-              isScrollControlled: true,
-              builder: (context) => EditCourseBottomSheet(courseDbId: courseDbId),
-            );
-          },
-          onClickDelete: () {
-            if (rootNavigatorKey.currentContext != null && rootNavigatorKey.currentContext!.mounted) {
-              ModifyCourseViewActions().showDeleteCourseDialog(rootNavigatorKey.currentContext!, course);
-            }
-          },
-          onClickAddDescription: () =>
-              modifyCourseActions.onClickAddDescription(context, courseDbId: course.id, currDescription: course.description),
-
-          onClickImage: () async {
-            if (!course.imageLocationJson.fileDetails.containsFilePath) {
-              modifyCourseActions.pickImageActionRoute(context, courseDbId: course.id);
-              return;
-            }
-
-            modifyCourseActions.onClickCourseImage(ref, course: course);
-          },
-
-          onLongPressImage: () async {
-            if (!course.imageLocationJson.fileDetails.containsFilePath) {
-              modifyCourseActions.pickImageActionRoute(context, courseDbId: course.id);
-              return;
-            }
-
-            modifyCourseActions.previewImageActionRoute(context, courseImagePath: course.imageLocationJson);
-          },
-        ),
+        ModifyCourseHeader(courseId: courseId),
 
         SliverToBoxAdapter(child: ConstantSizing.columnSpacingExtraLarge),
 
@@ -131,12 +96,12 @@ class ModifyCourseViewOuterSection extends ConsumerWidget {
                 child: CreateCollectionBottomSheet(courseDbId: course.id),
               ).then((value) {
                 if (course.collections.isNotEmpty) {
-                  if (context.mounted) context.pushNamed(Routes.modifyCollections.name, extra: course);
+                  if (context.mounted) context.pushNamed(Routes.modifyCollections.name, extra: course.courseId);
                 }
               });
               return;
             }
-            context.pushNamed(Routes.modifyCollections.name, extra: course);
+            context.pushNamed(Routes.modifyCollections.name, extra: course.courseId);
           },
         ),
 
@@ -149,7 +114,7 @@ class ModifyCourseViewOuterSection extends ConsumerWidget {
             sliver: SliverToBoxAdapter(
               child: CustomElevatedButton(
                 onClick: () {
-                  context.pushNamed(Routes.modifyCollections.name, extra: course);
+                  context.pushNamed(Routes.modifyCollections.name, extra: course.courseId);
                 },
                 borderRadius: 48,
                 pixelHeight: 56,

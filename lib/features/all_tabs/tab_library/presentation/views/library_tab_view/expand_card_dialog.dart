@@ -196,7 +196,7 @@ class ExpandCardDialog extends ConsumerWidget {
                       onTap: () {
                         UiUtils.hideDialog(context);
                         if (rootNavigatorKey.currentContext != null && rootNavigatorKey.currentContext!.mounted) {
-                          ModifyCourseViewActions().showDeleteCourseDialog(rootNavigatorKey.currentContext!, course);
+                          ModifyCourseViewActions().showDeleteCourseDialog(rootNavigatorKey.currentContext!, course.courseId);
                         }
                       },
                     ),
