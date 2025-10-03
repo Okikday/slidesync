@@ -150,129 +150,134 @@ class CourseContentRepo {
     }
   }
 
-  // Not yet reviewed below
-  static Future<bool> addMultipleContents(List<CourseContent> contents, [CourseCollection? collection]) async {
-    if (contents.isEmpty) return false;
-
-    try {
-      final isar = (await _isar);
-
-      // group by parentId to avoid fetching the same collection/course repeatedly
-      final Map<String, List<CourseContent>> byParent = {};
-      for (final c in contents) {
-        if (c.parentId.isEmpty) continue;
-        byParent.putIfAbsent(c.parentId, () => []).add(c);
-      }
-      if (byParent.isEmpty) return false;
-
-      for (final entry in byParent.entries) {
-        final parentId = entry.key;
-        final group = entry.value;
-
-        final fetchResult = await _fetchCourseAndCollection(isar, collection, parentId);
-        final getCollection = fetchResult.$2;
-        final course = fetchResult.$1;
-
-        if (getCollection == null || course == null) {
-          // nothing we can do for this parentId
-          continue;
-        }
-
-        // ensure lists are loaded once per collection
-        await getCollection.contents.load();
-        await course.collections.load();
-
-        final List<CourseContent> successfullyAdded = [];
-
-        // add each content (uses your existing add() helper)
-        for (final content in group) {
-          final addRes = await add(content);
-          if (addRes != -1) {
-            successfullyAdded.add(content);
-          }
-        }
-
-        if (successfullyAdded.isEmpty) continue;
-
-        // batch update collection in one transaction
-        getCollection.contents.addAll(successfullyAdded);
-        await isar.writeTxn(() async {
-          await getCollection.contents.save();
-          await isar.courseCollections.put(getCollection);
-        });
-      }
-
-      return true;
-    } catch (e) {
-      log("$e");
-      return false;
-    }
+  static Future<bool> moveContent() async {
+    /// Will iimplement later
+    return false;
   }
 
-  static Future<bool> deleteAllContentsInCollection(CourseCollection collection) async {
-    try {
-      final isar = (await _isar);
+  // // Not yet reviewed below
+  // static Future<bool> addMultipleContents(List<CourseContent> contents, [CourseCollection? collection]) async {
+  //   if (contents.isEmpty) return false;
 
-      // Ensure collection contents are loaded
-      await collection.contents.load();
-      final contents = collection.contents.toList();
-      if (contents.isEmpty) return true; // nothing to do
+  //   try {
+  //     final isar = (await _isar);
 
-      final contentIds = contents.map((c) => c.id).toList();
-      final contentIdStrings = contents.map((c) => c.contentId).toList();
+  //     // group by parentId to avoid fetching the same collection/course repeatedly
+  //     final Map<String, List<CourseContent>> byParent = {};
+  //     for (final c in contents) {
+  //       if (c.parentId.isEmpty) continue;
+  //       byParent.putIfAbsent(c.parentId, () => []).add(c);
+  //     }
+  //     if (byParent.isEmpty) return false;
 
-      // Batch-find related ContentTrack entries (uses contentIdIn if available)
-      final contentTrackFilter = await ContentTrackRepo.filter;
-      final List<dynamic> contentTracks = await contentTrackFilter
-          .anyOf(contentIdStrings, (s, t) => s.contentIdEqualTo(t))
-          .findAll();
+  //     for (final entry in byParent.entries) {
+  //       final parentId = entry.key;
+  //       final group = entry.value;
 
-      // Map to hold distinct parent CourseTrack instances we must update
-      final Map<int, dynamic> parentCourseTrackById = {};
-      final List<int> contentTrackIdsToDelete = [];
+  //       final fetchResult = await _fetchCourseAndCollection(isar, collection, parentId);
+  //       final getCollection = fetchResult.$2;
+  //       final course = fetchResult.$1;
 
-      for (final ct in contentTracks) {
-        if (ct == null) continue;
-        contentTrackIdsToDelete.add(ct.id);
-        final parentCourseTrack = ct.courseTrackLink.value;
-        if (parentCourseTrack != null) {
-          parentCourseTrackById[parentCourseTrack.id] = parentCourseTrack;
-        }
-      }
+  //       if (getCollection == null || course == null) {
+  //         // nothing we can do for this parentId
+  //         continue;
+  //       }
 
-      // Load each parent courseTrack's contentTracks once, and remove the tracks belonging to this collection
-      for (final parent in parentCourseTrackById.values) {
-        await parent.contentTracks.load();
-        parent.contentTracks.removeWhere((t) => contentIdStrings.contains(t.contentId));
-      }
+  //       // ensure lists are loaded once per collection
+  //       await getCollection.contents.load();
+  //       await course.collections.load();
 
-      // Single transaction to delete DB rows and persist relationship changes
-      await isar.writeTxn(() async {
-        // Delete contentTracks rows
-        if (contentTrackIdsToDelete.isNotEmpty) {
-          await isar.contentTracks.deleteAll(contentTrackIdsToDelete);
-        }
+  //       final List<CourseContent> successfullyAdded = [];
 
-        // Delete courseContents rows
-        await isar.courseContents.deleteAll(contentIds);
+  //       // add each content (uses your existing add() helper)
+  //       for (final content in group) {
+  //         final addRes = await add(content);
+  //         if (addRes != -1) {
+  //           successfullyAdded.add(content);
+  //         }
+  //       }
 
-        // Clear collection contents and persist
-        collection.contents.clear();
-        await collection.contents.save();
-        await isar.courseCollections.put(collection);
+  //       if (successfullyAdded.isEmpty) continue;
 
-        // Persist updates to parent course tracks' contentTracks lists
-        for (final parent in parentCourseTrackById.values) {
-          await parent.contentTracks.save();
-        }
-      });
+  //       // batch update collection in one transaction
+  //       getCollection.contents.addAll(successfullyAdded);
+  //       await isar.writeTxn(() async {
+  //         await getCollection.contents.save();
+  //         await isar.courseCollections.put(getCollection);
+  //       });
+  //     }
 
-      return true;
-    } catch (e) {
-      log("Error deleting all contents in collection: $e");
-      return false;
-    }
-  }
+  //     return true;
+  //   } catch (e) {
+  //     log("$e");
+  //     return false;
+  //   }
+  // }
+
+  // static Future<bool> deleteAllContentsInCollection(CourseCollection collection) async {
+  //   try {
+  //     final isar = (await _isar);
+
+  //     // Ensure collection contents are loaded
+  //     await collection.contents.load();
+  //     final contents = collection.contents.toList();
+  //     if (contents.isEmpty) return true; // nothing to do
+
+  //     final contentIds = contents.map((c) => c.id).toList();
+  //     final contentIdStrings = contents.map((c) => c.contentId).toList();
+
+  //     // Batch-find related ContentTrack entries (uses contentIdIn if available)
+  //     final contentTrackFilter = await ContentTrackRepo.filter;
+  //     final List<dynamic> contentTracks = await contentTrackFilter
+  //         .anyOf(contentIdStrings, (s, t) => s.contentIdEqualTo(t))
+  //         .findAll();
+
+  //     // Map to hold distinct parent CourseTrack instances we must update
+  //     final Map<int, dynamic> parentCourseTrackById = {};
+  //     final List<int> contentTrackIdsToDelete = [];
+
+  //     for (final ct in contentTracks) {
+  //       if (ct == null) continue;
+  //       contentTrackIdsToDelete.add(ct.id);
+  //       final parentCourseTrack = ct.courseTrackLink.value;
+  //       if (parentCourseTrack != null) {
+  //         parentCourseTrackById[parentCourseTrack.id] = parentCourseTrack;
+  //       }
+  //     }
+
+  //     // Load each parent courseTrack's contentTracks once, and remove the tracks belonging to this collection
+  //     for (final parent in parentCourseTrackById.values) {
+  //       await parent.contentTracks.load();
+  //       parent.contentTracks.removeWhere((t) => contentIdStrings.contains(t.contentId));
+  //     }
+
+  //     // Single transaction to delete DB rows and persist relationship changes
+  //     await isar.writeTxn(() async {
+  //       // Delete contentTracks rows
+  //       if (contentTrackIdsToDelete.isNotEmpty) {
+  //         await isar.contentTracks.deleteAll(contentTrackIdsToDelete);
+  //       }
+
+  //       // Delete courseContents rows
+  //       await isar.courseContents.deleteAll(contentIds);
+
+  //       // Clear collection contents and persist
+  //       collection.contents.clear();
+  //       await collection.contents.save();
+  //       await isar.courseCollections.put(collection);
+
+  //       // Persist updates to parent course tracks' contentTracks lists
+  //       for (final parent in parentCourseTrackById.values) {
+  //         await parent.contentTracks.save();
+  //       }
+  //     });
+
+  //     return true;
+  //   } catch (e) {
+  //     log("Error deleting all contents in collection: $e");
+  //     return false;
+  //   }
+  // }
 
   /// Except this ofc
   static Future<(Course? course, CourseCollection? collection)> _fetchCourseAndCollection(

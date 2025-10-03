@@ -89,7 +89,8 @@ class AddContentsUc {
 
       final RootIsolateToken? rootIsolateToken = RootIsolateToken.instance;
       if (rootIsolateToken == null) return "Unable to process adding content in background";
-      valueNotifier?.value = "Adding contents...\nPlease, do not close app until this is complete";
+      valueNotifier?.value =
+          "Adding contents...\nPlease, do not close app until this is complete. Closing app abruptly might result in higher storage usage (can be freed in settings)";
       List<Map<String, dynamic>> result = await compute(StoreContentsUc.storeCourseContents, <String, dynamic>{
         'rootIsolateToken': rootIsolateToken,
         'collectionId': collection.collectionId,

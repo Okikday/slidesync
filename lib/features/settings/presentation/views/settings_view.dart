@@ -78,11 +78,21 @@ class SettingsView extends ConsumerWidget {
                 trailing: Switch(value: false, onChanged: (p) {}),
               ),
 
+              ConstantSizing.columnSpacingMedium,
+
               SettingsCard(
                 title: "Summarized suggestions",
                 iconData: Iconsax.sun,
                 content: "Use your materials to suggest what to read",
                 trailing: Switch(value: false, onChanged: (p) {}),
+              ),
+
+              ConstantSizing.columnSpacingMedium,
+
+              SettingsCard(
+                title: "Repair",
+                iconData: Icons.fire_extinguisher,
+                content: "Attempts to fix any misbehavior",
               ),
 
               // Help: Note, Materials won't be uploaded except you explicitly share them.
