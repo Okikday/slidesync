@@ -9,7 +9,6 @@ import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/models/progress_track_models/course_track.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 
-
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
@@ -146,10 +145,11 @@ class ListCourseCardIcon extends ConsumerWidget {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             color: theme.background.lightenColor(context.isDarkMode ? 0.1 : 0.8).withValues(alpha: 0.8),
+            border: courseCode.isEmpty ? null : Border.all(color: theme.altBackgroundPrimary),
             // borderRadius: BorderRadius.circular(12),
           ),
-          child: ClipRRect(
-            // borderRadius: BorderRadius.circular(18),
+          child: Opacity(
+            opacity: 0.6,
             child: BuildImagePathWidget(
               height: 64,
               width: 64,

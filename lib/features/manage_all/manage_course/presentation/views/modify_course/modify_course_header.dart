@@ -7,7 +7,6 @@ import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/manage_all/manage_course/presentation/actions/modify_course_actions.dart';
-import 'package:slidesync/features/manage_all/manage_course/presentation/actions/modify_course_view_actions.dart';
 import 'package:slidesync/features/manage_all/manage_course/presentation/views/modify_course/edit_course_bottom_sheet.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/circular_loading_indicator.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
@@ -117,7 +116,7 @@ class ModifyCourseHeader extends ConsumerWidget {
                       pixelHeight: 48,
                       onClick: () {
                         if (rootNavigatorKey.currentContext != null && rootNavigatorKey.currentContext!.mounted) {
-                          ModifyCourseViewActions().showDeleteCourseDialog(rootNavigatorKey.currentContext!, courseId);
+                          ModifyCourseActions().showDeleteCourseDialog(rootNavigatorKey.currentContext!, courseId);
                         }
                       },
                       contentPadding: EdgeInsets.all(16),

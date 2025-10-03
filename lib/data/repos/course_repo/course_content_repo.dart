@@ -8,6 +8,7 @@ import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/data/models/progress_track_models/course_track.dart';
+import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 
@@ -150,9 +151,39 @@ class CourseContentRepo {
     }
   }
 
-  static Future<bool> moveContent() async {
-    /// Will iimplement later
-    return false;
+  static Future<bool> moveContents(List<CourseContent> contents, CourseCollection collection) async {
+    final existingCollection = await CourseCollectionRepo.getById(collection.collectionId);
+    if (existingCollection == null) return false;
+
+    Set<CourseContent> adaptedContentsSet = contents
+        .map(
+          (e) => e.copyWith(
+            contentHash: e.contentHash,
+            parentId: existingCollection.parentId,
+            lastModified: DateTime.now(),
+          ),
+        )
+        .toSet();
+
+    await existingCollection.contents.load();
+
+    final existingHashes = existingCollection.contents.map((e) => e.contentHash).toSet();
+
+    final adaptedContents = adaptedContentsSet
+        .where((content) => !existingHashes.contains(content.contentHash))
+        .toList();
+
+    if (adaptedContents.isEmpty) return true;
+
+    existingCollection.contents.addAll(adaptedContents);
+    final isar = await _isar;
+
+    await isar.writeTxn(() async {
+      await isar.courseContents.putAll(adaptedContents);
+      await existingCollection.contents.save();
+    });
+
+    return true;
   }
 
   // // Not yet reviewed below

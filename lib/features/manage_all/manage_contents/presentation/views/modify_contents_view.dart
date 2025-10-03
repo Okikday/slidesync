@@ -1,12 +1,8 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
-import 'package:slidesync/routes/app_router.dart';
-import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/features/manage_all/manage_contents/presentation/actions/modify_content_card_actions.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/providers/modify_contents_view_providers.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/views/add_contents/add_content_fab.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/views/modify_contents/empty_contents_view.dart';
@@ -14,7 +10,6 @@ import 'package:slidesync/features/manage_all/manage_contents/presentation/views
 import 'package:slidesync/features/manage_all/manage_contents/presentation/views/modify_contents/modify_content_list_view.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/views/modify_contents/modify_contents_header.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
-import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class ModifyContentsView extends ConsumerStatefulWidget {
@@ -92,61 +87,44 @@ class ModifyContentsOuterSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref;
     return CustomScrollView(
       slivers: [
         //collectionLength: record.collection.contents.length
         ModifyContentsHeader(
-          onCancel: () {
-            mcvp.clearContents();
-          },
-          onDelete: () {
-            UiUtils.showCustomDialog(
-              context,
-              child: ConfirmDeletionDialog(
-                content:
-                    "Are you sure you want to delete ${mcvp.selectedContentsNotifier.value.length} item(s) from \"${collection.collectionTitle}\".",
-                onPop: () {
-                  if (context.mounted) {
-                    UiUtils.hideDialog(context);
-                  } else {
-                    rootNavigatorKey.currentContext?.pop();
-                  }
-                },
-                onCancel: () {
-                  rootNavigatorKey.currentContext?.pop();
-                },
-                onDelete: () async {
-                  if (context.mounted) {
-                    UiUtils.hideDialog(context);
-                  } else {
-                    rootNavigatorKey.currentContext?.pop();
-                  }
-                  UiUtils.showLoadingDialog(context, message: "Removing contents", canPop: false);
-
-                  final String? outcome = (await Result.tryRunAsync(() async {
-                    String? outcome;
-                    for (final e in mcvp.selectedContentsNotifier.value) {
-                      outcome = await ModifyContentCardActions.onDeleteContent(context, e, false);
-                    }
-                    return outcome;
-                  })).data;
-
-                  rootNavigatorKey.currentContext?.pop();
-                  if (context.mounted) {
-                    if (outcome == null) {
-                      UiUtils.showFlushBar(context, msg: "Successfully removed contents!", vibe: FlushbarVibe.success);
-                    } else if (outcome.toLowerCase().contains("error")) {
-                      UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.error);
-                    } else {
-                      UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.warning);
-                    }
-                  }
-                  mcvp.clearContents();
-                },
+          collectionTitle: collection.collectionTitle,
+          mcvp: mcvp,
+          onMoveContents: () async {
+            await showModalBottomSheet(
+              context: context,
+              showDragHandle: true,
+              isScrollControlled: true,
+              shape: BeveledRectangleBorder(
+                side: const BorderSide(),
+                borderRadius: BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
               ),
+              builder: (context) {
+                return DraggableScrollableSheet(
+                  builder: (context, scrollController) {
+                    return Column(
+                      children: [
+                        CustomText(
+                          "Available courses",
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: theme.onBackground,
+                        ),
+
+                        ConstantSizing.columnSpacingExtraLarge,
+
+                        
+                      ],
+                    );
+                  },
+                );
+              },
             );
           },
-          mcvp: mcvp,
         ),
         SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
         if (collection.contents.isEmpty)

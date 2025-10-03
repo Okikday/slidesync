@@ -4,6 +4,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:slidesync/data/models/file_details.dart';
@@ -19,6 +20,7 @@ import 'package:slidesync/features/manage_all/manage_course/presentation/views/m
 import 'package:slidesync/features/manage_all/manage_course/presentation/views/modify_course/modify_course_header/preview_modify_course_image_dialog.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 
 class ModifyCourseActions {
   /// When the user clicks to delete the course, on the Dialog
@@ -200,6 +202,32 @@ class ModifyCourseActions {
             duration: Duration(milliseconds: 500),
             curve: CustomCurves.defaultIosSpring,
           ),
+    );
+  }
+
+  void showDeleteCourseDialog(BuildContext context, String courseId) {
+    UiUtils.showCustomDialog(
+      context,
+      barrierColor: Colors.black.withAlpha(140),
+      child: ConfirmDeletionDialog(
+        content: "Deleting this course will delete it's collections and contents",
+        animateFrom: Alignment.topRight,
+        onCancel: () {
+          log("Cancelled");
+          context.pop();
+        },
+        onDelete: () async {
+          context.pop();
+
+          if (context.mounted) {
+            UiUtils.showLoadingDialog(context, message: "Deleting course...");
+          }
+          await ModifyCourseActions().onDeleteCourse(courseId: courseId);
+          if (context.mounted) UiUtils.hideDialog(context);
+          if (context.mounted) context.pop();
+          if (context.mounted) UiUtils.showFlushBar(context, msg: "Successfully deleted course");
+        },
+      ),
     );
   }
 }

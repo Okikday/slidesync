@@ -12,7 +12,6 @@ import 'package:slidesync/features/all_tabs/tab_library/presentation/views/libra
 import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view/courses_view/course_card.dart';
 import 'package:slidesync/shared/global/providers/course_providers.dart';
 
-
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_view.dart';
 
@@ -43,6 +42,7 @@ class _CoursesViewState extends ConsumerState<CoursesView> {
               if (!isGrid) {
                 return PagedSliverList(
                   state: state,
+                  itemExtent: 120,
                   fetchNextPage: fetchNextPage,
                   builderDelegate: PagedChildBuilderDelegate(
                     noItemsFoundIndicatorBuilder: (context) => EmptyLibraryView(asSliver: false),
