@@ -1,13 +1,14 @@
-import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:isar/isar.dart';
-import 'package:slidesync/core/global_notifiers/common/card_view_type_notifier.dart';
-import 'package:slidesync/core/global_notifiers/common/course_sort_notifier.dart';
+import 'package:slidesync/core/constants/src/enums.dart';
+
+
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
-import 'package:slidesync/domain/repos/course_repo/course_repo.dart';
+import 'package:slidesync/data/repos/course_repo/course_repo.dart';
+
 import 'package:slidesync/features/all_tabs/tab_library/presentation/controllers/courses_view_controller/courses_pagination.dart';
+import 'package:slidesync/shared/global/notifiers/common/card_view_type_notifier.dart';
+import 'package:slidesync/shared/global/notifiers/common/course_sort_notifier.dart';
 
 final _coursesFilterOption = AsyncNotifierProvider<CourseSortNotifier, CourseSortOption>(
   () => CourseSortNotifier(HiveDataPathKey.libraryCourseSortOption.name),

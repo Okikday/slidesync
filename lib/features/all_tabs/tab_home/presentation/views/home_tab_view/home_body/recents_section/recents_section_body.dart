@@ -6,17 +6,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/domain/models/file_details.dart';
-import 'package:slidesync/domain/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/all_tabs/tab_home/presentation/actions/recent_dialog_actions.dart';
 import 'package:slidesync/features/all_tabs/tab_home/presentation/controllers/home_tab_controller.dart';
-import 'package:slidesync/domain/models/progress_track_models/content_track.dart';
+import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/features/all_tabs/tab_home/presentation/views/home_tab_view/home_body/recents_section/recent_dialog.dart';
 import 'package:slidesync/features/share_contents/domain/usecases/share_content_uc.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
-import 'package:slidesync/shared/widgets/build_image_path_widget.dart';
-import 'package:slidesync/shared/components/loading_logo.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
+
+import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
+
 
 import 'recent_list_tile.dart';
 

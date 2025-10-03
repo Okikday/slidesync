@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/global_notifiers/primitive_type_notifiers.dart';
+import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
+
 
 class MainViewController {
   static final NotifierProvider<IntNotifier, int> mainTabViewIndexProvider = NotifierProvider(IntNotifier.new);

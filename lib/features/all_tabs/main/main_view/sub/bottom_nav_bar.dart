@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/features/all_tabs/main/main_view_controller.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class BottomNavBar extends ConsumerWidget {
   final void Function(int index) onTap;

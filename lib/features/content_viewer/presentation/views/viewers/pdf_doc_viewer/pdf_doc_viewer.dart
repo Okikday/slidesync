@@ -8,8 +8,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdfrx/pdfrx.dart' hide PdfViewerScrollThumb;
 import 'package:screenshot/screenshot.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/domain/models/course_model/sub/course_content.dart';
-import 'package:slidesync/domain/models/file_details.dart';
+import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/content_viewer/presentation/controllers/doc_viewer_controllers/pdf_doc_search_controller.dart';
 import 'package:slidesync/features/content_viewer/presentation/controllers/doc_viewer_controllers/pdf_doc_viewer_controller.dart';
 import 'package:slidesync/features/content_viewer/presentation/providers/pdf_doc_viewer_providers.dart';
@@ -17,8 +17,8 @@ import 'package:slidesync/features/content_viewer/presentation/views/viewers/pdf
 import 'package:slidesync/features/content_viewer/presentation/views/viewers/pdf_doc_viewer/pdf_overlay_widgets/pdf_scrollbar_overlay.dart';
 import 'package:slidesync/features/content_viewer/presentation/views/viewers/pdf_doc_viewer/pdf_overlay_widgets/pdf_tools_menu.dart';
 import 'package:slidesync/features/all_tabs/main/main_view_controller.dart';
-import 'package:slidesync/shared/components/app_bar_container.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class PdfDocViewer extends ConsumerStatefulWidget {
   final CourseContent content;

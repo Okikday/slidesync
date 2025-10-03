@@ -4,15 +4,16 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/core/global_notifiers/primitive_type_notifiers.dart';
-import 'package:slidesync/core/routes/routes.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
-import 'package:slidesync/domain/repos/course_repo/course_repo.dart';
+import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
+import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/data/models/course_model/course.dart';
+import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/manage_all/manage_course/presentation/views/select_to_modify_course/empty_courses_view.dart';
 import 'package:slidesync/features/manage_all/manage_course/presentation/views/select_to_modify_course/edit_course_tile.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:slidesync/shared/widgets/loading_view.dart';
-import 'package:slidesync/shared/widgets/selected_items_count_popup.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/widgets/progress_indicator/loading_view.dart';
+import 'package:slidesync/shared/widgets/z_rand/selected_items_count_popup.dart';
+
 
 class SelectToModifyCourseOuterSection extends ConsumerStatefulWidget {
   const SelectToModifyCourseOuterSection({
@@ -118,7 +119,7 @@ class _SelectToModifyCourseOuterSectionState extends ConsumerState<SelectToModif
               },
             );
           },
-          error: (_, __) => SliverToBoxAdapter(
+          error: (_, _) => SliverToBoxAdapter(
             child: SizedBox(
               height: context.deviceHeight / 2 - 24,
               child: Center(child: const Icon(Icons.error_rounded)),

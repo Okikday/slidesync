@@ -5,9 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/app.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
-import 'package:slidesync/shared/components/dialogs/app_customizable_dialog.dart';
-import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
-import 'package:slidesync/shared/styles/theme/built_in_themes.dart';
+import 'package:slidesync/shared/theme/src/app_theme.dart';
+import 'package:slidesync/shared/theme/src/built_in_themes.dart';
+import 'package:slidesync/shared/widgets/dialogs/app_customizable_dialog.dart';
+
+
 
 class SettingsAppearanceDialog extends ConsumerStatefulWidget {
   const SettingsAppearanceDialog({super.key});
@@ -84,9 +86,7 @@ class _SettingsAppearanceDialogState extends ConsumerState<SettingsAppearanceDia
                 forceBrightness: _resolveForceBrightness(),
                 crossAxisCount: 2,
                 spacing: 12,
-                onSelected: (pair, chosen) {
-                  
-                },
+                onSelected: (pair, chosen) {},
               ),
 
               ConstantSizing.columnSpacingMedium,
@@ -102,8 +102,8 @@ class ThemePair {
   final String id;
   final String title;
   final UnifiedThemeModel unifiedModel;
-  final AppThemeModel lightModel;
-  final AppThemeModel darkModel;
+  final AppTheme lightModel;
+  final AppTheme darkModel;
 
   ThemePair({
     required this.id,
@@ -114,8 +114,8 @@ class ThemePair {
   });
 
   factory ThemePair.fromUnified(UnifiedThemeModel unified) {
-    final light = AppThemeModel.of(unified, Brightness.light);
-    final dark = AppThemeModel.of(unified, Brightness.dark);
+    final light = AppTheme.of(unified, Brightness.light);
+    final dark = AppTheme.of(unified, Brightness.dark);
 
     return ThemePair(
       id: unified.title,
@@ -237,7 +237,7 @@ class ThemePairPicker extends ConsumerWidget {
       itemBuilder: (context, index) {
         final pair = pairs[index];
         final isSelected = currentTheme.title == pair.title;
-        
+
         return GestureDetector(
           onTap: () async {
             final chosen = _resolveBrightness(context, forceBrightness);

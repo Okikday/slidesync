@@ -4,11 +4,11 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/core/routes/routes.dart';
+import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/controllers/library_tab_controller.dart';
 import 'package:slidesync/features/all_tabs/main/main_view_controller.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view/library_tab_view_app_bar.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class LibraryFloatingActionButton extends ConsumerWidget {
   const LibraryFloatingActionButton({super.key});

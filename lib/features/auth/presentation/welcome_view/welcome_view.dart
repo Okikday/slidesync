@@ -4,10 +4,13 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/core/assets/assets.dart';
 import 'package:slidesync/features/auth/presentation/onboarding_views/onboarding_1.dart';
-import 'package:slidesync/shared/assets/assets.dart';
-import 'package:slidesync/shared/common_widgets/scale_click_wrapper.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+
+
+import 'package:slidesync/shared/helpers/extensions/src/extension_on_app_theme.dart';
+import 'package:slidesync/shared/helpers/extensions/src/extension_on_context.dart';
+import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
 
 class WelcomeView extends ConsumerWidget {
   const WelcomeView({super.key});

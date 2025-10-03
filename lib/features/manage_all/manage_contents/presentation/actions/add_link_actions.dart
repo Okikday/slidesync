@@ -2,11 +2,12 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/basic_utils.dart';
-import 'package:slidesync/domain/models/course_model/sub/course_content.dart';
-import 'package:slidesync/domain/models/file_details.dart';
-import 'package:slidesync/domain/repos/course_repo/course_collection_repo.dart';
-import 'package:slidesync/domain/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/manage_all/manage_contents/domain/repos/get_content_repo/get_content_repo.dart';
 import 'package:super_clipboard/super_clipboard.dart';
 

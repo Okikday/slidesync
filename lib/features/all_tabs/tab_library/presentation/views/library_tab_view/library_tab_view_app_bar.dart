@@ -2,13 +2,12 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/controllers/courses_view_controller.dart';
-import 'package:slidesync/features/all_tabs/tab_library/presentation/controllers/library_tab_controller.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view/library_tab_view_app_bar/library_tab_view_filter_button.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view/library_tab_view_app_bar/library_tab_view_header_text.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view/library_tab_view_app_bar/library_tab_view_layout_button.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view/library_tab_view_app_bar/library_tab_view_search_button.dart';
-import 'package:slidesync/shared/assets/assets.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/core/assets/assets.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 const double libraryAppBarMaxHeight = 220;
 const double libraryAppBarMinHeight = kToolbarHeight;

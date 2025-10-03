@@ -2,9 +2,9 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/core/routes/routes.dart';
+import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/all_tabs/tab_home/presentation/controllers/home_tab_controller.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class RecentsSectionHeader extends ConsumerWidget {
   const RecentsSectionHeader({super.key});

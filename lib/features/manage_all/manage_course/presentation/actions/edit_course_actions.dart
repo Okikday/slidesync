@@ -1,16 +1,16 @@
 import 'dart:developer';
 
-import 'package:another_flushbar/flushbar.dart';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/global_notifiers/primitive_type_notifiers.dart';
-import 'package:slidesync/core/global_providers/data_providers/course_providers.dart';
+import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
+import 'package:slidesync/shared/global/providers/course_providers.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
-import 'package:slidesync/domain/repos/course_repo/course_repo.dart';
-import 'package:slidesync/shared/components/dialogs/app_alert_dialog.dart';
-import 'package:slidesync/shared/helpers/course_formatter.dart';
+import 'package:slidesync/data/models/course_model/course.dart';
+import 'package:slidesync/data/repos/course_repo/course_repo.dart';
+import 'package:slidesync/shared/helpers/formatter.dart';
+import 'package:slidesync/shared/widgets/dialogs/app_alert_dialog.dart';
+
 
 class EditCourseActions {
   final WidgetRef ref;
@@ -81,7 +81,7 @@ class EditCourseActions {
       UiUtils.showFlushBar(context, msg: errorMsg, flushbarPosition: FlushbarPosition.TOP);
       return;
     }
-    final String courseTitle = CourseFormatter.joinCodeToTitle(courseCode, courseName);
+    final String courseTitle = Formatter.joinCodeToTitle(courseCode, courseName);
     final Course? currCourse = await (ref.read(modifyCourseProvider.future));
     final Course? updatedCourse = currCourse?.copyWith(courseTitle: courseTitle, description: description);
     if (updatedCourse != null) {

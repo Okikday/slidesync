@@ -1,14 +1,13 @@
-import 'package:another_flushbar/flushbar.dart';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/core/routes/app_router.dart';
+import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/domain/models/course_model/sub/course_collection.dart';
+import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/features/manage_all/manage_collections/presentation/actions/edit_collection_actions.dart';
 import 'package:slidesync/features/manage_all/manage_collections/presentation/actions/modify_collection_actions.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class EditCollectionTitleBottomSheet extends ConsumerStatefulWidget {
   final CourseCollection collection;
@@ -91,7 +90,7 @@ class _EditCollectionTitleBottomSheetState extends ConsumerState<EditCollectionT
                       if (context.mounted) {
                         await UiUtils.showFlushBar(
                           context,
-                          msg: "Renamed ${collectionTitle} to $text!",
+                          msg: "Renamed $collectionTitle to $text!",
                           vibe: FlushbarVibe.success,
                         );
                       }

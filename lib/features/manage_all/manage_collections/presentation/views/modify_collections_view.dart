@@ -1,18 +1,19 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/global_notifiers/primitive_type_notifiers.dart';
-import 'package:slidesync/core/global_providers/data_providers/course_providers.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
+import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
+import 'package:slidesync/shared/global/providers/course_providers.dart';
+import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/features/manage_all/manage_collections/presentation/views/modify_collections/add_collection_action_button.dart';
 import 'package:slidesync/features/manage_all/manage_collections/presentation/views/modify_collections/collections_list_view.dart';
 import 'package:slidesync/features/manage_all/manage_collections/presentation/views/modify_collections/collections_view_search_bar.dart';
 import 'package:slidesync/features/manage_all/manage_collections/presentation/views/modify_collections/create_collection_bottom_sheet.dart';
 import 'package:slidesync/features/manage_all/manage_collections/presentation/views/modify_collections/empty_collections_view.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 
 import '../../../../../core/utils/ui_utils.dart';
-import '../../../../../shared/components/app_bar_container.dart';
+
 
 class ModifyCollectionsView extends ConsumerStatefulWidget {
   final String courseId;

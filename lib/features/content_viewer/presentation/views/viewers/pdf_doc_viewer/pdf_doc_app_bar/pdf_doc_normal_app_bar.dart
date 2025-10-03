@@ -6,14 +6,14 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/domain/models/file_details.dart';
+import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/features/content_viewer/presentation/controllers/doc_viewer_controllers/pdf_doc_viewer_controller.dart';
 import 'package:slidesync/features/content_viewer/presentation/providers/pdf_doc_viewer_providers.dart';
 import 'package:slidesync/features/share_contents/domain/usecases/share_content_uc.dart';
-import 'package:slidesync/shared/common_widgets/app_popup_menu_button.dart';
-import 'package:slidesync/shared/components/app_bar_container.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
+import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class PdfDocNormalAppBar extends ConsumerWidget {
   const PdfDocNormalAppBar({super.key, required this.title, required this.pdva, required this.isSearchingNotifier});

@@ -6,8 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/features/all_tabs/main/main_view_controller.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class HomeAppBar extends ConsumerWidget {
   const HomeAppBar({super.key, required this.onClickUserIcon, required this.title, required this.onClickNotification});
@@ -83,16 +82,12 @@ class HomeAppBar extends ConsumerWidget {
                   children: [
                     CustomElevatedButton(
                       onClick: onClickUserIcon,
-                      pixelHeight: context.defaultBtnDimension,
-                      pixelWidth: context.defaultBtnDimension,
+                      pixelHeight: 48,
+                      pixelWidth: 48,
                       contentPadding: EdgeInsets.zero,
                       backgroundColor: theme.adjustBgAndPrimaryWithLerp,
                       shape: CircleBorder(side: BorderSide(color: theme.altBackgroundSecondary.withValues(alpha: 0.4))),
-                      child: Icon(
-                        Iconsax.menu_1_copy,
-                        color: theme.onBackground,
-                        size: context.defaultBtnDimension * 0.5,
-                      ),
+                      child: Icon(Iconsax.menu_1_copy, color: theme.onBackground, size: 48 * 0.5),
                     ),
 
                     ConstantSizing.rowSpacingMedium,

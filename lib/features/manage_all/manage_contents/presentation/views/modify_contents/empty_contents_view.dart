@@ -2,10 +2,11 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
-import 'package:slidesync/domain/models/course_model/sub/course_collection.dart';
+import 'package:slidesync/core/assets/assets.dart';
+import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/views/add_contents/add_contents_bottom_sheet.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:slidesync/shared/assets/strings/icon_strings.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+
 
 class EmptyContentsView extends ConsumerWidget {
   final CourseCollection collection;
@@ -22,7 +23,7 @@ class EmptyContentsView extends ConsumerWidget {
             ConstantSizing.columnSpacing(context.deviceHeight * 0.2),
             SizedBox.square(
               dimension: context.deviceWidth * 0.5,
-              child: LottieBuilder.asset(IconStrings.instance.roundedPlayingFace, reverse: true),
+              child: LottieBuilder.asset(Assets.icons.roundedPlayingFace, reverse: true),
             ),
 
             ConstantSizing.columnSpacingExtraLarge,

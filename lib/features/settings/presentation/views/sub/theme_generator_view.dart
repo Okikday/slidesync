@@ -2,8 +2,8 @@
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:slidesync/app.dart';
 // import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
-// import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
-// import 'package:slidesync/shared/styles/theme/built_in_themes.dart';
+//
+// import 'package:slidesync/shared/theme/src/built_in_themes.dart';
 // import 'package:slidesync/shared/styles/theme/theme_generator.dart';
 
 // class ThemeGeneratorView extends ConsumerStatefulWidget {
@@ -60,12 +60,12 @@
 //         // ignore persistence errors here but log if you like
 //       }
 
-//       // Add to runtime list so pickers that read defaultAppThemeModels see it immediately
-//       // NOTE: defaultAppThemeModels is a top-level mutable list in your code.
+//       // Add to runtime list so pickers that read defaultAppThemes see it immediately
+//       // NOTE: defaultAppThemes is a top-level mutable list in your code.
 //       try {
 //         // prevent duplicates by title
-//         defaultAppThemeModels.removeWhere((m) => m.title == generated.title);
-//         defaultAppThemeModels.insert(0, generated);
+//         defaultAppThemes.removeWhere((m) => m.title == generated.title);
+//         defaultAppThemes.insert(0, generated);
 //       } catch (e) {
 //         // ignore if not possible
 //       }
@@ -105,7 +105,7 @@
 //     );
 //   }
 
-// Widget _buildGeneratedDebug(AppThemeModel model) {
+// Widget _buildGeneratedDebug(AppTheme model) {
 //     final Map<String, String> pal = ThemeGenerator.debugPalette(model);
 //     final hexRe = RegExp(r'^#([A-Fa-f0-9]{8})$');
 //     return Column(
@@ -301,8 +301,8 @@
 //                                   } catch (_) {}
 //                                   // add to runtime list
 //                                   try {
-//                                     defaultAppThemeModels.removeWhere((m) => m.title == generated.title);
-//                                     defaultAppThemeModels.insert(0, generated);
+//                                     defaultAppThemes.removeWhere((m) => m.title == generated.title);
+//                                     defaultAppThemes.insert(0, generated);
 //                                   } catch (_) {}
 //                                   if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Applied ${generated.title}')));
 //                                 } finally {

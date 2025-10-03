@@ -18,7 +18,7 @@ class AppHiveData {
   AppHiveData._internal();
 
   /// Initialize HiveData instance
-  initialize() async {
+  Future<void> initialize() async {
     await _initHiveData();
     await _initSecureHiveData();
   }

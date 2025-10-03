@@ -5,10 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
-import 'package:slidesync/domain/repos/course_repo/course_collection_repo.dart';
-import 'package:slidesync/domain/repos/course_repo/course_repo.dart';
-import 'package:slidesync/core/routes/app_router.dart';
+import 'package:slidesync/data/models/course_model/course.dart';
+import 'package:slidesync/data/models/course_model/course_collection.dart';
+import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/data/repos/course_repo/course_repo.dart';
+import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/features/manage_all/manage_collections/usecases/modify_collections_uc/modify_collection_uc.dart';
 
 class ModifyCollectionActions {

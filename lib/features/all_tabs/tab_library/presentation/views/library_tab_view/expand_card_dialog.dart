@@ -6,16 +6,15 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/core/routes/app_router.dart';
-import 'package:slidesync/core/routes/routes.dart';
+import 'package:slidesync/routes/app_router.dart';
+import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/domain/models/file_details.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
+import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/features/manage_all/manage_course/presentation/actions/modify_course_view_actions.dart';
-import 'package:slidesync/shared/components/dialogs/app_action_dialog.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
-import 'package:slidesync/shared/widgets/build_image_path_widget.dart';
+import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 class ExpandCardDialog extends ConsumerWidget {
   final Offset tapPosition;
@@ -196,7 +195,10 @@ class ExpandCardDialog extends ConsumerWidget {
                       onTap: () {
                         UiUtils.hideDialog(context);
                         if (rootNavigatorKey.currentContext != null && rootNavigatorKey.currentContext!.mounted) {
-                          ModifyCourseViewActions().showDeleteCourseDialog(rootNavigatorKey.currentContext!, course.courseId);
+                          ModifyCourseViewActions().showDeleteCourseDialog(
+                            rootNavigatorKey.currentContext!,
+                            course.courseId,
+                          );
                         }
                       },
                     ),

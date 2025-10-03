@@ -6,8 +6,9 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 
-import 'package:slidesync/shared/components/dialogs/app_action_dialog.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
 
 class RecentDialog extends ConsumerStatefulWidget {
   final RecentDialogModel recentDialogModel;
@@ -158,7 +159,7 @@ class _RecentDialogState extends ConsumerState<RecentDialog> {
                   end: 1,
                   duration: Duration(milliseconds: 800),
                   curve: CustomCurves.bouncySpring,
-                  alignment: Alignment.bottomCenter
+                  alignment: Alignment.bottomCenter,
                 ),
           ),
         ),

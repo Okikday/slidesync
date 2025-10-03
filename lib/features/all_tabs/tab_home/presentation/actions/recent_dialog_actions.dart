@@ -2,14 +2,18 @@ import 'dart:collection';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/core/routes/routes.dart';
+
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/domain/models/progress_track_models/content_track.dart';
-import 'package:slidesync/domain/repos/course_repo/course_content_repo.dart';
-import 'package:slidesync/domain/repos/course_track_repo/content_track_repo.dart';
+import 'package:slidesync/data/models/progress_track_models/content_track.dart';
+import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
+import 'package:slidesync/routes/routes.dart';
+
+
+
 
 class RecentDialogActions {
   final WidgetRef ref;

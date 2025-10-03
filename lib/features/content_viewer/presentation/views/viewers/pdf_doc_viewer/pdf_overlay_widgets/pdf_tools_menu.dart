@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/features/ask_ai/presentation/ask_ai_screen.dart';
-import 'package:slidesync/shared/common_widgets/scale_click_wrapper.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class PdfToolsMenu extends ConsumerWidget {
   final bool isVisible;

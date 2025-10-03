@@ -2,9 +2,10 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/content_viewer/presentation/controllers/doc_viewer_controllers/pdf_doc_search_controller.dart';
-import 'package:slidesync/shared/components/app_bar_container.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
+import 'package:slidesync/shared/theme/src/app_theme.dart';
+import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+
 import 'package:pdfrx/pdfrx.dart';
 
 class PdfDocSearchAppBar extends ConsumerStatefulWidget {
@@ -20,7 +21,7 @@ class PdfDocSearchAppBar extends ConsumerStatefulWidget {
 class _PdfDocSearchAppBarState extends ConsumerState<PdfDocSearchAppBar> {
   @override
   Widget build(BuildContext context) {
-    final AppThemeModel theme = ref.theme;
+    final AppTheme theme = ref.theme;
     final pdsa = widget.pdsa;
 
     return ValueListenableBuilder(

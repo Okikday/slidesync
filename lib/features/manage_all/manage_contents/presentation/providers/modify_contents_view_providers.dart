@@ -2,7 +2,8 @@ import 'dart:collection';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/domain/models/course_model/sub/course_content.dart';
+import 'package:slidesync/data/models/course_model/course_content.dart';
+
 class ModifyContentsViewProviders {
   final WidgetRef ref;
   late final ValueNotifier<LinkedHashSet<CourseContent>> selectedContentsNotifier;
@@ -24,18 +25,20 @@ class ModifyContentsViewProviders {
     if (added) selectedContentsNotifier.value = LinkedHashSet.from(set);
     return added;
   }
+
   bool removeContent(CourseContent content) {
     final set = selectedContentsNotifier.value;
     final removed = set.remove(content);
     if (removed) selectedContentsNotifier.value = LinkedHashSet.from(set);
     return removed;
   }
+
   void clearContents() {
-  if (selectedContentsNotifier.value.isNotEmpty) {
-    selectedContentsNotifier.value.clear();
-    selectedContentsNotifier.value = LinkedHashSet();
+    if (selectedContentsNotifier.value.isNotEmpty) {
+      selectedContentsNotifier.value.clear();
+      selectedContentsNotifier.value = LinkedHashSet();
+    }
   }
-}
 
   void dispose() {
     selectedContentsNotifier.dispose();

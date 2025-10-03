@@ -2,10 +2,10 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/core/routes/app_router.dart';
+import 'package:slidesync/data/models/course_model/course_collection.dart';
+import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/actions/modify_content_card_actions.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/providers/modify_contents_view_providers.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/views/add_contents/add_content_fab.dart';
@@ -13,10 +13,9 @@ import 'package:slidesync/features/manage_all/manage_contents/presentation/views
 import 'package:slidesync/features/manage_all/manage_contents/presentation/views/modify_contents/mod_content_search_view_button.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/views/modify_contents/modify_content_list_view.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/views/modify_contents/modify_contents_header.dart';
-import 'package:slidesync/shared/components/app_bar_container.dart';
-import 'package:slidesync/shared/components/dialogs/confirm_deletion_dialog.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
+import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class ModifyContentsView extends ConsumerStatefulWidget {
   final CourseCollection collection;

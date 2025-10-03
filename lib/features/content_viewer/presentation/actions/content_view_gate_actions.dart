@@ -6,17 +6,20 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
-import 'package:slidesync/core/routes/app_router.dart';
-import 'package:slidesync/core/routes/routes.dart';
+import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/routes/app_router.dart';
+import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/domain/models/course_model/sub/course_content.dart';
-import 'package:slidesync/domain/models/file_details.dart';
-import 'package:slidesync/domain/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/file_details.dart';
+
 import 'package:slidesync/features/content_viewer/domain/services/drive_browser.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/actions/add_contents_actions.dart';
 import 'package:slidesync/features/manage_all/manage_contents/usecases/create_contents_uc/handle_archive_uc.dart';
-import 'package:slidesync/shared/components/dialogs/app_alert_dialog.dart';
+import 'package:slidesync/shared/widgets/dialogs/app_alert_dialog.dart';
+
 import 'package:url_launcher/url_launcher.dart';
 
 class ContentViewGateActions {

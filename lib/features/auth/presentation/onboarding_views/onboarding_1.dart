@@ -6,9 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/auth/presentation/auth_views/sign_in_view.dart';
-import 'package:slidesync/shared/assets/assets.dart';
-import 'package:slidesync/shared/common_widgets/scale_click_wrapper.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/core/assets/assets.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
+
 
 class Onboarding1 extends ConsumerWidget {
   const Onboarding1({super.key});

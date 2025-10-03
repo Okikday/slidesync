@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:isar/isar.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
-import 'package:slidesync/domain/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/features/course_navigation/presentation/views/course_materials/course_material_list_card.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class MaterialsSearchButton extends ConsumerWidget {
   final Color? backgroundColor;
@@ -51,7 +51,7 @@ class MaterialsSearchButton extends ConsumerWidget {
               child: CourseMaterialListCard(courseContent: searchResults[i], onTapCard: () {}),
             ),
 
-         if(context.mounted) ConstantSizing.columnSpacing(context.viewInsets.bottom),
+          if (context.mounted) ConstantSizing.columnSpacing(context.viewInsets.bottom),
         ];
       },
     );

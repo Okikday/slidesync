@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/core/routes/routes.dart';
+import 'package:slidesync/data/models/course_model/course.dart';
+import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
+
 import 'package:slidesync/features/all_tabs/tab_library/presentation/controllers/library_tab_controller.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view/expand_card_dialog.dart';
 

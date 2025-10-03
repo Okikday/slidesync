@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:math' as math;
 import 'dart:ui';
 
@@ -7,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/controllers/library_tab_controller.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view/library_tab_view_app_bar.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class LibraryTabViewHeaderText extends ConsumerWidget {
   const LibraryTabViewHeaderText({super.key, this.title = "Your Library"});
@@ -19,7 +18,7 @@ class LibraryTabViewHeaderText extends ConsumerWidget {
     final allowedHeight = libraryAppBarMaxHeight - libraryAppBarMinHeight;
     final topPadding = context.topPadding;
     final height = math.max(0.0, allowedHeight - topPadding);
-    
+
     return Padding(
       padding: EdgeInsets.only(top: topPadding, left: 20),
       child: Center(

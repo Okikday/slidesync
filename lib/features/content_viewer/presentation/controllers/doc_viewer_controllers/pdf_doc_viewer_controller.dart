@@ -2,23 +2,20 @@ import 'dart:async';
 import 'dart:collection';
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:isar/isar.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:screenshot/screenshot.dart';
-import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
-import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/core/utils/leak_prevention.dart';
 import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/domain/models/course_model/sub/course_content.dart';
-import 'package:slidesync/domain/models/file_details.dart';
-import 'package:slidesync/domain/models/progress_track_models/content_track.dart';
-import 'package:slidesync/domain/repos/course_repo/course_collection_repo.dart';
-import 'package:slidesync/domain/repos/course_repo/course_repo.dart';
+import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/models/progress_track_models/content_track.dart';
+import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/manage_all/manage_contents/usecases/create_contents_uc/create_content_preview_image.dart';
 
 const Duration readValidityDuration = Duration(seconds: 5);

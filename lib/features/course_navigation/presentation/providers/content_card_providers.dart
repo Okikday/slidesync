@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
-import 'package:slidesync/domain/models/file_details.dart';
+import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/course_navigation/presentation/actions/content_card_actions.dart';
 
 final linkPreviewDataProviderFamily = FutureProvider.family((ref, CourseContent content) async {

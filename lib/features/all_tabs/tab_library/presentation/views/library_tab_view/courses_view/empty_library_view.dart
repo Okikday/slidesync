@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
-import 'package:slidesync/core/routes/routes.dart';
-import 'package:slidesync/shared/assets/strings/icon_strings.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/core/assets/assets.dart';
+import 'package:slidesync/routes/routes.dart';
+
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 // class SimpleActionModel {
 //   final String title;
@@ -29,7 +30,7 @@ class EmptyLibraryView extends ConsumerWidget {
         children: [
           SizedBox.square(
             dimension: context.deviceWidth * 0.5,
-            child: LottieBuilder.asset(IconStrings.instance.roundedPlayingFace, reverse: true),
+            child: LottieBuilder.asset(Assets.icons.roundedPlayingFace, reverse: true),
           ),
 
           ConstantSizing.columnSpacingExtraLarge,

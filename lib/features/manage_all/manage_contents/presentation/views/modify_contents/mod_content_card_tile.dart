@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/domain/models/file_details.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
-import 'package:slidesync/domain/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/course_navigation/presentation/providers/content_card_providers.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/actions/modify_content_card_actions.dart';
-import 'package:slidesync/shared/common_widgets/app_popup_menu_button.dart';
-import 'package:slidesync/shared/common_widgets/modifying_list_tile.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
 import 'package:slidesync/shared/helpers/widget_helper.dart';
-import 'package:slidesync/shared/widgets/build_image_path_widget.dart';
-import 'package:slidesync/shared/widgets/loading_view.dart';
+import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
+import 'package:slidesync/shared/widgets/common/modifying_list_tile.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
+import 'package:slidesync/shared/widgets/progress_indicator/loading_view.dart';
 
 class ModContentCardTile extends ConsumerStatefulWidget {
   final CourseContent content;
@@ -42,7 +43,7 @@ class _ModContentCardTileState extends ConsumerState<ModContentCardTile> {
     final CourseContent content = ref.watch(contentProvider).value ?? widget.content;
     final previewDataProvider = ref.watch(ContentCardProviders.fetchLinkPreviewDataProvider(content));
     return Padding(
-      padding: EdgeInsets.only(bottom: context.hPadding7),
+      padding: EdgeInsets.only(bottom: 16),
       child: ModifyingListTile(
         onTapTile: widget.onTap,
         leading: previewDataProvider.when(

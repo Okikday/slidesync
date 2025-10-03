@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/settings/presentation/views/sub/settings_appearance_dialog.dart';
-import 'package:slidesync/shared/components/app_bar_container.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class SettingsView extends ConsumerWidget {
   const SettingsView({super.key});

@@ -4,11 +4,12 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:pdfrx/pdfrx.dart';
+import 'package:slidesync/core/constants/src/enums.dart';
 
-import 'package:slidesync/domain/models/file_details.dart';
+import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/core/utils/image_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/domain/models/course_model/sub/course_content.dart';
+import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:image/image.dart';
 
 typedef PreviewImagePathRecord<Record> = ({String previewDirPath, String previewPath});

@@ -2,16 +2,16 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:another_flushbar/flushbar.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
+import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/views/add_contents/adding_content_overlay.dart';
 import 'package:slidesync/features/manage_all/manage_contents/usecases/add_contents_uc.dart';
-import 'package:slidesync/core/routes/app_router.dart';
+import 'package:slidesync/routes/app_router.dart';
 import 'package:super_clipboard/super_clipboard.dart';
 
 enum AppClipboardContentType { empty, text, image, images, file, files, html, unsupported }

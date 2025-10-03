@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/domain/models/course_model/sub/course_content_type.dart';
+import 'package:slidesync/core/constants/src/enums.dart';
 
 class WidgetHelper {
   static IconData resolveIconData(CourseContentType type, [bool isOutlined = false]) {

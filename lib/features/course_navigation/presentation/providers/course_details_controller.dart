@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/global_providers/data_providers/course_providers.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
-import 'package:slidesync/domain/repos/course_repo/course_collection_repo.dart';
-import 'package:slidesync/domain/repos/course_repo/course_repo.dart';
+import 'package:slidesync/shared/global/providers/course_providers.dart';
+import 'package:slidesync/data/models/course_model/course.dart';
+import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/course_navigation/presentation/providers/course_details_controller/course_details_state.dart';
 
 final _watchAllCollectionChanges = StreamProvider.autoDispose<void>((ref) async* {

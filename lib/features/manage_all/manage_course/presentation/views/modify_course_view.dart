@@ -1,25 +1,18 @@
 import 'dart:developer';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
-// ignore: unnecessary_import
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/core/global_providers/data_providers/course_providers.dart';
-import 'package:slidesync/core/routes/app_router.dart';
-import 'package:slidesync/core/routes/routes.dart';
-import 'package:slidesync/domain/models/file_details.dart';
+import 'package:slidesync/shared/global/providers/course_providers.dart';
+import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
-import 'package:slidesync/features/manage_all/manage_course/presentation/actions/modify_course_actions.dart';
+import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/features/manage_all/manage_collections/presentation/views/modify_collections/create_collection_bottom_sheet.dart';
-import 'package:slidesync/features/manage_all/manage_course/presentation/actions/modify_course_view_actions.dart';
 import 'package:slidesync/features/manage_all/manage_course/presentation/views/modify_course/collections_section.dart';
-import 'package:slidesync/features/manage_all/manage_course/presentation/views/modify_course/edit_course_bottom_sheet.dart';
 import 'package:slidesync/features/manage_all/manage_course/presentation/views/modify_course/modify_course_header.dart';
-import 'package:slidesync/shared/components/app_bar_container.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 /// VIEW
 class ModifyCourseView extends ConsumerStatefulWidget {

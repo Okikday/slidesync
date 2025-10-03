@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/providers/modify_contents_view_providers.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class ModifyContentsHeader extends ConsumerWidget {
   final void Function() onDelete;
@@ -20,13 +20,13 @@ class ModifyContentsHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final hPadding = context.hPadding;
+    final hPadding = 24;
     // final padding4 = hPadding * .4;
     // final padding2 = hPadding * .2;
     final padding7 = hPadding * .7;
     // final padding6 = hPadding * .6;
 
-    final btnDimension = context.defaultBtnDimension * .8;
+    final btnDimension = 48 * .8;
     final theme = ref;
     return ValueListenableBuilder(
       valueListenable: mcvp.selectedContentsNotifier,

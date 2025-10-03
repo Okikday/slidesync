@@ -1,16 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/routes/app_router.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
+import 'package:slidesync/routes/app_router.dart';
+import 'package:slidesync/shared/helpers/extensions/src/extension_on_app_theme.dart';
+import 'package:slidesync/shared/theme/theme.dart';
 
-import 'shared/styles/theme/themes.dart';
-
-final NotifierProvider<AppThemeProvider, AppThemeModel> appThemeProvider = NotifierProvider(AppThemeProvider.new);
+final NotifierProvider<AppThemeProvider, AppTheme> appThemeProvider = NotifierProvider(AppThemeProvider.new);
 
 class App extends ConsumerStatefulWidget {
   const App({super.key});
@@ -55,7 +53,7 @@ class _AppState extends ConsumerState<App> {
 
     return MaterialApp.router(
       title: "SlideSync",
-      routerConfig: RouteManager.mainRouter,
+      routerConfig: AppRouter.mainRouter,
       debugShowCheckedModeBanner: false,
       theme: resolveThemeData(theme),
     );

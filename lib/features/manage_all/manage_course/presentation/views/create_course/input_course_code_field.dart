@@ -1,8 +1,8 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/global_notifiers/primitive_type_notifiers.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class InputCourseCodeField extends ConsumerWidget {
   final NotifierProvider<BoolNotifier, bool> isCourseCodeFieldVisible;

@@ -6,10 +6,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/domain/models/file_details.dart';
+import 'package:slidesync/data/models/course_model/course_collection.dart';
+import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/domain/models/course_model/sub/course_collection.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class InteractiveCourseMaterialView extends ConsumerWidget {
   final CourseCollection collection;

@@ -5,15 +5,15 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/domain/models/file_details.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
+import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/features/course_navigation/presentation/providers/course_details_controller.dart';
 import 'package:slidesync/features/course_navigation/presentation/views/course_details/course_details_header/progress_shape_animated_widget.dart';
 import 'package:slidesync/features/course_navigation/presentation/views/course_details_view.dart';
 import 'package:slidesync/features/manage_all/manage_course/presentation/views/modify_course/course_description_dialog.dart';
-import 'package:slidesync/shared/components/app_bar_container.dart';
-import 'package:slidesync/shared/components/loading_logo.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class CourseDetailsHeader extends ConsumerWidget {
   const CourseDetailsHeader({super.key, required this.courseDbId});

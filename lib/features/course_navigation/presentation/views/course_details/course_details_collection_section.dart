@@ -5,15 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:slidesync/core/global_providers/data_providers/course_providers.dart';
-import 'package:slidesync/core/routes/routes.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
+import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/course_navigation/presentation/providers/course_details_controller.dart';
 import 'package:slidesync/features/course_navigation/presentation/views/course_details/course_categories_card.dart';
 import 'package:slidesync/features/manage_all/manage_collections/presentation/views/modify_collections/create_collection_bottom_sheet.dart';
 import 'package:slidesync/features/manage_all/manage_collections/presentation/views/modify_collections/empty_collections_view.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:slidesync/shared/widgets/loading_view.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/widgets/progress_indicator/loading_view.dart';
 
 class CourseDetailsCollectionSection extends ConsumerWidget {
   const CourseDetailsCollectionSection({super.key, required this.courseDbId});

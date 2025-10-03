@@ -1,11 +1,10 @@
-import 'package:another_flushbar/flushbar.dart';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/course_navigation/presentation/providers/course_details_controller.dart';
 import 'package:slidesync/features/manage_all/manage_collections/presentation/actions/modify_collection_actions.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class CreateCollectionBottomSheet extends ConsumerStatefulWidget {
   final int courseDbId;

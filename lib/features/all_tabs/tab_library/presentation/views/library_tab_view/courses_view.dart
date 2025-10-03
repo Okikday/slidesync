@@ -5,19 +5,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
-import 'package:slidesync/features/all_tabs/tab_library/presentation/controllers/courses_view_controller/courses_pagination.dart';
+import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/controllers/courses_view_controller.dart';
-import 'package:slidesync/features/all_tabs/tab_library/presentation/controllers/library_tab_controller.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view/courses_view/course_card/list_course_card.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view/courses_view/empty_library_view.dart';
 import 'package:slidesync/features/all_tabs/tab_library/presentation/views/library_tab_view/courses_view/course_card.dart';
+import 'package:slidesync/shared/global/providers/course_providers.dart';
 
-import 'package:slidesync/core/global_providers/data_providers/course_providers.dart';
-import 'package:slidesync/shared/components/loading_logo.dart';
-import 'package:slidesync/shared/widgets/loading_view.dart';
+
+import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
+import 'package:slidesync/shared/widgets/progress_indicator/loading_view.dart';
+
 import 'courses_view/course_card/grid_course_card.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class CoursesView extends ConsumerStatefulWidget {
   const CoursesView({super.key});

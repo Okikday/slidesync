@@ -1,14 +1,15 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/domain/models/file_details.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
+import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/manage_all/manage_contents/usecases/create_contents_uc/create_content_preview_image.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 import 'package:slidesync/shared/helpers/formatter.dart';
 import 'package:slidesync/shared/helpers/widget_helper.dart';
-import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
-import 'package:slidesync/shared/widgets/build_image_path_widget.dart';
+
+
+import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 class CourseMaterialListCard extends ConsumerStatefulWidget {
   final CourseContent courseContent;

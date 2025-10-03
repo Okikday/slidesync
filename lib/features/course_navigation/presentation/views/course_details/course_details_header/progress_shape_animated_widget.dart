@@ -2,12 +2,12 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:slidesync/core/global_notifiers/primitive_type_notifiers.dart';
-import 'package:slidesync/domain/models/file_details.dart';
+import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
+import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/course_navigation/presentation/views/course_details/course_details_header/animated_shape.dart';
 import 'package:slidesync/features/course_navigation/presentation/views/course_details/course_details_header/custom_wave_widget.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:slidesync/shared/widgets/build_image_path_widget.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 class ProgressShapeAnimatedWidget extends ConsumerStatefulWidget {
   const ProgressShapeAnimatedWidget({

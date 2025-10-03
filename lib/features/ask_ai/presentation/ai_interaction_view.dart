@@ -16,9 +16,9 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/features/ask_ai/domain/services/ai_gen_client.dart';
 import 'package:slidesync/features/auth/domain/usecases/auth_uc/user_data_functions.dart';
-import 'package:slidesync/shared/components/loading_logo.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
+import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+
 import 'package:uuid/uuid.dart';
 
 final userIdProvider = FutureProvider<String>((ref) async {

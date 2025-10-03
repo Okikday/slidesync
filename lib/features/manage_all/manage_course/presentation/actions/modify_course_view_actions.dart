@@ -3,9 +3,8 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
 import 'package:slidesync/features/manage_all/manage_course/presentation/actions/modify_course_actions.dart';
-import 'package:slidesync/shared/components/dialogs/confirm_deletion_dialog.dart';
+import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 
 class ModifyCourseViewActions {
   void showDeleteCourseDialog(BuildContext context, String courseId) {

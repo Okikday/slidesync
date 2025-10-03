@@ -1,18 +1,17 @@
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/core/routes/app_router.dart';
+import 'package:slidesync/data/models/course_model/course_collection.dart';
+import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
-import 'package:slidesync/domain/models/file_details.dart';
+import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/actions/add_link_actions.dart';
 import 'package:slidesync/features/manage_all/manage_contents/domain/repos/get_content_repo/get_content_repo.dart';
-import 'package:slidesync/shared/common_widgets/input_text_bottom_sheet.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
-import 'package:slidesync/shared/widgets/build_image_path_widget.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/widgets/bottom_sheets/input_text_bottom_sheet.dart';
+import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 class AddLinkBottomSheet extends ConsumerStatefulWidget {
   final CourseCollection collection;
@@ -66,7 +65,7 @@ class _AddLinkBottomSheetState extends ConsumerState<AddLinkBottomSheet> {
               parentId: widget.collection.collectionId,
               previewLinkDetails: additionalDetails.value,
             );
-            
+
             if (result) {
               if (context.mounted) UiUtils.showFlushBar(context, msg: "Successfully added link");
             } else {

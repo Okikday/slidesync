@@ -6,19 +6,19 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:slidesync/domain/models/file_details.dart';
+import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/core/utils/file_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
-import 'package:slidesync/domain/repos/course_repo/course_repo.dart';
+import 'package:slidesync/data/models/course_model/course.dart';
+import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/manage_all/manage_collections/usecases/modify_collections_uc/modify_collection_uc.dart';
 import 'package:slidesync/features/manage_all/manage_course/usecases/create_course_uc/create_course_uc.dart';
 import 'package:slidesync/features/manage_all/manage_course/presentation/views/modify_course/course_description_dialog.dart';
 import 'package:slidesync/features/manage_all/manage_course/presentation/views/modify_course/edit_course_bottom_sheet.dart';
 import 'package:slidesync/features/manage_all/manage_course/presentation/views/modify_course/modify_course_header/preview_modify_course_image_dialog.dart';
-import 'package:slidesync/shared/components/dialogs/app_action_dialog.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class ModifyCourseActions {
   /// When the user clicks to delete the course, on the Dialog

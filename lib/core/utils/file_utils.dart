@@ -4,16 +4,10 @@ import 'dart:io';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
+import 'package:slidesync/core/constants/src/enums.dart';
 
 export 'dart:io';
 
-// enum FileType{
-//   image,
-//   document,
-//   video,
-// }
-
-enum AppDirType { documents, appSupport, temporary, cache }
 
 class FileUtils {
   static Future<String> _storeToAppDirectory(

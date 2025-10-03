@@ -1,17 +1,18 @@
 import 'package:firebase_core/firebase_core.dart';
-import 'package:slidesync/test/provider_observer.dart';
-import 'package:worker_manager/worker_manager.dart';
-import 'firebase_options.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:pdfrx/pdfrx.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/app.dart';
-import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:pdfrx/pdfrx.dart';
+import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
-import 'package:slidesync/core/storage/isar_data/isar_schemas.dart';
+import 'package:worker_manager/worker_manager.dart';
+
+import 'package:slidesync/app.dart';
+
+import 'dev/provider_observer.dart';
+import 'firebase_options.dart';
 
 final obs = ActiveProvidersObserver();
 
@@ -22,7 +23,7 @@ void main() async {
   await AppHiveData.instance.initialize();
   await dotenv.load();
 
-  if (!kIsWeb) await IsarData.initialize(collectionSchemas: isarSchemas);
+  if (!kIsWeb) await IsarData.initializeDefault();
   pdfrxFlutterInitialize();
   await workerManager.init(isolatesCount: 1);
 

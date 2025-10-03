@@ -2,8 +2,9 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
-import 'package:slidesync/shared/assets/strings/icon_strings.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/core/assets/assets.dart';
+
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class EmptyCollectionsView extends ConsumerWidget {
   final void Function()? onClickAddCollection;
@@ -23,7 +24,7 @@ class EmptyCollectionsView extends ConsumerWidget {
               ConstantSizing.columnSpacing(20),
               SizedBox.square(
                 dimension: context.deviceWidth * 0.5,
-                child: LottieBuilder.asset(IconStrings.instance.roundedPlayingFace, reverse: true),
+                child: LottieBuilder.asset(Assets.icons.roundedPlayingFace, reverse: true),
               ),
 
               CustomText("Oops, can't find any collections", color: Colors.blueGrey),

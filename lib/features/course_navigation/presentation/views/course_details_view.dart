@@ -1,4 +1,3 @@
-
 import 'dart:ui';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
@@ -10,7 +9,7 @@ import 'package:slidesync/features/course_navigation/presentation/views/course_d
 import 'package:slidesync/features/course_navigation/presentation/views/course_details/course_details_header.dart';
 import 'package:slidesync/features/course_navigation/presentation/views/course_details/positioned_course_options.dart';
 import 'package:slidesync/features/manage_all/manage_collections/presentation/views/modify_collections/collections_view_search_bar.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 const double courseDetailsAppBarHeight = 180;
 

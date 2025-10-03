@@ -6,13 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
+import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/providers/add_contents_bs_provider.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/views/add_contents/add_link_bottom_sheet.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/actions/add_contents_actions.dart';
-import 'package:slidesync/shared/components/dialogs/app_action_dialog.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class AddContentsBottomSheet extends ConsumerStatefulWidget {
   final CourseCollection collection;

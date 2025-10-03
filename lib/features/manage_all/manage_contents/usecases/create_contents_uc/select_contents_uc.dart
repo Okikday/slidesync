@@ -3,9 +3,8 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
-
-
+import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/data/models/course_model/course_collection.dart';
 
 /// Use this class to pick various content types and copy them into the app's cache directory.
 class SelectContentsUc {
@@ -28,7 +27,6 @@ class SelectContentsUc {
 
       case CourseContentType.audio:
         return await _selectAudios();
-
 
       default:
         return null;

@@ -1,20 +1,19 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:developer';
-import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:isar/isar.dart';
+import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/core/storage/isar_data/isar_schemas.dart';
 import 'package:slidesync/core/utils/leak_prevention.dart';
-import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/domain/models/course_model/sub/course_content.dart';
-import 'package:slidesync/domain/repos/course_repo/course_content_repo.dart';
-import 'package:slidesync/features/all_tabs/tab_library/presentation/controllers/courses_view_controller/courses_pagination.dart';
+import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+
 
 const int limit = 20;
 

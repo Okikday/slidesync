@@ -1,7 +1,6 @@
-
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:slidesync/domain/models/course_model/course.dart';
-// import 'package:slidesync/domain/repos/course_repo/course_repo.dart';
+// import 'package:slidesync/data/models/course_model/course.dart';
+// import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 
 // final defaultCourse = Course.create(courseTitle: "_");
 // final StateProvider<int?> _activeCourseDbIdProvider = StateProvider<int?>((ref) => null);

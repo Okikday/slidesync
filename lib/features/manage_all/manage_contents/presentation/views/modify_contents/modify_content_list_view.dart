@@ -1,33 +1,26 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
+import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/providers/modify_contents_view_providers.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/views/modify_contents/mod_content_card_tile.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
 
 class ModifyContentListView extends StatelessWidget {
   final String collectionId;
   final List<CourseContent> contentList;
   final ModifyContentsViewProviders mcvp;
-  const ModifyContentListView({
-    super.key,
-    required this.collectionId,
-    required this.contentList,
-    required this.mcvp,
-  });
+  const ModifyContentListView({super.key, required this.collectionId, required this.contentList, required this.mcvp});
 
   @override
   Widget build(BuildContext context) {
     return SliverPadding(
-      padding: EdgeInsets.symmetric(horizontal: context.hPadding7),
+      padding: EdgeInsets.symmetric(horizontal: 16),
       sliver: SliverList.builder(
         itemCount: contentList.length,
         itemBuilder: (context, index) {
           final content = contentList[index];
           return ValueListenableBuilder(
             valueListenable: mcvp.selectedContentsNotifier,
-            
+
             builder: (context, value, child) {
               final lookUp = value.lookup(content);
               return ModContentCardTile(
@@ -59,7 +52,7 @@ class ModifyContentListView extends StatelessWidget {
                 curve: Curves.fastEaseInToSlowEaseOut,
                 duration: Durations.extralong2,
               );
-            }
+            },
           );
         },
       ),

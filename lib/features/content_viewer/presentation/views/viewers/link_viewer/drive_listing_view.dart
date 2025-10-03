@@ -8,7 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/content_viewer/domain/services/drive_browser.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 /// AI GENERATED!

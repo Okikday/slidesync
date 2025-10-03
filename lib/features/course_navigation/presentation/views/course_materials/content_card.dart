@@ -6,23 +6,24 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:path/path.dart' as p;
-import 'package:slidesync/core/routes/app_router.dart';
-import 'package:slidesync/core/routes/routes.dart';
+import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/routes/app_router.dart';
+
+import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/domain/models/course_model/course.dart';
-import 'package:slidesync/domain/models/file_details.dart';
+import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/course_navigation/presentation/actions/content_card_actions.dart';
-import 'package:slidesync/features/course_navigation/presentation/providers/content_card_providers.dart';
 import 'package:slidesync/features/manage_all/manage_contents/presentation/actions/modify_contents_action.dart';
 import 'package:slidesync/features/manage_all/manage_contents/usecases/create_contents_uc/create_content_preview_image.dart';
 import 'package:slidesync/features/share_contents/domain/usecases/share_content_uc.dart';
-import 'package:slidesync/shared/common_widgets/app_popup_menu_button.dart';
-import 'package:slidesync/shared/components/dialogs/confirm_deletion_dialog.dart';
-import 'package:slidesync/shared/helpers/extension_helper.dart';
+
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 import 'package:slidesync/shared/helpers/widget_helper.dart';
-import 'package:slidesync/shared/styles/theme/app_theme_model.dart';
-import 'package:slidesync/shared/widgets/build_image_path_widget.dart';
+
+import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
+import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
+import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 class ContentCard extends ConsumerStatefulWidget {
   const ContentCard({super.key, required this.content, this.progress});

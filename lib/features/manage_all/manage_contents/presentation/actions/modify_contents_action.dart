@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/domain/models/course_model/sub/course_content.dart';
-import 'package:slidesync/domain/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/manage_all/manage_contents/usecases/modify_content_uc.dart';
-import 'package:slidesync/core/routes/app_router.dart';
+import 'package:slidesync/routes/app_router.dart';
 
 class ModifyContentsAction {
   Future<String?> onDeleteContent(String contentId, {int? courseDbId}) async {
