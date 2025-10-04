@@ -4,11 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
-import 'package:slidesync/features/manage_all/manage_collections/presentation/views/modify_collections_view.dart';
-import 'package:slidesync/features/manage_all/manage_contents/presentation/views/modify_contents_view.dart';
-import 'package:slidesync/features/manage_all/manage_course/presentation/views/create_course_view.dart';
-import 'package:slidesync/features/manage_all/manage_course/presentation/views/modify_course_view.dart';
-import 'package:slidesync/features/manage_all/manage_course/presentation/views/select_to_modify_course_view.dart';
+import 'package:slidesync/features/manage/presentation/collections/views/modify_collections_view.dart';
+import 'package:slidesync/features/manage/presentation/contents/views/modify_contents_view.dart';
+import 'package:slidesync/features/manage/presentation/courses/views/create_course_view.dart';
+import 'package:slidesync/features/manage/presentation/courses/views/modify_course_view.dart';
+import 'package:slidesync/features/manage/presentation/courses/views/select_to_modify_course_view.dart';
 import 'package:slidesync/routes/routes.dart';
 
 final courseMgmtRoutes = [
@@ -22,7 +22,7 @@ final courseMgmtRoutes = [
       duration: Durations.extralong1,
       reverseDuration: Durations.medium1,
       curve: CustomCurves.defaultIosSpring,
-      child: CreateCourseView(),
+      child: const CreateCourseView(),
     ),
   ),
 
@@ -53,7 +53,7 @@ final courseMgmtRoutes = [
         path: Routes.modifyCollections.subPath,
         pageBuilder: (context, state) => defaultTransition(
           state.pageKey,
-          defaultIncoming: TransitionType.slide(begin: const Offset(0, 0.6), end: Offset(0, 0), fade: true),
+          defaultIncoming: TransitionType.zoom,
           child: ModifyCollectionsView(courseId: (state.extra as String)),
         ),
         routes: [

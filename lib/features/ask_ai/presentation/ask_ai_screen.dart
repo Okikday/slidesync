@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/ask_ai/presentation/ai_interaction_view.dart';
-import 'package:slidesync/features/content_viewer/presentation/controllers/doc_viewer_controllers/pdf_doc_viewer_controller.dart';
+import 'package:slidesync/features/study/presentation/controllers/doc_viewer_controllers/pdf_doc_viewer_controller.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 import 'package:dotted_border/dotted_border.dart';
 

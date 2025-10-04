@@ -1,8 +1,8 @@
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/routes/routes.dart';
-import 'package:slidesync/features/auth/presentation/onboarding_views/onboarding_1.dart';
-import 'package:slidesync/features/auth/presentation/welcome_view/welcome_view.dart';
+import 'package:slidesync/features/auth/presentation/onboarding/onboarding_1.dart';
+import 'package:slidesync/features/auth/presentation/welcome/welcome_view.dart';
 
 final onboardingRoute = GoRoute(
   name: Routes.welcome.name,

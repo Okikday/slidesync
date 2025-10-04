@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
-import 'package:slidesync/features/content_viewer/presentation/views/content_view_gate.dart';
-import 'package:slidesync/features/content_viewer/presentation/views/viewers/image_viewer.dart';
-import 'package:slidesync/features/content_viewer/presentation/views/viewers/link_viewer/drive_listing_view.dart';
-import 'package:slidesync/features/content_viewer/presentation/views/viewers/pdf_doc_viewer/pdf_doc_viewer.dart';
+import 'package:slidesync/features/study/presentation/views/content_view_gate.dart';
+import 'package:slidesync/features/study/presentation/views/viewers/image_viewer.dart';
+import 'package:slidesync/features/study/presentation/views/viewers/link_viewer/drive_listing_view.dart';
+import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_doc_viewer.dart';
 
 final contentViewerRoute = GoRoute(
   name: Routes.contentGate.name,
