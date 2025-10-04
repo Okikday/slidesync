@@ -11,6 +11,7 @@ import 'package:slidesync/data/models/progress_track_models/course_track.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
+import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 
 class CourseContentRepo {
   static final IsarData<CourseContent> _isarData = IsarData.instance<CourseContent>();
@@ -85,19 +86,32 @@ class CourseContentRepo {
       final course = fetchResult.$1;
 
       if (getCollection == null || course == null) return false;
-      await add(content);
 
       await getCollection.contents.load();
-      // // Load collections from the course
-      await course.collections.load();
-      //Add content to the collection
-      getCollection.contents.add(content);
 
+      final contentTrack = ContentTrack.create(
+        contentId: content.contentId,
+        parentId: course.courseId,
+        contentHash: content.contentHash,
+        title: content.title,
+        description: content.description,
+        progress: 0.0,
+      );
+      final courseTrack = await (await CourseTrackRepo.filter).courseIdEqualTo(contentTrack.parentId).findFirst();
+      if (courseTrack == null) {
+        log("Couldn't find the parent course Track");
+        return false;
+      }
+      await courseTrack.contentTracks.load();
+      courseTrack.contentTracks.add(contentTrack);
       await isar.writeTxn(() async {
+        await isar.courseContents.put(content);
+        await isar.contentTracks.put(contentTrack);
         await getCollection.contents.save();
+        await courseTrack.contentTracks.save();
         await isar.courseCollections.put(getCollection);
       });
-
+      log("Successfully added content!");
       return true;
     });
 
@@ -151,19 +165,22 @@ class CourseContentRepo {
     }
   }
 
-  static Future<bool> moveContents(List<CourseContent> contents, CourseCollection collection) async {
-    final existingCollection = await CourseCollectionRepo.getById(collection.collectionId);
+  static Future<bool> moveContents(List<String> contentIds, String toParentId) async {
+    final existingCollection = await CourseCollectionRepo.getById(toParentId);
     if (existingCollection == null) return false;
 
-    Set<CourseContent> adaptedContentsSet = contents
-        .map(
-          (e) => e.copyWith(
-            contentHash: e.contentHash,
-            parentId: existingCollection.parentId,
-            lastModified: DateTime.now(),
-          ),
-        )
-        .toSet();
+    Set<CourseContent> adaptedContentsSet =
+        (await (await CourseContentRepo.filter).anyOf(contentIds, (a, b) => a.contentIdEqualTo(b)).findAll())
+            .map(
+              (e) => e.copyWith(
+                contentHash: e.contentHash,
+                parentId: existingCollection.parentId,
+                lastModified: DateTime.now(),
+              ),
+            )
+            .toSet();
+
+    log("Contents to move: $adaptedContentsSet");
 
     await existingCollection.contents.load();
 
@@ -187,63 +204,49 @@ class CourseContentRepo {
   }
 
   // // Not yet reviewed below
-  // static Future<bool> addMultipleContents(List<CourseContent> contents, [CourseCollection? collection]) async {
-  //   if (contents.isEmpty) return false;
+  static Future<bool> addMultipleContents(String collectionId, List<CourseContent> contents) async {
+    if (contents.isEmpty) return false;
+    final isar = (await _isar);
+    final fetchResult = await _fetchCourseAndCollection(isar, null, collectionId);
+    final getCollection = fetchResult.$2;
+    final course = fetchResult.$1;
 
-  //   try {
-  //     final isar = (await _isar);
+    if (getCollection == null || course == null) return false;
 
-  //     // group by parentId to avoid fetching the same collection/course repeatedly
-  //     final Map<String, List<CourseContent>> byParent = {};
-  //     for (final c in contents) {
-  //       if (c.parentId.isEmpty) continue;
-  //       byParent.putIfAbsent(c.parentId, () => []).add(c);
-  //     }
-  //     if (byParent.isEmpty) return false;
+    await getCollection.contents.load();
+    final contentTracks = contents
+        .map(
+          (content) => ContentTrack.create(
+            contentId: content.contentId,
+            parentId: course.courseId,
+            contentHash: content.contentHash,
+            title: content.title,
+            description: content.description,
+            progress: 0.0,
+          ),
+        )
+        .toList();
 
-  //     for (final entry in byParent.entries) {
-  //       final parentId = entry.key;
-  //       final group = entry.value;
+    final courseTrack = await (await CourseTrackRepo.filter).courseIdEqualTo(course.courseId).findFirst();
+    if (courseTrack == null) {
+      log("Couldn't find the parent course Track");
+      return false;
+    }
+    await courseTrack.contentTracks.load();
 
-  //       final fetchResult = await _fetchCourseAndCollection(isar, collection, parentId);
-  //       final getCollection = fetchResult.$2;
-  //       final course = fetchResult.$1;
+    getCollection.contents.addAll(contents);
+    courseTrack.contentTracks.addAll(contentTracks);
+    await isar.writeTxn(() async {
+      await isar.courseContents.putAll(contents);
+      await isar.contentTracks.putAll(contentTracks);
+      await getCollection.contents.save();
+      await courseTrack.contentTracks.save();
+      await isar.courseCollections.put(getCollection);
+    });
 
-  //       if (getCollection == null || course == null) {
-  //         // nothing we can do for this parentId
-  //         continue;
-  //       }
-
-  //       // ensure lists are loaded once per collection
-  //       await getCollection.contents.load();
-  //       await course.collections.load();
-
-  //       final List<CourseContent> successfullyAdded = [];
-
-  //       // add each content (uses your existing add() helper)
-  //       for (final content in group) {
-  //         final addRes = await add(content);
-  //         if (addRes != -1) {
-  //           successfullyAdded.add(content);
-  //         }
-  //       }
-
-  //       if (successfullyAdded.isEmpty) continue;
-
-  //       // batch update collection in one transaction
-  //       getCollection.contents.addAll(successfullyAdded);
-  //       await isar.writeTxn(() async {
-  //         await getCollection.contents.save();
-  //         await isar.courseCollections.put(getCollection);
-  //       });
-  //     }
-
-  //     return true;
-  //   } catch (e) {
-  //     log("$e");
-  //     return false;
-  //   }
-  // }
+    log("Successfully added all multiple contents");
+    return true;
+  }
 
   // static Future<bool> deleteAllContentsInCollection(CourseCollection collection) async {
   //   try {

@@ -14,7 +14,7 @@ class ModifyContentsAction {
     final content = await CourseContentRepo.getByContentId(contentId);
     if (content == null) return "Couldn't find content";
     final Result<String?> delOutcome = await Result.tryRunAsync(
-      () async => await ModifyContentUc().deleteContentAction(content),
+      () async => await ModifyContentUc().deleteContent(content),
     );
     Navigator.pop(rootNavigatorKey.currentContext!);
 
@@ -31,7 +31,7 @@ class ModifyContentsAction {
       UiUtils.showLoadingDialog(rootNavigatorKey.currentContext!, message: "Renaming content...");
     }
     final Result<String?> renameOutcome = await Result.tryRunAsync(() async {
-      return await ModifyContentUc().renameContentAction(content, newTitle);
+      return await ModifyContentUc().renameContent(content, newTitle);
     });
     Navigator.pop(rootNavigatorKey.currentContext!);
 

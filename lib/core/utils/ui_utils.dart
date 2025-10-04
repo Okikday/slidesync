@@ -55,7 +55,7 @@ class UiUtils {
   static void hideDialog(BuildContext context) => CustomDialog.hide(context);
 
   /// For showing CustomDialog in tuned format
-  static void showCustomDialog(
+  static Future<void> showCustomDialog(
     BuildContext context, {
     required Widget child,
     bool canPop = true,

@@ -8,7 +8,7 @@ typedef PreviewLinkDetails = ({String? title, String? description, String? previ
 class RetriveContentUc {
   static Future<PreviewLinkDetails?> getLinkPreviewData(String? link) async {
     if (link == null || link.isEmpty) return null;
-    final data = await getPreviewData(link);
+    final data = await _getPreviewData(link);
     return (title: data?.title, description: data?.description, previewUrl: data?.previewUrl);
   }
 }
@@ -99,7 +99,7 @@ String? _getActualImageUrl(String baseUrl, String? imageUrl) {
 }
 
 /// Parses provided text and returns preview data for the first found link.
-Future<PreviewLinkDetails?> getPreviewData(
+Future<PreviewLinkDetails?> _getPreviewData(
   String text, {
   String? proxy,
   Duration? requestTimeout,

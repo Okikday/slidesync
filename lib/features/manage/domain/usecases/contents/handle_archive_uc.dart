@@ -7,6 +7,7 @@ import 'package:archive/archive.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
+// AI generated...
 class HandleArchiveUc {
   /// Extracts an archive into the application's temporary/cache directory.
 /// Returns a List<String> of absolute paths created (files and directories).

@@ -1,32 +1,38 @@
+import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
+import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
+import 'package:slidesync/core/utils/basic_utils.dart';
+import 'package:slidesync/core/utils/isolate_worker.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
-import 'package:slidesync/features/manage/domain/usecases/contents/create_contents_uc/select_contents_uc.dart';
-import 'package:slidesync/features/manage/domain/usecases/contents/create_contents_uc/store_contents_uc.dart';
+import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/features/manage/domain/usecases/contents/create_content_preview_image.dart';
+import 'package:slidesync/features/manage/domain/usecases/contents/select_contents_uc.dart';
+import 'package:slidesync/features/manage/domain/usecases/contents/store_contents.dart';
+import 'package:slidesync/features/manage/domain/usecases/types/add_content_progress.dart';
+import 'package:slidesync/features/manage/domain/usecases/types/add_content_result.dart';
+import 'package:slidesync/features/manage/domain/usecases/types/store_content_args.dart';
+import 'package:slidesync/features/manage/presentation/contents/views/add_contents/adding_content_overlay.dart';
 import 'package:slidesync/routes/app_router.dart';
-
-class AddContentResultModel {
-  final bool hasDuplicate;
-  final bool isSuccess;
-  final String? contentId;
-  final String fileName;
-
-  AddContentResultModel({
-    required this.hasDuplicate,
-    required this.isSuccess,
-    required this.contentId,
-    required this.fileName,
-  });
-}
+import 'package:slidesync/shared/helpers/helpers.dart';
+import 'package:uuid/uuid.dart';
 
 class AddContentsUc {
-  static Future<List<AddContentResultModel>> addToCollection({
+  static Future<List<AddContentResult>> addToCollection({
     required CourseCollection collection,
     required CourseContentType type,
     ValueNotifier<String>? valueNotifier,
@@ -40,7 +46,7 @@ class AddContentsUc {
       UiUtils.showLoadingDialog(rootNavigatorKey.currentContext!, message: "Consulting system selection");
 
       // Redirect to add contents
-      final selectedContents = await SelectContentsUc(collection).referToAddContents(type);
+      final selectedContents = await SelectContentsUc().referToAddContents(type);
       valueNotifier?.value = "Scanning contents";
       if (rootNavigatorKey.currentContext!.mounted) {
         // ignore: use_build_context_synchronously
@@ -51,26 +57,51 @@ class AddContentsUc {
       final RootIsolateToken? rootIsolateToken = RootIsolateToken.instance;
       if (rootIsolateToken == null) return "Unable to process adding content in background";
       valueNotifier?.value = "Adding contents...\nPlease, do not close app until this is complete";
-      List<Map<String, dynamic>> result = await compute(StoreContentsUc.storeCourseContents, <String, dynamic>{
-        'rootIsolateToken': rootIsolateToken,
-        'collectionId': collection.collectionId,
-        'selectedContentsPaths': <String>[for (final value in selectedContents) value.path],
+      final filePaths = <String>[for (final value in selectedContents) value.path];
+
+      final uuids = [for (int i = 0; i < filePaths.length; i++) const Uuid().v4()];
+      final uuidFileNames = [
+        for (int i = 0; i < filePaths.length; i++) p.setExtension(uuids[i], p.extension(filePaths[i])),
+      ];
+
+      await Result.tryRunAsync(() async {
+        await AppHiveData.instance.setData(
+          key: HiveDataPathKey.contentsAddingProgressList.name,
+          value: <String, dynamic>{
+            for (int i = 0; i < uuidFileNames.length; i++) uuidFileNames[i]: filePaths[i],
+            'collectionId': collection.collectionId,
+          },
+        );
+      });
+      final args = StoreContentArgs(
+        token: rootIsolateToken,
+        collectionId: collection.collectionId,
+        filePaths: filePaths,
+        uuids: uuids,
+      );
+      List<AddContentResult> result = await IsolateWorker.executeWithPort<List<AddContentResult>, AddContentProgress>(
+        (port) async {
+          final res = await storeContents(args.copyWith(port: port));
+          return res;
+        },
+        onMessage: (progress) async {
+          valueNotifier?.value =
+              "Processing contents(${((progress.progress ?? .0) * 100).toInt()})...\nPlease, do not close app until this is complete.";
+          log("Progress of processing course: $progress");
+          if (progress.completed) {
+            valueNotifier?.value = "Completed!";
+          }
+        },
+      );
+      await Result.tryRunAsync(() async {
+        await AppHiveData.instance.deleteData(key: HiveDataPathKey.contentsAddingProgressList.name);
       });
 
-      return result
-          .map(
-            (element) => AddContentResultModel(
-              hasDuplicate: element['duplicate'] as bool? ?? false,
-              isSuccess: element['success'] as bool? ?? false,
-              contentId: element['contentId'] as String?,
-              fileName: element['fileName'] as String? ?? 'Unknown',
-            ),
-          )
-          .toList();
+      return result;
     });
 
     if (outcome.isSuccess && outcome.data is List) {
-      return outcome.data as List<AddContentResultModel>;
+      return outcome.data as List<AddContentResult>;
     } else {
       log("An error occurred while adding to collection! => ${outcome.data}");
       log("${outcome.message}");
@@ -78,7 +109,7 @@ class AddContentsUc {
     }
   }
 
-  static Future<List<AddContentResultModel>> addToCollectionNoRef({
+  static Future<List<AddContentResult>> addToCollectionNoRef({
     required CourseCollection collection,
     required List<String> filePaths,
     ValueNotifier<String>? valueNotifier,
@@ -92,30 +123,129 @@ class AddContentsUc {
       if (rootIsolateToken == null) return "Unable to process adding content in background";
       valueNotifier?.value =
           "Adding contents...\nPlease, do not close app until this is complete. Closing app abruptly might result in higher storage usage (can be freed in settings)";
-      List<Map<String, dynamic>> result = await compute(StoreContentsUc.storeCourseContents, <String, dynamic>{
-        'rootIsolateToken': rootIsolateToken,
-        'collectionId': collection.collectionId,
-        'selectedContentsPaths': filePaths,
+      final uuids = [for (int i = 0; i < filePaths.length; i++) const Uuid().v4()];
+      final uuidFileNames = [for (int i = 0; i < filePaths.length; i++) "${uuids[i]}${p.extension(filePaths[i])}"];
+
+      await Result.tryRunAsync(() async {
+        await AppHiveData.instance.setData(
+          key: HiveDataPathKey.contentsAddingProgressList.name,
+          value: <String, dynamic>{
+            for (int i = 0; i < uuidFileNames.length; i++) uuidFileNames[i]: p.basename(filePaths[i]),
+            'collectionId': collection.collectionId,
+          },
+        );
+      });
+      final args = StoreContentArgs(
+        token: rootIsolateToken,
+        collectionId: collection.collectionId,
+        filePaths: filePaths,
+        uuids: uuids,
+      );
+      List<AddContentResult> result = await IsolateWorker.executeWithPort<List<AddContentResult>, AddContentProgress>(
+        (port) async {
+          final res = await storeContents(args.copyWith(port: port));
+          return res;
+        },
+        onMessage: (progress) async {
+          valueNotifier?.value =
+              "Processing contents(${((progress.progress ?? .0) * 100).toInt()})...\nPlease, do not close app until this is complete.";
+          log("Progress of processing course: $progress");
+          if (progress.completed) {
+            valueNotifier?.value = "Completed!";
+          }
+        },
+      );
+      await Result.tryRunAsync(() async {
+        await AppHiveData.instance.deleteData(key: HiveDataPathKey.contentsAddingProgressList.name);
       });
 
-      return result
-          .map(
-            (element) => AddContentResultModel(
-              hasDuplicate: element['duplicate'] as bool? ?? false,
-              isSuccess: element['success'] as bool? ?? false,
-              contentId: element['contentId'] as String?,
-              fileName: element['fileName'] as String? ?? 'Unknown',
-            ),
-          )
-          .toList();
+      return result;
     });
 
     if (outcome.isSuccess && outcome.data is List) {
-      return outcome.data as List<AddContentResultModel>;
+      return outcome.data as List<AddContentResult>;
     } else {
       log("An error occurred while adding to collection! => ${outcome.data}");
       log("${outcome.message}");
       return [];
+    }
+  }
+
+  static Future<void> resumeFromLastAddToCollection(
+    Map<String, dynamic> selectedContentPathsOnStorage,
+    CourseCollection collection,
+  ) async {
+    useRootStateContext(
+      (context) => UiUtils.showLoadingDialog(context, canPop: false, message: "Just a moment, initializing..."),
+    );
+    final collectionId = selectedContentPathsOnStorage['collectionId'] as String?;
+    if (collectionId != null) {
+      final lastCollection = await CourseCollectionRepo.getById(collectionId);
+      if (lastCollection != null) {
+        selectedContentPathsOnStorage.remove('collectionId');
+        final baseDir = await getApplicationDocumentsDirectory();
+        final targetDir = Directory(p.join(baseDir.path, lastCollection.absolutePath));
+        if (!(await targetDir.exists())) {
+          await targetDir.create(recursive: true);
+        }
+        List<String> alreadyExists = [];
+        for (final uuidWithExt in selectedContentPathsOnStorage.keys) {
+          final dir = p.join(targetDir.path, uuidWithExt);
+          if ((await File(dir).exists())) {
+            alreadyExists.add(dir);
+            selectedContentPathsOnStorage.remove(uuidWithExt);
+            continue;
+          }
+          final filePath = selectedContentPathsOnStorage[uuidWithExt] as String?;
+          if (filePath == null) continue;
+          if (!(await File(filePath).exists())) {
+            selectedContentPathsOnStorage.remove(uuidWithExt);
+            continue;
+          }
+        }
+
+        for (final uuidWithExtFull in alreadyExists) {
+          final uuidWithExt = p.basename(uuidWithExtFull);
+          final filePath = uuidWithExtFull;
+
+          final hash = await BasicUtils.calculateFileHash(filePath);
+          final fileName = selectedContentPathsOnStorage[uuidWithExt];
+          final uuid = p.basenameWithoutExtension(uuidWithExt);
+          final fileNameWithoutExt = p.basenameWithoutExtension(fileName);
+          final contentType = checkContentType(filePath);
+          final CourseContent content = CourseContent.create(
+            contentHash: hash,
+            contentId: uuid,
+            title: fileNameWithoutExt,
+            parentId: collection.collectionId,
+            path: FileDetails(filePath: filePath),
+            courseContentType: contentType,
+            metadataJson: jsonEncode(<String, dynamic>{'filename': fileName}),
+          );
+          await CreateContentPreviewImage.createPreviewImageForContent(
+            filePath,
+            courseContentType: contentType,
+            genPreviewPathRecord: CreateContentPreviewImage.genPreviewImagePathRecord(filePath: filePath),
+          );
+          await CourseContentRepo.addContent(content);
+        }
+
+        useRootStateContext((context) => context.pop());
+        ValueNotifier<String> valueNotifier = ValueNotifier("Loading...");
+        final entry = OverlayEntry(
+          builder: (context) => ValueListenableBuilder(
+            valueListenable: valueNotifier,
+            builder: (context, value, child) => LoadingOverlay(message: value),
+          ),
+        );
+        useRootStateContext((context) => Overlay.of(context).insert(entry));
+        await AddContentsUc.addToCollectionNoRef(
+          collection: lastCollection,
+          filePaths: List.castFrom<dynamic, String>(selectedContentPathsOnStorage.values.toList()),
+        );
+        entry.remove();
+        valueNotifier.dispose();
+      }
     }
   }
 }

@@ -7,7 +7,6 @@ import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:uuid/uuid.dart';
 
-
 export 'course_content_type.dart';
 
 part 'course_content.g.dart';

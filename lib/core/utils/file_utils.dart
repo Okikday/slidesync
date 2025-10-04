@@ -8,14 +8,14 @@ import 'package:slidesync/core/constants/src/enums.dart';
 
 export 'dart:io';
 
-
 class FileUtils {
   static Future<String> _storeToAppDirectory(
     File file,
     String folderPath,
-    String? newFileName, [
+    String? newFileName, {
     AppDirType base = AppDirType.documents,
-  ]) async {
+    bool overwrite = false,
+  }) async {
     final Directory baseDir;
     switch (base) {
       case AppDirType.appSupport:
@@ -40,7 +40,9 @@ class FileUtils {
       await targetDir.create(recursive: true);
     }
 
-    final String newPath = getUniqueFilePath(targetDirPath, newFileName ?? fileName);
+    final String candidatePath = p.join(targetDirPath, newFileName ?? fileName);
+    final String newPath = overwrite ? candidatePath : getUniqueFilePath(targetDirPath, newFileName ?? fileName);
+
     await file.copy(newPath);
     return newPath;
   }
@@ -52,8 +54,9 @@ class FileUtils {
     String folderPath = '',
     String? newFileName,
     AppDirType base = AppDirType.documents,
+    bool overwrite = false,
   }) async {
-    return await _storeToAppDirectory(file, folderPath, newFileName, base);
+    return await _storeToAppDirectory(file, folderPath, newFileName, base: base, overwrite: overwrite);
   }
 
   static String getUniqueFilePath(String dirPath, String fileName) {

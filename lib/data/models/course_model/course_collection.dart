@@ -117,6 +117,8 @@ extension CourseCollectionExtension on CourseCollection {
   String get absolutePath => "courses${Platform.pathSeparator}$relativePath";
   String get courseId => parentId;
 
+  String joinAbsWithChild(String childId) => "$absolutePath${Platform.pathSeparator}$childId";
+
   CourseCollection copyWith({
     String? collectionId,
     String? parentId,

@@ -5,10 +5,10 @@ import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/features/main/presentation/home/actions/recent_dialog_actions.dart';
-import 'package:slidesync/features/manage/domain/usecases/contents/create_contents_uc/create_content_preview_image.dart';
+import 'package:slidesync/features/manage/domain/usecases/contents/create_content_preview_image.dart';
 
 class ModifyContentUc {
-  Future<String?> deleteContentAction(CourseContent content) async {
+  Future<String?> deleteContent(CourseContent content) async {
     final bool dupHashExists = await CourseContentRepo.doesDuplicateHashExists(content.contentHash);
     await CourseContentRepo.deleteContent(content);
     await RecentDialogActions.removeIdFromRecents(content.contentId);
@@ -22,16 +22,7 @@ class ModifyContentUc {
     return null;
   }
 
-  // Future<String?> deleteContentsAction(List<CourseContent> contents) async {
-  //   String? latestMsg;
-  //   for (var item in contents) {
-  //     latestMsg = await deleteContentAction(item);
-  //   }
-
-  //   return latestMsg;
-  // } // too intensive
-
-  Future<String?> renameContentAction(CourseContent content, String newTitle) async {
+  Future<String?> renameContent(CourseContent content, String newTitle) async {
     return (await Result.tryRunAsync(() async {
       CourseContent? stContent = await CourseContentRepo.getByDbId(content.id);
       if (stContent == null) {
@@ -43,8 +34,4 @@ class ModifyContentUc {
       return null;
     })).data;
   }
-
-  // Future<String?> deleteContentsInIsolate() {
-  //   log("Hello");
-  // }
 }

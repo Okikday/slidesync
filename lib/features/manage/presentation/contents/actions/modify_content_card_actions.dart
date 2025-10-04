@@ -8,7 +8,6 @@ import 'package:slidesync/features/manage/presentation/contents/actions/modify_c
 import 'package:slidesync/features/manage/domain/usecases/contents/modify_content_uc.dart';
 import 'package:slidesync/shared/widgets/bottom_sheets/input_text_bottom_sheet.dart';
 
-
 class ModifyContentCardActions {
   static void onRenameContent(BuildContext context, CourseContent content) {
     UiUtils.showCustomDialog(
@@ -37,7 +36,7 @@ class ModifyContentCardActions {
     CourseContent content, [
     bool showFlushbar = true,
   ]) async {
-    final outcome = (await Result.tryRunAsync(() async => await ModifyContentUc().deleteContentAction(content))).data;
+    final outcome = (await Result.tryRunAsync(() async => await ModifyContentUc().deleteContent(content))).data;
     if (showFlushbar) {
       if (context.mounted) {
         if (outcome == null) {

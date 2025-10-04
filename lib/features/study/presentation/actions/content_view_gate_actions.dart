@@ -17,7 +17,7 @@ import 'package:slidesync/data/models/file_details.dart';
 
 import 'package:slidesync/features/study/domain/services/drive_browser.dart';
 import 'package:slidesync/features/manage/presentation/contents/actions/add_contents_actions.dart';
-import 'package:slidesync/features/manage/domain/usecases/contents/create_contents_uc/handle_archive_uc.dart';
+import 'package:slidesync/features/manage/domain/usecases/contents/handle_archive_uc.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_alert_dialog.dart';
 
 import 'package:url_launcher/url_launcher.dart';
