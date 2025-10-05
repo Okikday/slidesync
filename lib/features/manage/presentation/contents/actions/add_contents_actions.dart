@@ -282,8 +282,9 @@ class AddContentsActions {
   }) async {
     final sMap = await AppHiveData.instance.getData(key: HiveDataPathKey.contentsAddingProgressList.name);
     if (sMap != null) {
-      final selectedContentPathsOnStorage = Map<String, dynamic>.from(sMap as Map<String, dynamic>);
-      if (selectedContentPathsOnStorage.isNotEmpty) {
+      final selectedContentPathsOnStorage = sMap as Map<String, dynamic>?;
+
+      if (selectedContentPathsOnStorage != null && selectedContentPathsOnStorage.isNotEmpty) {
         bool canContinue = false;
         await asyncUseRootStateContext(
           (context) async => await UiUtils.showCustomDialog(
@@ -296,7 +297,10 @@ class AddContentsActions {
                 canContinue = false;
                 context.pop();
               },
-              onConfirm: () => canContinue = true,
+              onConfirm: () {
+                canContinue = true;
+                context.pop();
+              },
               onPop: () {
                 canContinue = false;
                 context.pop();
@@ -341,7 +345,7 @@ class AddContentsActions {
 
     entry.remove();
     valueNotifier.dispose();
-
+    log("result: $result");
     if (result.isNotEmpty) {
       final currContext = rootNavigatorKey.currentState?.context;
       if (currContext != null && currContext.mounted) {

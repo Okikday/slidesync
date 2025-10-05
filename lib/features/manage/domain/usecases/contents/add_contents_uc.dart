@@ -241,7 +241,7 @@ class AddContentsUc {
         useRootStateContext((context) => Overlay.of(context).insert(entry));
         await AddContentsUc.addToCollectionNoRef(
           collection: lastCollection,
-          filePaths: List.castFrom<dynamic, String>(selectedContentPathsOnStorage.values.toList()),
+          filePaths: selectedContentPathsOnStorage.values.toList() as List<String>,
         );
         entry.remove();
         valueNotifier.dispose();

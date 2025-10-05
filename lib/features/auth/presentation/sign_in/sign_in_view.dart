@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,9 +44,15 @@ class SignInView extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    width: context.deviceWidth / 2,
-                    decoration: BoxDecoration(color: theme.background, shape: BoxShape.circle),
-                    child: Image.asset("assets/logo/ic_foreground.png"),
+                    clipBehavior: Clip.hardEdge,
+                    padding: EdgeInsets.all(32),
+                    decoration: BoxDecoration(shape: BoxShape.circle, boxShadow: [BoxShadow()]),
+                    child: Image.asset(
+                      "assets/logo/ic_foreground.png",
+                      width: 64,
+                      color: theme.primary,
+                      colorBlendMode: BlendMode.srcIn,
+                    ),
                   ),
                   ConstantSizing.columnSpacing(kToolbarHeight),
 
