@@ -53,7 +53,7 @@ final courseMgmtRoutes = [
         path: Routes.modifyCollections.subPath,
         pageBuilder: (context, state) => defaultTransition(
           state.pageKey,
-          defaultIncoming: TransitionType.zoom,
+          defaultIncoming: TransitionType.scale(alignment: Alignment.centerRight, from: 0, to: 1),
           child: ModifyCollectionsView(courseId: (state.extra as String)),
         ),
         routes: [

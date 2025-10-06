@@ -27,6 +27,7 @@ import 'package:slidesync/features/manage/domain/usecases/types/add_content_resu
 import 'package:slidesync/features/manage/presentation/contents/views/add_contents/adding_content_overlay.dart';
 import 'package:slidesync/features/manage/domain/usecases/contents/add_contents_uc.dart';
 import 'package:slidesync/routes/app_router.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/helpers/helpers.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_alert_dialog.dart';
 import 'package:super_clipboard/super_clipboard.dart';
@@ -282,28 +283,31 @@ class AddContentsActions {
   }) async {
     final sMap = await AppHiveData.instance.getData(key: HiveDataPathKey.contentsAddingProgressList.name);
     if (sMap != null) {
-      final selectedContentPathsOnStorage = sMap as Map<String, dynamic>?;
+      final selectedContentPathsOnStorage = Map<String, dynamic>.from(sMap);
 
-      if (selectedContentPathsOnStorage != null && selectedContentPathsOnStorage.isNotEmpty) {
+      if (selectedContentPathsOnStorage.isNotEmpty) {
         bool canContinue = false;
-        await asyncUseRootStateContext(
+        await GlobalNav.withContextAsync(
           (context) async => await UiUtils.showCustomDialog(
             context,
             child: AppAlertDialog(
               title: "Pending operation",
               content:
                   "Some of the contents you were adding didn’t finish processing last time. Would you like to complete that first?",
-              onCancel: () {
+              onCancel: () async {
                 canContinue = false;
                 context.pop();
+                await AppHiveData.instance.deleteData(key: HiveDataPathKey.contentsAddingProgressList.name);
               },
-              onConfirm: () {
+              onConfirm: () async {
                 canContinue = true;
                 context.pop();
+                await AppHiveData.instance.deleteData(key: HiveDataPathKey.contentsAddingProgressList.name);
               },
-              onPop: () {
+              onPop: () async {
                 canContinue = false;
                 context.pop();
+                await AppHiveData.instance.deleteData(key: HiveDataPathKey.contentsAddingProgressList.name);
               },
             ),
           ),
@@ -311,7 +315,7 @@ class AddContentsActions {
 
         if (canContinue) {
           await AddContentsUc.resumeFromLastAddToCollection(selectedContentPathsOnStorage, collection);
-          await asyncUseRootStateContext(
+          await GlobalNav.withContextAsync(
             (context) async => await UiUtils.showFlushBar(
               context,
               msg: "You'll be referred to add contents soon, watch out...",
@@ -337,20 +341,13 @@ class AddContentsActions {
         Overlay.of(context).insert(entry);
       }
     }
-    final List<AddContentResult> result = await AddContentsUc.addToCollection(
-      collection: collection,
-      type: type,
-      valueNotifier: valueNotifier,
-    );
+    final result = await addToCollection(collection: collection, type: type, valueNotifier: valueNotifier);
 
     entry.remove();
     valueNotifier.dispose();
     log("result: $result");
     if (result.isNotEmpty) {
-      final currContext = rootNavigatorKey.currentState?.context;
-      if (currContext != null && currContext.mounted) {
-        Overlay.of(context).insert(entry);
-      }
+      GlobalNav.overlay?.insert(entry);
       await UiUtils.showFlushBar(
         rootNavigatorKey.currentContext!,
         msg: "Successfully added course contents!",

@@ -1,38 +1,32 @@
-import 'dart:isolate';
-
 import 'package:flutter/services.dart';
 
-/// filePaths and uuids should be of same length
 class StoreContentArgs {
   final RootIsolateToken token;
   final String collectionId;
   final List<String> filePaths;
   final List<String> uuids;
-  final SendPort? port;
 
   const StoreContentArgs({
     required this.token,
     required this.collectionId,
     required this.filePaths,
     required this.uuids,
-    this.port,
   });
+
+  Map<String, dynamic> toMap() => {
+    'token': token,
+    'collectionId': collectionId,
+    'filePaths': filePaths,
+    'uuids': uuids,
+  };
+
+  factory StoreContentArgs.fromMap(Map map) => StoreContentArgs(
+    token: map['token'] as RootIsolateToken,
+    collectionId: map['collectionId'],
+    filePaths: List<String>.from(map['filePaths']),
+    uuids: List<String>.from(map['uuids']),
+  );
 }
 
-extension StoreContentArgsExtension on StoreContentArgs {
-  StoreContentArgs copyWith({
-    RootIsolateToken? token,
-    String? collectionId,
-    List<String>? filePaths,
-    List<String>? uuids,
-    SendPort? port,
-  }) {
-    return StoreContentArgs(
-      token: token ?? this.token,
-      collectionId: collectionId ?? this.collectionId,
-      filePaths: filePaths ?? this.filePaths,
-      uuids: uuids ?? this.uuids,
-      port: port ?? this.port,
-    );
-  }
-}
+
+

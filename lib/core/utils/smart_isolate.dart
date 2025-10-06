@@ -1,48 +1,404 @@
-// // ignore_for_file: unintended_html_in_doc_comment
+import 'dart:async';
+import 'dart:collection';
+import 'dart:isolate';
+
+/// Priority levels for task execution
+enum WorkPriority { low, medium, high }
+
+/// Example usage with progress and priority:
+/// ```dart
+/// final result = await SmartIsolate.run<String, int, int>(
+///   (arg, progress) async {
+///     for (int i = 1; i <= 5; i++) {
+///       await Future.delayed(Duration(seconds: 1));
+///       progress(i);
+///       if (i == 5) return 42;
+///     }
+///     return 0;
+///   },
+///   "test",
+///   priority: WorkPriority.high,
+///   onProgress: (p) => print("Progress: $p"),
+/// );
+/// print("Final result: $result");
+/// ```
+
+class SmartIsolate<TArg, TProgress, TResult> {
+  late final Isolate _isolate;
+  final ReceivePort _receivePort = ReceivePort();
+  late final StreamController<TProgress> _progressController;
+  StreamSubscription? _portSubscription;
+  bool _isRunning = false;
+
+  SmartIsolate() {
+    _progressController = StreamController<TProgress>.broadcast();
+  }
+
+  bool get isRunning => _isRunning;
+
+  static Future<TResult> run<TArg, TProgress, TResult>(
+    Future<TResult> Function(TArg arg, void Function(TProgress) emitProgress) task,
+    TArg arg, {
+    WorkPriority priority = WorkPriority.medium,
+    void Function(TProgress)? onProgress,
+  }) async {
+    final instance = SmartIsolate<TArg, TProgress, TResult>();
+
+    if (onProgress != null) {
+      instance.progressStream.listen(onProgress);
+    }
+
+    try {
+      return await instance.runWithProgress(task, arg, priority: priority);
+    } finally {
+      instance.dispose();
+    }
+  }
+
+  static Future<SmartIsolateContinuous<TArg, TResult>> runContinuous<TArg, TResult>(
+    Future<void> Function(void Function(TArg, void Function(TResult))) initialize,
+  ) async {
+    final instance = SmartIsolateContinuous<TArg, TResult>();
+    await instance._initialize(initialize);
+    return instance;
+  }
+
+  Future<TResult> runWithProgress(
+    Future<TResult> Function(TArg arg, void Function(TProgress) emitProgress) task,
+    TArg arg, {
+    WorkPriority priority = WorkPriority.medium,
+  }) async {
+    if (_isRunning) {
+      throw StateError('SmartIsolate is already running. Create a new instance or wait for completion.');
+    }
+
+    _isRunning = true;
+    final completer = Completer<TResult>();
+
+    _portSubscription = _receivePort.listen((dynamic message) {
+      if (message is _SmartIsolateProgress<TProgress>) {
+        if (!_progressController.isClosed) {
+          _progressController.add(message.data);
+        }
+      } else if (message is _SmartIsolateResult<TResult>) {
+        if (!completer.isCompleted) {
+          completer.complete(message.data);
+          _tearDown();
+        }
+      } else if (message is _SmartIsolateError) {
+        if (!completer.isCompleted) {
+          completer.completeError(SmartIsolateException(message.error.toString(), message.stack), message.stack);
+          _tearDown();
+        }
+      }
+    });
+
+    try {
+      _isolate = await Isolate.spawn<_SmartIsolatePayload<TArg, TProgress, TResult>>(
+        _entryPoint,
+        _SmartIsolatePayload<TArg, TProgress, TResult>(arg: arg, task: task, mainSendPort: _receivePort.sendPort),
+      );
+    } catch (e, stackTrace) {
+      _tearDown();
+      throw SmartIsolateException('Failed to spawn isolate: $e', stackTrace);
+    }
+
+    return completer.future;
+  }
+
+  Stream<TProgress> get progressStream => _progressController.stream;
+
+  void cancel() {
+    if (_isRunning) {
+      _isolate.kill(priority: Isolate.immediate);
+      _tearDown();
+    }
+  }
+
+  void dispose() {
+    cancel();
+  }
+
+  void _tearDown() {
+    _isRunning = false;
+    _portSubscription?.cancel();
+    if (!_progressController.isClosed) _progressController.close();
+    _receivePort.close();
+  }
+
+  static void _entryPoint<TArg, TProgress, TResult>(_SmartIsolatePayload<TArg, TProgress, TResult> payload) async {
+    try {
+      void emitProgress(TProgress data) {
+        payload.mainSendPort.send(_SmartIsolateProgress<TProgress>(data));
+      }
+
+      final result = await payload.task(payload.arg, emitProgress);
+      payload.mainSendPort.send(_SmartIsolateResult<TResult>(result));
+    } catch (e, st) {
+      payload.mainSendPort.send(_SmartIsolateError(e, st));
+    }
+  }
+}
+
+class SmartIsolateContinuous<TArg, TResult> {
+  Isolate? _isolate;
+  ReceivePort? _receivePort;
+  SendPort? _isolateSendPort;
+  StreamSubscription? _portSubscription;
+  bool _isRunning = false;
+  final Map<int, Completer<TResult>> _pendingTasks = {};
+  int _taskIdCounter = 0;
+
+  // Priority queues
+  final Queue<_QueuedTask<TArg>> _highPriorityQueue = Queue();
+  final Queue<_QueuedTask<TArg>> _mediumPriorityQueue = Queue();
+  final Queue<_QueuedTask<TArg>> _lowPriorityQueue = Queue();
+  bool _isProcessingQueue = false;
+
+  bool get isRunning => _isRunning;
+
+  Future<void> _initialize(Future<void> Function(void Function(TArg, void Function(TResult))) initialize) async {
+    if (_isRunning) {
+      throw StateError('SmartIsolateContinuous is already running');
+    }
+
+    _receivePort = ReceivePort();
+    final readyCompleter = Completer<SendPort>();
+
+    _portSubscription = _receivePort!.listen((dynamic message) {
+      if (message is SendPort) {
+        readyCompleter.complete(message);
+      } else if (message is _ContinuousIsolateResult<TResult>) {
+        final completer = _pendingTasks.remove(message.taskId);
+        completer?.complete(message.data);
+        _processNextTask();
+      } else if (message is _ContinuousIsolateError) {
+        final completer = _pendingTasks.remove(message.taskId);
+        completer?.completeError(SmartIsolateException(message.error.toString(), message.stack), message.stack);
+        _processNextTask();
+      }
+    });
+
+    try {
+      _isolate = await Isolate.spawn<_ContinuousIsolatePayload<TArg, TResult>>(
+        _continuousEntryPoint,
+        _ContinuousIsolatePayload<TArg, TResult>(mainSendPort: _receivePort!.sendPort, initialize: initialize),
+      );
+
+      _isolateSendPort = await readyCompleter.future;
+      _isRunning = true;
+    } catch (e, stackTrace) {
+      _tearDown();
+      throw SmartIsolateException('Failed to spawn continuous isolate: $e', stackTrace);
+    }
+  }
+
+  Future<TResult> execute(TArg arg, {WorkPriority priority = WorkPriority.medium}) async {
+    if (!_isRunning || _isolateSendPort == null) {
+      throw StateError('SmartIsolateContinuous is not running');
+    }
+
+    final taskId = _taskIdCounter++;
+    final completer = Completer<TResult>();
+    _pendingTasks[taskId] = completer;
+
+    final queuedTask = _QueuedTask<TArg>(taskId, arg);
+
+    // Add to appropriate priority queue
+    switch (priority) {
+      case WorkPriority.high:
+        _highPriorityQueue.add(queuedTask);
+        break;
+      case WorkPriority.medium:
+        _mediumPriorityQueue.add(queuedTask);
+        break;
+      case WorkPriority.low:
+        _lowPriorityQueue.add(queuedTask);
+        break;
+    }
+
+    _processNextTask();
+
+    return completer.future;
+  }
+
+  void _processNextTask() {
+    if (_isProcessingQueue || _isolateSendPort == null) return;
+
+    _QueuedTask<TArg>? nextTask;
+
+    // Process in priority order: high -> medium -> low
+    if (_highPriorityQueue.isNotEmpty) {
+      nextTask = _highPriorityQueue.removeFirst();
+    } else if (_mediumPriorityQueue.isNotEmpty) {
+      nextTask = _mediumPriorityQueue.removeFirst();
+    } else if (_lowPriorityQueue.isNotEmpty) {
+      nextTask = _lowPriorityQueue.removeFirst();
+    }
+
+    if (nextTask != null) {
+      _isProcessingQueue = true;
+      _isolateSendPort!.send(_ContinuousIsolateTask<TArg>(nextTask.taskId, nextTask.arg));
+    } else {
+      _isProcessingQueue = false;
+    }
+  }
+
+  void kill() {
+    if (_isRunning && _isolate != null) {
+      _isolate!.kill(priority: Isolate.immediate);
+      _tearDown();
+    }
+  }
+
+  void dispose() {
+    kill();
+  }
+
+  void _tearDown() {
+    _isRunning = false;
+    _portSubscription?.cancel();
+    _receivePort?.close();
+    _receivePort = null;
+    _isolateSendPort = null;
+
+    // Clear all queues
+    _highPriorityQueue.clear();
+    _mediumPriorityQueue.clear();
+    _lowPriorityQueue.clear();
+
+    for (final completer in _pendingTasks.values) {
+      if (!completer.isCompleted) {
+        completer.completeError(SmartIsolateException('Isolate was killed', null));
+      }
+    }
+    _pendingTasks.clear();
+  }
+
+  static void _continuousEntryPoint<TArg, TResult>(_ContinuousIsolatePayload<TArg, TResult> payload) async {
+    final receivePort = ReceivePort();
+    payload.mainSendPort.send(receivePort.sendPort);
+
+    late final void Function(TArg, void Function(TResult)) handler;
+
+    try {
+      await payload.initialize((TArg arg, void Function(TResult) respond) {
+        handler = (TArg a, void Function(TResult) r) async {
+          respond(r as TResult);
+        };
+      });
+    } catch (e, st) {
+      payload.mainSendPort.send(_ContinuousIsolateError(-1, e, st));
+      return;
+    }
+
+    await for (final message in receivePort) {
+      if (message is _ContinuousIsolateTask<TArg>) {
+        try {
+          final completer = Completer<TResult>();
+
+          handler(message.arg, (TResult result) {
+            if (!completer.isCompleted) {
+              completer.complete(result);
+            }
+          });
+
+          final result = await completer.future;
+          payload.mainSendPort.send(_ContinuousIsolateResult<TResult>(message.taskId, result));
+        } catch (e, st) {
+          payload.mainSendPort.send(_ContinuousIsolateError(message.taskId, e, st));
+        }
+      }
+    }
+  }
+}
+
+class SmartIsolateException implements Exception {
+  final String message;
+  final StackTrace? stackTrace;
+
+  SmartIsolateException(this.message, [this.stackTrace]);
+
+  @override
+  String toString() => 'SmartIsolateException: $message';
+}
+
+class _QueuedTask<TArg> {
+  final int taskId;
+  final TArg arg;
+
+  _QueuedTask(this.taskId, this.arg);
+}
+
+class _SmartIsolatePayload<TArg, TProgress, TResult> {
+  final TArg arg;
+  final Future<TResult> Function(TArg arg, void Function(TProgress) emitProgress) task;
+  final SendPort mainSendPort;
+
+  _SmartIsolatePayload({required this.arg, required this.task, required this.mainSendPort});
+}
+
+class _SmartIsolateProgress<TProgress> {
+  final TProgress data;
+  _SmartIsolateProgress(this.data);
+}
+
+class _SmartIsolateResult<TResult> {
+  final TResult data;
+  _SmartIsolateResult(this.data);
+}
+
+class _SmartIsolateError {
+  final Object error;
+  final StackTrace stack;
+  _SmartIsolateError(this.error, this.stack);
+}
+
+class _ContinuousIsolatePayload<TArg, TResult> {
+  final SendPort mainSendPort;
+  final Future<void> Function(void Function(TArg, void Function(TResult))) initialize;
+
+  _ContinuousIsolatePayload({required this.mainSendPort, required this.initialize});
+}
+
+class _ContinuousIsolateTask<TArg> {
+  final int taskId;
+  final TArg arg;
+  _ContinuousIsolateTask(this.taskId, this.arg);
+}
+
+class _ContinuousIsolateResult<TResult> {
+  final int taskId;
+  final TResult data;
+  _ContinuousIsolateResult(this.taskId, this.data);
+}
+
+class _ContinuousIsolateError {
+  final int taskId;
+  final Object error;
+  final StackTrace stack;
+  _ContinuousIsolateError(this.taskId, this.error, this.stack);
+}
 
 // import 'dart:async';
 // import 'dart:isolate';
-// import 'dart:developer' as developer;
 
-// /// ------------------------------------------------------------
-// /// IMPROVED SmartIsolate with better error handling and validation
-// /// 
-// /// KEY LIMITATIONS OF DART ISOLATES:
-// /// 1. Only top-level or static functions can be passed to isolates
-// /// 2. Functions cannot capture local variables, instance variables, or methods
-// /// 3. All arguments must be "sendable" (primitives, collections of primitives, SendPort, etc.)
-// /// 
-// /// USAGE:
-// /// 
+// /// Example usage with progress:
 // /// ```dart
-// /// // ✅ CORRECT - Top-level function with sendable arguments
-// /// Future<void> processImagesTask(
-// ///   Map<String, dynamic> args,
-// ///   void Function(double) emitProgress,
-// ///   void Function(List<String>) emitResult,
-// /// ) async {
-// ///   final imagePaths = List<String>.from(args['imagePaths']);
-// ///   final targetSize = args['targetSize'] as double;
-// ///   
-// ///   final results = <String>[];
-// ///   for (int i = 0; i < imagePaths.length; i++) {
-// ///     // Process image...
-// ///     emitProgress((i + 1) / imagePaths.length);
-// ///   }
-// ///   emitResult(results);
-// /// }
-// /// 
-// /// // Usage:
-// /// final isolate = SmartIsolate<Map<String, dynamic>, double, List<String>>();
-// /// final result = await isolate.runWithProgress(
-// ///   processImagesTask,
-// ///   {
-// ///     'imagePaths': ['/path/1.jpg', '/path/2.jpg'],
-// ///     'targetSize': 0.05,
+// /// final result = await SmartIsolate.run<String, int, int>(
+// ///   (arg, progress) async {
+// ///     for (int i = 1; i <= 5; i++) {
+// ///       await Future.delayed(Duration(seconds: 1));
+// ///       progress(i); // Yeah, basically like sendPort.send() but typed
+// ///       if (i == 5) return 42;
+// ///     }
+// ///     return 0;
 // ///   },
+// ///   "test",
+// ///   onProgress: (p) => print("Progress: $p"),
 // /// );
+// /// print("Final result: $result");
 // /// ```
-// /// ------------------------------------------------------------
 
 // class SmartIsolate<TArg, TProgress, TResult> {
 //   late final Isolate _isolate;
@@ -55,66 +411,45 @@
 //     _progressController = StreamController<TProgress>.broadcast();
 //   }
 
-//   /// Returns true if the isolate is currently running
 //   bool get isRunning => _isRunning;
 
-//   /// Validates that the function and arguments can be sent to an isolate
-//   /// This helps catch common mistakes early
-//   bool _validateForIsolate(dynamic function, dynamic arg) {
+//   static Future<TResult> run<TArg, TProgress, TResult>(
+//     Future<TResult> Function(TArg arg, void Function(TProgress) emitProgress) task,
+//     TArg arg, {
+//     void Function(TProgress)? onProgress,
+//   }) async {
+//     final instance = SmartIsolate<TArg, TProgress, TResult>();
+
+//     if (onProgress != null) {
+//       instance.progressStream.listen(onProgress);
+//     }
+
 //     try {
-//       // Try to create a minimal payload to test sendability
-//       // final testPayload = _SmartIsolatePayload<TArg, TProgress, TResult>(
-//       //   arg: arg,
-//       //   task: function,
-//       //   mainSendPort: _receivePort.sendPort,
-//       // );
-      
-//       // If we can serialize the payload, it should work
-//       // This is a basic check - some edge cases might still fail
-//       return true;
-//     } catch (e) {
-//       developer.log('SmartIsolate validation failed: $e', name: 'SmartIsolate');
-//       return false;
+//       return await instance.runWithProgress(task, arg);
+//     } finally {
+//       instance.dispose();
 //     }
 //   }
 
-//   /// Spawns a new isolate that runs [task]. Returns a Future that completes
-//   /// with the result. Progress updates are emitted on [progressStream].
-//   ///
-//   /// [task] MUST be a top-level or static function of signature:
-//   ///   Future<void> myTask(
-//   ///     TArg arg,
-//   ///     void Function(TProgress) emitProgress,
-//   ///     void Function(TResult) emitResult,
-//   ///   )
-//   ///
-//   /// IMPORTANT: The function cannot capture any local variables, instance
-//   /// variables, or methods. All data must be passed through [arg].
+//   static Future<SmartIsolateContinuous<TArg, TResult>> runContinuous<TArg, TResult>(
+//     Future<void> Function(void Function(TArg, void Function(TResult))) initialize,
+//   ) async {
+//     final instance = SmartIsolateContinuous<TArg, TResult>();
+//     await instance._initialize(initialize);
+//     return instance;
+//   }
+
 //   Future<TResult> runWithProgress(
-//     Future<void> Function(
-//       TArg arg,
-//       void Function(TProgress) emitProgress,
-//       void Function(TResult) emitResult,
-//     ) task,
+//     Future<TResult> Function(TArg arg, void Function(TProgress) emitProgress) task,
 //     TArg arg,
 //   ) async {
 //     if (_isRunning) {
 //       throw StateError('SmartIsolate is already running. Create a new instance or wait for completion.');
 //     }
 
-//     // Validate that the function and arguments are sendable
-//     if (!_validateForIsolate(task, arg)) {
-//       throw ArgumentError(
-//         'The provided function or arguments cannot be sent to an isolate. '
-//         'Ensure the function is top-level or static and doesn\'t capture local variables. '
-//         'All arguments must be sendable types (primitives, collections, etc.).'
-//       );
-//     }
-
 //     _isRunning = true;
 //     final completer = Completer<TResult>();
 
-//     // Listen for messages from the spawned isolate
 //     _portSubscription = _receivePort.listen((dynamic message) {
 //       if (message is _SmartIsolateProgress<TProgress>) {
 //         if (!_progressController.isClosed) {
@@ -127,53 +462,27 @@
 //         }
 //       } else if (message is _SmartIsolateError) {
 //         if (!completer.isCompleted) {
-//           completer.completeError(
-//             SmartIsolateException(message.error.toString(), message.stack),
-//             message.stack,
-//           );
+//           completer.completeError(SmartIsolateException(message.error.toString(), message.stack), message.stack);
 //           _tearDown();
 //         }
 //       }
 //     });
 
 //     try {
-//       // Spawn the isolate
 //       _isolate = await Isolate.spawn<_SmartIsolatePayload<TArg, TProgress, TResult>>(
 //         _entryPoint,
-//         _SmartIsolatePayload<TArg, TProgress, TResult>(
-//           arg: arg,
-//           task: task,
-//           mainSendPort: _receivePort.sendPort,
-//         ),
+//         _SmartIsolatePayload<TArg, TProgress, TResult>(arg: arg, task: task, mainSendPort: _receivePort.sendPort),
 //       );
 //     } catch (e, stackTrace) {
 //       _tearDown();
-      
-//       // Provide helpful error messages for common issues
-//       if (e.toString().contains('unsendable')) {
-//         throw SmartIsolateException(
-//           'Cannot send function or arguments to isolate. '
-//           'Common causes:\n'
-//           '1. Function captures local variables (use top-level/static functions)\n'
-//           '2. Arguments contain non-sendable objects (use primitive types)\n'
-//           '3. Function references instance methods or variables\n'
-//           'Original error: $e',
-//           stackTrace,
-//         );
-//       }
-      
 //       throw SmartIsolateException('Failed to spawn isolate: $e', stackTrace);
 //     }
 
 //     return completer.future;
 //   }
 
-  
-
-//   /// Stream of progress events
 //   Stream<TProgress> get progressStream => _progressController.stream;
 
-//   /// Cancels the running isolate
 //   void cancel() {
 //     if (_isRunning) {
 //       _isolate.kill(priority: Isolate.immediate);
@@ -181,7 +490,6 @@
 //     }
 //   }
 
-//   /// Disposes of all resources
 //   void dispose() {
 //     cancel();
 //   }
@@ -193,27 +501,143 @@
 //     _receivePort.close();
 //   }
 
-//   /// The entry point for the spawned isolate
-//   static void _entryPoint<TArg, TProgress, TResult>(
-//     _SmartIsolatePayload<TArg, TProgress, TResult> payload,
-//   ) async {
+//   static void _entryPoint<TArg, TProgress, TResult>(_SmartIsolatePayload<TArg, TProgress, TResult> payload) async {
 //     try {
 //       void emitProgress(TProgress data) {
 //         payload.mainSendPort.send(_SmartIsolateProgress<TProgress>(data));
 //       }
 
-//       void emitResult(TResult data) {
-//         payload.mainSendPort.send(_SmartIsolateResult<TResult>(data));
-//       }
-
-//       await payload.task(payload.arg, emitProgress, emitResult);
+//       final result = await payload.task(payload.arg, emitProgress);
+//       payload.mainSendPort.send(_SmartIsolateResult<TResult>(result));
 //     } catch (e, st) {
 //       payload.mainSendPort.send(_SmartIsolateError(e, st));
 //     }
 //   }
 // }
 
-// /// Custom exception for SmartIsolate errors
+// class SmartIsolateContinuous<TArg, TResult> {
+//   Isolate? _isolate;
+//   ReceivePort? _receivePort;
+//   SendPort? _isolateSendPort;
+//   StreamSubscription? _portSubscription;
+//   bool _isRunning = false;
+//   final Map<int, Completer<TResult>> _pendingTasks = {};
+//   int _taskIdCounter = 0;
+
+//   bool get isRunning => _isRunning;
+
+//   Future<void> _initialize(Future<void> Function(void Function(TArg, void Function(TResult))) initialize) async {
+//     if (_isRunning) {
+//       throw StateError('SmartIsolateContinuous is already running');
+//     }
+
+//     _receivePort = ReceivePort();
+//     final readyCompleter = Completer<SendPort>();
+
+//     _portSubscription = _receivePort!.listen((dynamic message) {
+//       if (message is SendPort) {
+//         readyCompleter.complete(message);
+//       } else if (message is _ContinuousIsolateResult<TResult>) {
+//         final completer = _pendingTasks.remove(message.taskId);
+//         completer?.complete(message.data);
+//       } else if (message is _ContinuousIsolateError) {
+//         final completer = _pendingTasks.remove(message.taskId);
+//         completer?.completeError(SmartIsolateException(message.error.toString(), message.stack), message.stack);
+//       }
+//     });
+
+//     try {
+//       _isolate = await Isolate.spawn<_ContinuousIsolatePayload<TArg, TResult>>(
+//         _continuousEntryPoint,
+//         _ContinuousIsolatePayload<TArg, TResult>(mainSendPort: _receivePort!.sendPort, initialize: initialize),
+//       );
+
+//       _isolateSendPort = await readyCompleter.future;
+//       _isRunning = true;
+//     } catch (e, stackTrace) {
+//       _tearDown();
+//       throw SmartIsolateException('Failed to spawn continuous isolate: $e', stackTrace);
+//     }
+//   }
+
+//   Future<TResult> execute(TArg arg) async {
+//     if (!_isRunning || _isolateSendPort == null) {
+//       throw StateError('SmartIsolateContinuous is not running');
+//     }
+
+//     final taskId = _taskIdCounter++;
+//     final completer = Completer<TResult>();
+//     _pendingTasks[taskId] = completer;
+
+//     _isolateSendPort!.send(_ContinuousIsolateTask<TArg>(taskId, arg));
+
+//     return completer.future;
+//   }
+
+//   void kill() {
+//     if (_isRunning && _isolate != null) {
+//       _isolate!.kill(priority: Isolate.immediate);
+//       _tearDown();
+//     }
+//   }
+
+//   void dispose() {
+//     kill();
+//   }
+
+//   void _tearDown() {
+//     _isRunning = false;
+//     _portSubscription?.cancel();
+//     _receivePort?.close();
+//     _receivePort = null;
+//     _isolateSendPort = null;
+
+//     for (final completer in _pendingTasks.values) {
+//       if (!completer.isCompleted) {
+//         completer.completeError(SmartIsolateException('Isolate was killed', null));
+//       }
+//     }
+//     _pendingTasks.clear();
+//   }
+
+//   static void _continuousEntryPoint<TArg, TResult>(_ContinuousIsolatePayload<TArg, TResult> payload) async {
+//     final receivePort = ReceivePort();
+//     payload.mainSendPort.send(receivePort.sendPort);
+
+//     late final void Function(TArg, void Function(TResult)) handler;
+
+//     try {
+//       await payload.initialize((TArg arg, void Function(TResult) respond) {
+//         handler = (TArg a, void Function(TResult) r) async {
+//           respond(r as TResult);
+//         };
+//       });
+//     } catch (e, st) {
+//       payload.mainSendPort.send(_ContinuousIsolateError(-1, e, st));
+//       return;
+//     }
+
+//     await for (final message in receivePort) {
+//       if (message is _ContinuousIsolateTask<TArg>) {
+//         try {
+//           final completer = Completer<TResult>();
+
+//           handler(message.arg, (TResult result) {
+//             if (!completer.isCompleted) {
+//               completer.complete(result);
+//             }
+//           });
+
+//           final result = await completer.future;
+//           payload.mainSendPort.send(_ContinuousIsolateResult<TResult>(message.taskId, result));
+//         } catch (e, st) {
+//           payload.mainSendPort.send(_ContinuousIsolateError(message.taskId, e, st));
+//         }
+//       }
+//     }
+//   }
+// }
+
 // class SmartIsolateException implements Exception {
 //   final String message;
 //   final StackTrace? stackTrace;
@@ -224,58 +648,12 @@
 //   String toString() => 'SmartIsolateException: $message';
 // }
 
-// /// Helper class to create sendable task arguments
-// class IsolateTaskArgs {
-//   final Map<String, dynamic> _data = {};
-
-//   IsolateTaskArgs();
-
-//   /// Add a sendable value to the arguments
-//   void add(String key, dynamic value) {
-//     if (_isSendable(value)) {
-//       _data[key] = value;
-//     } else {
-//       throw ArgumentError('Value for key "$key" is not sendable to isolate: $value');
-//     }
-//   }
-
-//   /// Get a value from the arguments
-//   T get<T>(String key) {
-//     if (!_data.containsKey(key)) {
-//       throw ArgumentError('Key "$key" not found in task arguments');
-//     }
-//     return _data[key] as T;
-//   }
-
-//   /// Get the raw data map
-//   Map<String, dynamic> get data => Map.unmodifiable(_data);
-
-//   /// Check if a value can be sent to an isolate
-//   static bool _isSendable(dynamic value) {
-//     if (value == null) return true;
-//     if (value is num || value is String || value is bool) return true;
-//     if (value is List) return value.every(_isSendable);
-//     if (value is Map) return value.values.every(_isSendable) && value.keys.every(_isSendable);
-//     if (value is Set) return value.every(_isSendable);
-//     return false;
-//   }
-// }
-
-// // Internal classes remain the same
 // class _SmartIsolatePayload<TArg, TProgress, TResult> {
 //   final TArg arg;
-//   final Future<void> Function(
-//     TArg arg,
-//     void Function(TProgress) emitProgress,
-//     void Function(TResult) emitResult,
-//   ) task;
+//   final Future<TResult> Function(TArg arg, void Function(TProgress) emitProgress) task;
 //   final SendPort mainSendPort;
 
-//   _SmartIsolatePayload({
-//     required this.arg,
-//     required this.task,
-//     required this.mainSendPort,
-//   });
+//   _SmartIsolatePayload({required this.arg, required this.task, required this.mainSendPort});
 // }
 
 // class _SmartIsolateProgress<TProgress> {
@@ -292,4 +670,30 @@
 //   final Object error;
 //   final StackTrace stack;
 //   _SmartIsolateError(this.error, this.stack);
+// }
+
+// class _ContinuousIsolatePayload<TArg, TResult> {
+//   final SendPort mainSendPort;
+//   final Future<void> Function(void Function(TArg, void Function(TResult))) initialize;
+
+//   _ContinuousIsolatePayload({required this.mainSendPort, required this.initialize});
+// }
+
+// class _ContinuousIsolateTask<TArg> {
+//   final int taskId;
+//   final TArg arg;
+//   _ContinuousIsolateTask(this.taskId, this.arg);
+// }
+
+// class _ContinuousIsolateResult<TResult> {
+//   final int taskId;
+//   final TResult data;
+//   _ContinuousIsolateResult(this.taskId, this.data);
+// }
+
+// class _ContinuousIsolateError {
+//   final int taskId;
+//   final Object error;
+//   final StackTrace stack;
+//   _ContinuousIsolateError(this.taskId, this.error, this.stack);
 // }

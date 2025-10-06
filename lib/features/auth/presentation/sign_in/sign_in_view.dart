@@ -46,7 +46,7 @@ class SignInView extends ConsumerWidget {
                   Container(
                     clipBehavior: Clip.hardEdge,
                     padding: EdgeInsets.all(32),
-                    decoration: BoxDecoration(shape: BoxShape.circle, boxShadow: [BoxShadow()]),
+                    decoration: BoxDecoration(shape: BoxShape.circle, color: theme.onPrimary.withValues(alpha: 0.5)),
                     child: Image.asset(
                       "assets/logo/ic_foreground.png",
                       width: 64,

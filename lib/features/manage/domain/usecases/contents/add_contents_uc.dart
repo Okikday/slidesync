@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,7 @@ import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/basic_utils.dart';
 import 'package:slidesync/core/utils/isolate_worker.dart';
 import 'package:slidesync/core/utils/result.dart';
+import 'package:slidesync/core/utils/smart_isolate.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
@@ -28,87 +30,80 @@ import 'package:slidesync/features/manage/domain/usecases/types/add_content_resu
 import 'package:slidesync/features/manage/domain/usecases/types/store_content_args.dart';
 import 'package:slidesync/features/manage/presentation/contents/views/add_contents/adding_content_overlay.dart';
 import 'package:slidesync/routes/app_router.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/helpers/helpers.dart';
 import 'package:uuid/uuid.dart';
+import 'package:worker_manager/worker_manager.dart';
 
-class AddContentsUc {
-  static Future<List<AddContentResult>> addToCollection({
-    required CourseCollection collection,
-    required CourseContentType type,
-    ValueNotifier<String>? valueNotifier,
-  }) async {
-    final Result<dynamic> outcome = await Result.tryRunAsync(() async {
-      valueNotifier?.value = "Consulting system selection";
-      if (rootNavigatorKey.currentContext!.mounted) {
-        // ignore: use_build_context_synchronously
-        Navigator.pop(rootNavigatorKey.currentContext!);
-      }
-      UiUtils.showLoadingDialog(rootNavigatorKey.currentContext!, message: "Consulting system selection");
+Future<List<AddContentResult>> addToCollection({
+  required CourseCollection collection,
+  required CourseContentType type,
+  ValueNotifier<String>? valueNotifier,
+}) async {
+  final Result<dynamic> outcome = await Result.tryRunAsync(() async {
+    valueNotifier?.value = "Consulting system selection";
+    if (rootNavigatorKey.currentContext!.mounted) {
+      // ignore: use_build_context_synchronously
+      Navigator.pop(rootNavigatorKey.currentContext!);
+    }
+    UiUtils.showLoadingDialog(rootNavigatorKey.currentContext!, message: "Consulting system selection");
 
-      // Redirect to add contents
-      final selectedContents = await SelectContentsUc().referToAddContents(type);
-      valueNotifier?.value = "Scanning contents";
-      if (rootNavigatorKey.currentContext!.mounted) {
-        // ignore: use_build_context_synchronously
-        Navigator.pop(rootNavigatorKey.currentContext!);
-      }
-      if (selectedContents == null) return "No content was selected!";
+    // Redirect to add contents
+    final selectedContents = await SelectContentsUc().referToAddContents(type);
+    valueNotifier?.value = "Scanning contents";
+    if (rootNavigatorKey.currentContext!.mounted) {
+      // ignore: use_build_context_synchronously
+      Navigator.pop(rootNavigatorKey.currentContext!);
+    }
+    if (selectedContents == null) return "No content was selected!";
 
-      final RootIsolateToken? rootIsolateToken = RootIsolateToken.instance;
-      if (rootIsolateToken == null) return "Unable to process adding content in background";
-      valueNotifier?.value = "Adding contents...\nPlease, do not close app until this is complete";
-      final filePaths = <String>[for (final value in selectedContents) value.path];
+    final RootIsolateToken? rootIsolateToken = RootIsolateToken.instance;
+    if (rootIsolateToken == null) return "Unable to process adding content in background";
+    valueNotifier?.value = "Adding contents...\nPlease, do not close app until this is complete";
+    final filePaths = <String>[for (final value in selectedContents) value.path];
 
-      final uuids = [for (int i = 0; i < filePaths.length; i++) const Uuid().v4()];
-      final uuidFileNames = [
-        for (int i = 0; i < filePaths.length; i++) p.setExtension(uuids[i], p.extension(filePaths[i])),
-      ];
+    final uuids = [for (int i = 0; i < filePaths.length; i++) const Uuid().v4()];
+    final uuidFileNames = [
+      for (int i = 0; i < filePaths.length; i++) p.setExtension(uuids[i], p.extension(filePaths[i])),
+    ];
 
-      await Result.tryRunAsync(() async {
-        await AppHiveData.instance.setData(
-          key: HiveDataPathKey.contentsAddingProgressList.name,
-          value: <String, dynamic>{
-            for (int i = 0; i < uuidFileNames.length; i++) uuidFileNames[i]: filePaths[i],
-            'collectionId': collection.collectionId,
-          },
-        );
-      });
-      final args = StoreContentArgs(
-        token: rootIsolateToken,
-        collectionId: collection.collectionId,
-        filePaths: filePaths,
-        uuids: uuids,
-      );
-      List<AddContentResult> result = await IsolateWorker.executeWithPort<List<AddContentResult>, AddContentProgress>(
-        (port) async {
-          final res = await storeContents(args.copyWith(port: port));
-          return res;
-        },
-        onMessage: (progress) async {
-          valueNotifier?.value =
-              "Processing contents(${((progress.progress ?? .0) * 100).toInt()})...\nPlease, do not close app until this is complete.";
-          log("Progress of processing course: $progress");
-          if (progress.completed) {
-            valueNotifier?.value = "Completed!";
-          }
+    await Result.tryRunAsync(() async {
+      await AppHiveData.instance.setData(
+        key: HiveDataPathKey.contentsAddingProgressList.name,
+        value: <String, dynamic>{
+          for (int i = 0; i < uuidFileNames.length; i++) uuidFileNames[i]: filePaths[i],
+          'collectionId': collection.collectionId,
         },
       );
-      await Result.tryRunAsync(() async {
-        await AppHiveData.instance.deleteData(key: HiveDataPathKey.contentsAddingProgressList.name);
-      });
+    });
+    final args = StoreContentArgs(
+      token: rootIsolateToken,
+      collectionId: collection.collectionId,
+      filePaths: filePaths,
+      uuids: uuids,
+    ).toMap();
 
-      return result;
+    final result = await storeContents(args, valueNotifier);
+
+    await Result.tryRunAsync(() async {
+      await AppHiveData.instance.deleteData(key: HiveDataPathKey.contentsAddingProgressList.name);
     });
 
-    if (outcome.isSuccess && outcome.data is List) {
-      return outcome.data as List<AddContentResult>;
-    } else {
-      log("An error occurred while adding to collection! => ${outcome.data}");
-      log("${outcome.message}");
-      return [];
-    }
-  }
+    log("Done");
 
+    return result.map((e) => AddContentResult.fromMap(e)).toList();
+  });
+
+  if (outcome.isSuccess && outcome.data is List) {
+    return outcome.data as List<AddContentResult>;
+  } else {
+    log("An error occurred while adding to collection! => ${outcome.data}");
+    log("${outcome.message}");
+    return [];
+  }
+}
+
+class AddContentsUc {
   static Future<List<AddContentResult>> addToCollectionNoRef({
     required CourseCollection collection,
     required List<String> filePaths,
@@ -140,26 +135,14 @@ class AddContentsUc {
         collectionId: collection.collectionId,
         filePaths: filePaths,
         uuids: uuids,
-      );
-      List<AddContentResult> result = await IsolateWorker.executeWithPort<List<AddContentResult>, AddContentProgress>(
-        (port) async {
-          final res = await storeContents(args.copyWith(port: port));
-          return res;
-        },
-        onMessage: (progress) async {
-          valueNotifier?.value =
-              "Processing contents(${((progress.progress ?? .0) * 100).toInt()})...\nPlease, do not close app until this is complete.";
-          log("Progress of processing course: $progress");
-          if (progress.completed) {
-            valueNotifier?.value = "Completed!";
-          }
-        },
-      );
+      ).toMap();
+
+      final result = await storeContents(args, valueNotifier);
       await Result.tryRunAsync(() async {
         await AppHiveData.instance.deleteData(key: HiveDataPathKey.contentsAddingProgressList.name);
       });
 
-      return result;
+      return result.map((e) => AddContentResult.fromMap(e)).toList();
     });
 
     if (outcome.isSuccess && outcome.data is List) {
@@ -175,7 +158,7 @@ class AddContentsUc {
     Map<String, dynamic> selectedContentPathsOnStorage,
     CourseCollection collection,
   ) async {
-    useRootStateContext(
+    GlobalNav.withContext(
       (context) => UiUtils.showLoadingDialog(context, canPop: false, message: "Just a moment, initializing..."),
     );
     final collectionId = selectedContentPathsOnStorage['collectionId'] as String?;
@@ -230,7 +213,7 @@ class AddContentsUc {
           await CourseContentRepo.addContent(content);
         }
 
-        useRootStateContext((context) => context.pop());
+        GlobalNav.withContext((context) => context.pop());
         ValueNotifier<String> valueNotifier = ValueNotifier("Loading...");
         final entry = OverlayEntry(
           builder: (context) => ValueListenableBuilder(
@@ -238,7 +221,7 @@ class AddContentsUc {
             builder: (context, value, child) => LoadingOverlay(message: value),
           ),
         );
-        useRootStateContext((context) => Overlay.of(context).insert(entry));
+        GlobalNav.withContext((context) => Overlay.of(context).insert(entry));
         await AddContentsUc.addToCollectionNoRef(
           collection: lastCollection,
           filePaths: selectedContentPathsOnStorage.values.toList() as List<String>,

@@ -8,7 +8,6 @@ import 'package:pdfrx/pdfrx.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/core/utils/isolate_worker.dart';
-import 'package:worker_manager/worker_manager.dart';
 
 import 'package:slidesync/app.dart';
 
@@ -23,11 +22,10 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await AppHiveData.instance.initialize();
   await dotenv.load();
-  await IsolateWorker.init(enableLogging: true);
 
   if (!kIsWeb) await IsarData.initializeDefault();
   pdfrxFlutterInitialize();
-  await workerManager.init(isolatesCount: 1);
+  await IsolateWorker.init();
 
   runApp(
     ProviderScope(

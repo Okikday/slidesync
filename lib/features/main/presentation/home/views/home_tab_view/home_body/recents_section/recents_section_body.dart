@@ -78,8 +78,9 @@ class RecentsSectionBody extends ConsumerWidget {
                             UiUtils.showFlushBar(context, msg: "Preparing file...");
                             final load = await CourseContentRepo.getByContentId(content.contentId);
                             if (load == null) return;
+                            final metadata = jsonDecode(load.metadataJson) as Map<String, dynamic>;
                             if (context.mounted) {
-                              await ShareContentUc().shareFile(context, File(load.path.filePath), filename: load.title);
+                              await ShareContentUc().shareFile(context, File(load.path.filePath), filename: ((metadata['filename'] ?? metadata['fileName']) ?? load.title));
                             }
                           },
                           onDelete: () async {
