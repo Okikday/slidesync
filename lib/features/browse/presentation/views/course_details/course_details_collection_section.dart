@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:slidesync/routes/routes.dart';
-import 'package:slidesync/features/browse/presentation/providers/course_details_controller.dart';
+import 'package:slidesync/features/browse/presentation/controlllers/src/course_details_controller/course_details_controller.dart';
 import 'package:slidesync/features/browse/presentation/views/course_details/course_categories_card.dart';
 import 'package:slidesync/features/manage/presentation/collections/views/modify_collections/create_collection_bottom_sheet.dart';
 import 'package:slidesync/features/manage/presentation/collections/views/modify_collections/empty_collections_view.dart';

@@ -7,7 +7,7 @@ final linkPreviewDataProviderFamily = FutureProvider.family((ref, CourseContent 
   return await ContentCardActions.resolvePreviewPath(content);
 }, isAutoDispose: true);
 
-class ContentCardProviders {
+class ContentCardController {
   static FutureProvider<FileDetails> fetchLinkPreviewDataProvider(CourseContent content) =>
       linkPreviewDataProviderFamily(content);
 }

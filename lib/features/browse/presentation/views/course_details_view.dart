@@ -4,7 +4,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/features/browse/presentation/providers/course_details_controller.dart';
+import 'package:slidesync/features/browse/presentation/controlllers/src/course_details_controller/course_details_controller.dart';
 import 'package:slidesync/features/browse/presentation/views/course_details/course_details_collection_section.dart';
 import 'package:slidesync/features/browse/presentation/views/course_details/course_details_header.dart';
 import 'package:slidesync/features/browse/presentation/views/course_details/positioned_course_options.dart';

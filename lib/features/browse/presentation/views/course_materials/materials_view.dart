@@ -6,7 +6,7 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
-import 'package:slidesync/features/browse/presentation/providers/course_materials_controller.dart';
+import 'package:slidesync/features/browse/presentation/controlllers/src/course_materials_controller/course_materials_controller.dart';
 import 'package:slidesync/features/browse/presentation/views/course_materials/content_card.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';

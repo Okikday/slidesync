@@ -14,7 +14,6 @@ import 'package:slidesync/core/base/leak_prevention.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 
-
 const int limit = 20;
 
 class CourseMaterialsPagination extends LeakPrevention {
@@ -37,8 +36,11 @@ class CourseMaterialsPagination extends LeakPrevention {
       CourseMaterialsPagination._(parentId, sortOption: sortOption ?? CourseSortOption.dateModifiedDesc);
 
   Future<List<CourseContent>> fetchPage(int pageKey, int limit) async {
+    //   void other(String arg, void Function(String result) second) {}
+    // Future<void> initialize(void Function(String arg, void Function(String result)) other) async {}
+    // final isolateInit = await SmartIsolate.runContinuous(initialize);
     if (isFirstTime && pageKey == 0) {
-      await Future.delayed(Durations.extralong1); // Wait for the page to finish animating - approx...
+      await Future.delayed(Durations.medium1); // Wait for the page to finish animating - approx...
       isFirstTime = false;
     }
     if (_fetching) {
@@ -150,7 +152,7 @@ Future<List<String>> doFetchInIsolate(DoFetchInIsolateArgs args) async {
   BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken);
   await IsarData.initialize(collectionSchemas: isarSchemas, inspector: false);
   final result = await _doFetch(args.parentId, args.pageKey, args.limit, args.sortOption);
-  await IsarData.close();
+
   final jsonList = result.map((e) => e.toJson()).toList();
   return jsonList;
   // log("Result: $result");

@@ -17,31 +17,21 @@ class LoadingOverlay extends ConsumerWidget {
     final loadingCard = ClipRSuperellipse(
       borderRadius: BorderRadius.circular(44),
       clipBehavior: Clip.hardEdge,
-      child: SizedBox(
-        // width: 120,
-        height: 48,
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-          child: Container(
-            decoration: BoxDecoration(color: theme.altBackgroundPrimary),
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              spacing: 12,
-              children: [
-                CustomText(
-                  message ?? "Loading",
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: theme.supportingText,
-                ),
-                SizedBox.square(
-                  dimension: 14,
-                  child: CircularProgressIndicator(strokeCap: StrokeCap.round, color: theme.primaryColor),
-                ),
-              ],
+      child: Container(
+        decoration: BoxDecoration(color: theme.altBackgroundPrimary),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        height: 40,
+        constraints: BoxConstraints(maxWidth: 100),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 12,
+          children: [
+            CustomText(message ?? "Loading", fontSize: 10, fontWeight: FontWeight.bold, color: theme.supportingText),
+            SizedBox.square(
+              dimension: 14,
+              child: CircularProgressIndicator(strokeCap: StrokeCap.round, color: theme.primaryColor),
             ),
-          ),
+          ],
         ),
       ),
     );

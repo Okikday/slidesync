@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
@@ -17,7 +18,6 @@ import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
-
 
 import 'recent_list_tile.dart';
 
@@ -42,6 +42,7 @@ class RecentsSectionBody extends ConsumerWidget {
             itemCount: data.length,
             itemBuilder: (context, index) {
               final content = data[index];
+              log("${jsonDecode(content.metadataJson)}");
               final previewPath = jsonDecode(content.metadataJson)['previewPath'];
               return RecentListTile(
                 dataModel: RecentListTileModel(
@@ -80,7 +81,11 @@ class RecentsSectionBody extends ConsumerWidget {
                             if (load == null) return;
                             final metadata = jsonDecode(load.metadataJson) as Map<String, dynamic>;
                             if (context.mounted) {
-                              await ShareContentUc().shareFile(context, File(load.path.filePath), filename: ((metadata['filename'] ?? metadata['fileName']) ?? load.title));
+                              await ShareContentUc().shareFile(
+                                context,
+                                File(load.path.filePath),
+                                filename: ((metadata['filename'] ?? metadata['fileName']) ?? load.title),
+                              );
                             }
                           },
                           onDelete: () async {

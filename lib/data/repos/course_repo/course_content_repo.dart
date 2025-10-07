@@ -103,6 +103,15 @@ class CourseContentRepo {
         return false;
       }
       await courseTrack.contentTracks.load();
+
+      // Calculate new course progress before adding the new content track
+      final currentTotalProgress = courseTrack.contentTracks.fold<double>(
+        0.0,
+        (sum, track) => sum + (track.progress ?? 0.0),
+      );
+      final newContentsLength = courseTrack.contentTracks.length + 1;
+      final newCourseProgress = currentTotalProgress / newContentsLength;
+
       courseTrack.contentTracks.add(contentTrack);
       await isar.writeTxn(() async {
         await isar.courseContents.put(content);
@@ -110,6 +119,7 @@ class CourseContentRepo {
         await getCollection.contents.save();
         await courseTrack.contentTracks.save();
         await isar.courseCollections.put(getCollection);
+        await isar.courseTracks.put(courseTrack.copyWith(progress: newCourseProgress));
       });
       log("Successfully added content!");
       return true;
@@ -136,14 +146,24 @@ class CourseContentRepo {
       CourseTrack? parentCourseTrack = contentTrack == null
           ? null
           : await isar.courseTracks.getByCourseId(contentTrack.parentId);
-      if (contentTrack != null) {
-        await parentCourseTrack?.contentTracks.load();
-        parentCourseTrack?.contentTracks.remove(contentTrack);
+
+      double newProgress = 0.0;
+
+      if (contentTrack != null && parentCourseTrack != null) {
+        await parentCourseTrack.contentTracks.load();
+        parentCourseTrack.contentTracks.remove(contentTrack);
+
+        // Recalculate progress after removing the content track
+        final remainingContentsLength = parentCourseTrack.contentTracks.length;
+        if (remainingContentsLength > 0) {
+          final totalProgress = parentCourseTrack.contentTracks.fold<double>(
+            0.0,
+            (sum, track) => sum + (track.progress ?? 0.0),
+          );
+          newProgress = totalProgress / remainingContentsLength;
+        }
       }
-      final contentProgress = contentTrack?.progress ?? 0.0;
-      final courseProgress = parentCourseTrack?.progress ?? 0.0;
-      final contentsLength = await parentCourseTrack?.contentTracks.count() ?? 0;
-      final newProgress = ((contentsLength * courseProgress) - contentProgress).clamp(0.0, 1.0);
+
       await isar.writeTxn(() async {
         getCollection.contents.remove(content);
         await getCollection.contents.save();
@@ -153,9 +173,7 @@ class CourseContentRepo {
         if (contentTrack != null) await isar.contentTracks.delete(contentTrack.id);
         if (parentCourseTrack != null) {
           await parentCourseTrack.contentTracks.save();
-          if (contentTrack != null) {
-            isar.courseTracks.put(parentCourseTrack.copyWith(progress: newProgress));
-          }
+          await isar.courseTracks.put(parentCourseTrack.copyWith(progress: newProgress));
         }
       });
       return true;
@@ -163,44 +181,6 @@ class CourseContentRepo {
       log("$e");
       return false;
     }
-  }
-
-  static Future<bool> moveContents(List<String> contentIds, String toParentId) async {
-    final existingCollection = await CourseCollectionRepo.getById(toParentId);
-    if (existingCollection == null) return false;
-
-    Set<CourseContent> adaptedContentsSet =
-        (await (await CourseContentRepo.filter).anyOf(contentIds, (a, b) => a.contentIdEqualTo(b)).findAll())
-            .map(
-              (e) => e.copyWith(
-                contentHash: e.contentHash,
-                parentId: existingCollection.parentId,
-                lastModified: DateTime.now(),
-              ),
-            )
-            .toSet();
-
-    log("Contents to move: $adaptedContentsSet");
-
-    await existingCollection.contents.load();
-
-    final existingHashes = existingCollection.contents.map((e) => e.contentHash).toSet();
-
-    final adaptedContents = adaptedContentsSet
-        .where((content) => !existingHashes.contains(content.contentHash))
-        .toList();
-
-    if (adaptedContents.isEmpty) return true;
-
-    existingCollection.contents.addAll(adaptedContents);
-    final isar = await _isar;
-
-    await isar.writeTxn(() async {
-      await isar.courseContents.putAll(adaptedContents);
-      await existingCollection.contents.save();
-    });
-
-    return true;
   }
 
   // // Not yet reviewed below
@@ -234,6 +214,14 @@ class CourseContentRepo {
     }
     await courseTrack.contentTracks.load();
 
+    // Calculate new course progress before adding the new content tracks
+    final currentTotalProgress = courseTrack.contentTracks.fold<double>(
+      0.0,
+      (sum, track) => sum + (track.progress ?? 0.0),
+    );
+    final newContentsLength = courseTrack.contentTracks.length + contentTracks.length;
+    final newCourseProgress = currentTotalProgress / newContentsLength;
+
     getCollection.contents.addAll(contents);
     courseTrack.contentTracks.addAll(contentTracks);
     await isar.writeTxn(() async {
@@ -242,6 +230,7 @@ class CourseContentRepo {
       await getCollection.contents.save();
       await courseTrack.contentTracks.save();
       await isar.courseCollections.put(getCollection);
+      await isar.courseTracks.put(courseTrack.copyWith(progress: newCourseProgress));
     });
 
     log("Successfully added all multiple contents");

@@ -5,7 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
-import 'package:slidesync/features/browse/presentation/providers/course_details_controller.dart';
+import 'package:slidesync/features/browse/presentation/controlllers/src/course_details_controller/course_details_controller.dart';
 import 'package:slidesync/features/browse/presentation/views/course_details/course_details_header/progress_shape_animated_widget.dart';
 import 'package:slidesync/features/browse/presentation/views/course_details_view.dart';
 import 'package:slidesync/features/manage/presentation/courses/views/modify_course/course_description_dialog.dart';

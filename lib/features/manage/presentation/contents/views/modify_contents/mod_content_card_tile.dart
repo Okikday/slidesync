@@ -6,7 +6,7 @@ import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
-import 'package:slidesync/features/browse/presentation/providers/content_card_providers.dart';
+import 'package:slidesync/features/browse/presentation/controlllers/src/content_card_controller.dart';
 import 'package:slidesync/features/manage/presentation/contents/actions/modify_content_card_actions.dart';
 import 'package:slidesync/shared/helpers/widget_helper.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
@@ -41,7 +41,7 @@ class _ModContentCardTileState extends ConsumerState<ModContentCardTile> {
   @override
   Widget build(BuildContext context) {
     final CourseContent content = ref.watch(contentProvider).value ?? widget.content;
-    final previewDataProvider = ref.watch(ContentCardProviders.fetchLinkPreviewDataProvider(content));
+    final previewDataProvider = ref.watch(ContentCardController.fetchLinkPreviewDataProvider(content));
     return Padding(
       padding: EdgeInsets.only(bottom: 16),
       child: ModifyingListTile(
