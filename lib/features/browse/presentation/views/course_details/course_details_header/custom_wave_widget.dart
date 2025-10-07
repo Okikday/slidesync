@@ -30,13 +30,8 @@ class CustomShapeWaveFilledWidget extends ConsumerWidget {
         Positioned(
           width: waveSize.width,
           height: waveSize.height,
-          child: Wave(
-            value: progress.clamp(0.2, 1.0),
-            color: waveColor ?? theme.primaryColor.withAlpha(40),
-            direction: Axis.vertical,
-          ),
+          child: Wave(value: progress, color: waveColor ?? theme.primaryColor.withAlpha(150), direction: Axis.vertical),
         ),
-        // CustomWaveWidget(progress: progress.clamp(0.4, 1.0)),
         if (backgroundWidget != null) Positioned.fill(child: backgroundWidget!),
         if (showProgress)
           Positioned.fill(
@@ -54,33 +49,6 @@ class CustomShapeWaveFilledWidget extends ConsumerWidget {
     );
   }
 }
-
-// class CustomWaveWidget extends ConsumerWidget {
-//   final double progress;
-//   final Color? backgroundColor;
-//   const CustomWaveWidget({super.key, required this.progress, this.backgroundColor});
-
-//   @override
-//   Widget build(BuildContext context, WidgetRef ref) {
-//     final theme = ref;
-//     final double fill;
-//     if (progress < 0.0 || progress > 1.0) {
-//       fill = 0.0;
-//     } else {
-//       fill = 1.0 - progress;
-//     }
-//     return WaveWidget(
-//       config: CustomConfig(
-//         colors: [theme.primaryColor.withAlpha(50), theme.primaryColor.withAlpha(80), theme.primaryColor.withAlpha(30)],
-//         durations: [5000, 4000, 3000],
-//         heightPercentages: [fill - 0.01, fill + 0.01, fill + 0.05],
-//       ),
-//       backgroundColor: backgroundColor ?? theme.primaryColor.withAlpha(40),
-//       size: Size(double.infinity, double.infinity),
-//       waveAmplitude: 10,
-//     );
-//   }
-// }
 
 class Wave extends StatefulWidget {
   final double? value;
@@ -114,13 +82,14 @@ class _WaveState extends State<Wave> with SingleTickerProviderStateMixin {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-      child: Container(color: widget.color),
+      child: ColoredBox(color: widget.color),
       builder: (context, child) => ClipPath(
         clipper: _WaveClipper(
           animationValue: _animationController.value,
           value: widget.value,
           direction: widget.direction,
         ),
+        child: child,
       ),
     );
   }

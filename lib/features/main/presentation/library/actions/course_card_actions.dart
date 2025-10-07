@@ -21,7 +21,7 @@ class CourseCardActions {
     LibraryTabController.isCourseCardAnimating = true; // Tell that a course is currently opened
     await Future.delayed(Durations.short4);
 
-    if (context.mounted) context.pushNamed(Routes.courseDetails.name, extra: course.id);
+    if (context.mounted) context.pushNamed(Routes.courseDetails.name, extra: course.courseId);
     LibraryTabController.isCourseCardAnimating = false;
   }
 

@@ -6,27 +6,22 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/manage/presentation/contents/actions/modify_content_card_actions.dart';
-import 'package:slidesync/features/manage/presentation/contents/controllers/modify_contents_view_providers.dart';
+import 'package:slidesync/features/manage/presentation/contents/controllers/src/modify_contents_controller.dart';
+import 'package:slidesync/features/manage/presentation/contents/controllers/state/modify_contents_state.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 
 class ModifyContentsHeader extends ConsumerWidget {
-  final ModifyContentsViewProviders mcvp;
   final String collectionTitle;
   final int? collectionLength;
 
-  final VoidCallback onMoveContents;
-  const ModifyContentsHeader({
-    super.key,
-    required this.mcvp,
-    required this.collectionTitle,
-    this.collectionLength,
-    required this.onMoveContents,
-  });
+  final VoidCallback? onMoveContents;
+  const ModifyContentsHeader({super.key, required this.collectionTitle, this.collectionLength, this.onMoveContents});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final mcvp = ref.watch(ModifyContentsController.modifyContentsStateProvider);
     final theme = ref;
     return ValueListenableBuilder(
       valueListenable: mcvp.selectedContentsNotifier,

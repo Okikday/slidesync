@@ -2,8 +2,8 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/features/manage/presentation/contents/actions/add_contents_actions.dart';
-import 'package:slidesync/features/manage/presentation/contents/controllers/add_contents_bs_provider.dart';
+import 'package:slidesync/core/constants/constants.dart';
+import 'package:slidesync/features/manage/presentation/contents/controllers/providers/scan_clipboard_providers.dart';
 import 'package:slidesync/features/manage/presentation/contents/views/add_contents/add_from_clipboard_dialog/sub/build_add_from_clipboard_dialog.dart';
 
 class AddFromClipboardOverlay extends ConsumerStatefulWidget {
@@ -22,10 +22,10 @@ class _AddFromClipboardOverlayState extends ConsumerState<AddFromClipboardOverla
 
   void _closeOverlay([bool inPostFrameCallback = true]) {
     void close() {
-      final isVisible = ref.read(AddContentsBsProvider.addFromClipboardOverlayEntry);
+      final isVisible = ref.read(ScanClipboardProviders.addFromClipboardOverlayEntry);
       if (isVisible == null) return;
       isVisible.remove();
-      ref.read(AddContentsBsProvider.addFromClipboardOverlayEntry.notifier).update((cb) => null);
+      ref.read(ScanClipboardProviders.addFromClipboardOverlayEntry.notifier).update((cb) => null);
       log("Successfully closed AddFromClipboardOverlay");
     }
 

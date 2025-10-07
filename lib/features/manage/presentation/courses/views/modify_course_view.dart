@@ -4,6 +4,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:slidesync/features/browse/presentation/views/course_details/course_details_collection_section.dart';
 import 'package:slidesync/shared/global/providers/course_providers.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
@@ -16,8 +17,8 @@ import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 /// VIEW
 class ModifyCourseView extends ConsumerStatefulWidget {
-  final Course course;
-  const ModifyCourseView({super.key, required this.course});
+  final String courseId;
+  const ModifyCourseView({super.key, required this.courseId});
 
   @override
   ConsumerState createState() => _ModifyCourseState();
@@ -53,7 +54,7 @@ class _ModifyCourseState extends ConsumerState<ModifyCourseView> with TickerProv
             // },
           ),
         ),
-        body: ModifyCourseViewOuterSection(courseId: widget.course.courseId),
+        body: ModifyCourseViewOuterSection(courseId: widget.courseId),
       ),
     );
   }
@@ -65,59 +66,103 @@ class ModifyCourseViewOuterSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final Course course = ref.watch(CourseProviders.courseProvider(courseId)).value ?? defaultCourse;
     ref.listen(CourseProviders.courseProvider(courseId), (p, n) {
       log("Soemthings");
     });
     return CustomScrollView(
       slivers: [
         // HEADER
-        ModifyCourseHeader(courseId: courseId),
+        Consumer(
+          builder: (context, ref, child) {
+            final courseRecordN = ref.watch(
+              CourseProviders.courseProvider(courseId).select(
+                (s) => s.whenData(
+                  (cb) => (
+                    courseId: cb.courseId,
+                    courseCode: cb.courseCode,
+                    title: cb.courseTitle,
+                    description: cb.description,
+                    imageDetails: cb.imageLocationJson,
+                  ),
+                ),
+              ),
+            );
+            return courseRecordN.when(
+              data: (data) {
+                return ModifyCourseHeader(
+                  courseId: courseId,
+                  courseCode: data.courseCode,
+                  title: data.title,
+                  description: data.description,
+                  imageDetails: data.imageDetails,
+                );
+              },
+              error: (_, _) => Icon(Icons.error),
+              loading: () => const ModifyCourseHeader(
+                courseId: "",
+                courseCode: "",
+                title: "",
+                description: "description",
+                imageDetails: '',
+              ),
+            );
+          },
+        ),
 
         SliverToBoxAdapter(child: ConstantSizing.columnSpacingExtraLarge),
 
         // BODY
-        CollectionsSection(
-          courseDbId: course.id,
-          collections: course.collections.toList(),
-          onClickNewCollection: () {
-            if (course.collections.isEmpty) {
-              CustomDialog.show(
-                context,
-                canPop: true,
-                barrierColor: Colors.black.withAlpha(150),
-                child: CreateCollectionBottomSheet(courseDbId: course.id),
-              ).then((value) {
-                if (course.collections.isNotEmpty) {
-                  if (context.mounted) context.pushNamed(Routes.modifyCollections.name, extra: course.courseId);
-                }
-              });
-              return;
-            }
-            context.pushNamed(Routes.modifyCollections.name, extra: course.courseId);
+        Consumer(
+          builder: (context, ref, child) {
+            final links = ref.watch(
+              CourseProviders.courseProvider(courseId).select((s) => s.whenData((cb) => cb.collections)),
+            );
+            return links.when(
+              data: (data) {
+                return CollectionsSection(courseId: courseId, collections: data.toList());
+              },
+              error: (_, _) => const SliverToBoxAdapter(child: Icon(Icons.error)),
+              loading: () => const SliverToBoxAdapter(
+                child: Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: LoadingShimmerListView(count: 2)),
+              ),
+            );
           },
         ),
 
-        SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
+        const SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
+
+        Consumer(
+          builder: (context, ref, child) {
+            final links = ref.watch(
+              CourseProviders.courseProvider(courseId).select((s) => s.whenData((cb) => cb.collections)),
+            );
+            return links.when(
+              data: (data) {
+                if (data.isEmpty) const SliverToBoxAdapter();
+                return SliverPadding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0),
+                  sliver: SliverToBoxAdapter(
+                    child: CustomElevatedButton(
+                      onClick: () {
+                        context.pushNamed(Routes.modifyCollections.name, extra: courseId);
+                      },
+                      borderRadius: 48,
+                      pixelHeight: 56,
+                      backgroundColor: ref.primary.withAlpha(60),
+                      label: "See all collections",
+                      textSize: 15,
+                      textColor: ref.primary,
+                    ),
+                  ),
+                );
+              },
+              error: (_, _) => const SliverToBoxAdapter(),
+              loading: () => const SliverToBoxAdapter(),
+            );
+          },
+        ),
 
         // AFTER
-        if (course.collections.isNotEmpty)
-          SliverPadding(
-            padding: EdgeInsets.symmetric(horizontal: 16.0),
-            sliver: SliverToBoxAdapter(
-              child: CustomElevatedButton(
-                onClick: () {
-                  context.pushNamed(Routes.modifyCollections.name, extra: course.courseId);
-                },
-                borderRadius: 48,
-                pixelHeight: 56,
-                backgroundColor: ref.primary.withAlpha(60),
-                label: "See all collections",
-                textSize: 15,
-                textColor: ref.primary,
-              ),
-            ),
-          ),
       ],
     );
   }

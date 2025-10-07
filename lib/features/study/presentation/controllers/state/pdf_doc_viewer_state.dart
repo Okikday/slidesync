@@ -8,41 +8,45 @@ import 'package:flutter/widgets.dart';
 import 'package:isar/isar.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:screenshot/screenshot.dart';
-import 'package:slidesync/core/storage/isar_data/isar_data.dart';
-import 'package:slidesync/core/utils/leak_prevention.dart';
+import 'package:slidesync/core/base/leak_prevention.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
+import 'package:slidesync/data/models/progress_track_models/course_track.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
+import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
+import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 import 'package:slidesync/features/manage/domain/usecases/contents/create_content_preview_image.dart';
 
 const Duration readValidityDuration = Duration(seconds: 5);
 
-class PdfDocViewerController extends LeakPrevention {
+class PdfDocViewerState extends LeakPrevention {
   static final ScreenshotController screenshotController = ScreenshotController();
-  final CourseContent content;
-  final PdfViewerController pdfViewerController;
-  final ValueNotifier<ContentTrack?> progressTrackNotifier = ValueNotifier(null);
-  final ValueNotifier<bool> isAppBarVisibleNotifier = ValueNotifier(true);
-  final ValueNotifier<bool> isToolsMenuVisible = ValueNotifier(true);
+
+  final String contentId;
+
+  late final PdfViewerController pdfViewerController;
+  late final ValueNotifier<ContentTrack?> progressTrackNotifier;
+  late final ValueNotifier<bool> isAppBarVisibleNotifier;
+  late final ValueNotifier<bool> isToolsMenuVisible;
   final Stopwatch pageStayStopWatch = Stopwatch();
   bool isUpdatingProgressTrack = false;
   int initialPage = 1;
   int? currentPageNumber;
   int? lastUpdatedPage; // For progress updates
 
-  PdfDocViewerController._(this.content, this.pdfViewerController);
-
-  static PdfDocViewerController of(CourseContent content, {required PdfViewerController pdfViewerController}) =>
-      PdfDocViewerController._(content, pdfViewerController);
-
-  static final Future<Isar> _isar = IsarData.isarFuture;
-  static final IsarData<ContentTrack> _isarData = IsarData.instance();
+  PdfDocViewerState(this.contentId) {
+    pdfViewerController = PdfViewerController();
+    progressTrackNotifier = ValueNotifier(null);
+    isAppBarVisibleNotifier = ValueNotifier(true);
+    isToolsMenuVisible = ValueNotifier(true);
+  }
 
   Future<bool> initialize() async {
-    final ContentTrack? progressTrack = await getLastProgressTrack(content);
+    final ContentTrack? progressTrack = await getLastProgressTrack();
     if (progressTrack == null) return false;
     progressTrackNotifier.value = progressTrack;
     if (progressTrack.pages.isNotEmpty) {
@@ -53,8 +57,10 @@ class PdfDocViewerController extends LeakPrevention {
   }
 
   /// Gets the progress of the current document from last session
-  static Future<ContentTrack?> getLastProgressTrack(CourseContent content) async {
-    final ptm = (await (await _isar).contentTracks.where().contentIdEqualTo(content.contentId).findFirst());
+  Future<ContentTrack?> getLastProgressTrack() async {
+    final content = await CourseContentRepo.getByContentId(contentId);
+    if (content == null) return null;
+    final ptm = (await (await ContentTrackRepo.isar).contentTracks.where().contentIdEqualTo(contentId).findFirst());
     if (ptm == null) {
       final result = await _createProgressTrackModel(content);
       if (result == null) return null; // A critical error occured!
@@ -68,7 +74,7 @@ class PdfDocViewerController extends LeakPrevention {
   }
 
   /// Creates a new progress track model if it didn't exist
-  static Future<ContentTrack?> _createProgressTrackModel(CourseContent content) async {
+  Future<ContentTrack?> _createProgressTrackModel(CourseContent content) async {
     final result = await Result.tryRunAsync<ContentTrack?>(() async {
       final courseId = (await CourseCollectionRepo.getById(content.parentId))?.parentId;
       if (courseId == null) return null;
@@ -88,14 +94,31 @@ class PdfDocViewerController extends LeakPrevention {
           'previewPath': CreateContentPreviewImage.genPreviewImagePath(filePath: content.path.filePath),
         }),
       );
-      return (await _isarData.getById(await _isarData.store(newPtm)));
+      return (await ContentTrackRepo.isarData.getById(await ContentTrackRepo.isarData.store(newPtm)));
     });
     return result.data;
   }
 
   /// Update progress track
-  static Future<ContentTrack> _updateProgressTrack(ContentTrack ptm) async =>
-      await _isarData.getById(await _isarData.store(ptm)) ?? ptm;
+  Future<ContentTrack> _updateProgressTrack(ContentTrack ptm) async {
+    return await ContentTrackRepo.isarData.getById(await ContentTrackRepo.isarData.store(ptm)) ?? ptm;
+  }
+
+  Future<void> _updateCourseTrackProgress(ContentTrack? oldPtm, ContentTrack? ptm) async {
+    final lastProgressTrack = oldPtm;
+    if (ptm == null) return;
+    final courseTrack = await CourseTrackRepo.getByCourseId(ptm.parentId);
+    if (courseTrack == null) return;
+    final contentsLength = courseTrack.contentTracks.length;
+    final courseProgress = courseTrack.progress ?? 0.0;
+    await CourseTrackRepo.isarData.store(
+      courseTrack.copyWith(
+        progress:
+            ((contentsLength * courseProgress) - (lastProgressTrack?.progress ?? .0) + (ptm.progress ?? .0)) /
+            contentsLength,
+      ),
+    );
+  }
 
   void monitorPageListener() async {
     log("Monitoring page");
@@ -149,6 +172,7 @@ class PdfDocViewerController extends LeakPrevention {
                 lastRead: DateTime.now(),
               ),
             );
+
             lastUpdatedPage = pageNumber;
             isUpdatingProgressTrack = false;
             pageStayStopWatch.reset();
@@ -160,7 +184,7 @@ class PdfDocViewerController extends LeakPrevention {
           pageStayStopWatch.stop();
 
           isUpdatingProgressTrack = true;
-          final progressTrack = progressTrackNotifier.value ?? await getLastProgressTrack(content);
+          final progressTrack = progressTrackNotifier.value ?? await getLastProgressTrack();
           if (progressTrack == null) {
             isUpdatingProgressTrack = false;
             pageStayStopWatch.start();
@@ -203,28 +227,18 @@ class PdfDocViewerController extends LeakPrevention {
   @override
   void onDispose() {
     pdfViewerController.removeListener(monitorPageListener);
-
+    final oldPtm = progressTrackNotifier.value;
     progressTrackNotifier.dispose();
     isAppBarVisibleNotifier.dispose();
     isToolsMenuVisible.dispose();
     pageStayStopWatch
       ..reset()
       ..stop();
-    // Future.microtask(() => Result.tryRunAsync(() async => await _addToRecentContents(content.contentId)));
+    Future.microtask(
+      () async => await Result.tryRunAsync(() async {
+        await _updateCourseTrackProgress(oldPtm, await getLastProgressTrack());
+      }),
+    );
     log("Disposed pdf viewer actions ");
   }
 }
-
-// Future<void> _addToRecentContents(String contentId) async {
-//   final hiveInstance = AppHiveData.instance;
-//   final rawOldRecents = (await hiveInstance.getData(key: HiveDataPathKey.recentContentsIds.name)) as List<String>?;
-//   // if (rawOldRecents == null) {
-//   //   await hiveInstance.setData(key: HiveDataPathKey.recentContentsIds.name, value: [contentId]);
-//   // } else {
-//   //   final recents = LinkedHashSet<String>.from(rawOldRecents);
-//   //   recents.add(contentId);
-//   //   await hiveInstance.setData(key: HiveDataPathKey.recentContentsIds.name, value: recents.toList());
-//   // }
-//   log("Adding pdf to recents");
-//   return;
-// }

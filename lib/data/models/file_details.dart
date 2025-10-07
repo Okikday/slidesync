@@ -34,16 +34,14 @@ class FileDetails {
     return other.urlPath == urlPath && other.filePath == filePath;
   }
 
-
   @override
   int get hashCode => urlPath.hashCode ^ filePath.hashCode;
 }
 
 extension FileDetailsStringExtension on String {
-  FileDetails get fileDetails => FileDetails.fromJson(this);
+  FileDetails get fileDetails => this.isEmpty ? FileDetails.fromJson('{}') : FileDetails.fromJson(this);
   bool get containsFilePath => urlPath.isNotEmpty || filePath.isNotEmpty;
   bool get containsAnyFilePath => containsFilePath;
   String get filePath => fileDetails.filePath;
   String get urlPath => fileDetails.urlPath;
-  
 }

@@ -4,11 +4,13 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/core/constants/constants.dart';
 import 'package:slidesync/core/utils/result.dart';
+import 'package:slidesync/features/manage/domain/usecases/contents/scan_clipboard_content_uc.dart';
 import 'package:slidesync/features/manage/presentation/contents/actions/add_contents_actions.dart';
 import 'package:slidesync/features/manage/presentation/contents/views/add_contents/add_from_clipboard_dialog/add_from_clipboard_dialog.dart';
 
-class AddContentsBsProvider {
+class ScanClipboardProviders {
   static final AsyncNotifierProvider<AppClipboardNotifier, AppClipboardData?> lastClipboardDataProvider =
       AsyncNotifierProvider<AppClipboardNotifier, AppClipboardData?>(AppClipboardNotifier.new);
 
@@ -28,14 +30,18 @@ class AppClipboardNotifier extends AsyncNotifier<AppClipboardData?> {
       final mounted = context.mounted;
       final RootIsolateToken? rootIsolateToken = RootIsolateToken.instance;
       if (rootIsolateToken == null) return;
-      final newClipboardData = await compute(AddContentsActions.scanClipboardForData, <String, dynamic>{
+      final newClipboardData = await compute(ScanClipboardContentUc.scanClipboardForData, <String, dynamic>{
         'token': rootIsolateToken,
       });
 
       if (!mounted) return;
       final lastClipboardData = state.value;
       if (lastClipboardData != null) {
-        if (AddContentsActions.isDataEqual(lastClipboardData, newClipboardData.data, newClipboardData.contentType)) {
+        if (ScanClipboardContentUc.isDataEqual(
+          lastClipboardData,
+          newClipboardData.data,
+          newClipboardData.contentType,
+        )) {
           return;
         } else {
           if (!mounted) return;
@@ -47,7 +53,7 @@ class AppClipboardNotifier extends AsyncNotifier<AppClipboardData?> {
       }
 
       if (!mounted) return;
-      final overlayEntryProvider = ref.read(AddContentsBsProvider.addFromClipboardOverlayEntry.notifier);
+      final overlayEntryProvider = ref.read(ScanClipboardProviders.addFromClipboardOverlayEntry.notifier);
 
       if (overlayEntryProvider.state != null) return;
 

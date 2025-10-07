@@ -1,6 +1,7 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/features/manage/presentation/collections/controllers/src/modify_collections_controller.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/shared/global/providers/course_providers.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
@@ -11,9 +12,9 @@ import 'package:slidesync/features/manage/presentation/collections/views/modify_
 import 'package:slidesync/features/manage/presentation/collections/views/modify_collections/empty_collections_view.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 
 import '../../../../../core/utils/ui_utils.dart';
-
 
 class ModifyCollectionsView extends ConsumerStatefulWidget {
   final String courseId;
@@ -25,105 +26,84 @@ class ModifyCollectionsView extends ConsumerStatefulWidget {
 }
 
 class _ModifyCollectionsViewState extends ConsumerState<ModifyCollectionsView> {
-  late final ScrollController scrollController;
-  late final NotifierProvider<DoubleNotifier, double> scrollOffsetProvider;
-  late final TextEditingController searchCollectionController;
-  late final ValueNotifier<String> searchCollectionTextNotifier;
-
-  @override
-  void initState() {
-    super.initState();
-    scrollController = ScrollController();
-    scrollOffsetProvider = NotifierProvider<DoubleNotifier, double>(DoubleNotifier.new, isAutoDispose: true);
-    searchCollectionController = TextEditingController();
-    searchCollectionTextNotifier = ValueNotifier("");
-    scrollController.addListener(listenToscrollOffsetProvider);
-    searchCollectionController.addListener(searchCollectionTextListener);
-  }
-
-  void listenToscrollOffsetProvider() {
-    if (scrollController.positions.isNotEmpty && context.mounted) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(scrollOffsetProvider.notifier).update((cb) => scrollController.offset);
-      });
-    }
-  }
-
-  void searchCollectionTextListener() {
-    if (searchCollectionTextNotifier.value == searchCollectionController.text) return;
-    searchCollectionTextNotifier.value = searchCollectionController.text;
-  }
-
-  @override
-  void dispose() {
-    searchCollectionController.removeListener(searchCollectionTextListener);
-    searchCollectionController.dispose();
-    searchCollectionTextNotifier.dispose();
-    scrollController.removeListener(listenToscrollOffsetProvider);
-    scrollController.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
-    final asyncCourseValue = ref.watch(CourseProviders.courseProvider(widget.courseId));
-    final Course course = asyncCourseValue.value ?? defaultCourse;
+    final state = ref.watch(ModifyCollectionsController.modifyCollectionStateProvider);
+    final courseProvider = CourseProviders.courseProvider(widget.courseId);
 
     return AnnotatedRegion(
       value: UiUtils.getSystemUiOverlayStyle(context.scaffoldBackgroundColor, context.isDarkMode),
       child: Scaffold(
         appBar: AppBarContainer(
-          child: AppBarContainerChild(
-            context.isDarkMode,
-            title: course.courseName,
-            tooltipMessage: "${course.courseName}(${course.courseCode})",
+          child: Consumer(
+            builder: (context, ref, child) {
+              final both = ref.watch(courseProvider.select((c) => c.whenData((cb) => (cb.courseName, cb.courseCode))));
+
+              return both.when(
+                data: (data) =>
+                    AppBarContainerChild(context.isDarkMode, title: data.$1, tooltipMessage: "${data.$1}(${data.$2})"),
+                error: (_, _) => Icon(Icons.error),
+                loading: () =>
+                    AppBarContainerChild(context.isDarkMode, title: "...", tooltipMessage: "Loading course..."),
+              );
+            },
           ),
         ),
 
-        floatingActionButton: course.collections.isNotEmpty
-            ? AddCollectionActionButton(
-                courseDbId: course.id,
-                isScrolled: ref.watch(scrollOffsetProvider) > 40,
-                onClickUp: () {
-                  scrollController.animateTo(0.0, duration: Durations.medium1, curve: CustomCurves.defaultIosSpring);
-                },
-              )
-            : null,
+        floatingActionButton: Consumer(
+          builder: (context, ref, child) {
+            final both = ref.watch(courseProvider.select((c) => c.whenData((cb) => (cb.id))));
+            return both.when(
+              data: (data) {
+                return ValueListenableBuilder(
+                  valueListenable: state.scrollOffsetNotifier,
+                  builder: (context, value, child) {
+                    return AddCollectionActionButton(
+                      courseId: widget.courseId,
+                      isScrolled: value > 40,
+                      onClickUp: () {
+                        state.scrollController.animateTo(
+                          0.0,
+                          duration: Durations.medium1,
+                          curve: CustomCurves.defaultIosSpring,
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+              error: (_, _) => Icon(Icons.error),
+              loading: () => FloatingActionButton(onPressed: () {}, child: LoadingLogo(size: 10)),
+            );
+          },
+        ),
 
         body: CustomScrollView(
-          controller: scrollController,
+          controller: state.scrollController,
           slivers: [
-            if (course.collections.isNotEmpty)
-              PinnedHeaderSliver(
-                child: CollectionsViewSearchBar(
-                  searchCollectionTextNotifier: searchCollectionTextNotifier,
-                  onTap: () {
-                    // scrollController.animateTo(
-                    //   appBarHeight + 8,
-                    //   duration: Durations.medium4,
-                    //   curve: CustomCurves.defaultIosSpring,
-                    // );
+            Consumer(
+              builder: (context, ref, child) {
+                final dataN = ref.watch(courseProvider.select((c) => c.whenData((cb) => cb.collections)));
+                return dataN.when(
+                  data: (data) {
+                    if (data.isEmpty) return const SliverToBoxAdapter();
+                    return PinnedHeaderSliver(
+                      child: CollectionsViewSearchBar(
+                        searchCollectionTextNotifier: state.searchCollectionTextNotifier,
+                        onTap: () {},
+                      ),
+                    );
                   },
-                ),
-              ),
+                  error: (_, _) => const SliverToBoxAdapter(),
+                  loading: () => const SliverToBoxAdapter(),
+                );
+              },
+            ),
 
-            if (course.collections.isNotEmpty)
-              CollectionsListView(
-                courseDbId: course.id,
-                asyncCourseValue: asyncCourseValue,
-                searchCollectionTextNotifier: searchCollectionTextNotifier,
-              )
-            else
-              EmptyCollectionsView(
-                onClickAddCollection: () {
-                  CustomDialog.show(
-                    context,
-                    canPop: true,
-                    barrierColor: Colors.black.withAlpha(150),
-                    child: CreateCollectionBottomSheet(courseDbId: course.id),
-                  );
-                },
-              ),
+            CollectionsListView(
+              courseId: widget.courseId,
+              searchCollectionTextNotifier: state.searchCollectionTextNotifier,
+            ),
             SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
 
             // ),

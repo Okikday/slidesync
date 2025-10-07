@@ -9,7 +9,7 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
-import 'package:slidesync/features/manage/presentation/contents/controllers/add_contents_bs_provider.dart';
+import 'package:slidesync/features/manage/presentation/contents/controllers/providers/scan_clipboard_providers.dart';
 import 'package:slidesync/features/manage/presentation/contents/views/add_contents/add_link_bottom_sheet.dart';
 import 'package:slidesync/features/manage/presentation/contents/actions/add_contents_actions.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
@@ -31,7 +31,7 @@ class _AddContentsBottomSheetState extends ConsumerState<AddContentsBottomSheet>
     super.initState();
     fixedExtentScrollController = FixedExtentScrollController(initialItem: 1);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      ref.read(AddContentsBsProvider.lastClipboardDataProvider.notifier).scanClipboard(ref);
+      ref.read(ScanClipboardProviders.lastClipboardDataProvider.notifier).scanClipboard(ref);
     });
   }
 
@@ -43,7 +43,7 @@ class _AddContentsBottomSheetState extends ConsumerState<AddContentsBottomSheet>
 
   @override
   Widget build(BuildContext context) {
-    final canPop = ref.watch(AddContentsBsProvider.addFromClipboardOverlayEntry) == null;
+    final canPop = ref.watch(ScanClipboardProviders.addFromClipboardOverlayEntry) == null;
     return PopScope(
       canPop: canPop,
       child: Stack(
@@ -109,7 +109,7 @@ class AddContentCardSection extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0),
               child: CustomText(
-                "What kind of content would you like to add?",
+                "What would you like to add?",
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: theme.onBackground,

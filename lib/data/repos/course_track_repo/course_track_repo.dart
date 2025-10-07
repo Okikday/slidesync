@@ -19,6 +19,14 @@ class CourseTrackRepo {
     return await (await _isar).courseTracks.filter().courseIdEqualTo(courseId).findFirst();
   }
 
+  static Stream<CourseTrack?> watchByCourseId(String courseId) async* {
+    yield* (await _isar).courseTracks
+        .filter()
+        .courseIdEqualTo(courseId)
+        .watch(fireImmediately: true)
+        .map((list) => list.firstOrNull);
+  }
+
   static Future<void> deleteByDbId(int dbId) async => await _isarData.deleteById(dbId);
 
   // static Future<CourseTrack?> deleteByCourseId(String courseId) async {

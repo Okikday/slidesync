@@ -36,7 +36,7 @@ class CreateCourseButton extends ConsumerWidget {
       child: CustomElevatedButton(
         backgroundColor: ref.primaryColor,
         label: "Create Course",
-        textColor: Colors.white,
+        textColor: ref.onPrimary,
         textSize: 14,
         pixelWidth: context.deviceWidth,
         pixelHeight: 48,
@@ -85,7 +85,7 @@ class CreateCourseButton extends ConsumerWidget {
                 if (context.mounted) {
                   Navigator.of(context).pop();
                   log("${context.mounted}");
-                  context.pushNamed(Routes.modifyCourse.name, extra: value);
+                  context.pushNamed(Routes.modifyCourse.name, extra: value.courseId);
                   await Future.delayed(Durations.short4);
                   if (rootNavigatorKey.currentContext != null && rootNavigatorKey.currentContext!.mounted) {
                     await UiUtils.showFlushBar(

@@ -8,7 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:isar/isar.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
-import 'package:slidesync/core/utils/leak_prevention.dart';
+import 'package:slidesync/core/base/leak_prevention.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 

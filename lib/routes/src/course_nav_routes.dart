@@ -17,7 +17,7 @@ final courseNavRoute = GoRoute(
     defaultIncoming: TransitionType.scale(from: .8, to: 1, alignment: Alignment.bottomCenter, fade: true),
     // defaultIncomingDuration: Durations.medium2,
     // defaultIncomingCurve: Curves.fastEaseInToSlowEaseOut,
-    child: CourseDetailsView(courseDbId: state.extra as int),
+    child: CourseDetailsView(courseId: state.extra as String),
   ),
   routes: [
     GoRoute(

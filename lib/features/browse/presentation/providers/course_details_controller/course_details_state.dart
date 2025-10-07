@@ -1,7 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:slidesync/core/utils/leak_prevention.dart';
+import 'package:slidesync/core/base/leak_prevention.dart';
 
 class CourseDetailsState extends LeakPrevention {
   

@@ -14,8 +14,8 @@ import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 const double courseDetailsAppBarHeight = 180;
 
 class CourseDetailsView extends ConsumerWidget {
-  final int courseDbId;
-  const CourseDetailsView({super.key, required this.courseDbId});
+  final String courseId;
+  const CourseDetailsView({super.key, required this.courseId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -45,7 +45,7 @@ class CourseDetailsView extends ConsumerWidget {
               },
               child: NestedScrollView(
                 physics: const NeverScrollableScrollPhysics(),
-                headerSliverBuilder: (context, innerBoxIsScrolled) => [CourseDetailsHeader(courseDbId: courseDbId)],
+                headerSliverBuilder: (context, innerBoxIsScrolled) => [CourseDetailsHeader(courseId: courseId)],
                 body: NotificationListener(
                   onNotification: (notification) => true,
                   child: CustomScrollView(
@@ -65,7 +65,7 @@ class CourseDetailsView extends ConsumerWidget {
                           },
                         ),
                       ),
-                      CourseDetailsCollectionSection(courseDbId: courseDbId),
+                      CourseDetailsCollectionSection(courseId: courseId),
 
                       SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
                     ],

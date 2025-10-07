@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:math' as math;
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
@@ -10,9 +11,9 @@ import 'package:screenshot/screenshot.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
-import 'package:slidesync/features/study/presentation/controllers/doc_viewer_controllers/pdf_doc_search_controller.dart';
-import 'package:slidesync/features/study/presentation/controllers/doc_viewer_controllers/pdf_doc_viewer_controller.dart';
-import 'package:slidesync/features/study/presentation/providers/pdf_doc_viewer_providers.dart';
+import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_search_controller.dart';
+import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_viewer_controller.dart';
+import 'package:slidesync/features/study/presentation/controllers/state/pdf_doc_viewer_state.dart';
 import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_doc_app_bar/pdf_doc_viewer_app_bar.dart';
 import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_overlay_widgets/pdf_scrollbar_overlay.dart';
 import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_overlay_widgets/pdf_tools_menu.dart';
@@ -20,217 +21,218 @@ import 'package:slidesync/features/main/presentation/main/controllers/main_view_
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
-class PdfDocViewer extends ConsumerStatefulWidget {
+class PdfDocViewer extends ConsumerWidget {
   final CourseContent content;
   const PdfDocViewer({super.key, required this.content});
 
   @override
-  ConsumerState<PdfDocViewer> createState() => _PdfDocViewerState();
-}
-
-class _PdfDocViewerState extends ConsumerState<PdfDocViewer> {
-  late final PdfDocViewerController pdva;
-  late final PdfDocSearchController pdsa;
-  late final PdfViewerController pdfViewerController;
-
-  @override
-  void initState() {
-    super.initState();
-    pdfViewerController = PdfViewerController();
-
-    pdva = PdfDocViewerController.of(widget.content, pdfViewerController: pdfViewerController);
-    pdsa = PdfDocSearchController(
-      context: context,
-      pdfViewerController: pdfViewerController,
-      onStateChanged: () {
-        setState(() {});
-      },
-    );
-    pdva.initialize().then((data) {
-      if (data == true) {
-        WidgetsBinding.instance.addPostFrameCallback(
-          (_) => setState(() {
-            pdva.initialPage;
-          }),
-        );
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    pdsa.dispose();
-    pdva.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    final content = widget.content;
-    return ValueListenableBuilder(
-      valueListenable: pdsa.isSearchingNotifier,
-      builder: (context, value, child) {
-        return PopScope(
-          canPop: !value,
-          onPopInvokedWithResult: (didPop, result) {
-            if (value) pdsa.isSearchingNotifier.value = false;
-            SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-          },
-          child: AnnotatedRegion(
-            value: UiUtils.getSystemUiOverlayStyle(context.scaffoldBackgroundColor, context.isDarkMode),
-            child: Scaffold(
-              resizeToAvoidBottomInset: false,
-              // extendBodyBehindAppBar: true,
-              floatingActionButton: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (pdsa.textSearcher != null)
-                    Container(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      decoration: BoxDecoration(color: theme.background, borderRadius: BorderRadius.circular(20)),
-                      child: _NavigationControls(
-                        textSearcher: pdsa.textSearcher,
-                        onNavigateToInstance: pdsa.navigateToInstance,
-                      ),
-                    ),
-                  ValueListenableBuilder(
-                    valueListenable: pdva.isAppBarVisibleNotifier,
-                    builder: (context, value, child) {
-                      if (!value || pdsa.textSearcher != null) return const SizedBox();
-                      return PdfToolsMenu(isVisible: true);
-                    },
-                  ),
-                ],
-              ),
 
-              body: Stack(
-                fit: StackFit.expand,
-                children: [
-                  Positioned.fill(
-                    child: ColorFiltered(
-                      colorFilter: ColorFilter.mode(
-                        Colors.white,
-                        ref.watch(PdfDocViewerProviders.ispdfViewerInDarkModeNotifier).value ?? false
-                            ? BlendMode.difference
-                            : BlendMode.dst,
-                      ),
-                      child: Screenshot(
-                        controller: PdfDocViewerController.screenshotController,
-                        child: content.path.filePath.isNotEmpty
-                            ? PdfViewer.file(
-                                content.path.filePath,
-                                initialPageNumber: pdva.initialPage,
-                                params: PdfViewerParams(
-                                  layoutPages: (pages, params) {
-                                    final width = pages.fold(0.0, (w, p) => math.max(w, p.width)) + params.margin * 2;
+    final pdvaN = ref.watch(PdfDocViewerController.pdfDocViewerStateProvider(content.contentId));
 
-                                    final pageLayout = <Rect>[];
-                                    double y = params.margin + (130);
-                                    for (int i = 0; i < pages.length; i++) {
-                                      final page = pages[i];
-                                      final rect = Rect.fromLTWH((width - page.width) / 2, y, page.width, page.height);
-                                      pageLayout.add(rect);
-                                      y += page.height + params.margin;
-                                    }
-
-                                    return PdfPageLayout(pageLayouts: pageLayout, documentSize: Size(width, y));
-                                  },
-                                  backgroundColor: theme.background,
-                                  activeMatchTextColor: theme.primary.withValues(alpha: 0.5),
-                                  viewerOverlayBuilder: (context, size, handleLinkTap) => [
-                                    // ValueListenableBuilder(
-                                    //   valueListenable: pdva.isAppBarVisibleNotifier,
-                                    //   builder: (context, value, child) {
-                                    //     if (!value) return const SizedBox();
-
-                                    //   },
-                                    PdfViewerScrollThumb(
-                                      controller: pdfViewerController,
-                                      thumbSize: Size(160, 52),
-                                      topPadding: 130 / 2 + 8,
-                                      thumbBuilder: (context, thumbSize, pageNumber, controller) {
-                                        return PdfScrollbarOverlay(
-                                          pageProgress: "${pageNumber ?? 0}/${controller.pageCount}",
-                                        );
-                                      },
+    return pdvaN.when(
+      data: (pdva) {
+        final pdsaN = ref.watch(PdfDocSearchController.pdfDocSearchStateProvider(content.contentId));
+        return pdsaN.when(
+          data: (pdsa) {
+            return ValueListenableBuilder(
+              valueListenable: pdsa.isSearchingNotifier,
+              builder: (context, isSearching, child) {
+                return PopScope(
+                  canPop: !isSearching,
+                  onPopInvokedWithResult: (didPop, result) {
+                    log("did pop");
+                    if (isSearching) pdsa.isSearchingNotifier.value = false;
+                    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+                  },
+                  child: AnnotatedRegion(
+                    value: UiUtils.getSystemUiOverlayStyle(context.scaffoldBackgroundColor, context.isDarkMode),
+                    child: Scaffold(
+                      floatingActionButton: ValueListenableBuilder(
+                        valueListenable: pdsa.searchTickNotifier,
+                        builder: (context, value, child) {
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (pdsa.textSearcher != null)
+                                DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    color: theme.background,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                    child: _NavigationControls(
+                                      textSearcher: pdsa.textSearcher,
+                                      onNavigateToInstance: pdsa.navigateToInstance,
                                     ),
-                                  ],
-                                  onGeneralTap: (context, controller, details) {
-                                    // Handle this part
-                                    // final currentRect = controller.visibleRect;
-                                    // final currentPageNum = controller.pageNumber;
-                                    if (details.type != PdfViewerGeneralTapType.tap) return false;
-                                    controller.textSelectionDelegate.clearTextSelection();
-                                    // final currentZoom = controller.currentZoom;
-                                    // final currentPosition = controller.centerPosition;
-
-                                    final bool isSearching = pdsa.isSearchingNotifier.value;
-                                    if (isSearching) return false;
-                                    final bool isAppBarVisible = pdva.isAppBarVisibleNotifier.value;
-                                    if (isAppBarVisible) {
-                                      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-                                    } else {
-                                      final bool isFocusMode =
-                                          ref.read(MainViewController.isFocusModeProvider) ?? false;
-                                      if (isFocusMode) {
-                                        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-                                      } else {
-                                        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-                                      }
-                                    }
-                                    pdva.isAppBarVisibleNotifier.value = !isAppBarVisible;
-
-                                    return true;
-                                  },
-                                  pagePaintCallbacks: [
-                                    (canvas, pageRect, page) {
-                                      // forward to the active searcher, if any
-                                      pdsa.textSearcher?.pageTextMatchPaintCallback(canvas, pageRect, page);
-                                    },
-                                    // other page paint callbacks...
-                                  ],
-                                  textSelectionParams: PdfTextSelectionParams(
-                                    buildSelectionHandle: (context, anchor, state) {
-                                      final isStart = anchor.type == PdfTextSelectionAnchorType.a;
-                                      return Transform.translate(
-                                        offset: Offset(isStart ? 0 : 0, isStart ? 36 : 0),
-                                        child: MaterialTextSelectionControls().buildHandle(
-                                          context,
-                                          isStart ? TextSelectionHandleType.left : TextSelectionHandleType.right,
-                                          anchor.rect.height,
-                                        ),
-                                      );
-                                    },
                                   ),
                                 ),
-                                controller: pdfViewerController,
-                              )
-                            : PdfViewer.uri(Uri.parse(content.path.urlPath), initialPageNumber: pdva.initialPage),
+                              ValueListenableBuilder(
+                                valueListenable: pdva.isAppBarVisibleNotifier,
+                                builder: (context, value, child) {
+                                  if (!value || pdsa.textSearcher != null) return const SizedBox();
+                                  return PdfToolsMenu(isVisible: true);
+                                },
+                              ),
+                            ],
+                          );
+                        },
+                      ),
+
+                      body: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Positioned.fill(
+                            child: ColorFiltered(
+                              colorFilter: ColorFilter.mode(
+                                Colors.white,
+                                ref.watch(PdfDocViewerController.ispdfViewerInDarkMode).value ?? false
+                                    ? BlendMode.difference
+                                    : BlendMode.dst,
+                              ),
+                              child: Screenshot(
+                                controller: PdfDocViewerState.screenshotController,
+                                child: content.path.filePath.isNotEmpty
+                                    ? PdfViewer.file(
+                                        content.path.filePath,
+                                        initialPageNumber: pdva.initialPage,
+                                        params: PdfViewerParams(
+                                          layoutPages: (pages, params) {
+                                            final width =
+                                                pages.fold(0.0, (w, p) => math.max(w, p.width)) + params.margin * 2;
+
+                                            final pageLayout = <Rect>[];
+                                            double y = params.margin + (130);
+                                            for (int i = 0; i < pages.length; i++) {
+                                              final page = pages[i];
+                                              final rect = Rect.fromLTWH(
+                                                (width - page.width) / 2,
+                                                y,
+                                                page.width,
+                                                page.height,
+                                              );
+                                              pageLayout.add(rect);
+                                              y += page.height + params.margin;
+                                            }
+
+                                            return PdfPageLayout(pageLayouts: pageLayout, documentSize: Size(width, y));
+                                          },
+                                          backgroundColor: theme.background,
+                                          activeMatchTextColor: theme.primary.withValues(alpha: 0.5),
+                                          viewerOverlayBuilder: (context, size, handleLinkTap) => [
+                                            // ValueListenableBuilder(
+                                            //   valueListenable: pdva.isAppBarVisibleNotifier,
+                                            //   builder: (context, value, child) {
+                                            //     if (!value) return const SizedBox();
+
+                                            //   },
+                                            PdfViewerScrollThumb(
+                                              controller: pdva.pdfViewerController,
+                                              thumbSize: Size(160, 52),
+                                              topPadding: 130 / 2 + 8,
+                                              thumbBuilder: (context, thumbSize, pageNumber, controller) {
+                                                return PdfScrollbarOverlay(
+                                                  pageProgress: "${pageNumber ?? 0}/${controller.pageCount}",
+                                                );
+                                              },
+                                            ),
+                                          ],
+                                          onGeneralTap: (context, controller, details) {
+                                            // Handle this part
+                                            // final currentRect = controller.visibleRect;
+                                            // final currentPageNum = controller.pageNumber;
+                                            if (details.type != PdfViewerGeneralTapType.tap) return false;
+                                            controller.textSelectionDelegate.clearTextSelection();
+                                            // final currentZoom = controller.currentZoom;
+                                            // final currentPosition = controller.centerPosition;
+
+                                            final bool isSearching = pdsa.isSearchingNotifier.value;
+                                            if (isSearching) return false;
+                                            final bool isAppBarVisible = pdva.isAppBarVisibleNotifier.value;
+                                            if (isAppBarVisible) {
+                                              SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+                                            } else {
+                                              final bool isFocusMode =
+                                                  ref.read(MainViewController.isFocusModeProvider) ?? false;
+                                              if (isFocusMode) {
+                                                SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+                                              } else {
+                                                SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+                                              }
+                                            }
+                                            pdva.isAppBarVisibleNotifier.value = !isAppBarVisible;
+
+                                            return true;
+                                          },
+                                          pagePaintCallbacks: [
+                                            (canvas, pageRect, page) {
+                                              // forward to the active searcher, if any
+                                              pdsa.textSearcher?.pageTextMatchPaintCallback(canvas, pageRect, page);
+                                            },
+                                            // other page paint callbacks...
+                                          ],
+                                          textSelectionParams: PdfTextSelectionParams(
+                                            buildSelectionHandle: (context, anchor, state) {
+                                              final isStart = anchor.type == PdfTextSelectionAnchorType.a;
+                                              return Transform.translate(
+                                                offset: Offset(isStart ? 0 : 0, isStart ? 36 : 0),
+                                                child: MaterialTextSelectionControls().buildHandle(
+                                                  context,
+                                                  isStart
+                                                      ? TextSelectionHandleType.left
+                                                      : TextSelectionHandleType.right,
+                                                  anchor.rect.height,
+                                                ),
+                                              );
+                                            },
+                                          ),
+                                        ),
+                                        controller: pdva.pdfViewerController,
+                                      )
+                                    : PdfViewer.uri(
+                                        Uri.parse(content.path.urlPath),
+                                        initialPageNumber: pdva.initialPage,
+                                      ),
+                              ),
+                            ),
+                          ),
+
+                          Positioned(
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            child: ValueListenableBuilder(
+                              valueListenable: pdva.isAppBarVisibleNotifier,
+                              builder: (context, value, child) {
+                                return AppBarContainer(
+                                  appBarHeight: value ? null : 0,
+                                  child: PdfDocViewerAppBar(pdva: pdva, pdsa: pdsa, title: content.title),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-
-                  Positioned(
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    child: ValueListenableBuilder(
-                      valueListenable: pdva.isAppBarVisibleNotifier,
-                      builder: (context, value, child) {
-                        return AppBarContainer(
-                          appBarHeight: value ? null : 0,
-                          child: PdfDocViewerAppBar(pdva: pdva, pdsa: pdsa, title: content.title),
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            ),
+                );
+              },
+            );
+          },
+          error: (_, _) => Icon(Icons.error),
+          loading: () => Scaffold(
+            appBar: AppBarContainer(child: const SizedBox()),
+            body: const SizedBox(),
           ),
         );
       },
+      error: (_, _) => Icon(Icons.error),
+      loading: () => Scaffold(
+        appBar: AppBarContainer(child: const SizedBox()),
+        body: const SizedBox(),
+      ),
     );
   }
 }

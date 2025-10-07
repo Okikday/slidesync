@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar/isar.dart';
-import 'package:slidesync/core/utils/leak_prevention.dart';
+import 'package:slidesync/core/base/leak_prevention.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 

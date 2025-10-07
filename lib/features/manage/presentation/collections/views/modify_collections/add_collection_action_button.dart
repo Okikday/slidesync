@@ -6,12 +6,12 @@ import 'package:slidesync/features/manage/presentation/collections/views/modify_
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class AddCollectionActionButton extends ConsumerWidget {
-  final int courseDbId;
+  final String courseId;
   final void Function() onClickUp;
   final bool isScrolled;
   const AddCollectionActionButton({
     super.key,
-    required this.courseDbId,
+    required this.courseId,
     required this.isScrolled,
     required this.onClickUp,
   });
@@ -21,7 +21,7 @@ class AddCollectionActionButton extends ConsumerWidget {
     final theme = ref;
     return FloatingActionButton.extended(
       shape: isScrolled ? CircleBorder() : null,
-      backgroundColor: context.isDarkMode ? Colors.white : Colors.black,
+      backgroundColor: theme.onPrimary,
       onPressed: () async {
         if (isScrolled) {
           onClickUp();
@@ -31,7 +31,7 @@ class AddCollectionActionButton extends ConsumerWidget {
           context,
           canPop: true,
           barrierColor: Colors.black.withAlpha(150),
-          child: CreateCollectionBottomSheet(courseDbId: courseDbId),
+          child: CreateCollectionBottomSheet(courseId: courseId),
         );
       },
       extendedIconLabelSpacing: isScrolled ? 0 : null,

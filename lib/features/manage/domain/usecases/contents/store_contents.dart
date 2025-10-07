@@ -55,7 +55,7 @@ Future<List<Map<String, dynamic>>> storeContents(
 
           if (seenHashesSet.contains(hash)) {
             addContentResultList.add(AddContentResult(hasDuplicate: true, isSuccess: false, fileName: fileName));
-            emitProgress(((i + 1) / contentPathsLength) * 0.5);
+            emitProgress(((i + 1) / contentPathsLength));
             continue;
           }
 
@@ -82,7 +82,7 @@ Future<List<Map<String, dynamic>>> storeContents(
                 parentId: collection.collectionId,
                 path: FileDetails(filePath: storedAt.path),
                 courseContentType: contentType,
-                metadataJson: jsonEncode(<String, dynamic>{'filename': p.basenameWithoutExtension(fileName)}),
+                metadataJson: jsonEncode(<String, dynamic>{'originalFilename': p.basename(storedAt.path)}),
               );
               await CreateContentPreviewImage.createPreviewImageForContent(
                 storedAt.path,
@@ -105,6 +105,9 @@ Future<List<Map<String, dynamic>>> storeContents(
                   parentId: collection.collectionId,
                   path: sameHashedContent.path.fileDetails,
                   courseContentType: contentType,
+                  metadataJson: jsonEncode(<String, dynamic>{
+                    'originalFilename': jsonDecode(sameHashedContent.metadataJson)['originalFilename'],
+                  }),
                 );
                 contentsToAdd.add(content);
                 seenHashesSet.add(hash);
@@ -119,10 +122,10 @@ Future<List<Map<String, dynamic>>> storeContents(
           final String? contentId = addContentResult.data;
 
           if (addContentResult.isSuccess && (addContentResult.data != null && addContentResult.data!.isNotEmpty)) {
-            emitProgress(((i + 1) / contentPathsLength) * 0.5);
+            emitProgress(((i + 1) / contentPathsLength));
             addContentResultList.add(AddContentResult(isSuccess: true, fileName: fileName, contentId: contentId));
           } else {
-            emitProgress(((i + 1) / contentPathsLength) * 0.5);
+            emitProgress(((i + 1) / contentPathsLength));
             addContentResultList.add(
               AddContentResult(
                 isSuccess: false,

@@ -10,21 +10,20 @@ import 'package:slidesync/features/browse/presentation/providers/course_details_
 import 'package:slidesync/features/browse/presentation/views/course_details/course_categories_card.dart';
 import 'package:slidesync/features/manage/presentation/collections/views/modify_collections/create_collection_bottom_sheet.dart';
 import 'package:slidesync/features/manage/presentation/collections/views/modify_collections/empty_collections_view.dart';
+import 'package:slidesync/shared/global/providers/collections_providers.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
-import 'package:slidesync/shared/widgets/progress_indicator/loading_view.dart';
 
 class CourseDetailsCollectionSection extends ConsumerWidget {
-  const CourseDetailsCollectionSection({super.key, required this.courseDbId});
-  final int courseDbId;
+  const CourseDetailsCollectionSection({super.key, required this.courseId});
+  final String courseId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final courseAsyncValue = ref.watch(CourseDetailsController.courseWithCollectionProvider(courseDbId));
+    final asyncCollectionsN = ref.watch(CollectionsProviders.collectionsProvider(courseId));
 
-    return courseAsyncValue.when(
+    return asyncCollectionsN.when(
       data: (data) {
-        final course = data;
-        final collections = course.collections;
+        final collections = data;
         if (collections.isEmpty) {
           return EmptyCollectionsView(
             onClickAddCollection: () async {
@@ -35,7 +34,7 @@ class CourseDetailsCollectionSection extends ConsumerWidget {
                   context,
                   canPop: true,
                   barrierColor: Colors.black.withAlpha(150),
-                  child: CreateCollectionBottomSheet(courseDbId: course.id),
+                  child: CreateCollectionBottomSheet(courseId: courseId),
                 );
               }
             },
@@ -67,16 +66,6 @@ class CourseDetailsCollectionSection extends ConsumerWidget {
                               contentCount: list[index].contents.length,
 
                               onTap: () {
-                                // Navigator.of(context).push(
-                                //     PageTransition(
-                                //       type: PageTransitionType.rightToLeftWithFade,
-                                //       duration: Durations.extralong3,
-                                //       reverseDuration: Durations.medium1,
-                                //       curve: CustomCurves.snappySpring,
-                                //       child: InteractiveCourseMaterialView(collection: list[index]),
-                                //     ),
-                                //   );
-
                                 context.pushNamed(Routes.courseMaterials.name, extra: list[index]);
                               },
                             ).animate().fadeIn().slideY(
@@ -101,25 +90,9 @@ class CourseDetailsCollectionSection extends ConsumerWidget {
                         contentCount: list[index].contents.length,
 
                         onTap: () {
-                          // Navigator.of(context).push(
-                          //     PageTransition(
-                          //       type: PageTransitionType.rightToLeftWithFade,
-                          //       duration: Durations.extralong3,
-                          //       reverseDuration: Durations.medium1,
-                          //       curve: CustomCurves.snappySpring,
-                          //       child: InteractiveCourseMaterialView(collection: list[index]),
-                          //     ),
-                          //   );
-
                           context.pushNamed(Routes.courseMaterials.name, extra: list[index]);
                         },
                       ),
-                      // .animate().fadeIn().slideY(
-                      //   begin: (index / collections.length + 1) * 0.4,
-                      //   end: 0,
-                      //   curve: Curves.fastEaseInToSlowEaseOut,
-                      //   duration: Durations.extralong2,
-                      // ),
                     );
                   },
                 );
@@ -137,19 +110,22 @@ class CourseDetailsCollectionSection extends ConsumerWidget {
           ],
         ),
       ),
-      loading: () => SliverToBoxAdapter(child: LoadingView(msg: "Getting Collections")),
+      loading: () => const SliverToBoxAdapter(
+        child: Padding(padding: EdgeInsets.symmetric(horizontal: 16), child: LoadingShimmerListView(count: 2)),
+      ),
     );
   }
 }
 
 class LoadingShimmerListView extends ConsumerWidget {
-  const LoadingShimmerListView({super.key});
+  final int count;
+  const LoadingShimmerListView({super.key, this.count = 4});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return ListView.builder(
       physics: NeverScrollableScrollPhysics(),
-      itemCount: 4,
+      itemCount: count,
       shrinkWrap: true,
       itemBuilder: (context, index) => Skeletonizer(
         child: Padding(

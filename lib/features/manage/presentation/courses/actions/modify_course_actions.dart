@@ -18,6 +18,7 @@ import 'package:slidesync/features/manage/domain/usecases/courses/create_course_
 import 'package:slidesync/features/manage/presentation/courses/views/modify_course/course_description_dialog.dart';
 import 'package:slidesync/features/manage/presentation/courses/views/modify_course/edit_course_bottom_sheet.dart';
 import 'package:slidesync/features/manage/presentation/courses/views/modify_course/modify_course_header/preview_modify_course_image_dialog.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
@@ -205,29 +206,28 @@ class ModifyCourseActions {
     );
   }
 
-  void showDeleteCourseDialog(BuildContext context, String courseId) {
-    UiUtils.showCustomDialog(
-      context,
-      barrierColor: Colors.black.withAlpha(140),
-      child: ConfirmDeletionDialog(
-        content: "Deleting this course will delete it's collections and contents",
-        animateFrom: Alignment.topRight,
-        onCancel: () {
-          log("Cancelled");
-          context.pop();
-        },
-        onDelete: () async {
-          context.pop();
+  void showDeleteCourseDialog(String courseId) {
+    GlobalNav.withContext((context) {
+      UiUtils.showCustomDialog(
+        context,
+        barrierColor: Colors.black.withAlpha(140),
+        child: ConfirmDeletionDialog(
+          content: "Deleting this course will delete it's collections and contents",
+          animateFrom: Alignment.topRight,
+          onCancel: () {
+            log("Cancelled");
+            context.pop();
+          },
+          onDelete: () async {
+            context.pop();
 
-          if (context.mounted) {
-            UiUtils.showLoadingDialog(context, message: "Deleting course...");
-          }
-          await ModifyCourseActions().onDeleteCourse(courseId: courseId);
-          if (context.mounted) UiUtils.hideDialog(context);
-          if (context.mounted) context.pop();
-          if (context.mounted) UiUtils.showFlushBar(context, msg: "Successfully deleted course");
-        },
-      ),
-    );
+            GlobalNav.withContext((context) => UiUtils.showLoadingDialog(context, message: "Deleting course..."));
+            await ModifyCourseActions().onDeleteCourse(courseId: courseId);
+            GlobalNav.withContext((context) => context.pop());
+            GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "Successfully deleted course"));
+          },
+        ),
+      );
+    });
   }
 }

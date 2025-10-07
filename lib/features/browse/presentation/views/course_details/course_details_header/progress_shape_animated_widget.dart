@@ -1,6 +1,5 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/data/models/file_details.dart';
@@ -62,12 +61,15 @@ class _ProgressShapeAnimatedWidgetState extends ConsumerState<ProgressShapeAnima
                 size: Size.square(widget.shapeSize),
                 child: CustomShapeWaveFilledWidget(
                   progress: widget.progress,
+                  waveColor: ref.primary.withAlpha(100),
                   waveSize: Size.square(widget.shapeSize),
                   textStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: ref.primaryColor),
-                  backgroundWidget:
-                      BuildImagePathWidget(fileDetails: widget.fileDetails, fallbackWidget: const SizedBox())
-                          .animate()
-                          .fade(begin: 1.0, end: 0.15, duration: Durations.extralong1, curve: CustomCurves.decelerate),
+                  backgroundWidget: ColoredBox(
+                    color: ref.altBackgroundPrimary.withValues(alpha: .2),
+                    child: BuildImagePathWidget(fileDetails: widget.fileDetails, fallbackWidget: const SizedBox())
+                        .animate()
+                        .fade(begin: 1.0, end: 0.15, duration: Durations.extralong1, curve: CustomCurves.decelerate),
+                  ),
                 ),
               ),
             ),

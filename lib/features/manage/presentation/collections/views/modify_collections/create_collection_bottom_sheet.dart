@@ -7,8 +7,8 @@ import 'package:slidesync/features/manage/presentation/collections/actions/modif
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class CreateCollectionBottomSheet extends ConsumerStatefulWidget {
-  final int courseDbId;
-  const CreateCollectionBottomSheet({super.key, required this.courseDbId});
+  final String courseId;
+  const CreateCollectionBottomSheet({super.key, required this.courseId});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _CreateCollectionBottomSheetState();
@@ -68,9 +68,8 @@ class _CreateCollectionBottomSheetState extends ConsumerState<CreateCollectionBo
                     final outcome = await modifyCollectionActions.onCreateNewCollection(
                       context,
                       text: text.trim(),
-                      courseDbId: widget.courseDbId,
+                      courseId: widget.courseId,
                     );
-                    ref.invalidate(CourseDetailsController.courseWithCollectionProvider(widget.courseDbId));
 
                     // Handle outcome
                     if (outcome == null) {

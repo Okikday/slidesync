@@ -45,7 +45,7 @@ final courseMgmtRoutes = [
     name: Routes.modifyCourse.name,
     path: Routes.modifyCourse.path,
     pageBuilder: (context, state) =>
-        defaultTransition(state.pageKey, child: ModifyCourseView(course: state.extra as Course)),
+        defaultTransition(state.pageKey, child: ModifyCourseView(courseId: state.extra as String)),
     routes: [
       //MODIFY COLLECTIONS VIEW NAVIGATION
       GoRoute(
@@ -63,7 +63,7 @@ final courseMgmtRoutes = [
             path: Routes.modifyContents.subPath,
             pageBuilder: (context, state) => defaultTransition(
               state.pageKey,
-              child: ModifyContentsView(collection: state.extra as CourseCollection),
+              child: ModifyContentsView(collectionId: state.extra as String),
             ),
           ),
         ],

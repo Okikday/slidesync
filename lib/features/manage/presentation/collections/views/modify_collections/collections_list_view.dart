@@ -7,10 +7,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
-import 'package:slidesync/shared/global/providers/course_providers.dart';
+import 'package:slidesync/shared/global/providers/collections_providers.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/features/browse/presentation/views/course_details/course_details_collection_section.dart';
 import 'package:slidesync/features/manage/presentation/collections/views/modify_collections/collections_list_view/mod_collection_card_tile.dart';
 import 'package:slidesync/features/manage/presentation/collections/views/modify_collections/collections_list_view/mod_collection_dialog.dart';
@@ -18,36 +17,22 @@ import 'package:slidesync/features/manage/presentation/collections/views/modify_
 import 'package:slidesync/features/manage/presentation/collections/views/modify_collections/empty_collections_view.dart';
 
 class CollectionsListView extends ConsumerWidget {
-  const CollectionsListView({
-    super.key,
-    required this.courseDbId,
-    required this.asyncCourseValue,
-    required this.searchCollectionTextNotifier,
-  });
-  final int courseDbId;
-  final AsyncValue<Course?> asyncCourseValue;
+  const CollectionsListView({super.key, required this.courseId, required this.searchCollectionTextNotifier});
+  final String courseId;
   final ValueNotifier<String> searchCollectionTextNotifier;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final collectionsProvider = CollectionsProviders.collectionsProvider(courseId);
+    final collectionsN = ref.watch(collectionsProvider);
+
     return ValueListenableBuilder(
       valueListenable: searchCollectionTextNotifier,
       builder: (context, value, child) {
         log("Search collection updated");
-        return asyncCourseValue.when(
+        return collectionsN.when(
           data: (data) {
-            final course = data ?? defaultCourse;
-            final searchText = searchCollectionTextNotifier.value;
-            final collections =
-                (searchText.isEmpty
-                        ? course.collections
-                        : course.collections.where(
-                            (e) => e.collectionTitle.toLowerCase().contains(
-                              searchCollectionTextNotifier.value.toLowerCase(),
-                            ),
-                          ))
-                    .toList();
-            if (course.collections.isEmpty) {
+            if (data.isEmpty) {
               return EmptyCollectionsView(
                 onClickAddCollection: () async {
                   // AppRouteNavigator.to(context).modifyCollectionsRoute(course);
@@ -57,12 +42,23 @@ class CollectionsListView extends ConsumerWidget {
                       context,
                       canPop: true,
                       barrierColor: Colors.black.withAlpha(150),
-                      child: CreateCollectionBottomSheet(courseDbId: course.id),
+                      child: CreateCollectionBottomSheet(courseId: courseId),
                     );
                   }
                 },
               );
             }
+            final searchText = searchCollectionTextNotifier.value;
+            final collections =
+                (searchText.trim().isEmpty
+                        ? data
+                        : data.where(
+                            (e) => e.collectionTitle.toLowerCase().contains(
+                              searchCollectionTextNotifier.value.toLowerCase(),
+                            ),
+                          ))
+                    .toList();
+
             return SliverPadding(
               padding: EdgeInsets.symmetric(horizontal: 14.0, vertical: 12),
               sliver: SliverList.builder(
@@ -75,11 +71,11 @@ class CollectionsListView extends ConsumerWidget {
                     onSelected: () {
                       UiUtils.showCustomDialog(
                         context,
-                        child: ModCollectionDialog(courseDbId: courseDbId, collection: collection),
+                        child: ModCollectionDialog(courseId: courseId, collection: collection),
                       );
                     },
                     onTap: () {
-                      context.pushNamed(Routes.modifyContents.name, extra: collection);
+                      context.pushNamed(Routes.modifyContents.name, extra: collection.collectionId);
                     },
                   ).animate().fadeIn().slideY(
                     begin: (index / collections.length + 1) * 0.4,

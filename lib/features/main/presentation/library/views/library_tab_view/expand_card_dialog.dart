@@ -183,7 +183,7 @@ class ExpandCardDialog extends ConsumerWidget {
                       iconData: Iconsax.grid_edit,
                       onTap: () {
                         UiUtils.hideDialog(context);
-                        context.pushNamed(Routes.modifyCourse.name, extra: course);
+                        context.pushNamed(Routes.modifyCourse.name, extra: course.courseId);
                       },
                     ),
                     divider,
@@ -195,10 +195,7 @@ class ExpandCardDialog extends ConsumerWidget {
                       onTap: () {
                         UiUtils.hideDialog(context);
                         if (rootNavigatorKey.currentContext != null && rootNavigatorKey.currentContext!.mounted) {
-                          ModifyCourseActions().showDeleteCourseDialog(
-                            rootNavigatorKey.currentContext!,
-                            course.courseId,
-                          );
+                          ModifyCourseActions().showDeleteCourseDialog(course.courseId);
                         }
                       },
                     ),

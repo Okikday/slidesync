@@ -1,18 +1,17 @@
 import 'dart:collection';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/core/base/leak_prevention.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 
-class ModifyContentsViewProviders {
-  final WidgetRef ref;
+class ModifyContentsState extends LeakPrevention {
   late final ValueNotifier<LinkedHashSet<CourseContent>> selectedContentsNotifier;
 
-  ModifyContentsViewProviders._(this.ref) {
+  ModifyContentsState() {
     selectedContentsNotifier = ValueNotifier(LinkedHashSet<CourseContent>());
   }
-
-  static ModifyContentsViewProviders of(WidgetRef ref) => ModifyContentsViewProviders._(ref);
 
   bool get isEmpty => selectedContentsNotifier.value.isEmpty;
 
@@ -40,7 +39,9 @@ class ModifyContentsViewProviders {
     }
   }
 
-  void dispose() {
+  @override
+  void onDispose() {
     selectedContentsNotifier.dispose();
+    log("Disposed $this");
   }
 }

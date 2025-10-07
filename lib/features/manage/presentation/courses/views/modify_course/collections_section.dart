@@ -1,10 +1,10 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
+import 'package:slidesync/features/manage/presentation/collections/views/modify_collections/create_collection_bottom_sheet.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
@@ -15,15 +15,9 @@ import 'package:stacked_card_carousel/stacked_card_carousel.dart';
 
 /// COLLECTION SECTION
 class CollectionsSection extends ConsumerStatefulWidget {
-  final int courseDbId;
+  final String courseId;
   final List<CourseCollection> collections;
-  final void Function() onClickNewCollection;
-  const CollectionsSection({
-    super.key,
-    required this.courseDbId,
-    required this.collections,
-    required this.onClickNewCollection,
-  });
+  const CollectionsSection({super.key, required this.courseId, required this.collections});
 
   @override
   ConsumerState createState() => _CollectionsSectionState();
@@ -74,7 +68,25 @@ class _CollectionsSectionState extends ConsumerState<CollectionsSection> {
     if (widget.collections.isEmpty) {
       return SliverPadding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        sliver: _buildNewCollectionTile(ref, onTap: widget.onClickNewCollection),
+        sliver: _buildNewCollectionTile(
+          ref,
+          onTap: () {
+            if (widget.collections.isEmpty) {
+              CustomDialog.show(
+                context,
+                canPop: true,
+                barrierColor: Colors.black.withAlpha(150),
+                child: CreateCollectionBottomSheet(courseId: widget.courseId),
+              ).then((value) {
+                if (widget.collections.isNotEmpty) {
+                  if (context.mounted) context.pushNamed(Routes.modifyCollections.name, extra: widget.courseId);
+                }
+              });
+              return;
+            }
+            context.pushNamed(Routes.modifyCollections.name, extra: widget.courseId);
+          },
+        ),
       );
     }
 
@@ -134,13 +146,13 @@ class _CollectionsSectionState extends ConsumerState<CollectionsSection> {
                                           UiUtils.showCustomDialog(
                                             context,
                                             child: ModCollectionDialog(
-                                              courseDbId: widget.courseDbId,
+                                              courseId: widget.courseId,
                                               collection: collection,
                                             ),
                                           );
                                         },
                                         onTap: () async {
-                                          context.pushNamed(Routes.modifyContents.name, extra: collection);
+                                          context.pushNamed(Routes.modifyContents.name, extra: collection.collectionId);
                                         },
                                       ),
                                     );

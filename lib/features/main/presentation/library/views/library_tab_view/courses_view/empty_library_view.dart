@@ -59,7 +59,7 @@ class EmptyLibraryView extends ConsumerWidget {
               pixelHeight: 44,
               label: "Explore Courses",
               textSize: 15,
-              textColor: Colors.white,
+              textColor: theme.onPrimary,
             ),
           ),
         ],

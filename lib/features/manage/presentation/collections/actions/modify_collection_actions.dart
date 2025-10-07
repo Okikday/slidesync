@@ -14,8 +14,8 @@ import 'package:slidesync/features/manage/domain/usecases/collections/modify_col
 
 class ModifyCollectionActions {
   /// Add collection to course
-  Future<String?> _addCollectionToCourse(int courseDbId, String title) async {
-    final Course? course = await CourseRepo.getCourseByDbId(courseDbId);
+  Future<String?> _addCollectionToCourse(String courseId, String title) async {
+    final Course? course = await CourseRepo.getCourseById(courseId);
     if (course == null) {
       return "Couldn't find course!";
     }
@@ -24,10 +24,10 @@ class ModifyCollectionActions {
     return result;
   }
 
-  Future<String?> onCreateNewCollection(BuildContext context, {required String text, required int courseDbId}) async {
+  Future<String?> onCreateNewCollection(BuildContext context, {required String text, required String courseId}) async {
     if (text.isNotEmpty && text.length > 1 && text.length < 256) {
       final Result<String?> createOutcome = await Result.tryRunAsync<String?>(
-        () async => await _addCollectionToCourse(courseDbId, text),
+        () async => await _addCollectionToCourse(courseId, text),
       );
 
       if (createOutcome.isSuccess && createOutcome.data == null) {

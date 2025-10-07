@@ -19,10 +19,10 @@ import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class ModCollectionDialog extends ConsumerStatefulWidget {
-  final int courseDbId;
+  final String courseId;
   final CourseCollection collection;
 
-  const ModCollectionDialog({super.key, required this.courseDbId, required this.collection});
+  const ModCollectionDialog({super.key, required this.courseId, required this.collection});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _ModCollectionDialogState();
@@ -116,7 +116,7 @@ class _ModCollectionDialogState extends ConsumerState<ModCollectionDialog> {
           icon: Icon(Iconsax.forward_copy, size: 24, color: theme.supportingText),
           onTap: () {
             CustomDialog.hide(context);
-            context.pushNamed(Routes.modifyContents.name, extra: collection);
+            context.pushNamed(Routes.modifyContents.name, extra: collection.collectionId);
           },
         ),
 

@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+export 'package:flutter_riverpod/flutter_riverpod.dart';
+
 class BoolNotifier extends Notifier<bool> {
   final bool _defaultKey;
   BoolNotifier([this._defaultKey = false]);
