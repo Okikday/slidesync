@@ -25,6 +25,7 @@ class CourseRepo {
   static Stream<Course?> watchCourseByDbId(int dbId) => _isarData.watchById(dbId);
 
   static Future<int> addCourse(Course course) async {
+    if (course.courseId.trim().isEmpty || course.courseId == "_") return -1;
     final existingCourseTrack = await (await CourseTrackRepo.filter).courseIdEqualTo(course.courseId).findFirst();
     if (existingCourseTrack == null) {
       final newCourseTrack = CourseTrack.create(

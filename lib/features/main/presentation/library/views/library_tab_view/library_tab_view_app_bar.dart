@@ -35,7 +35,7 @@ class LibraryTabViewAppBar extends ConsumerWidget {
             color: theme.background.withAlpha(200),
             borderRadius: BorderRadius.circular(24),
             image: DecorationImage(
-              image: Assets.images.eduElements.asImageProvider,
+              image: Assets.images.clouds.asImageProvider,
               repeat: ImageRepeat.repeat,
               // fit: BoxFit.cover,
               opacity: 0.02,
@@ -47,7 +47,6 @@ class LibraryTabViewAppBar extends ConsumerWidget {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
             child: Stack(
-              // fit: StackFit.expand,
               alignment: Alignment.bottomRight,
               children: [
                 const LibraryTabViewHeaderText(),

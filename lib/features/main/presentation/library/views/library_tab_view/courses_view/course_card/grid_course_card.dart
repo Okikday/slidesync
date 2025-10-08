@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:ui';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
@@ -33,225 +34,169 @@ class GridCourseCard extends ConsumerWidget {
     final theme = ref;
     final courseCode = course.courseCode;
     final categoriesCount = course.collections.length;
-    final shadowSurfaceColor = theme.surface.lightenColor(0.5).withAlpha(200);
+    final shadowSurfaceColor = theme.surface.lightenColor(0.5).withValues(alpha: 0.1);
+    log("Rebuild Grid course card");
     return Container(
       clipBehavior: Clip.antiAlias,
       margin: const EdgeInsets.all(1.5),
 
-      constraints: BoxConstraints(maxWidth: 200, maxHeight: 200),
+      constraints: BoxConstraints(maxWidth: 320, maxHeight: 200),
       decoration: BoxDecoration(
         color: theme.surface,
         borderRadius: BorderRadius.circular(22),
-        // border: Border.all(width: 1, color: Colors.white),
-        //   image: DecorationImage(
-        //     image: Assets.images.bookSparkleTransparentBg.asImageProvider,
-        //   opacity: 0.05,
-        //     colorFilter: ColorFilter.mode(
-        //       theme.primaryColor,
-        //       BlendMode.srcIn,
-        //     ),
-        // ),
-        boxShadow: [
-          BoxShadow(
-            color: shadowSurfaceColor,
-            offset: Offset(-2.5, 2.2),
-            spreadRadius: -2,
-            blurRadius: 10,
-            blurStyle: BlurStyle.inner,
-          ),
-          BoxShadow(
-            color: shadowSurfaceColor,
-            offset: Offset(2.1, -2.2),
-            spreadRadius: -2,
-            blurRadius: 10,
-            blurStyle: BlurStyle.inner,
-          ),
-          // ...(context.isDarkMode
-          //     ? [
-          //         BoxShadow(
-          //           color: Colors.black.withValues(alpha: 0.08),
-          //           offset: Offset(0, 1),
-          //           blurRadius: 3,
-          //           spreadRadius: 0,
-          //         ),
-          //         BoxShadow(
-          //           color: Colors.black.withValues(alpha: 0.06),
-          //           offset: Offset(0, 4),
-          //           blurRadius: 6,
-          //           spreadRadius: 0,
-          //         ),
-          //       ]
-          //     : [
-          //         BoxShadow(
-          //           color: Colors.white.withValues(alpha: 0.05),
-          //           offset: Offset(0, 1),
-          //           blurRadius: 2,
-          //           spreadRadius: 0,
-          //         ),
-          //         BoxShadow(
-          //           color: Colors.white.withValues(alpha: 0.04),
-          //           offset: Offset(0, 6),
-          //           blurRadius: 12,
-          //           spreadRadius: -2,
-          //         ),
-          //       ]),
-        ],
+        border: Border.all(color: shadowSurfaceColor),
       ),
-      child: Stack(
-        fit: StackFit.expand,
+      child: Column(
+        // fit: StackFit.expand,
+        // clipBehavior: Clip.antiAlias,
         children: [
-          ...List.generate(
-            3,
-            (index) => GridCourseCardStackedCard(theme: theme, i: index, course: course, courseCode: courseCode),
+          Expanded(
+            child: GridCourseCardStackedCard(course: course, courseCode: courseCode),
           ),
 
-          GridCourseCardBottomStack(theme: theme, courseName: course.courseName, categoriesCount: categoriesCount),
+          GridCourseCardBottomStack(courseName: course.courseName, categoriesCount: categoriesCount),
         ],
       ),
     );
   }
 }
 
-class GridCourseCardStackedCard extends StatelessWidget {
-  const GridCourseCardStackedCard({
-    super.key,
-    required this.theme,
-    required this.i,
-    required this.course,
-    required this.courseCode,
-  });
+class GridCourseCardStackedCard extends ConsumerWidget {
+  const GridCourseCardStackedCard({super.key, required this.course, required this.courseCode});
 
-  final WidgetRef theme;
-  final int i;
   final Course course;
   final String courseCode;
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 120,
-      height: 120,
-      decoration: BoxDecoration(
-        color: theme.surface.withValues(alpha: 0.4 + (i * 0.3)).lightenColor(context.isDarkMode ? 0.3 : 0.75),
-        borderRadius: BorderRadius.circular(20),
-        // border: i == 2
-        //     ? Border.all(color: theme.surface.lightenColor(0.5).withAlpha(200))
-        //     : null
-      ),
-      padding: EdgeInsets.all(12).copyWith(bottom: 40),
-      margin: EdgeInsets.only(
-        top: (10.0 * i) + 12,
-        left: (10.0 * (3 - (i + 1))) + 12,
-        right: (10.0 * (3 - (i + 1))) + 12,
-        bottom: 24,
-      ),
-      child: Row(
-        spacing: 8,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Flexible(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  // color: theme.surface.withAlpha(100),
-                  color: context.isDarkMode
-                      ? theme.surface.withAlpha(100)
-                      : theme.adjustBgAndPrimaryWithLerpExtra.withValues(alpha: 0.5),
-                ),
-                // child: SizedBox(width: 40, height: 40),
-                child: SizedBox.square(
-                  dimension: 40,
-                  child: BuildImagePathWidget(
-                    width: 40,
-                    height: 40,
-                    fileDetails: course.imageLocationJson.fileDetails,
-                    fallbackWidget: Icon(Iconsax.star, size: 16, color: theme.isDarkMode ? Colors.white : Colors.black),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref;
+    return Padding(
+      padding: const EdgeInsets.only(left: 8, right: 8, top: 12),
+      child: SingleChildScrollView(
+        physics: const NeverScrollableScrollPhysics(),
+        child: Column(
+          children: [
+            for (int i = 0; i < 3; i++)
+              Transform.translate(
+                offset: Offset(0, -(120.0 * i)),
+                child: Container(
+                  height: 120,
+                  clipBehavior: Clip.hardEdge,
+                  decoration: BoxDecoration(
+                    // color: Colors.yellow,
+                    color: theme.surface
+                        .withValues(alpha: 0.4 + (i * 0.3))
+                        .lightenColor(context.isDarkMode ? 0.3 : 0.75),
+                    borderRadius: BorderRadius.circular(20),
+                    border: i == 2 ? Border.all(color: theme.surface.lightenColor(0.5).withAlpha(40)) : null,
                   ),
+                  padding: EdgeInsets.all(12).copyWith(bottom: 40),
+                  margin: EdgeInsets.only(top: 4.5 * i, left: 4.0 * (2 - i), right: 4.0 * (2 - i)),
+
+                  child: i == 2
+                      ? Row(
+                          spacing: 16,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Flexible(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(8),
+                                    // color: theme.surface.withAlpha(100),
+                                    color: context.isDarkMode
+                                        ? theme.surface.withAlpha(100)
+                                        : theme.adjustBgAndPrimaryWithLerpExtra.withValues(alpha: 0.5),
+                                    border: Border.all(color: theme.primary.withAlpha(20)),
+                                  ),
+                                  // child: SizedBox(width: 40, height: 40),
+                                  child: SizedBox.square(
+                                    dimension: 40,
+                                    child: BuildImagePathWidget(
+                                      width: 40,
+                                      height: 40,
+                                      fileDetails: course.imageLocationJson.fileDetails,
+                                      fallbackWidget: Icon(
+                                        Iconsax.star,
+                                        size: 16,
+                                        color: theme.isDarkMode ? Colors.white : Colors.black,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            Expanded(
+                              child: SizedBox(
+                                height: 40,
+                                child: Center(
+                                  child: LinearProgressIndicator(
+                                    minHeight: 16,
+                                    value: 0.2,
+                                    backgroundColor: context.isDarkMode
+                                        ? theme.surface.withAlpha(100)
+                                        : theme.adjustBgAndPrimaryWithLerpExtra.withValues(alpha: 0.5),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      : null,
                 ),
               ),
-            ),
-          ),
-          if (courseCode.isNotEmpty)
-            Flexible(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: theme.altBackgroundSecondary.withAlpha(100),
-                  borderRadius: BorderRadius.circular(100),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  child: FittedBox(
-                    child: CustomText(
-                      course.courseCode,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: theme.secondary,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
 }
 
-class GridCourseCardBottomStack extends StatelessWidget {
-  const GridCourseCardBottomStack({
-    super.key,
-    required this.theme,
-    required this.courseName,
-    required this.categoriesCount,
-  });
+class GridCourseCardBottomStack extends ConsumerWidget {
+  const GridCourseCardBottomStack({super.key, required this.courseName, required this.categoriesCount});
 
-  final WidgetRef theme;
   final String courseName;
   final int categoriesCount;
 
   @override
-  Widget build(BuildContext context) {
-    return Positioned(
-      left: 0,
-      right: 0,
-      bottom: 0,
-      child: ClipRRect(
-        clipBehavior: Clip.antiAlias,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            color: theme.adjustBgAndPrimaryWithLerpExtra.withValues(alpha: 0.9),
-            border: Border(top: BorderSide(color: theme.surface.lightenColor(0.5).withAlpha(200))),
-          ),
-          child: SizedBox(
-            height: 60,
-            width: 200,
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: RepaintBoundary(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-                  child: Column(
-                    children: [
-                      Flexible(
-                        child: CustomText(
-                          courseName,
-                          color: theme.onBackground,
-                          fontWeight: FontWeight.bold,
-                          textAlign: TextAlign.center,
-                          overflow: TextOverflow.fade,
-                          fontSize: 13,
-                        ),
-                      ),
-                      CustomText(
-                        "${categoriesCount < 1 ? "No" : categoriesCount} ${categoriesCount == 1 ? "collection" : "collections"}",
-                        fontSize: 10,
-                        color: theme.supportingText.withAlpha(200),
-                      ),
-                    ],
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref;
+    return ClipRRect(
+      clipBehavior: Clip.antiAlias,
+      borderRadius: BorderRadius.only(bottomLeft: Radius.circular(22), bottomRight: Radius.circular(22)),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: theme.adjustBgAndPrimaryWithLerpExtra.withValues(alpha: 0.9),
+          // border: Border(top: BorderSide(color: theme.surface.lightenColor(0.5).withAlpha(200))),
+        ),
+        child: SizedBox(
+          height: 60,
+          width: double.infinity,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+              child: Column(
+                children: [
+                  Flexible(
+                    child: CustomText(
+                      courseName,
+                      color: theme.onBackground,
+                      fontWeight: FontWeight.bold,
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.fade,
+                      fontSize: 13,
+                    ),
                   ),
-                ),
+                  CustomText(
+                    "${categoriesCount < 1 ? "No" : categoriesCount} ${categoriesCount == 1 ? "category" : "categories"}",
+                    fontSize: 10,
+                    color: theme.supportingText.withAlpha(200),
+                  ),
+                ],
               ),
             ),
           ),

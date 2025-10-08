@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:ui';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
@@ -29,51 +30,70 @@ class ListCourseCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        margin: EdgeInsets.all(2.0),
-        padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-        height: 100,
-        constraints: BoxConstraints(maxWidth: 500),
-        decoration: BoxDecoration(
-          color: theme.surface,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: context.isDarkMode
-              ? [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
-                    offset: Offset(0, 1),
-                    blurRadius: 3,
-                    spreadRadius: 0,
-                  ),
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
-                    offset: Offset(0, 4),
-                    blurRadius: 6,
-                    spreadRadius: 0,
-                  ),
-                ]
-              : [
-                  BoxShadow(
-                    color: Colors.white.withValues(alpha: 0.05),
-                    offset: Offset(0, 1),
-                    blurRadius: 2,
-                    spreadRadius: 0,
-                  ),
-                  BoxShadow(
-                    color: Colors.white.withValues(alpha: 0.04),
-                    offset: Offset(0, 6),
-                    blurRadius: 12,
-                    spreadRadius: -2,
-                  ),
-                ],
+    return Container(
+      margin: EdgeInsets.all(2.0),
+      padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+      height: 100,
+      constraints: BoxConstraints(maxWidth: 500),
+      decoration: BoxDecoration(
+        color: theme.surface,
+        borderRadius: BorderRadius.circular(14),
+        boxShadow: context.isDarkMode
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.08),
+                  offset: Offset(0, 1),
+                  blurRadius: 3,
+                  spreadRadius: 0,
+                ),
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  offset: Offset(0, 4),
+                  blurRadius: 6,
+                  spreadRadius: 0,
+                ),
+              ]
+            : [
+                BoxShadow(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  offset: Offset(0, 1),
+                  blurRadius: 2,
+                  spreadRadius: 0,
+                ),
+                BoxShadow(
+                  color: Colors.white.withValues(alpha: 0.04),
+                  offset: Offset(0, 6),
+                  blurRadius: 12,
+                  spreadRadius: -2,
+                ),
+              ],
+      ),
+      child: Badge(
+        backgroundColor: Colors.transparent,
+        isLabelVisible: (course.createdAt?.difference(DateTime.now()).inMinutes.abs() ?? 10) <= 5,
+        alignment: Alignment.topLeft,
+        offset: Offset(-20, -16),
+        label: DecoratedBox(
+          decoration: BoxDecoration(
+            color: theme.onBackground.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.only(topLeft: Radius.circular(14), bottomRight: Radius.circular(14)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            child: Row(
+              spacing: 1,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Iconsax.star_1, size: 10, color: theme.adjustBgAndPrimaryWithLerpExtra),
+                CustomText("New", fontSize: 8, fontWeight: FontWeight.bold, color: theme.background),
+              ],
+            ),
+          ),
         ),
         child: Row(
           children: [
             ListCourseCardIcon(
               onTapIcon: onTapIcon,
-              isStarred: (course.createdAt?.difference(DateTime.now()).inMinutes.abs() ?? 10) <= 5,
               fileDetails: course.imageLocationJson.fileDetails,
               courseCode: course.courseCode,
             ),
@@ -96,17 +116,10 @@ class ListCourseCard extends ConsumerWidget {
 }
 
 class ListCourseCardIcon extends ConsumerWidget {
-  const ListCourseCardIcon({
-    super.key,
-    required this.fileDetails,
-    this.courseCode = '',
-    required this.isStarred,
-    required this.onTapIcon,
-  });
+  const ListCourseCardIcon({super.key, required this.fileDetails, this.courseCode = '', required this.onTapIcon});
 
   final FileDetails fileDetails;
   final String courseCode;
-  final bool isStarred;
   final void Function() onTapIcon;
 
   @override
@@ -115,59 +128,36 @@ class ListCourseCardIcon extends ConsumerWidget {
     return InkWell(
       customBorder: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       onTap: onTapIcon,
-      child: Badge(
-        isLabelVisible: isStarred,
-        backgroundColor: Colors.transparent,
-        label: CustomTextButton(
-          pixelWidth: 37,
-          contentPadding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-          backgroundColor: theme.onBackground.withValues(alpha: 0.4),
-          child: ClipRRect(
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
-              child: Row(
-                spacing: 1,
-                children: [
-                  Icon(Iconsax.star_1, size: 10, color: theme.primaryColor),
-                  CustomText("New", fontSize: 8, fontWeight: FontWeight.bold, color: theme.background),
-                ],
-              ),
-            ),
-          ),
+      child: Container(
+        height: 64,
+        width: 64,
+        padding: EdgeInsets.all(2),
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: theme.background.lightenColor(context.isDarkMode ? 0.1 : 0.8).withValues(alpha: 0.8),
+          border: courseCode.isEmpty ? null : Border.all(color: theme.altBackgroundPrimary),
+          // borderRadius: BorderRadius.circular(12),
         ),
-        alignment: Alignment.topLeft,
-        offset: Offset(-12, 0),
-        child: Container(
-          height: 64,
-          width: 64,
-          padding: EdgeInsets.all(2),
-          clipBehavior: Clip.antiAlias,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: theme.background.lightenColor(context.isDarkMode ? 0.1 : 0.8).withValues(alpha: 0.8),
-            border: courseCode.isEmpty ? null : Border.all(color: theme.altBackgroundPrimary),
-            // borderRadius: BorderRadius.circular(12),
-          ),
-          child: Opacity(
-            opacity: 0.6,
-            child: BuildImagePathWidget(
-              height: 64,
-              width: 64,
-              fileDetails: fileDetails,
-              fallbackWidget: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: courseCode.isEmpty
-                    ? Icon(Iconsax.document_1, color: theme.onBackground.withValues(alpha: 0.4))
-                    : Center(
-                        child: CustomText(
-                          courseCode.substring(0, courseCode.length.clamp(0, 8)),
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          textAlign: TextAlign.center,
-                          color: theme.onBackground.withValues(alpha: 0.5),
-                        ),
+        child: Opacity(
+          opacity: 0.6,
+          child: BuildImagePathWidget(
+            height: 64,
+            width: 64,
+            fileDetails: fileDetails,
+            fallbackWidget: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: courseCode.isEmpty
+                  ? Icon(Iconsax.document_1, color: theme.onBackground.withValues(alpha: 0.4))
+                  : Center(
+                      child: CustomText(
+                        courseCode.substring(0, courseCode.length.clamp(0, 8)),
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        textAlign: TextAlign.center,
+                        color: theme.onBackground.withValues(alpha: 0.5),
                       ),
-              ),
+                    ),
             ),
           ),
         ),
@@ -244,21 +234,31 @@ class ListCourseCardProgressIndicator extends ConsumerStatefulWidget {
 }
 
 class _ListCourseCardProgressIndicatorState extends ConsumerState<ListCourseCardProgressIndicator> {
-  late Future<CourseTrack?> _courseTrackFuture;
+  late Stream<CourseTrack?> _courseTrackStream;
 
   @override
   void initState() {
     super.initState();
-    _courseTrackFuture = CourseTrackRepo.getByCourseId(widget.courseId);
+    _courseTrackStream = CourseTrackRepo.watchByCourseId(widget.courseId);
+  }
+
+  @override
+  void didUpdateWidget(covariant ListCourseCardProgressIndicator oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.courseId != widget.courseId) {
+      setState(() {
+        _courseTrackStream = CourseTrackRepo.watchByCourseId(widget.courseId);
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = ref;
-    return FutureBuilder<CourseTrack?>(
-      future: _courseTrackFuture,
+    return StreamBuilder<CourseTrack?>(
+      stream: _courseTrackStream,
       builder: (context, asyncSnapshot) {
-        if (asyncSnapshot.connectionState == ConnectionState.done) {
+        if (asyncSnapshot.connectionState == ConnectionState.active) {
           final progress = asyncSnapshot.data?.progress;
           return SizedBox.square(
             dimension: 40,
@@ -272,12 +272,14 @@ class _ListCourseCardProgressIndicatorState extends ConsumerState<ListCourseCard
                   backgroundColor: theme.background,
                   overlayColor: theme.altBackgroundSecondary,
                   onClick: () {},
-                  child: CustomText(
-                    "${((progress?.clamp(0, 1.0) ?? 0.0) * 100.0).toInt()}%",
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: theme.supportingText.withValues(alpha: 0.5),
-                  ),
+                  child: progress == null || (progress <= 0.0)
+                      ? Icon(Iconsax.play, color: theme.onBackground)
+                      : CustomText(
+                          "${((progress?.clamp(0, 1.0) ?? 0.0) * 100.0).toInt()}%",
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: theme.supportingText.withValues(alpha: 0.5),
+                        ),
                 ),
                 Positioned.fill(
                   child: IgnorePointer(
@@ -294,7 +296,7 @@ class _ListCourseCardProgressIndicatorState extends ConsumerState<ListCourseCard
           );
         }
         return SizedBox.square(
-          dimension: 40,
+          dimension: 30,
           child: CircularProgressIndicator(
             strokeCap: StrokeCap.round,
             color: theme.primaryColor,

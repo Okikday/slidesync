@@ -11,6 +11,7 @@ import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/core/storage/isar_data/isar_schemas.dart';
 import 'package:slidesync/core/base/leak_prevention.dart';
+import 'package:slidesync/core/utils/smart_isolate.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 
@@ -24,6 +25,9 @@ class CourseMaterialsPagination extends LeakPrevention {
   bool _fetching = false;
   bool isFirstTime = true;
   final Queue<Completer<List<CourseContent>>> _waitingQueue = Queue();
+  SmartIsolateContinuous<Map<String, dynamic>, List<Map<String, dynamic>>>? _isolate;
+  Completer<SmartIsolateContinuous<Map<String, dynamic>, List<Map<String, dynamic>>>>? _initCompleter;
+  bool _disposed = false;
 
   CourseMaterialsPagination._(this.parentId, {required this.sortOption}) {
     pagingController = PagingController(
@@ -35,14 +39,66 @@ class CourseMaterialsPagination extends LeakPrevention {
   static CourseMaterialsPagination of(String parentId, {CourseSortOption? sortOption}) =>
       CourseMaterialsPagination._(parentId, sortOption: sortOption ?? CourseSortOption.dateModifiedDesc);
 
+  Future<void> init() async {
+    if (_disposed) return;
+    if (_initCompleter != null) return _initCompleter!.future.then((_) {}); // Already initializing
+
+    _initCompleter = Completer();
+
+    try {
+      final token = RootIsolateToken.instance!;
+      final newIsolate = await SmartIsolate.runContinuous<Map<String, dynamic>, List<Map<String, dynamic>>>((
+        registerHandler,
+      ) async {
+        BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+        await IsarData.initialize(collectionSchemas: isarSchemas, inspector: false);
+        registerHandler((arg, respond) async {
+          final result = await doFetchInIsolate(arg);
+          respond(result);
+        });
+        log("Initialized second isolate");
+        return;
+      });
+
+      // Check if disposed during initialization
+      if (_disposed) {
+        newIsolate.dispose();
+        _initCompleter!.completeError(StateError('Disposed during initialization'));
+        return;
+      }
+
+      _isolate = newIsolate;
+      _initCompleter!.complete(newIsolate);
+    } catch (e) {
+      _initCompleter!.completeError(e);
+      rethrow;
+    }
+  }
+
+  // Future<void> init() async {
+  //   log("Initializing...");
+  //   final token = RootIsolateToken.instance!;
+  //   isolate = await SmartIsolate.runContinuous<Map<String, dynamic>, List<Map<String, dynamic>>>((
+  //     registerHandler,
+  //   ) async {
+  //     BackgroundIsolateBinaryMessenger.ensureInitialized(token);
+  //     await IsarData.initialize(collectionSchemas: isarSchemas, inspector: false);
+  //     registerHandler((arg, respond) async {
+  //       final result = await doFetchInIsolate(arg);
+  //       respond(result);
+  //     });
+  //     log("Initialized second isolate");
+  //     return;
+  //   });
+  // }
+
   Future<List<CourseContent>> fetchPage(int pageKey, int limit) async {
-    //   void other(String arg, void Function(String result) second) {}
-    // Future<void> initialize(void Function(String arg, void Function(String result)) other) async {}
-    // final isolateInit = await SmartIsolate.runContinuous(initialize);
+    if (isFirstTime) await init();
     if (isFirstTime && pageKey == 0) {
-      await Future.delayed(Durations.medium1); // Wait for the page to finish animating - approx...
+      await Future.delayed(Durations.short4); // Wait for the page to finish animating - approx...
       isFirstTime = false;
     }
+    if (isFirstTime) isFirstTime = false;
     if (_fetching) {
       final completer = Completer<List<CourseContent>>();
       _waitingQueue.add(completer);
@@ -51,17 +107,16 @@ class CourseMaterialsPagination extends LeakPrevention {
 
     _fetching = true;
     try {
-      final resultFromIsolate = await compute(
-        doFetchInIsolate,
-        DoFetchInIsolateArgs(parentId, pageKey, limit, sortOption, RootIsolateToken.instance!),
+      final resultFromIsolate = await _isolate?.execute(
+        DoFetchInIsolateArgs(parentId, pageKey, limit, sortOption, RootIsolateToken.instance!).toMap(),
       );
-      final result = resultFromIsolate.map((e) => CourseContent.fromJson(e)).toList();
+      final result = resultFromIsolate?.map((e) => CourseContent.fromMap(e)).toList();
 
       while (_waitingQueue.isNotEmpty) {
         _waitingQueue.removeFirst().complete(result);
       }
 
-      return result;
+      return result ?? [];
     } catch (error) {
       while (_waitingQueue.isNotEmpty) {
         _waitingQueue.removeFirst().completeError(error);
@@ -71,45 +126,6 @@ class CourseMaterialsPagination extends LeakPrevention {
       _fetching = false;
     }
   }
-
-  // Future<List<CourseContent>> _fetchDefault(int pageKey, int limit) async {
-  //   _lastItemSortId ??= (pageKey - 1) * limit;
-
-  //   final idGreaterThan = _lastItemSortId;
-  //   log("Fetching content page $pageKey with ID > $idGreaterThan");
-  //   final query = (await CourseContentRepo.filter).parentIdEqualTo(parentId);
-  //   final result = await query.idGreaterThan(idGreaterThan).limit(limit).findAll();
-
-  //   if (result.isNotEmpty) {
-  //     _lastItemSortId = result.last.id;
-  //   }
-
-  //   return result;
-  // }
-
-  // Future<List<CourseContent>> _fetchByTitle(int pageKey, int limit, [bool ascending = true]) async {
-  //   final offset = (pageKey - 1) * limit;
-  //   final query = (await CourseContentRepo.filter).parentIdEqualTo(parentId);
-  //   return await (ascending
-  //       ? query.sortByTitle().offset(offset).limit(limit).findAll()
-  //       : query.sortByTitleDesc().offset(offset).limit(limit).findAll());
-  // }
-
-  // Future<List<CourseContent>> _fetchByDateCreated(int pageKey, int limit, [bool ascending = true]) async {
-  //   final offset = (pageKey - 1) * limit;
-  //   final query = (await CourseContentRepo.filter).parentIdEqualTo(parentId);
-  //   return await (ascending
-  //       ? query.sortByCreatedAt().offset(offset).limit(limit).findAll()
-  //       : query.sortByCreatedAtDesc().offset(offset).limit(limit).findAll());
-  // }
-
-  // Future<List<CourseContent>> _fetchByDateModified(int pageKey, int limit, [bool ascending = true]) async {
-  //   final offset = (pageKey - 1) * limit;
-  //   final query = (await CourseContentRepo.filter).parentIdEqualTo(parentId);
-  //   return await (ascending
-  //       ? query.sortByLastModified().offset(offset).limit(limit).findAll()
-  //       : query.sortByLastModifiedDesc().offset(offset).limit(limit).findAll());
-  // }
 
   static int? getNextPageKey(PagingState<int, CourseContent> state) {
     return state.lastPageIsEmpty ? null : state.nextIntPageKey;
@@ -130,8 +146,19 @@ class CourseMaterialsPagination extends LeakPrevention {
   bool get isBusy => _fetching;
 
   @override
-  void onDispose() {
+  void onDispose() async {
+    _disposed = true;
     clearQueue();
+
+    if (_initCompleter != null && !_initCompleter!.isCompleted) {
+      try {
+        await _initCompleter!.future.timeout(Duration(seconds: 2));
+      } catch (_) {
+        log("Error disposing smartIsolate");
+      }
+    }
+
+    _isolate?.dispose();
     pagingController.dispose();
     log("Disposed Course Materials Pagination");
   }
@@ -145,18 +172,38 @@ class DoFetchInIsolateArgs {
   final RootIsolateToken token;
 
   DoFetchInIsolateArgs(this.parentId, this.pageKey, this.limit, this.sortOption, this.token);
+
+  Map<String, dynamic> toMap() {
+    return {'parentId': parentId, 'pageKey': pageKey, 'limit': limit, 'sortOption': sortOption.index, 'token': token};
+  }
+
+  factory DoFetchInIsolateArgs.fromMap(Map<String, dynamic> map) {
+    final sortRaw = map['sortOption'];
+    final CourseSortOption sort = (sortRaw is int)
+        ? CourseSortOption.values[sortRaw]
+        : (sortRaw is String
+              ? CourseSortOption.values.firstWhere(
+                  (e) => e.name == sortRaw || e.toString() == sortRaw,
+                  orElse: () => CourseSortOption.dateModifiedDesc,
+                )
+              : CourseSortOption.dateModifiedDesc);
+
+    return DoFetchInIsolateArgs(
+      map['parentId'] as String,
+      map['pageKey'] as int,
+      map['limit'] as int,
+      sort,
+      map['token'] as RootIsolateToken,
+    );
+  }
 }
 
-Future<List<String>> doFetchInIsolate(DoFetchInIsolateArgs args) async {
-  final RootIsolateToken rootIsolateToken = args.token;
-  BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken);
-  await IsarData.initialize(collectionSchemas: isarSchemas, inspector: false);
+Future<List<Map<String, dynamic>>> doFetchInIsolate(Map<String, dynamic> arg) async {
+  final args = DoFetchInIsolateArgs.fromMap(arg);
   final result = await _doFetch(args.parentId, args.pageKey, args.limit, args.sortOption);
 
-  final jsonList = result.map((e) => e.toJson()).toList();
+  final jsonList = result.map((e) => e.toMap()).toList();
   return jsonList;
-  // log("Result: $result");
-  // return result;
 }
 
 Future<List<CourseContent>> _doFetch(String parentId, int pageKey, int limit, CourseSortOption sortOption) async {

@@ -43,14 +43,12 @@ class CourseCard extends ConsumerWidget {
                 onTapIcon: () {
                   CourseCardActions.of(ref).onHoldCourseCard(course);
                 },
-                progress: 0.0,
               )
             : ListCourseCard(
                 course,
                 onTapIcon: () {
                   CourseCardActions.of(ref).onHoldCourseCard(course);
                 },
-                progress: 0.0,
               ),
       ),
     ).animate().fadeIn();

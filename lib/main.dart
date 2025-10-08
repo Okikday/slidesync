@@ -18,19 +18,17 @@ final obs = ActiveProvidersObserver();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Hive.initFlutter();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Hive.initFlutter();
   await AppHiveData.instance.initialize();
   await dotenv.load();
-
   if (!kIsWeb) await IsarData.initializeDefault();
   pdfrxFlutterInitialize();
   await IsolateWorker.init();
-
   runApp(
-    ProviderScope(
+    const ProviderScope(
       // observers: [obs],
-      child: const App(),
+      child: App(),
     ),
   );
 }

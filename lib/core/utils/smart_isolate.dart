@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:isolate';
+import 'dart:ui';
+
+import 'package:flutter/services.dart'; // For RootIsolateToken
 
 /// Priority levels for task execution
 enum WorkPriority { low, medium, high }
@@ -55,11 +58,37 @@ class SmartIsolate<TArg, TProgress, TResult> {
     }
   }
 
+  /// Creates a continuous isolate that can process multiple tasks
+  ///
+  /// Example:
+  /// ```dart
+  /// final token = RootIsolateToken.instance!;
+  ///
+  /// final isolate = await SmartIsolate.runContinuous<String, String>(
+  ///   (registerHandler) async {
+  ///     // One-time initialization (runs in isolate)
+  ///     // Call registerHandler with your task handler
+  ///     registerHandler((arg, respond) {
+  ///       // Process each task
+  ///       final result = processTask(arg);
+  ///       respond(result);
+  ///     });
+  ///   },
+  ///   rootIsolateToken: token, // Optional: for Flutter plugin access
+  /// );
+  ///
+  /// // Execute multiple tasks
+  /// final result1 = await isolate.execute('task1');
+  /// final result2 = await isolate.execute('task2');
+  ///
+  /// isolate.dispose();
+  /// ```
   static Future<SmartIsolateContinuous<TArg, TResult>> runContinuous<TArg, TResult>(
-    Future<void> Function(void Function(TArg, void Function(TResult))) initialize,
-  ) async {
+    Future<void> Function(void Function(void Function(TArg, void Function(TResult))) registerHandler) initialize, {
+    RootIsolateToken? rootIsolateToken,
+  }) async {
     final instance = SmartIsolateContinuous<TArg, TResult>();
-    await instance._initialize(initialize);
+    await instance._initialize(initialize, rootIsolateToken: rootIsolateToken);
     return instance;
   }
 
@@ -157,7 +186,10 @@ class SmartIsolateContinuous<TArg, TResult> {
 
   bool get isRunning => _isRunning;
 
-  Future<void> _initialize(Future<void> Function(void Function(TArg, void Function(TResult))) initialize) async {
+  Future<void> _initialize(
+    Future<void> Function(void Function(void Function(TArg, void Function(TResult))) registerHandler) initialize, {
+    RootIsolateToken? rootIsolateToken,
+  }) async {
     if (_isRunning) {
       throw StateError('SmartIsolateContinuous is already running');
     }
@@ -171,10 +203,12 @@ class SmartIsolateContinuous<TArg, TResult> {
       } else if (message is _ContinuousIsolateResult<TResult>) {
         final completer = _pendingTasks.remove(message.taskId);
         completer?.complete(message.data);
+        _isProcessingQueue = false; // Reset flag to allow next task
         _processNextTask();
       } else if (message is _ContinuousIsolateError) {
         final completer = _pendingTasks.remove(message.taskId);
         completer?.completeError(SmartIsolateException(message.error.toString(), message.stack), message.stack);
+        _isProcessingQueue = false; // Reset flag to allow next task
         _processNextTask();
       }
     });
@@ -182,7 +216,11 @@ class SmartIsolateContinuous<TArg, TResult> {
     try {
       _isolate = await Isolate.spawn<_ContinuousIsolatePayload<TArg, TResult>>(
         _continuousEntryPoint,
-        _ContinuousIsolatePayload<TArg, TResult>(mainSendPort: _receivePort!.sendPort, initialize: initialize),
+        _ContinuousIsolatePayload<TArg, TResult>(
+          mainSendPort: _receivePort!.sendPort,
+          initialize: initialize,
+          rootIsolateToken: rootIsolateToken,
+        ),
       );
 
       _isolateSendPort = await readyCompleter.future;
@@ -239,8 +277,6 @@ class SmartIsolateContinuous<TArg, TResult> {
     if (nextTask != null) {
       _isProcessingQueue = true;
       _isolateSendPort!.send(_ContinuousIsolateTask<TArg>(nextTask.taskId, nextTask.arg));
-    } else {
-      _isProcessingQueue = false;
     }
   }
 
@@ -276,28 +312,41 @@ class SmartIsolateContinuous<TArg, TResult> {
   }
 
   static void _continuousEntryPoint<TArg, TResult>(_ContinuousIsolatePayload<TArg, TResult> payload) async {
+    // Initialize BackgroundIsolateBinaryMessenger if token provided
+    if (payload.rootIsolateToken != null) {
+      BackgroundIsolateBinaryMessenger.ensureInitialized(payload.rootIsolateToken!);
+    }
+
     final receivePort = ReceivePort();
     payload.mainSendPort.send(receivePort.sendPort);
 
-    late final void Function(TArg, void Function(TResult)) handler;
+    // This will hold the user's task handler
+    void Function(TArg, void Function(TResult))? handler;
 
     try {
-      await payload.initialize((TArg arg, void Function(TResult) respond) {
-        handler = (TArg a, void Function(TResult) r) async {
-          respond(r as TResult);
-        };
+      // Call user's initialize function and provide a registerHandler callback
+      await payload.initialize((userHandler) {
+        // User calls this with their handler function
+        handler = userHandler;
       });
+
+      // Ensure handler was registered
+      if (handler == null) {
+        throw StateError('Handler was not registered. You must call registerHandler() in your initialize function.');
+      }
     } catch (e, st) {
       payload.mainSendPort.send(_ContinuousIsolateError(-1, e, st));
       return;
     }
 
+    // Process incoming tasks
     await for (final message in receivePort) {
       if (message is _ContinuousIsolateTask<TArg>) {
         try {
           final completer = Completer<TResult>();
 
-          handler(message.arg, (TResult result) {
+          // Call the user's handler with the task argument
+          handler!(message.arg, (TResult result) {
             if (!completer.isCompleted) {
               completer.complete(result);
             }
@@ -356,9 +405,10 @@ class _SmartIsolateError {
 
 class _ContinuousIsolatePayload<TArg, TResult> {
   final SendPort mainSendPort;
-  final Future<void> Function(void Function(TArg, void Function(TResult))) initialize;
+  final Future<void> Function(void Function(void Function(TArg, void Function(TResult))) registerHandler) initialize;
+  final RootIsolateToken? rootIsolateToken;
 
-  _ContinuousIsolatePayload({required this.mainSendPort, required this.initialize});
+  _ContinuousIsolatePayload({required this.mainSendPort, required this.initialize, this.rootIsolateToken});
 }
 
 class _ContinuousIsolateTask<TArg> {

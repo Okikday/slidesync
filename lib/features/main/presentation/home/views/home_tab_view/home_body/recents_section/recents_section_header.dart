@@ -24,13 +24,13 @@ class RecentsSectionHeader extends ConsumerWidget {
             child: Row(
               children: [
                 Expanded(
-                  child: CustomText("Recents", fontSize: 18, fontWeight: FontWeight.bold, color: theme.onBackground),
+                  child: CustomText("Recents", fontSize: 16, fontWeight: FontWeight.bold, color: theme.onBackground),
                 ),
 
                 CustomTextButton(
                   label: "See all",
                   contentPadding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  textColor: theme.supportingText.withValues(alpha: 0.9),
+                  textColor: theme.backgroundSupportingText,
                   textSize: 14,
                   pixelHeight: 32,
                   onClick: () {

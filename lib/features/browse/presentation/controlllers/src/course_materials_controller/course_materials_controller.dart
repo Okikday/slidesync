@@ -1,4 +1,4 @@
-
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
@@ -26,6 +26,7 @@ final _contentPaginationFutureProvider = FutureProvider.family<CourseMaterialsPa
   collectionId,
 ) async {
   final sortOption = (await ref.read(_contentSortOptionProvider.future));
+  // await Future.delayed(Durations.medium1);
   final cp = CourseMaterialsPagination.of(collectionId, sortOption: sortOption);
   ref.onDispose(() => cp.dispose());
   return cp;

@@ -82,7 +82,10 @@ Future<List<Map<String, dynamic>>> storeContents(
                 parentId: collection.collectionId,
                 path: FileDetails(filePath: storedAt.path),
                 courseContentType: contentType,
-                metadataJson: jsonEncode(<String, dynamic>{'originalFilename': p.basename(storedAt.path)}),
+                metadataJson: jsonEncode(<String, dynamic>{
+                  'originalFilename': p.basename(storedAt.path),
+                  'previewPath': CreateContentPreviewImage.genPreviewImagePath(filePath: storedAt.path),
+                }),
               );
               await CreateContentPreviewImage.createPreviewImageForContent(
                 storedAt.path,

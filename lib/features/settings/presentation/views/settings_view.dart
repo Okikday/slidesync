@@ -89,10 +89,14 @@ class SettingsView extends ConsumerWidget {
 
               ConstantSizing.columnSpacingMedium,
 
+              SettingsCard(title: "Repair", iconData: Icons.fire_extinguisher, content: "Attempts to fix any anomaly"),
+
+              ConstantSizing.columnSpacingMedium,
+
               SettingsCard(
-                title: "Repair",
-                iconData: Icons.fire_extinguisher,
-                content: "Attempts to fix any misbehavior",
+                title: "Allow opening multiple contents (Experimental)",
+                iconData: Icons.view_agenda,
+                content: "Allows to view more than one content by overlaying the others maxing out at 3",
               ),
 
               // Help: Note, Materials won't be uploaded except you explicitly share them.

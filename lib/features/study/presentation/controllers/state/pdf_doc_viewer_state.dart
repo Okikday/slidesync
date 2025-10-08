@@ -68,7 +68,15 @@ class PdfDocViewerState extends LeakPrevention {
       return result;
     } else {
       final updatedPtm = await _updateProgressTrack(
-        ptm.copyWith(lastRead: DateTime.now(), pages: ptm.pages.isEmpty ? const ["1"] : null),
+        ptm.copyWith(
+          lastRead: DateTime.now(),
+          pages: ptm.pages.isEmpty ? const ["1"] : null,
+          metadataJson: jsonEncode(<String, dynamic>{
+            'previewPath':
+                jsonDecode(content.metadataJson)['previewPath'] ??
+                CreateContentPreviewImage.genPreviewImagePath(filePath: content.path.filePath),
+          }),
+        ),
       );
       return updatedPtm;
     }

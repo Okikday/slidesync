@@ -37,12 +37,11 @@ class RecentsSectionBody extends ConsumerWidget {
           return SliverToBoxAdapter(child: RecommendedSection());
         }
         return SliverPadding(
-          padding: EdgeInsets.only(bottom: kBottomNavigationBarHeight + context.bottomPadding / 2),
+          padding: EdgeInsets.only(bottom: kBottomNavigationBarHeight + context.bottomPadding),
           sliver: SliverList.builder(
             itemCount: data.length,
             itemBuilder: (context, index) {
               final content = data[index];
-              log("${jsonDecode(content.metadataJson)}");
               final previewPath = jsonDecode(content.metadataJson)['previewPath'];
               return RecentListTile(
                 dataModel: RecentListTileModel(
@@ -66,7 +65,7 @@ class RecentsSectionBody extends ConsumerWidget {
                           contentId: content.contentId,
                           imagePreview: BuildImagePathWidget(
                             fileDetails: FileDetails(filePath: previewPath ?? ''),
-                            fallbackWidget: Icon(Iconsax.document_1, size: 26, color: ref.primary),
+                            fallbackWidget: Icon(Iconsax.document_1, size: 26, color: ref.onBackground),
                           ),
                           isStarred: false,
                           title: content.title ?? "No title",

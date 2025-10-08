@@ -10,6 +10,7 @@ import 'package:slidesync/features/main/presentation/home/views/home_tab_view/ho
 import 'package:slidesync/features/main/presentation/home/views/home_tab_view/home_body/more_section.dart';
 import 'package:slidesync/features/main/presentation/home/views/home_tab_view/home_body/recents_section/recents_section_body.dart';
 import 'package:slidesync/features/main/presentation/home/views/home_tab_view/home_body/recents_section/recents_section_header.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class HomeBody extends ConsumerWidget {
   const HomeBody({super.key});
@@ -72,11 +73,19 @@ class HomeBody extends ConsumerWidget {
           ),
         ),
 
+        const SliverToBoxAdapter(child: ConstantSizing.columnSpacingExtraLarge),
+
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.only(left: 12),
+            child: CustomText("Quick access", color: ref.onBackground, fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+        ),
         const SliverToBoxAdapter(child: ConstantSizing.columnSpacingLarge),
 
         const SliverToBoxAdapter(child: MoreSection()),
 
-        const SliverToBoxAdapter(child: ConstantSizing.columnSpacingLarge),
+        const SliverToBoxAdapter(child: ConstantSizing.columnSpacingExtraLarge),
 
         // Recents Section Header
         // Won't show up if the recent courses is empty

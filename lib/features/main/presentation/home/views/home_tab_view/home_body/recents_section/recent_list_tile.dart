@@ -8,7 +8,6 @@ import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
-
 enum ProgressLevel { neutral, warning, danger, success }
 
 class RecentListTile extends ConsumerWidget {
@@ -41,7 +40,7 @@ class RecentListTile extends ConsumerWidget {
           if (dataModel.onLongTapTile != null) dataModel.onLongTapTile!();
         },
         child: Padding(
-          padding: EdgeInsets.only(left: 16, right: 16, bottom: 12, top: 12),
+          padding: EdgeInsets.only(left: 16, right: 16, bottom: 16, top: 16),
           child: Row(
             children: [
               Badge(

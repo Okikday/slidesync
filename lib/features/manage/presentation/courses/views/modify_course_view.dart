@@ -66,9 +66,6 @@ class ModifyCourseViewOuterSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(CourseProviders.courseProvider(courseId), (p, n) {
-      log("Soemthings");
-    });
     return CustomScrollView(
       slivers: [
         // HEADER

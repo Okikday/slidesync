@@ -6,7 +6,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 
-
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
 
@@ -41,7 +40,7 @@ class _RecentDialogState extends ConsumerState<RecentDialog> {
 
                   constraints: BoxConstraints(maxHeight: 320, maxWidth: 320),
                   decoration: BoxDecoration(
-                    color: theme.surface.withValues(alpha: 0.9),
+                    color: theme.surface.withValues(alpha: 0.8),
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(color: theme.surface.withValues(alpha: 0.95)),
                   ),
@@ -63,7 +62,7 @@ class _RecentDialogState extends ConsumerState<RecentDialog> {
                                   clipBehavior: Clip.hardEdge,
                                   margin: EdgeInsets.only(left: 12),
                                   decoration: BoxDecoration(
-                                    color: theme.primary.withAlpha(40),
+                                    color: theme.onSurface.withAlpha(40),
                                     borderRadius: BorderRadius.circular(16),
                                   ),
                                   child: widget.recentDialogModel.imagePreview,
