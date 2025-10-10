@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/core/constants/constants.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
@@ -75,7 +76,9 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
       child: Scaffold(
         appBar: AppBarContainer(child: AppBarContainerChild(theme.isDarkMode, title: widget.content.title)),
         body: PhotoView(
-          imageProvider: FileImage(File(widget.content.path.filePath)),
+          imageProvider: widget.content.courseContentType == CourseContentType.link
+              ? NetworkImage(widget.content.path)
+              : FileImage(File(widget.content.path.filePath)),
           minScale: PhotoViewComputedScale.contained,
           maxScale: PhotoViewComputedScale.covered,
         ),

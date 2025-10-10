@@ -89,7 +89,7 @@ class ModifyCourseViewOuterSection extends ConsumerWidget {
                 return ModifyCourseHeader(
                   courseId: courseId,
                   courseCode: data.courseCode,
-                  title: data.title,
+                  courseName: data.title.courseName,
                   description: data.description,
                   imageDetails: data.imageDetails,
                 );
@@ -98,7 +98,7 @@ class ModifyCourseViewOuterSection extends ConsumerWidget {
               loading: () => const ModifyCourseHeader(
                 courseId: "",
                 courseCode: "",
-                title: "",
+                courseName: "",
                 description: "description",
                 imageDetails: '',
               ),

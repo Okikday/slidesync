@@ -102,26 +102,26 @@ class CoursesPagination extends LeakPrevention {
 
   Future<List<Course>> _fetchByTitle(int pageKey, int limit, [bool ascending = true]) async {
     final offset = (pageKey - 1) * limit;
-    final filter = (await CourseRepo.filter);
+    final filter = (await CourseRepo.isar).courses.where();
     return await (ascending
-        ? filter.idGreaterThan(0).sortByCourseTitle().offset(offset).limit(limit).findAll()
-        : filter.idGreaterThan(0).sortByCourseTitleDesc().offset(offset).limit(limit).findAll());
+        ? filter.sortByCourseTitle().offset(offset).limit(limit).findAll()
+        : filter.sortByCourseTitleDesc().offset(offset).limit(limit).findAll());
   }
 
   Future<List<Course>> _fetchByDateCreated(int pageKey, int limit, [bool ascending = true]) async {
     final offset = (pageKey - 1) * limit;
-    final filter = (await CourseRepo.filter);
+    final filter = (await CourseRepo.isar).courses.where();
     return await (ascending
-        ? filter.idGreaterThan(0).sortByCreatedAt().offset(offset).limit(limit).findAll()
-        : filter.idGreaterThan(0).sortByCreatedAtDesc().offset(offset).limit(limit).findAll());
+        ? filter.sortByCreatedAt().offset(offset).limit(limit).findAll()
+        : filter.sortByCreatedAtDesc().offset(offset).limit(limit).findAll());
   }
 
   Future<List<Course>> _fetchByDateModified(int pageKey, int limit, [bool ascending = true]) async {
     final offset = (pageKey - 1) * limit;
-    final filter = (await CourseRepo.filter);
+    final filter = (await CourseRepo.isar).courses.where();
     return await (ascending
-        ? filter.idGreaterThan(0).sortByLastUpdated().offset(offset).limit(limit).findAll()
-        : filter.idGreaterThan(0).sortByLastUpdatedDesc().offset(offset).limit(limit).findAll());
+        ? filter.sortByLastUpdated().offset(offset).limit(limit).findAll()
+        : filter.sortByLastUpdatedDesc().offset(offset).limit(limit).findAll());
   }
 
   static int? getNextPageKey(PagingState<int, Course> state) {

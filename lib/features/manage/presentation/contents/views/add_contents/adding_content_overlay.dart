@@ -21,7 +21,7 @@ class LoadingOverlay extends ConsumerWidget {
         decoration: BoxDecoration(color: theme.altBackgroundPrimary),
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         height: 40,
-        constraints: BoxConstraints(maxWidth: 100),
+        constraints: BoxConstraints(maxWidth: 200),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           spacing: 12,

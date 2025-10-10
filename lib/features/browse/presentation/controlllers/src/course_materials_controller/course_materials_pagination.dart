@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:collection';
 import 'dart:developer';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -24,10 +25,16 @@ class CourseMaterialsPagination extends LeakPrevention {
 
   bool _fetching = false;
   bool isFirstTime = true;
+
+  /// For stream cases, to keep track of what's going on
+  int count = -1;
+  bool isUpdating = false;
+
   final Queue<Completer<List<CourseContent>>> _waitingQueue = Queue();
   SmartIsolateContinuous<Map<String, dynamic>, List<Map<String, dynamic>>>? _isolate;
   Completer<SmartIsolateContinuous<Map<String, dynamic>, List<Map<String, dynamic>>>>? _initCompleter;
   bool _disposed = false;
+  bool _isStopping = false;
 
   CourseMaterialsPagination._(this.parentId, {required this.sortOption}) {
     pagingController = PagingController(
@@ -40,62 +47,57 @@ class CourseMaterialsPagination extends LeakPrevention {
       CourseMaterialsPagination._(parentId, sortOption: sortOption ?? CourseSortOption.dateModifiedDesc);
 
   Future<void> init() async {
-    if (_disposed) return;
-    if (_initCompleter != null) return _initCompleter!.future.then((_) {}); // Already initializing
+    if (_disposed || _isStopping) return;
+    if (_initCompleter != null) return _initCompleter!.future.then((_) {});
 
     _initCompleter = Completer();
+    log("init completer");
 
     try {
       final token = RootIsolateToken.instance!;
+      log("init completer 2");
+
       final newIsolate = await SmartIsolate.runContinuous<Map<String, dynamic>, List<Map<String, dynamic>>>((
         registerHandler,
       ) async {
         BackgroundIsolateBinaryMessenger.ensureInitialized(token);
         await IsarData.initialize(collectionSchemas: isarSchemas, inspector: false);
-        registerHandler((arg, respond) async {
-          final result = await doFetchInIsolate(arg);
-          respond(result);
+        registerHandler((arg, respond) {
+          doFetchInIsolate(arg)
+              .then((result) {
+                respond(result);
+              })
+              .catchError((error) {
+                log("Error while fetching materials from second isolate");
+              });
         });
         log("Initialized second isolate");
         return;
       });
 
-      // Check if disposed during initialization
-      if (_disposed) {
+      if (_disposed || _isStopping) {
         newIsolate.dispose();
-        _initCompleter!.completeError(StateError('Disposed during initialization'));
+        _initCompleter!.completeError(StateError('Stopped during initialization'));
         return;
       }
 
       _isolate = newIsolate;
+
       _initCompleter!.complete(newIsolate);
     } catch (e) {
       _initCompleter!.completeError(e);
-      rethrow;
+      log("$e");
     }
   }
 
-  // Future<void> init() async {
-  //   log("Initializing...");
-  //   final token = RootIsolateToken.instance!;
-  //   isolate = await SmartIsolate.runContinuous<Map<String, dynamic>, List<Map<String, dynamic>>>((
-  //     registerHandler,
-  //   ) async {
-  //     BackgroundIsolateBinaryMessenger.ensureInitialized(token);
-  //     await IsarData.initialize(collectionSchemas: isarSchemas, inspector: false);
-  //     registerHandler((arg, respond) async {
-  //       final result = await doFetchInIsolate(arg);
-  //       respond(result);
-  //     });
-  //     log("Initialized second isolate");
-  //     return;
-  //   });
-  // }
-
   Future<List<CourseContent>> fetchPage(int pageKey, int limit) async {
-    if (isFirstTime) await init();
+    if (_isStopping) return [];
+    if (count <= 0) count = await (await CourseContentRepo.filter).parentIdEqualTo(parentId).count();
+    if (isFirstTime || _isolate == null) await init();
+    if (_isStopping || _isolate == null) return [];
+    log(("isIsolate value : $_isolate"));
     if (isFirstTime && pageKey == 0) {
-      await Future.delayed(Durations.short4); // Wait for the page to finish animating - approx...
+      await Future.delayed(Durations.medium2);
       isFirstTime = false;
     }
     if (isFirstTime) isFirstTime = false;
@@ -135,6 +137,28 @@ class CourseMaterialsPagination extends LeakPrevention {
     while (_waitingQueue.isNotEmpty) {
       _waitingQueue.removeFirst().completeError(StateError('Queue cleared'));
     }
+  }
+
+  Future<void> stopIsolate() async {
+    // Make it async
+    _isStopping = true;
+
+    // Wait for any pending init to complete
+    if (_initCompleter != null && !_initCompleter!.isCompleted) {
+      try {
+        await _initCompleter!.future.timeout(Duration(seconds: 2));
+      } catch (_) {}
+    }
+
+    _isolate?.kill();
+    _isolate = null;
+    _initCompleter = null;
+
+    log("Stopped isolate");
+  }
+
+  void restartIsolate() {
+    _isStopping = false; // Allow init again
   }
 
   void updateSortOption(CourseSortOption newSortOption, [bool refresh = false]) {
@@ -265,4 +289,131 @@ Future<List<CourseContent>> _doFetchByDateModified(
   return await (ascending
       ? query.sortByLastModified().offset(offset).limit(limit).findAll()
       : query.sortByLastModifiedDesc().offset(offset).limit(limit).findAll());
+}
+
+Future<void> compareContentAndUpdate(CourseMaterialsPagination cmp) async {
+  final presentCount = await (await CourseContentRepo.isar).courseContents
+      .filter()
+      .parentIdEqualTo(cmp.parentId)
+      .count();
+
+  if (cmp.isUpdating) {
+    log("Course Materials Pagination is updating!");
+    return;
+  }
+
+  cmp.isUpdating = true;
+
+  if (cmp.count < 0) {
+    cmp.count = presentCount;
+    cmp.isUpdating = false;
+    return;
+  }
+
+  int contentOnPagesCount = 0;
+  final List<List<CourseContent>>? contentOnPagesList = cmp.pagingController.value.pages;
+
+  if (contentOnPagesList == null) {
+    cmp.isUpdating = false;
+    return;
+  }
+
+  for (final page in contentOnPagesList) {
+    contentOnPagesCount += page.length;
+  }
+
+  log("Counted the content displaying: $contentOnPagesCount");
+
+  if (presentCount == contentOnPagesCount) {
+    // Same count - check for modifications
+    final List<CourseContent> contentLoadedOnPages = contentOnPagesList.reduce((value, element) {
+      return value + element;
+    });
+
+    final Map<String, CourseContent> contentOnPagesMap = {
+      for (final content in contentLoadedOnPages) content.contentId: content,
+    };
+
+    log("currentlyLoadedContentPages: $contentLoadedOnPages");
+
+    final List<CourseContent> contentLoadedOnPagesFromIsar = await (await CourseContentRepo.filter)
+        .parentIdEqualTo(cmp.parentId)
+        .anyOf(contentLoadedOnPages, (query, content) => query.contentIdEqualTo(content.contentId))
+        .findAll();
+
+    final Map<String, CourseContent> modifiedContentMap = {};
+
+    for (final isarContent in contentLoadedOnPagesFromIsar) {
+      final pageContent = contentOnPagesMap[isarContent.contentId];
+      if (pageContent != null && isarContent != pageContent) {
+        modifiedContentMap[isarContent.contentId] = isarContent;
+      }
+    }
+
+    if (modifiedContentMap.isNotEmpty) {
+      log("Found ${modifiedContentMap.length} modified content items");
+
+      final List<List<CourseContent>> updatedPagesList = contentOnPagesList.map((page) {
+        return page.map((content) {
+          return modifiedContentMap[content.contentId] ?? content;
+        }).toList();
+      }).toList();
+
+      cmp.pagingController.value = cmp.pagingController.value.copyWith(pages: updatedPagesList);
+
+      log("Updated ${modifiedContentMap.length} content items in pages");
+    }
+  } else {
+    // Different count - refetch pages
+    final numberOfCurrentPages = contentOnPagesList.length;
+    final difference = presentCount - contentOnPagesCount;
+
+    if (difference <= 0) {
+      cmp.pagingController.refresh();
+      cmp.isUpdating = false;
+      return;
+    }
+
+    int pagesToFetch;
+
+    if (difference > 0) {
+      // Items added - fetch current pages + max 1 additional page if needed
+      final additionalItemsPages = (difference / limit).ceil();
+      pagesToFetch = numberOfCurrentPages + math.min(additionalItemsPages, 1);
+    } else {
+      // Items removed - calculate how many pages we actually need now
+      pagesToFetch = math.max((presentCount / limit).ceil(), 1);
+    }
+
+    final List<List<CourseContent>> newPagesList = [];
+    final List<int> newKeysList = [];
+
+    // Fetch pages based on current sort option
+    for (int i = 0; i < pagesToFetch; i++) {
+      final pageKey = i + 1;
+
+      final resultFromIsolate = await cmp._isolate?.execute(
+        DoFetchInIsolateArgs(cmp.parentId, pageKey, limit, cmp.sortOption, RootIsolateToken.instance!).toMap(),
+      );
+
+      final fetchedPage = resultFromIsolate?.map((e) => CourseContent.fromMap(e)).toList() ?? [];
+
+      if (fetchedPage.isEmpty) {
+        break;
+      }
+
+      newPagesList.add(fetchedPage);
+      newKeysList.add(pageKey);
+    }
+
+    // Update count
+    cmp.count = presentCount;
+
+    // Update the paging controller
+    if (newPagesList.isNotEmpty) {
+      cmp.pagingController.value = cmp.pagingController.value.copyWith(pages: newPagesList, keys: newKeysList);
+    }
+  }
+
+  cmp.isUpdating = false;
 }

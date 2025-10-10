@@ -28,7 +28,7 @@ class CoursesView extends ConsumerStatefulWidget {
 class _CoursesViewState extends ConsumerState<CoursesView> {
   @override
   Widget build(BuildContext context) {
-    final int isListView = ref.watch(CoursesViewController.cardViewTypeProvider).value ?? 0;
+    final int isListView = ref.watch(CoursesViewController.cardViewTypeProvider).value ?? 1;
     final isGrid = isListView == 0;
     final cp = ref.watch(CoursesViewController.coursesPaginationFutureProvider);
 

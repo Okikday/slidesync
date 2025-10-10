@@ -12,7 +12,6 @@ import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 import 'package:slidesync/shared/helpers/formatter.dart';
 import 'package:slidesync/shared/helpers/widget_helper.dart';
 
-
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 class ContentViewGate extends ConsumerStatefulWidget {
@@ -31,7 +30,7 @@ class _ContentViewGateState extends ConsumerState<ContentViewGate> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       // if (isPushed) return;
       log("Redirecting to viewer");
-      await ContentViewGateActions.redirectToViewer(context, widget.content);
+      await ContentViewGateActions.redirectToViewer(ref, widget.content);
       // setState(() {
       //   isPushed = true;
       // });

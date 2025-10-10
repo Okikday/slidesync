@@ -15,7 +15,7 @@ import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 class ModifyCourseHeader extends ConsumerWidget {
   final String courseId;
   final String courseCode;
-  final String title;
+  final String courseName;
   final String description;
   final String imageDetails;
 
@@ -23,7 +23,7 @@ class ModifyCourseHeader extends ConsumerWidget {
     super.key,
     required this.courseId,
     required this.courseCode,
-    required this.title,
+    required this.courseName,
     required this.description,
     required this.imageDetails,
   });
@@ -42,7 +42,7 @@ class ModifyCourseHeader extends ConsumerWidget {
               Expanded(
                 child: _ModifyCourseHeaderTitle(
                   courseCode: courseCode,
-                  title: title,
+                  title: courseName,
                   onClickAddDescription: () {
                     if (courseId.isEmpty) return;
                     ModifyCourseActions().onClickAddDescription(

@@ -8,7 +8,6 @@ import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/data/models/progress_track_models/course_track.dart';
-import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
@@ -183,7 +182,6 @@ class CourseContentRepo {
     }
   }
 
-  // // Not yet reviewed below
   static Future<bool> addMultipleContents(String collectionId, List<CourseContent> contents) async {
     if (contents.isEmpty) return false;
     final isar = (await _isar);
@@ -236,6 +234,143 @@ class CourseContentRepo {
     log("Successfully added all multiple contents");
     return true;
   }
+
+  // AI GENERATED CODE - BEGIN
+  static Future<bool> moveContents(List<CourseContent> contents, String targetCollectionId) async {
+    if (contents.isEmpty) return false;
+    if (targetCollectionId.isEmpty) return false;
+
+    try {
+      final isar = await _isar;
+
+      // Fetch target collection and its parent course
+      final fetchResult = await _fetchCourseAndCollection(isar, null, targetCollectionId);
+      final targetCollection = fetchResult.$2;
+      final targetCourse = fetchResult.$1;
+
+      if (targetCollection == null || targetCourse == null) return false;
+
+      await targetCollection.contents.load();
+
+      // Get target course track
+      final targetCourseTrack = await (await CourseTrackRepo.filter).courseIdEqualTo(targetCourse.courseId).findFirst();
+      if (targetCourseTrack == null) {
+        log("Couldn't find the target course track");
+        return false;
+      }
+      await targetCourseTrack.contentTracks.load();
+
+      // Group contents by their source collection to optimize updates
+      final Map<int, CourseCollection> sourceCollections = {};
+      final Map<String, CourseTrack> sourceCourseTracksMap = {};
+      final List<ContentTrack> contentTracksToUpdate = [];
+
+      for (final content in contents) {
+        // Skip if content is already in target collection
+        if (content.parentId == targetCollectionId) continue;
+
+        // Get source collection
+        final sourceCollection = await isar.courseCollections
+            .filter()
+            .collectionIdEqualTo(content.parentId)
+            .findFirst();
+        if (sourceCollection == null) continue;
+
+        await sourceCollection.contents.load();
+        sourceCollections[sourceCollection.id] = sourceCollection;
+
+        // Get source course for this collection
+        final sourceCourse = await CourseRepo.getCourseById(sourceCollection.parentId);
+        if (sourceCourse == null) continue;
+
+        // Get or cache source course track
+        if (!sourceCourseTracksMap.containsKey(sourceCourse.courseId)) {
+          final sourceCourseTrack = await (await CourseTrackRepo.filter)
+              .courseIdEqualTo(sourceCourse.courseId)
+              .findFirst();
+          if (sourceCourseTrack != null) {
+            await sourceCourseTrack.contentTracks.load();
+            sourceCourseTracksMap[sourceCourse.courseId] = sourceCourseTrack;
+          }
+        }
+
+        // Find and prepare content track for move
+        final contentTrack = await (await ContentTrackRepo.filter).contentIdEqualTo(content.contentId).findFirst();
+        if (contentTrack != null) {
+          contentTracksToUpdate.add(contentTrack.copyWith(parentId: targetCourse.courseId));
+        }
+      }
+
+      await isar.writeTxn(() async {
+        for (final content in contents) {
+          if (content.parentId == targetCollectionId) continue;
+
+          // Remove from source collection
+          final sourceCollection = sourceCollections.values.firstWhere(
+            (col) => col.contents.any((c) => c.id == content.id),
+          );
+          sourceCollection.contents.remove(content);
+
+          // Update content's parentId
+          content.parentId = targetCollectionId;
+
+          // Add to target collection
+          targetCollection.contents.add(content);
+        }
+
+        // Update content tracks and remove from source course tracks
+        for (final updatedTrack in contentTracksToUpdate) {
+          final sourceCourseTrack = sourceCourseTracksMap[updatedTrack.parentId];
+          if (sourceCourseTrack != null) {
+            sourceCourseTrack.contentTracks.removeWhere((t) => t.contentId == updatedTrack.contentId);
+          }
+
+          targetCourseTrack.contentTracks.add(updatedTrack);
+          await isar.contentTracks.put(updatedTrack);
+        }
+
+        // Recalculate progress for source course tracks
+        for (final sourceCourseTrack in sourceCourseTracksMap.values) {
+          final remainingLength = sourceCourseTrack.contentTracks.length;
+          final newProgress = remainingLength > 0
+              ? sourceCourseTrack.contentTracks.fold<double>(0.0, (sum, track) => sum + (track.progress ?? 0.0)) /
+                    remainingLength
+              : 0.0;
+
+          await sourceCourseTrack.contentTracks.save();
+          await isar.courseTracks.put(sourceCourseTrack.copyWith(progress: newProgress));
+        }
+
+        // Recalculate progress for target course track
+        final targetTotalProgress = targetCourseTrack.contentTracks.fold<double>(
+          0.0,
+          (sum, track) => sum + (track.progress ?? 0.0),
+        );
+        final targetNewProgress = targetCourseTrack.contentTracks.isNotEmpty
+            ? targetTotalProgress / targetCourseTrack.contentTracks.length
+            : 0.0;
+
+        // Save all changes
+        await isar.courseContents.putAll(contents);
+        for (final sourceCollection in sourceCollections.values) {
+          await sourceCollection.contents.save();
+          await isar.courseCollections.put(sourceCollection);
+        }
+
+        await targetCollection.contents.save();
+        await targetCourseTrack.contentTracks.save();
+        await isar.courseCollections.put(targetCollection);
+        await isar.courseTracks.put(targetCourseTrack.copyWith(progress: targetNewProgress));
+      });
+
+      log("Successfully moved ${contents.length} contents to collection $targetCollectionId");
+      return true;
+    } catch (e) {
+      log("Error moving contents: $e");
+      return false;
+    }
+  }
+  // AI GENERATED CODE - END
 
   // static Future<bool> deleteAllContentsInCollection(CourseCollection collection) async {
   //   try {

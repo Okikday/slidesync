@@ -1,6 +1,8 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/features/study/domain/services/drive_result_extractor.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/features/study/presentation/views/content_view_gate.dart';
@@ -48,14 +50,17 @@ final contentViewerRoute = GoRoute(
     GoRoute(
       name: Routes.driveLinkViewer.name,
       path: Routes.driveLinkViewer.subPath,
-      pageBuilder: (context, state) => PageAnimation.buildCustomTransitionPage(
-        state.pageKey,
-        type: TransitionType.rightToLeftWithFade,
-        duration: Durations.extralong1,
-        reverseDuration: Durations.medium1,
-        curve: CustomCurves.defaultIosSpring,
-        child: DriveListingView(initialFolderId: (state.extra as String)),
-      ),
+      pageBuilder: (context, state) {
+        final content = (state.extra as CourseContent);
+        return PageAnimation.buildCustomTransitionPage(
+          state.pageKey,
+          type: TransitionType.rightToLeftWithFade,
+          duration: Durations.extralong1,
+          reverseDuration: Durations.medium1,
+          curve: CustomCurves.defaultIosSpring,
+          child: DriveListingView(initialFolderId: content.path.urlPath, collectionId: content.parentId),
+        );
+      },
     ),
   ],
 );

@@ -11,32 +11,17 @@ import 'package:slidesync/features/browse/presentation/views/course_materials/co
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
-class MaterialsView extends ConsumerStatefulWidget {
-  final CourseCollection collection;
+class MaterialsView extends ConsumerWidget {
+  final String collectionId;
 
-  const MaterialsView({super.key, required this.collection});
-
-  @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _MaterialsViewState();
-}
-
-class _MaterialsViewState extends ConsumerState<MaterialsView> {
-  @override
-  void initState() {
-    super.initState();
-  }
+  const MaterialsView({super.key, required this.collectionId});
 
   @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // final streamedContents = ref.watch(CourseMaterialsController.watchContents(widget.collection.collectionId));
     final pagingControllerProvider = ref.watch(
       CourseMaterialsController.contentPaginationProvider(
-        widget.collection.collectionId,
+        collectionId,
       ).select((s) => s.whenData((cb) => cb.pagingController)),
     );
 
@@ -55,7 +40,7 @@ class _MaterialsViewState extends ConsumerState<MaterialsView> {
                     state: state,
                     pagingController: data,
                     fetchNextPage: fetchNextPage,
-                    collectionId: widget.collection.collectionId,
+                    collectionId: collectionId,
                     isGrid: isGrid,
                   );
                 },

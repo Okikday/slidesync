@@ -1,12 +1,14 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:isar/isar.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/main/presentation/library/views/library_tab_view/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/features/browse/presentation/views/course_materials/course_material_list_card.dart';
+import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class MaterialsSearchButton extends ConsumerWidget {
@@ -48,7 +50,13 @@ class MaterialsSearchButton extends ConsumerWidget {
           for (int i = 0; i < searchResults.length; i++)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: CourseMaterialListCard(courseContent: searchResults[i], onTapCard: () {}),
+              child: CourseMaterialListCard(
+                courseContent: searchResults[i],
+                onTapCard: () {
+                  context.pop();
+                  context.pushNamed(Routes.contentGate.name, extra: searchResults[i]);
+                },
+              ),
             ),
 
           if (context.mounted) ConstantSizing.columnSpacing(context.viewInsets.bottom),

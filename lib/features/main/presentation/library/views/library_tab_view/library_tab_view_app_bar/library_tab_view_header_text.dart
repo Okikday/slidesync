@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:math' as math;
 import 'dart:ui';
 
@@ -27,7 +26,6 @@ class LibraryTabViewHeaderText extends ConsumerWidget {
           height: height,
           child: Consumer(
             builder: (context, ref, child) {
-              log("Rebuild inside library header text");
               final offset = ref.watch(LibraryTabController.scrollOffsetProvider);
               final double percentScroll = (math.min(offset, allowedHeight) / allowedHeight);
 
@@ -49,7 +47,7 @@ class LibraryTabViewHeaderText extends ConsumerWidget {
   }
 }
 
-// double snapToPhysical(BuildContext context, double logical) {
-//   final dpr = MediaQuery.devicePixelRatioOf(context);
-//   return (logical * dpr).round() / dpr;
-// }
+double snapToPhysical(BuildContext context, double logical) {
+  final dpr = MediaQuery.devicePixelRatioOf(context);
+  return (logical * dpr).round() / dpr;
+}

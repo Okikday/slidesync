@@ -4,10 +4,14 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/features/browse/presentation/controlllers/src/course_materials_controller/course_materials_controller.dart';
+import 'package:slidesync/features/study/domain/services/drive_result_extractor.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/result.dart';
@@ -18,12 +22,14 @@ import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/study/domain/services/drive_browser.dart';
 import 'package:slidesync/features/manage/presentation/contents/actions/add_contents_actions.dart';
 import 'package:slidesync/features/manage/domain/usecases/contents/handle_archive_uc.dart';
+import 'package:slidesync/shared/helpers/extensions/src/extension_on_string.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_alert_dialog.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 
 class ContentViewGateActions {
-  static Future<void> redirectToViewer(BuildContext context, CourseContent content) async {
+  static Future<void> redirectToViewer(WidgetRef ref, CourseContent content) async {
+    final context = ref.context;
     await Future.delayed(Durations.medium2);
     if (!context.mounted) return;
     final filePath = content.path.filePath;
@@ -32,17 +38,25 @@ class ContentViewGateActions {
     switch (content.courseContentType) {
       case CourseContentType.document:
         if (filenameExt.toLowerCase().contains("pdf") || p.extension(urlPath).toLowerCase().contains("pdf")) {
-          context.pushReplacementNamed(Routes.pdfDocumentViewer.name, extra: content);
+          final pageProvider = await ref.read(
+            CourseMaterialsController.contentPaginationProvider(content.parentId).future,
+          );
+          if (pageProvider.isUpdating) return;
+          pageProvider.stopIsolate();
+          GoRouter.of(context).pushReplacementNamed(Routes.pdfDocumentViewer.name, extra: content);
+
           return;
         }
+        if (context.mounted) context.pop();
       case CourseContentType.image:
         context.pushReplacementNamed(Routes.imageViewer.name, extra: content);
         return;
 
       case CourseContentType.link:
         final urlPath = content.path.urlPath;
-        if (DriveBrowser.isGoogleDriveLink(urlPath)) {
-          context.pushReplacementNamed(Routes.driveLinkViewer.name, extra: urlPath);
+
+        if (!(content.metadataJson.decodeJson['resolved'] == true) && DriveBrowser.isGoogleDriveLink(urlPath)) {
+          context.pushReplacementNamed(Routes.driveLinkViewer.name, extra: content);
           return;
         }
         context.pop();

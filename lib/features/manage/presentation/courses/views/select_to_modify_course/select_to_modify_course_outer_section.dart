@@ -14,7 +14,6 @@ import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_view.dart';
 import 'package:slidesync/shared/widgets/z_rand/selected_items_count_popup.dart';
 
-
 class SelectToModifyCourseOuterSection extends ConsumerStatefulWidget {
   const SelectToModifyCourseOuterSection({
     super.key,

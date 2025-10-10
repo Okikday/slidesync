@@ -25,6 +25,13 @@ class ModifyContentsState extends LeakPrevention {
     return added;
   }
 
+  bool selectAllContent(List<CourseContent> contents) {
+    final set = selectedContentsNotifier.value;
+    final added = set.addAll(contents);
+    selectedContentsNotifier.value = LinkedHashSet.from(set);
+    return true;
+  }
+
   bool removeContent(CourseContent content) {
     final set = selectedContentsNotifier.value;
     final removed = set.remove(content);

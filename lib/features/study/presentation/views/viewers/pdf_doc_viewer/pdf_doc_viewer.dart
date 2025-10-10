@@ -11,6 +11,7 @@ import 'package:screenshot/screenshot.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/features/browse/presentation/controlllers/src/course_materials_controller/course_materials_controller.dart';
 import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_search_controller.dart';
 import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_viewer_controller.dart';
 import 'package:slidesync/features/study/presentation/controllers/state/pdf_doc_viewer_state.dart';
@@ -41,10 +42,13 @@ class PdfDocViewer extends ConsumerWidget {
               builder: (context, isSearching, child) {
                 return PopScope(
                   canPop: !isSearching,
-                  onPopInvokedWithResult: (didPop, result) {
+                  onPopInvokedWithResult: (didPop, result) async {
                     log("did pop");
                     if (isSearching) pdsa.isSearchingNotifier.value = false;
                     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+                    (await ref.read(
+                      CourseMaterialsController.contentPaginationProvider(content.parentId).future,
+                    )).restartIsolate();
                   },
                   child: AnnotatedRegion(
                     value: UiUtils.getSystemUiOverlayStyle(context.scaffoldBackgroundColor, context.isDarkMode),

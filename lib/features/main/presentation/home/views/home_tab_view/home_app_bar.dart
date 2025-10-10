@@ -43,11 +43,7 @@ class HomeAppBar extends ConsumerWidget {
           flexibleSpace: FlexibleSpaceBar(
             expandedTitleScale: 1.0,
             background: GestureDetector(
-              onTap: () {
-                PrimaryScrollController.of(
-                  context,
-                ).animateTo(0, duration: Durations.extralong1, curve: CustomCurves.defaultIosSpring);
-              },
+              onTap: () {},
               child: Material(
                 type: MaterialType.transparency,
                 shape: isScrolled
@@ -57,12 +53,11 @@ class HomeAppBar extends ConsumerWidget {
                       )
                     : null,
                 child: AnimatedContainer(
+                  
                   duration: Durations.medium3,
                   clipBehavior: Clip.hardEdge,
                   color: isScrolled ? theme.surface.withValues(alpha: 0.9) : theme.background,
-                  child: isScrolled
-                      ? BackdropFilter(filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2), child: const SizedBox.expand())
-                      : null,
+                  child: isScrolled ? const SizedBox.expand() : null,
                 ),
               ),
             ),

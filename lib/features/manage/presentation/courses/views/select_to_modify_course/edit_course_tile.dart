@@ -32,6 +32,7 @@ class EditCourseTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
+    final side = BorderSide(color: theme.background.lightenColor(theme.isDarkMode ? 0.2 : 0.7).withAlpha(20));
     return InkWell(
       borderRadius: BorderRadius.circular(12),
       onTap: onTap,
@@ -39,13 +40,17 @@ class EditCourseTile extends ConsumerWidget {
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         constraints: BoxConstraints(minHeight: 90, maxHeight: 140),
-        decoration: BoxDecoration(color: theme.background.lightenColor(theme.isDarkMode ? .12 : .88)),
+        decoration: BoxDecoration(
+          color: theme.surface,
+          borderRadius: BorderRadius.only(topLeft: Radius.circular(40), bottomRight: Radius.circular(40)),
+          border: Border(right: side, bottom: side),
+        ),
         child: Row(
           children: [
             ClipOval(
               // borderRadius: BorderRadius.circular(13),
               child: ColoredBox(
-                color: theme.primaryColor.withAlpha(80),
+                color: theme.background.lightenColor(theme.isDarkMode ? 0.2 : 0.7).withAlpha(80),
                 child: Padding(
                   padding: EdgeInsets.all(2),
                   child: ClipOval(
@@ -65,11 +70,11 @@ class EditCourseTile extends ConsumerWidget {
                 children: [
                   if (courseCode.isNotEmpty)
                     CustomTextButton(
-                      backgroundColor: theme.primaryColor.withAlpha(80),
+                      backgroundColor: theme.secondary.withValues(alpha: 0.2),
                       pixelHeight: 24,
                       borderRadius: 12,
                       contentPadding: EdgeInsets.symmetric(horizontal: 8.0),
-                      child: CustomText(courseCode, fontSize: 12, fontWeight: FontWeight.bold, color: ref.onPrimary),
+                      child: CustomText(courseCode, fontSize: 12, fontWeight: FontWeight.bold, color: ref.secondary),
                     ),
 
                   if (courseCode.isNotEmpty) ConstantSizing.columnSpacing(2),
@@ -89,26 +94,6 @@ class EditCourseTile extends ConsumerWidget {
                   ),
                 ],
               ),
-            ),
-
-            ConstantSizing.rowSpacingMedium,
-
-            SizedBox.square(
-              dimension: 40,
-              child: Icon(
-                selectionState.isSelecting && !selectionState.selected
-                    ? Icons.circle_outlined
-                    : (selectionState.isSelecting && selectionState.selected ? Iconsax.tick_circle : Iconsax.edit_copy),
-                color: selectionState.isSelecting && !selectionState.selected
-                    ? Colors.grey
-                    : (selectionState.isSelecting && selectionState.selected ? theme.primaryColor : theme.primaryColor),
-                size: 26,
-              ),
-            ).animate().scale(
-              begin: Offset(0, 0),
-              end: Offset(1, 1),
-              curve: CustomCurves.bouncySpring,
-              duration: Durations.extralong4,
             ),
           ],
         ),

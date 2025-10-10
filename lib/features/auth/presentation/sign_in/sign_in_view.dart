@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:ui';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
@@ -111,13 +112,17 @@ class SignInView extends ConsumerWidget {
                       );
                       final auth = FirebaseGoogleAuth();
                       final result = await auth.signInWithGoogle();
-                      if (context.mounted) {
-                        context.pop();
-                      } else {
-                        rootNavigatorKey.currentContext?.pop();
-                      }
+                      // if (context.mounted) {
+                      //   context.pop();
+                      // }
 
-                      if (result.isSuccess && context.mounted) context.goNamed(Routes.home.name);
+                      if (result.isSuccess && context.mounted) {
+                        context.goNamed(Routes.home.name);
+                        UiUtils.showFlushBar(context, msg: "Successfully signed in!");
+                      } else {
+                        if (context.mounted) UiUtils.showFlushBar(context, msg: "An error occured while signing in!");
+                        log("Error signing in... ${result.message}");
+                      }
                     },
                   ),
                 ],

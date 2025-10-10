@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:developer';
+
+import 'package:isar/isar.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/shared/global/notifiers/common/course_sort_notifier.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
@@ -17,6 +19,11 @@ final defaultContent = CourseContent.create(
   courseContentType: CourseContentType.unknown,
 );
 
+final _watchContentChanges = StreamProvider.autoDispose.family<int, String>((ref, parentId) async* {
+  final stream = (await CourseContentRepo.filter).parentIdEqualTo(parentId).watch();
+  yield* stream.map((c) => DateTime.now().millisecondsSinceEpoch);
+});
+
 final _contentSortOptionProvider = AsyncNotifierProvider<CourseSortNotifier, CourseSortOption>(
   () => CourseSortNotifier(HiveDataPathKey.courseMaterialsSortOption.name),
   isAutoDispose: true,
@@ -28,6 +35,10 @@ final _contentPaginationFutureProvider = FutureProvider.family<CourseMaterialsPa
   final sortOption = (await ref.read(_contentSortOptionProvider.future));
   // await Future.delayed(Durations.medium1);
   final cp = CourseMaterialsPagination.of(collectionId, sortOption: sortOption);
+  ref.listen(_watchContentChanges(collectionId), (prev, next) async {
+    log("something content changes");
+    await compareContentAndUpdate(cp);
+  });
   ref.onDispose(() => cp.dispose());
   return cp;
 }, isAutoDispose: true);

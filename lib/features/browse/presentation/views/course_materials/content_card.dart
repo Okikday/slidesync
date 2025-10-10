@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/routes/app_router.dart';
 
 import 'package:slidesync/routes/routes.dart';
@@ -26,16 +27,23 @@ import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 class ContentCard extends ConsumerStatefulWidget {
-  const ContentCard({super.key, required this.content, this.progress});
+  const ContentCard({super.key, required this.content});
 
   final CourseContent content;
-  final double? progress;
 
   @override
   ConsumerState<ContentCard> createState() => _ContentCardState();
 }
 
 class _ContentCardState extends ConsumerState<ContentCard> {
+  late final Stream<double> progressStream;
+
+  @override
+  void initState() {
+    super.initState();
+    progressStream = ContentTrackRepo.watchByContentId(widget.content.contentId).map((c) => c?.progress ?? 0.0).asBroadcastStream();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = ref;
@@ -79,10 +87,17 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                             ),
                           ),
                         ),
-                        LinearProgressIndicator(
-                          value: (widget.progress?.clamp(0, 100) ?? 0.0),
-                          color: theme.primaryColor,
-                          backgroundColor: theme.background.lightenColor(theme.isDarkMode ? 0.15 : 0.85).withAlpha(200),
+                        StreamBuilder(
+                          stream: progressStream,
+                          builder: (context, asyncSnapshot) {
+                            return LinearProgressIndicator(
+                              value: asyncSnapshot.hasData && asyncSnapshot.data != null ? asyncSnapshot.data : 0.0,
+                              color: theme.primaryColor,
+                              backgroundColor: theme.background
+                                  .lightenColor(theme.isDarkMode ? 0.15 : 0.85)
+                                  .withAlpha(200),
+                            );
+                          },
                         ),
 
                         Container(
@@ -108,14 +123,22 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                                         ),
                                       ),
                                     ),
-                                    CustomText(
-                                      widget.progress == null || widget.progress == 0
-                                          ? "Start reading!"
-                                          : widget.progress == 1
-                                          ? "Completed!"
-                                          : "${((widget.progress?.clamp(0, 100) ?? 0.0) * 100.0).toInt()}% read",
-                                      fontSize: 10,
-                                      color: widget.progress == 1 ? theme.primary : theme.supportingText,
+                                    StreamBuilder(
+                                      stream: progressStream,
+                                      builder: (context, asyncSnapshot) {
+                                        final progress = asyncSnapshot.hasData && asyncSnapshot.data != null
+                                            ? asyncSnapshot.data
+                                            : 0.0;
+                                        return CustomText(
+                                          progress == 0.0
+                                              ? "Start reading!"
+                                              : progress == 1.0
+                                              ? "Completed!"
+                                              : "${((progress?.clamp(0, 100) ?? 0.0) * 100.0).toInt()}% read",
+                                          fontSize: 10,
+                                          color: progress == 1.0 ? theme.primary : theme.supportingText,
+                                        );
+                                      },
                                     ),
                                   ],
                                 ),

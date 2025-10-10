@@ -29,6 +29,7 @@ class FirebaseAuthData {
             ...userCredentialModel.toMap(),
             "uniqueID": const Uuid().v4(),
           });
+
           return Result.success(userCredentialModel);
         } catch (e) {
           return Result.error("Unable to create user data in Firebase");
@@ -82,7 +83,7 @@ class FirebaseAuthData {
       final DocumentSnapshot documentSnapshot = await _collectionReference.doc(userCredentialModel.userID).get();
       return Result.success(documentSnapshot.exists);
     } catch (e) {
-      return Result.error("Unable to get user data");
+      return Result.error("Unable to get user data -> $e");
     }
   }
 
@@ -94,7 +95,6 @@ class FirebaseAuthData {
       return Result.error("Error checking field existence: ${e.toString()}");
     }
   }
-
 
   Future<Result<UserCredentialModel?>> getUserWhere(Map<String, dynamic> filters, {Query? userQuery}) async {
     try {
@@ -119,14 +119,11 @@ class FirebaseAuthData {
 
       return Result.success(UserCredentialModel.fromMap(userData));
     } catch (e) {
-      return Result.error("Error retrieving user: ${e.toString()}");
+      return Result.error("Error retrieving user: $e");
     }
   }
 
-  Future<Result<dynamic>> getWhere(
-      Map<String, dynamic> filters, {
-        Query? suppliedQuery,
-      }) async {
+  Future<Result<dynamic>> getWhere(Map<String, dynamic> filters, {Query? suppliedQuery}) async {
     try {
       Query query = suppliedQuery ?? _collectionReference;
 
@@ -150,10 +147,7 @@ class FirebaseAuthData {
     }
   }
 
-  Future<Result<List<dynamic>>> getAllWhere(
-      Map<String, dynamic> filters, {
-        Query? suppliedQuery,
-      }) async {
+  Future<Result<List<dynamic>>> getAllWhere(Map<String, dynamic> filters, {Query? suppliedQuery}) async {
     try {
       Query query = suppliedQuery ?? _collectionReference;
 
@@ -179,7 +173,6 @@ class FirebaseAuthData {
     }
   }
 
-
   Future<Result<bool>> deleteUserWhere(Map<String, dynamic> filters) async {
     try {
       Query query = _collectionReference;
@@ -200,10 +193,6 @@ class FirebaseAuthData {
       return Result.error("Failed to delete documents: ${e.toString()}");
     }
   }
-
-
-
-
 
   /// Updates the entire user data for the specified [userId] with [newData].
   ///

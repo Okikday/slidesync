@@ -80,7 +80,7 @@ class _CourseMaterialsViewState extends ConsumerState<CourseMaterialsView> {
           child: CustomScrollView(
             controller: scrollController,
             physics: const BouncingScrollPhysics(),
-            slivers: [MaterialsView(collection: widget.collection)],
+            slivers: [MaterialsView(collectionId: widget.collection.collectionId)],
           ),
         ),
       ),

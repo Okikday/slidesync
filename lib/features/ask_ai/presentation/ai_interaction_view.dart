@@ -88,19 +88,22 @@ class _AiInteractionViewState extends ConsumerState<AiInteractionView> {
                   );
                 },
                 textMessageBuilder: (context, message, index, {groupStatus, required isSentByMe}) {
-                  final aiTextStyle = TextStyle(color: theme.onSurface, fontSize: 13);
-                  final userTextStyle = TextStyle(color: theme.onPrimary, fontSize: 13);
+                  final aiTextStyle = TextStyle(color: theme.onSurface, fontSize: 12);
+                  final userTextStyle = TextStyle(color: theme.onPrimary, fontSize: 12);
                   if (isSentByMe) {
                     return SelectionArea(
-                      child: StreamingTextMarkdown(
-                        text: message.text,
-                        chunkSize: 4,
-                        styleSheet: userTextStyle,
-                        typingSpeed: Duration.zero,
-                        fadeInDuration: Duration.zero,
-                        latexStyle: userTextStyle,
-                        latexEnabled: true,
-                        animationsEnabled: false,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        child: CustomText(
+                          message.text,
+                          // chunkSize: 4,
+                          style: userTextStyle,
+                          // typingSpeed: Duration.zero,
+                          // fadeInDuration: Duration.zero,
+                          // latexStyle: userTextStyle,
+                          // latexEnabled: true,
+                          // animationsEnabled: false,
+                        ),
                       ),
                     );
                   } else {
@@ -108,7 +111,7 @@ class _AiInteractionViewState extends ConsumerState<AiInteractionView> {
                       return LoadingLogo(color: theme.primary, rotate: false);
                     }
                     if (aiMessageSub != null && index == chatController.messages.length - 1) {
-                      return StreamingTextMarkdown.claude(
+                      return StreamingTextMarkdown.chatGPT(
                         text: message.text,
 
                         styleSheet: aiTextStyle,
@@ -150,14 +153,15 @@ class _AiInteractionViewState extends ConsumerState<AiInteractionView> {
                                     bottom: isLast ? 60 : (isSamePrevUser || isSameNextUser ? 4 : 12),
                                     right: 12,
                                     left: isSentByMe ? 48 : 12,
-                                    top: isFirst ? 12 : 0,
+                                    top: isFirst ? 20 : 0,
                                   ),
                                   decoration: BoxDecoration(
                                     color: isSentByMe ? null : theme.surface,
                                     gradient: isSentByMe
                                         ? LinearGradient(
                                             colors: [theme.primary, theme.secondary],
-                                            stops: [0.8, 1],
+                                            stops: [0.9, 1],
+                                            begin: Alignment.topLeft,
                                             end: Alignment.bottomRight,
                                           )
                                         : null,
@@ -197,8 +201,8 @@ class _AiInteractionViewState extends ConsumerState<AiInteractionView> {
                                     autoDispose: false,
                                     controller: textEditingController,
                                     hint: "How may i assist you?",
-                                    hintStyle: TextStyle(color: theme.onBackground.withValues(alpha: 0.6)),
-                                    inputTextStyle: TextStyle(fontSize: 16),
+                                    hintStyle: TextStyle(color: theme.onSurface.withValues(alpha: 0.6)),
+                                    inputTextStyle: TextStyle(fontSize: 16, color: theme.onSurface),
                                     inputContentPadding: EdgeInsets.only(left: 12, bottom: 20, top: 20),
                                     backgroundColor: theme.background.lightenColor(ref.isDarkMode ? 0.2 : 0.8),
                                     maxLines: 4,

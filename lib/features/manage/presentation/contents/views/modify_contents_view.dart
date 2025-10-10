@@ -10,6 +10,7 @@ import 'package:slidesync/features/manage/presentation/contents/views/modify_con
 import 'package:slidesync/features/manage/presentation/contents/views/modify_contents/mod_content_search_view_button.dart';
 import 'package:slidesync/features/manage/presentation/contents/views/modify_contents/modify_content_list_view.dart';
 import 'package:slidesync/features/manage/presentation/contents/views/modify_contents/modify_contents_header.dart';
+import 'package:slidesync/features/manage/presentation/contents/views/modify_contents/move_to_collection_bottom_sheet.dart';
 import 'package:slidesync/shared/global/providers/collections_providers.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
@@ -44,11 +45,6 @@ class _ModifyContentsViewState extends ConsumerState<ModifyContentsView> {
             child: Scaffold(
               appBar: AppBarContainer(
                 child: Consumer(
-                  child: ModContentSearchViewButton(
-                    doBeforeTap: () {
-                      mcvp.clearContents();
-                    },
-                  ),
                   builder: (context, ref, child) {
                     final collectionTitleN = ref.watch(
                       CollectionsProviders.collectionProvider(
@@ -58,15 +54,25 @@ class _ModifyContentsViewState extends ConsumerState<ModifyContentsView> {
 
                     return collectionTitleN.when(
                       data: (data) {
-                        return AppBarContainerChild(
-                          context.isDarkMode,
-                          title: data,
-                          subtitle: "Collection",
-                          subtitleStyle: TextStyle(
-                            fontSize: 12,
-                            color: theme.background.lightenColor(theme.isDarkMode ? .4 : .6),
+                        return ValueListenableBuilder(
+                          valueListenable: mcvp.selectedContentsNotifier,
+                          builder: (context, value, child) {
+                            return AppBarContainerChild(
+                              context.isDarkMode,
+                              title: data,
+                              subtitle: value.isEmpty ? "Collection" : "${value.length} selected",
+                              subtitleStyle: TextStyle(
+                                fontSize: 12,
+                                color: theme.background.lightenColor(theme.isDarkMode ? .4 : .6),
+                              ),
+                              trailing: child,
+                            );
+                          },
+                          child: ModContentSearchViewButton(
+                            doBeforeTap: () {
+                              mcvp.clearContents();
+                            },
                           ),
-                          trailing: child,
                         );
                       },
                       error: (_, _) => const Icon(Icons.error),
@@ -98,7 +104,7 @@ class _ModifyContentsViewState extends ConsumerState<ModifyContentsView> {
                 },
               ),
 
-              body: ModifyContentsOuterSection(collectionId: widget.collectionId),
+              body: ModifyContentsOuterSection(collectionId: widget.collectionId, mcvp: mcvp),
             ),
           ),
         );
@@ -109,7 +115,8 @@ class _ModifyContentsViewState extends ConsumerState<ModifyContentsView> {
 
 class ModifyContentsOuterSection extends ConsumerWidget {
   final String collectionId;
-  const ModifyContentsOuterSection({super.key, required this.collectionId});
+  final ModifyContentsState mcvp;
+  const ModifyContentsOuterSection({super.key, required this.collectionId, required this.mcvp});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -135,27 +142,12 @@ class ModifyContentsOuterSection extends ConsumerWidget {
                       context: context,
                       showDragHandle: true,
                       isScrollControlled: true,
-                      shape: BeveledRectangleBorder(
-                        side: const BorderSide(),
-                        borderRadius: BorderRadius.only(topLeft: Radius.circular(24), topRight: Radius.circular(24)),
+                      backgroundColor: theme.background,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.only(topLeft: Radius.circular(40), topRight: Radius.circular(40)),
                       ),
                       builder: (context) {
-                        return DraggableScrollableSheet(
-                          builder: (context, scrollController) {
-                            return Column(
-                              children: [
-                                CustomText(
-                                  "Available courses",
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  color: theme.onBackground,
-                                ),
-
-                                ConstantSizing.columnSpacingExtraLarge,
-                              ],
-                            );
-                          },
-                        );
+                        return MoveToCollectionBottomSheet(contents: mcvp.selectedContentsNotifier.value.toList());
                       },
                     );
                   },

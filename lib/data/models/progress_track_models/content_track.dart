@@ -133,6 +133,7 @@ extension ProgressTrackModelExtension on ContentTrack {
   ContentTrack copyWith({
     Id? id,
     String? contentId,
+    String? parentId,
     String? title,
     String? description,
     String? contentHash,
@@ -144,6 +145,7 @@ extension ProgressTrackModelExtension on ContentTrack {
   }) {
     return this
       ..contentId = contentId ?? this.contentId
+      ..parentId = parentId ?? this.parentId
       ..title = title ?? this.title
       ..description = description ?? this.description
       ..contentHash = contentHash ?? this.contentHash

@@ -61,10 +61,8 @@ class LibraryTabViewFilterButton extends ConsumerWidget {
 
         return AppPopupMenuButton(
           icon: isSortOptionNone ? Iconsax.filter : Iconsax.filter_copy,
-          iconColor: isSortOptionNone ? theme.onSurface : theme.onPrimary,
-          buttonStyle: ButtonStyle(
-            backgroundColor: WidgetStatePropertyAll(isSortOptionNone ? Colors.transparent : theme.primary),
-          ),
+          iconColor: theme.onPrimary,
+          buttonStyle: ButtonStyle(backgroundColor: WidgetStatePropertyAll(theme.primary)),
           actions: [
             for (final item in plainList)
               PopupMenuAction(

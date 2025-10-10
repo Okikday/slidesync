@@ -5,16 +5,19 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:path/path.dart' as p;
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/features/browse/presentation/controlllers/src/course_materials_controller/course_materials_controller.dart';
 import 'package:slidesync/features/main/presentation/library/views/library_tab_view/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_viewer_controller.dart';
 import 'package:slidesync/features/study/presentation/controllers/state/pdf_doc_search_state.dart';
 import 'package:slidesync/features/study/presentation/controllers/state/pdf_doc_viewer_state.dart';
 import 'package:slidesync/features/share/domain/usecases/share_content_uc.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
@@ -25,7 +28,7 @@ class PdfDocNormalAppBar extends ConsumerWidget {
     required this.title,
     required this.pdva,
     required this.pdsa,
-    required this.onSearch
+    required this.onSearch,
   });
 
   final String title;
@@ -42,6 +45,19 @@ class PdfDocNormalAppBar extends ConsumerWidget {
         return AppBarContainerChild(
               theme.isDarkMode,
               title: title,
+              onBackButtonClicked: () async {
+                final content = await CourseContentRepo.getByContentId(pdva.contentId);
+                if (content != null) {
+                  (await ref.read(
+                    CourseMaterialsController.contentPaginationProvider(content.parentId).future,
+                  )).restartIsolate();
+                }
+                if (context.mounted) {
+                  context.pop();
+                } else {
+                  GlobalNav.withContext((c) => c.pop());
+                }
+              },
               trailing: Padding(
                 padding: const EdgeInsets.only(left: 8.0),
                 child: Row(
@@ -49,7 +65,7 @@ class PdfDocNormalAppBar extends ConsumerWidget {
                     BuildButton(
                       iconData: Iconsax.search_normal_copy,
                       backgroundColor: Colors.transparent,
-                      onTap: onSearch
+                      onTap: onSearch,
                     ),
                     AppPopupMenuButton(
                       tooltip: "More options",

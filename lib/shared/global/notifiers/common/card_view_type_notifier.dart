@@ -1,5 +1,3 @@
-
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
@@ -13,7 +11,7 @@ class CardViewTypeNotifier extends AsyncIntNotifier {
   @override
   Future<int> build() async {
     final value = await AppHiveData.instance.getData(key: _key);
-    return value is int ? value : 0;
+    return value is int ? value : 1;
   }
 
   Future<void> toggle() async {

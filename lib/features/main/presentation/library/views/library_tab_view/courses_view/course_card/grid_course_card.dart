@@ -78,9 +78,9 @@ class GridCourseCardStackedCard extends ConsumerWidget {
           children: [
             for (int i = 0; i < 3; i++)
               Transform.translate(
-                offset: Offset(0, -(120.0 * i)),
+                offset: Offset(0, -(100.0 * i)),
                 child: Container(
-                  height: 120,
+                  height: 100,
                   clipBehavior: Clip.hardEdge,
                   decoration: BoxDecoration(
                     // color: Colors.yellow,
@@ -90,7 +90,7 @@ class GridCourseCardStackedCard extends ConsumerWidget {
                     borderRadius: BorderRadius.circular(20),
                     border: i == 2 ? Border.all(color: theme.surface.lightenColor(0.5).withAlpha(40)) : null,
                   ),
-                  padding: EdgeInsets.all(12).copyWith(bottom: 40),
+                  padding: EdgeInsets.fromLTRB(12, 8, 12, 40),
                   margin: EdgeInsets.only(top: 4.5 * i, left: 4.0 * (2 - i), right: 4.0 * (2 - i)),
 
                   child: i == 2
@@ -100,7 +100,7 @@ class GridCourseCardStackedCard extends ConsumerWidget {
                           children: [
                             Flexible(
                               child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(12),
                                 child: DecoratedBox(
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(8),
@@ -131,15 +131,32 @@ class GridCourseCardStackedCard extends ConsumerWidget {
                             Expanded(
                               child: SizedBox(
                                 height: 40,
-                                child: Center(
-                                  child: LinearProgressIndicator(
-                                    minHeight: 16,
-                                    value: 0.2,
-                                    backgroundColor: context.isDarkMode
-                                        ? theme.surface.withAlpha(100)
-                                        : theme.adjustBgAndPrimaryWithLerpExtra.withValues(alpha: 0.5),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
+                                child: Column(
+                                  spacing: 4.0,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    if (courseCode.isNotEmpty)
+                                      CustomTextButton(
+                                        backgroundColor: theme.altBackgroundSecondary,
+                                        pixelHeight: 16,
+                                        borderRadius: 8,
+                                        contentPadding: EdgeInsets.symmetric(horizontal: 5.0),
+                                        child: CustomText(
+                                          courseCode,
+                                          fontSize: 8,
+                                          fontWeight: FontWeight.bold,
+                                          color: theme.secondary,
+                                        ),
+                                      ),
+                                    LinearProgressIndicator(
+                                      minHeight: 16,
+                                      value: 0.2,
+                                      backgroundColor: context.isDarkMode
+                                          ? theme.surface.withAlpha(100)
+                                          : theme.adjustBgAndPrimaryWithLerpExtra.withValues(alpha: 0.5),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
@@ -180,6 +197,8 @@ class GridCourseCardBottomStack extends ConsumerWidget {
             child: BackdropFilter(
               filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
               child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                spacing: 2,
                 children: [
                   Flexible(
                     child: CustomText(
@@ -189,6 +208,7 @@ class GridCourseCardBottomStack extends ConsumerWidget {
                       textAlign: TextAlign.center,
                       overflow: TextOverflow.fade,
                       fontSize: 13,
+                      height: 1.1,
                     ),
                   ),
                   CustomText(

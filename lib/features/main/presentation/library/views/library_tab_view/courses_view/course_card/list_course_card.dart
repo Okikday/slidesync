@@ -141,23 +141,25 @@ class ListCourseCardIcon extends ConsumerWidget {
         ),
         child: Opacity(
           opacity: 0.6,
-          child: BuildImagePathWidget(
-            height: 64,
-            width: 64,
-            fileDetails: fileDetails,
-            fallbackWidget: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: courseCode.isEmpty
-                  ? Icon(Iconsax.document_1, color: theme.onBackground.withValues(alpha: 0.4))
-                  : Center(
-                      child: CustomText(
-                        courseCode.substring(0, courseCode.length.clamp(0, 8)),
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        textAlign: TextAlign.center,
-                        color: theme.onBackground.withValues(alpha: 0.5),
+          child: ClipOval(
+            child: BuildImagePathWidget(
+              height: 64,
+              width: 64,
+              fileDetails: fileDetails,
+              fallbackWidget: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: courseCode.isEmpty
+                    ? Icon(Iconsax.document_1, color: theme.onBackground.withValues(alpha: 0.4))
+                    : Center(
+                        child: CustomText(
+                          courseCode.substring(0, courseCode.length.clamp(0, 8)),
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          textAlign: TextAlign.center,
+                          color: theme.onBackground.withValues(alpha: 0.5),
+                        ),
                       ),
-                    ),
+              ),
             ),
           ),
         ),
@@ -204,7 +206,13 @@ class ListCourseCardTitleColumn extends ConsumerWidget {
         Flexible(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12.0),
-            child: CustomText(courseName, fontSize: 14, fontWeight: FontWeight.bold, color: theme.onBackground),
+            child: CustomText(
+              courseName,
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: theme.onBackground,
+              overflow: TextOverflow.ellipsis,
+            ),
           ),
         ),
 

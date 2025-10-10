@@ -37,6 +37,7 @@ class FirebaseGoogleAuth {
       final UserCredential userCredential = await _firebaseAuth.signInWithCredential(credential);
       final User? user = userCredential.user;
       if (user == null) return Result.error("Unknown user!");
+      log("Gotten user $user");
 
       final Result outcomeCreateUser = await _firebaseData.createUserData(
         UserCredentialModel(
@@ -48,6 +49,7 @@ class FirebaseGoogleAuth {
           creationTime: DateTime.now(),
         ),
       );
+      log("Process user $user");
 
       if (outcomeCreateUser.isSuccess) {
         await userData.saveUserDetails(googleIDToken: googleAuth.idToken, userCredentialModel: outcomeCreateUser.data);
