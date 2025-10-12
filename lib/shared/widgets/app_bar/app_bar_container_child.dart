@@ -100,6 +100,7 @@ class AppBackButton extends ConsumerWidget {
       icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: theme.supportingText),
       style: ButtonStyle(
         backgroundColor: WidgetStatePropertyAll(backgroundColor ?? theme.altBackgroundPrimary.withValues(alpha: 0.9)),
+        shape: WidgetStatePropertyAll(CircleBorder(side: BorderSide(color: ref.onBackground.withAlpha(10)))),
       ),
     );
   }

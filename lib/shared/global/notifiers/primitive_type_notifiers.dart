@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
+import 'package:slidesync/core/utils/result.dart';
 
 export 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -141,17 +143,6 @@ class ImpliedNotifier<T> extends Notifier<T> {
   void set(T value) => state = value;
 }
 
-class AsyncImpliedNotifier<T> extends AsyncNotifier<T> {
-  final T _defaultKey;
-  AsyncImpliedNotifier(this._defaultKey);
-  @override
-  Future<T> build() async {
-    return _defaultKey;
-  }
-
-  void set(T value) => state = AsyncData(value);
-}
-
 class ImpliedNotifierN<T> extends Notifier<T?> {
   final T? _defaultKey;
   ImpliedNotifierN([this._defaultKey]);
@@ -169,13 +160,46 @@ class ImpliedNotifierN<T> extends Notifier<T?> {
   void set(T? value) => state = value;
 }
 
-class AsyncImpliedNotifierN<T> extends AsyncNotifier<T?> {
-  final T? _defaultKey;
-  AsyncImpliedNotifierN([this._defaultKey]);
+class AsyncImpliedNotifier<T> extends AsyncNotifier<T> {
+  final String _hiveKey;
+  final T _defaultKey;
+  final bool? isUpdateNotifying;
+  final T? Function(dynamic data)? resolveData;
+
+  AsyncImpliedNotifier(this._hiveKey, this._defaultKey, [this.isUpdateNotifying, this.resolveData]);
   @override
-  Future<T?> build() async {
-    return _defaultKey;
+  Future<T> build() async {
+    return (await Result.tryRunAsync(() async {
+          final data = await AppHiveData.instance.getData(key: _hiveKey);
+          return resolveData != null ? resolveData!(data) : data as T? ?? _defaultKey;
+        })).data ??
+        _defaultKey;
   }
 
-  void set(T? value) => state = AsyncData(value);
+  void set(T value) async {
+    state = AsyncData(value);
+    await AppHiveData.instance.setData(key: _hiveKey, value: value);
+  }
+
+  @override
+  bool updateShouldNotify(AsyncValue<T> previous, AsyncValue<T> next) =>
+      isUpdateNotifying ?? super.updateShouldNotify(previous, next);
+}
+
+class AsyncImpliedNotifierN<T> extends AsyncNotifier<T?> {
+  final T? _defaultKey;
+  final String _hiveKey;
+  AsyncImpliedNotifierN(this._hiveKey, [this._defaultKey]);
+  @override
+  Future<T?> build() async {
+    return (await Result.tryRunAsync(() async {
+          return await AppHiveData.instance.getData(key: _hiveKey) as T? ?? _defaultKey;
+        })).data ??
+        _defaultKey;
+  }
+
+  void set(T value) async {
+    state = AsyncData(value);
+    await AppHiveData.instance.setData(key: _hiveKey, value: value);
+  }
 }

@@ -1,4 +1,3 @@
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,7 +21,7 @@ class CourseMaterialsViewAppBar extends ConsumerWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        MaterialsSearchButton(),
+        MaterialsSearchButton(collectionId: collectionId),
         AppPopupMenuButton(
           menuPadding: EdgeInsets.only(right: 16),
           actions: [
@@ -30,10 +29,14 @@ class CourseMaterialsViewAppBar extends ConsumerWidget {
                 .watch(CourseMaterialsController.cardViewType)
                 .when(
                   data: (data) {
-                    final isGrid = data == 0;
+                    final isGrid = data == 0
+                        ? true
+                        : data == 1
+                        ? false
+                        : null;
                     return PopupMenuAction(
                       title: "View",
-                      iconData: isGrid ? Iconsax.grid_1 : Iconsax.arrange_square,
+                      iconData: isGrid != null ? (isGrid ? Iconsax.grid_1 : Iconsax.arrange_square) : Icons.list,
                       onTap: () {
                         ref.read(CourseMaterialsController.cardViewType.notifier).toggle();
                       },

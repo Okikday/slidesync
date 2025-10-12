@@ -47,7 +47,7 @@ class CourseMaterialsController {
   /// 0 for Grid, 1 for List, 2 for otherwise
   static final AsyncNotifierProvider<CardViewTypeNotifier, int> cardViewType =
       AsyncNotifierProvider<CardViewTypeNotifier, int>(
-        () => CardViewTypeNotifier(HiveDataPathKey.courseMaterialscardViewType.name, 2),
+        () => CardViewTypeNotifier(HiveDataPathKey.courseMaterialscardViewType.name, 3),
         isAutoDispose: true,
       );
   static AsyncNotifierProvider<CourseSortNotifier, CourseSortOption> get contentSortOptionProvider =>

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -5,11 +7,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/app.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
+import 'package:slidesync/features/settings/domain/models/settings_model.dart';
+import 'package:slidesync/features/settings/presentation/controllers/settings_controller.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 import 'package:slidesync/shared/theme/src/app_theme.dart';
 import 'package:slidesync/shared/theme/src/built_in_themes.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_customizable_dialog.dart';
-
-
 
 class SettingsAppearanceDialog extends ConsumerStatefulWidget {
   const SettingsAppearanceDialog({super.key});
@@ -19,16 +22,16 @@ class SettingsAppearanceDialog extends ConsumerStatefulWidget {
 }
 
 class _SettingsAppearanceDialogState extends ConsumerState<SettingsAppearanceDialog> {
-  bool followSystem = false;
-  Brightness forcedBrightness = Brightness.light;
+  // bool followSystem = false;
+  bool? isDarkSelected;
 
   List<ThemePair> _buildPairsFromUnified(List<UnifiedThemeModel> models) {
     return models.map((unified) => ThemePair.fromUnified(unified)).toList();
   }
 
-  Brightness? _resolveForceBrightness() {
-    return followSystem ? null : forcedBrightness;
-  }
+  // Brightness? _resolveForceBrightness() {
+  //   return followSystem ? null : forcedBrightness;
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -36,12 +39,7 @@ class _SettingsAppearanceDialogState extends ConsumerState<SettingsAppearanceDia
 
     return AppCustomizableDialog(
       blurSigma: const Offset(2, 2),
-      leading: Center(
-        child: CustomText(
-          "Adjust Theme(${followSystem ? 'Auto' : 'Manual'})",
-          color: ref.watch(appThemeProvider).onSurface,
-        ),
-      ),
+      leading: Center(child: CustomText("Adjust Theme", color: ref.onSurface)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: SingleChildScrollView(
@@ -56,37 +54,71 @@ class _SettingsAppearanceDialogState extends ConsumerState<SettingsAppearanceDia
                 spacing: 8,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  // const Icon(Icons.brightness_6),
-                  // const SizedBox(width: 8),
-                  // const Text('Theme mode:'),
-                  // const SizedBox(width: 8),
-                  // Switch(value: followSystem, onChanged: (v) => setState(() => followSystem = v)),
-                  // const SizedBox(width: 6),
-                  if (!followSystem)
-                    ToggleButtons(
-                      isSelected: [forcedBrightness == Brightness.light, forcedBrightness == Brightness.dark],
-                      onPressed: (index) {
-                        setState(() {
-                          forcedBrightness = (index == 0) ? Brightness.light : Brightness.dark;
-                        });
-                      },
-                      borderRadius: BorderRadius.circular(8),
-                      children: const [
-                        Padding(padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8), child: Text('Light')),
-                        Padding(padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8), child: Text('Dark')),
-                      ],
-                    ),
+                  Consumer(
+                    builder: (context, ref, child) {
+                      final AsyncValue<bool> usbp = ref.watch(
+                        SettingsController.settingsProvider.select(
+                          (s) => s.whenData((cb) => SettingsModel.fromMap(cb).useSystemBrightness),
+                        ),
+                      );
+                      final isDarkMode = isDarkSelected ?? context.isDarkMode;
+                      return usbp.when(
+                        data: (data) {
+                          if (data) return const SizedBox();
+                          return ToggleButtons(
+                            isSelected: [!isDarkMode, isDarkMode],
+                            onPressed: (index) {
+                              if (data) return;
+
+                              setState(() {
+                                isDarkSelected = !isDarkMode;
+                              });
+                            },
+                            borderRadius: BorderRadius.circular(8),
+                            children: const [
+                              Padding(padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8), child: Text('Light')),
+                              Padding(padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8), child: Text('Dark')),
+                            ],
+                          );
+                        },
+                        error: (e, st) => Icon(Icons.error),
+                        loading: () => const SizedBox.square(dimension: 40),
+                      );
+                    },
+                  ),
                 ],
               ),
 
               ConstantSizing.columnSpacingSmall,
 
-              ThemePairPicker(
-                pairs: pairs,
-                forceBrightness: _resolveForceBrightness(),
-                crossAxisCount: 2,
-                spacing: 12,
-                onSelected: (pair, chosen) {},
+              Consumer(
+                builder: (context, ref, child) {
+                  final AsyncValue<bool> usbp = ref.watch(
+                    SettingsController.settingsProvider.select(
+                      (s) => s.whenData((cb) => SettingsModel.fromMap(cb).useSystemBrightness),
+                    ),
+                  );
+                  return usbp.when(
+                    data: (data) {
+                      return ThemePairPicker(
+                        pairs: pairs,
+                        forceBrightness: data ? null : (context.mediaQuery.platformBrightness),
+                        crossAxisCount: 2,
+                        spacing: 12,
+                        onSelected: (pair, chosen) {
+                          ref
+                              .read(appThemeProvider.notifier)
+                              .update(
+                                ((isDarkSelected ?? context.isDarkMode) ? Brightness.dark : Brightness.light),
+                                pair.unifiedModel,
+                              );
+                        },
+                      );
+                    },
+                    error: (e, st) => Icon(Icons.error),
+                    loading: () => const SizedBox.square(dimension: 40),
+                  );
+                },
               ),
 
               ConstantSizing.columnSpacingMedium,

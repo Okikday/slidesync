@@ -29,7 +29,7 @@ class AppCustomizableDialog extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
     final maxHeight = context.deviceHeight * 0.7;
-    final maxWidth = context.deviceWidth;
+    final maxWidth = context.deviceWidth * 0.9;
     return Stack(
       alignment: alignment,
       clipBehavior: Clip.hardEdge,

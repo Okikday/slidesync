@@ -5,7 +5,7 @@ import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 
 final _contentsByParentId = StreamProvider.autoDispose.family<List<CourseContent>, String>((ref, arg) async* {
-  await Future.delayed(Durations.medium2);
+  await Future.delayed(const Duration(milliseconds: 200));
   yield* (await CourseContentRepo.filter).parentIdEqualTo(arg).watch(fireImmediately: true);
 });
 

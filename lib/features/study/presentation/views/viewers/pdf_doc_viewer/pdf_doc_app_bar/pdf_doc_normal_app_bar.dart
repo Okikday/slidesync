@@ -12,7 +12,8 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/browse/presentation/controlllers/src/course_materials_controller/course_materials_controller.dart';
-import 'package:slidesync/features/main/presentation/library/views/library_tab_view/library_tab_view_app_bar/build_button.dart';
+import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
+import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
 import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_viewer_controller.dart';
 import 'package:slidesync/features/study/presentation/controllers/state/pdf_doc_search_state.dart';
 import 'package:slidesync/features/study/presentation/controllers/state/pdf_doc_viewer_state.dart';
@@ -81,29 +82,16 @@ class PdfDocNormalAppBar extends ConsumerWidget {
                           title: "Share",
                           iconData: Icons.share_rounded,
                           onTap: () async {
-                            UiUtils.showFlushBar(context, msg: "Preparing file...");
-                            final content = await CourseContentRepo.getByContentId(pdva.contentId);
-                            if (content == null) return;
-                            // ignore: use_build_context_synchronously
-                            final metadata = (content.metadataJson.decodeJson);
-                            final origFilename = (metadata['originalFilename']);
-                            final fileName = (metadata['filename'] ?? metadata['fileName']) as String? ?? content.title;
-
-                            ShareContentUc().shareFile(
-                              // ignore: use_build_context_synchronously
-                              context,
-                              File(content.path.filePath),
-                              filename: origFilename ?? p.setExtension(fileName, p.extension(content.path.filePath)),
-                            );
+                            ShareContentActions.shareFileContent(context, pdva.contentId);
                           },
                         ),
-                        PopupMenuAction(
-                          title: "Horizontal layout",
-                          iconData: Iconsax.book_1,
-                          onTap: () {
-                            UiUtils.showFlushBar(context, msg: "Coming soon!");
-                          },
-                        ),
+                        // PopupMenuAction(
+                        //   title: "Horizontal layout",
+                        //   iconData: Iconsax.book_1,
+                        //   onTap: () {
+                        //     UiUtils.showFlushBar(context, msg: "Coming soon!");
+                        //   },
+                        // ),
                         () {
                           final isDarkMode = (ref.watch(PdfDocViewerController.ispdfViewerInDarkMode).value ?? false);
                           return PopupMenuAction(

@@ -12,8 +12,9 @@ import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/main/presentation/home/actions/recent_dialog_actions.dart';
 import 'package:slidesync/features/main/presentation/home/controllers/home_tab_controller.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
-import 'package:slidesync/features/main/presentation/home/views/home_tab_view/home_body/recents_section/recent_dialog.dart';
+import 'package:slidesync/features/main/presentation/home/views/home_tab_view/src/home_body/recents_section/recent_dialog.dart';
 import 'package:slidesync/features/share/domain/usecases/share_content_uc.dart';
+import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 
@@ -74,18 +75,7 @@ class RecentsSectionBody extends ConsumerWidget {
                             await rda.onContinueReading(content.contentId);
                           },
                           onShare: () async {
-                            UiUtils.hideDialog(context);
-                            UiUtils.showFlushBar(context, msg: "Preparing file...");
-                            final load = await CourseContentRepo.getByContentId(content.contentId);
-                            if (load == null) return;
-                            final metadata = jsonDecode(load.metadataJson) as Map<String, dynamic>;
-                            if (context.mounted) {
-                              await ShareContentUc().shareFile(
-                                context,
-                                File(load.path.filePath),
-                                filename: ((metadata['filename'] ?? metadata['fileName']) ?? load.title),
-                              );
-                            }
+                            ShareContentActions.shareFileContent(context, content.contentId);
                           },
                           onDelete: () async {
                             await rda.onRemoveFromRecents(content);

@@ -1,15 +1,15 @@
 enum HiveDataPathKey {
   /// Miscellaneous
-  
+  isBuiltInViewer,
+
   /// List of filePaths that was being added from last session, appended with the collectionId
   contentsAddingProgressList,
-  
+
   // User
   userData,
 
   // Style
   appTheme,
-
 
   /// Welcome View
   hasOnboarded,

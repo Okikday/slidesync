@@ -6,8 +6,8 @@ import 'package:isar/isar.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/main/presentation/library/actions/course_card_actions.dart';
-import 'package:slidesync/features/main/presentation/library/views/library_tab_view/courses_view/course_card.dart';
-import 'package:slidesync/features/main/presentation/library/views/library_tab_view/library_tab_view_app_bar/build_button.dart';
+import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/courses_view/course_card.dart';
+import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
@@ -46,6 +46,7 @@ class LibraryTabViewSearchButton extends ConsumerWidget {
         },
         iconData: Iconsax.search_normal_copy,
         backgroundColor: backgroundColor,
+        shape: CircleBorder(side: BorderSide(color: theme.onBackground.withAlpha(10))),
       ),
       suggestionsBuilder: (context, controller) async {
         if (controller.text.isEmpty) {

@@ -4,11 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class BuildButton extends ConsumerWidget {
-  const BuildButton({super.key, required this.onTap, this.backgroundColor, required this.iconData});
+  const BuildButton({super.key, required this.onTap, this.backgroundColor, required this.iconData, this.shape});
 
   final void Function() onTap;
   final IconData iconData;
   final Color? backgroundColor;
+  final OutlinedBorder? shape;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -16,7 +17,7 @@ class BuildButton extends ConsumerWidget {
     return CustomElevatedButton(
       contentPadding: EdgeInsets.all(12),
       backgroundColor: backgroundColor ?? theme.altBackgroundPrimary,
-      shape: CircleBorder(),
+      shape: shape ?? const CircleBorder(),
       onClick: onTap,
       child: Icon(iconData, size: 20, color: theme.supportingText),
     );

@@ -194,7 +194,7 @@ class AddContentsUc {
           final uuidWithExt = p.basename(uuidWithExtFull);
           final filePath = uuidWithExtFull;
 
-          final hash = await BasicUtils.calculateFileHash(filePath);
+          final hash = await BasicUtils.calculatePartialHash(filePath);
           final fileName = selectedContentPathsOnStorage[uuidWithExt];
           final uuid = p.basenameWithoutExtension(uuidWithExt);
           final fileNameWithoutExt = p.basenameWithoutExtension(fileName);

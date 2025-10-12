@@ -1,9 +1,12 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/result.dart';
+import 'package:slidesync/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/shared/helpers/extensions/src/extension_on_app_theme.dart';
 import 'package:slidesync/shared/theme/theme.dart';
@@ -17,7 +20,7 @@ class App extends ConsumerStatefulWidget {
   ConsumerState<App> createState() => _AppState();
 }
 
-class _AppState extends ConsumerState<App> {
+class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   Future<void> _loadThemeFromHive() async {
     await Result.tryRunAsync(() async {
       final String? hiveTheme = (await AppHiveData.instance.getData<String>(key: HiveDataPathKey.appTheme.name));
@@ -35,9 +38,26 @@ class _AppState extends ConsumerState<App> {
   }
 
   @override
+  bool handleStartBackGesture(PredictiveBackEvent backEvent) {
+    return true;
+  }
+
+  @override
+  void didChangePlatformBrightness() async {
+    log("Brightness changed");
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final isAdaptiveBrightness = (await ref.readSettings).useSystemBrightness;
+      if (isAdaptiveBrightness) {
+        _loadThemeFromHive();
+      }
+    });
+    super.didChangePlatformBrightness();
+  }
+
+  @override
   void initState() {
     super.initState();
-
+    WidgetsBinding.instance.addObserver(this);
     // if (RootIsolateToken.instance != null) {
     //   compute(FileUtils.deleteEmptyCoursesDirsInIsolate, {'rootIsolateToken': RootIsolateToken.instance});
     // }
@@ -45,6 +65,12 @@ class _AppState extends ConsumerState<App> {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       await _loadThemeFromHive();
     });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
   }
 
   @override

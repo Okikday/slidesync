@@ -1,6 +1,7 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/core/assets/assets.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class HomeDashboard extends ConsumerWidget {
@@ -38,16 +39,12 @@ class HomeDashboard extends ConsumerWidget {
         color: theme.adjustBgAndPrimaryWithLerp,
         borderRadius: BorderRadius.circular(18),
         border: Border.all(width: 2, color: theme.adjustBgAndPrimaryWithLerpExtra),
-        // image: DecorationImage(
-        //   image: Assets.images.bookSparkleTransparentBg.asImageProvider,
-        //   fit: BoxFit.cover,
-        //   opacity: 0.03,
-        //   colorFilter: ColorFilter.mode(
-        //     theme.primaryColor,
-        //     BlendMode.srcIn,
-        //   ),
-        // ),
-        // boxShadow: [BoxShadow(color: HSLColor.fromColor(ref.scaffoldBackgroundColor).withLightness(0.1).toColor(), blurRadius: 4, spreadRadius: 2)],
+        image: DecorationImage(
+          image: Assets.images.bookSparkleTransparentBg.asImageProvider,
+          fit: BoxFit.cover,
+          opacity: 0.03,
+          colorFilter: ColorFilter.mode(theme.primaryColor, BlendMode.srcIn),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

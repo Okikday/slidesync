@@ -12,6 +12,7 @@ import 'package:slidesync/core/utils/file_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/auth/domain/services/user_auth/firebase_google_auth.dart';
 import 'package:slidesync/core/assets/assets.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
@@ -120,6 +121,11 @@ class SignInView extends ConsumerWidget {
                         context.goNamed(Routes.home.name);
                         UiUtils.showFlushBar(context, msg: "Successfully signed in!");
                       } else {
+                        if (context.mounted) {
+                          context.pop();
+                        } else {
+                          GlobalNav.withContext((c) => c.pop());
+                        }
                         if (context.mounted) UiUtils.showFlushBar(context, msg: "An error occured while signing in!");
                         log("Error signing in... ${result.message}");
                       }

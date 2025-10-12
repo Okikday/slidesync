@@ -8,7 +8,8 @@ import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class CreateCollectionBottomSheet extends ConsumerStatefulWidget {
   final String courseId;
-  const CreateCollectionBottomSheet({super.key, required this.courseId});
+  final String title;
+  const CreateCollectionBottomSheet({super.key, required this.courseId, this.title = "New Collection"});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _CreateCollectionBottomSheetState();
@@ -49,12 +50,7 @@ class _CreateCollectionBottomSheetState extends ConsumerState<CreateCollectionBo
               children: [
                 Padding(
                   padding: const EdgeInsets.only(left: 12.0),
-                  child: CustomText(
-                    "New Collection",
-                    fontSize: 13,
-                    color: theme.primaryColor,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  child: CustomText(widget.title, fontSize: 13, color: theme.primaryColor, fontWeight: FontWeight.bold),
                 ),
                 ConstantSizing.columnSpacingSmall,
                 CustomTextfield(

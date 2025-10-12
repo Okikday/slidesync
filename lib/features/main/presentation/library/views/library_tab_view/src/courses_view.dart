@@ -7,9 +7,9 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/features/main/presentation/library/controllers/courses_view_controller.dart';
-import 'package:slidesync/features/main/presentation/library/views/library_tab_view/courses_view/course_card/list_course_card.dart';
-import 'package:slidesync/features/main/presentation/library/views/library_tab_view/courses_view/empty_library_view.dart';
-import 'package:slidesync/features/main/presentation/library/views/library_tab_view/courses_view/course_card.dart';
+import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/courses_view/course_card/list_course_card.dart';
+import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/courses_view/empty_library_view.dart';
+import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/courses_view/course_card.dart';
 import 'package:slidesync/shared/global/providers/course_providers.dart';
 
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';

@@ -6,8 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/features/main/presentation/home/controllers/home_tab_controller.dart';
-import 'package:slidesync/features/main/presentation/home/views/home_tab_view/home_body/recents_section/recent_list_tile.dart';
-import 'package:slidesync/features/main/presentation/home/views/home_tab_view/home_body/recents_section/recents_section_body.dart';
+import 'package:slidesync/features/main/presentation/home/views/home_tab_view/src/home_body/recents_section/recent_list_tile.dart';
+import 'package:slidesync/features/main/presentation/home/views/home_tab_view/src/home_body/recents_section/recents_section_body.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';

@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/features/main/presentation/library/actions/course_card_actions.dart';
 import 'package:slidesync/features/main/presentation/library/controllers/library_tab_controller.dart';
-import 'package:slidesync/features/main/presentation/library/views/library_tab_view/courses_view/course_card/grid_course_card.dart';
-import 'package:slidesync/features/main/presentation/library/views/library_tab_view/courses_view/course_card/list_course_card.dart';
+import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/courses_view/course_card/grid_course_card.dart';
+import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/courses_view/course_card/list_course_card.dart';
 import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
 
 class CourseCard extends ConsumerWidget {

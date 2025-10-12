@@ -166,25 +166,21 @@ class AddContentCardSection extends ConsumerWidget {
                     spacing: 8.0,
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      // Flexible(
-                      //   child: CustomElevatedButton(
-                      //     onClick: () async {
-                      //       // CustomDialog.hide(context);
-                      //       // final createdNote = await AddContentsUc.createNote(collection);
-                      //       // log("created note: ${createdNote.toString()}");
-                      //     },
-                      //     backgroundColor: theme.altBackgroundSecondary,
-                      //     pixelHeight: 40,
-                      //     borderRadius: 16,
-                      //     child: Row(
-                      //       spacing: 8.0,
-                      //       children: [
-                      //         Icon(Iconsax.note_add, color: theme.supportingText),
-                      //         CustomText("Add note", color: theme.onBackground),
-                      //       ],
-                      //     ),
-                      //   ),
-                      // ),
+                      Flexible(
+                        child: CustomElevatedButton(
+                          onClick: () async {},
+                          backgroundColor: theme.altBackgroundSecondary,
+                          pixelHeight: 40,
+                          borderRadius: 16,
+                          child: Row(
+                            spacing: 8.0,
+                            children: [
+                              Icon(Iconsax.note_add, color: theme.supportingText),
+                              CustomText("Select folder", color: theme.onBackground),
+                            ],
+                          ),
+                        ),
+                      ),
                       Flexible(
                         child: CustomElevatedButton(
                           onClick: () {

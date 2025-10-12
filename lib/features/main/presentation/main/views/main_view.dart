@@ -2,13 +2,13 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/features/main/presentation/library/views/sub/library_floating_action_button.dart';
+import 'package:slidesync/features/main/presentation/library/views/library_tab_view/library_floating_action_button.dart';
 import 'package:slidesync/features/main/presentation/main/controllers/main_view_controller.dart';
-import 'package:slidesync/features/main/presentation/home/views/home_tab_view/home_drawer.dart';
-import 'package:slidesync/features/main/presentation/library/views/library_tab_view.dart';
+import 'package:slidesync/features/main/presentation/home/views/home_tab_view/src/home_drawer.dart';
+import 'package:slidesync/features/main/presentation/library/views/library_tab_view/library_tab_view.dart';
 import 'package:slidesync/features/main/presentation/explore/views/explore_tab_view.dart';
 
-import '../../home/views/home_tab_view.dart';
+import '../../home/views/home_tab_view/home_tab_view.dart';
 import 'src/bottom_nav_bar.dart';
 import 'src/main_view_annotated_region.dart';
 

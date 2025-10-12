@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/main/presentation/library/controllers/library_tab_controller.dart';
-import 'package:slidesync/features/main/presentation/library/views/library_tab_view/library_tab_view_app_bar.dart';
-import 'package:slidesync/features/main/presentation/library/views/sub/library_tab_body.dart';
+import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/library_tab_view_app_bar.dart';
+import 'package:slidesync/features/main/presentation/library/views/library_tab_view/library_tab_body.dart';
 
 class LibraryTabView extends ConsumerStatefulWidget {
   const LibraryTabView({super.key});

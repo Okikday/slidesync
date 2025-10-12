@@ -3,12 +3,14 @@ import 'dart:ui';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/browse/presentation/controlllers/src/course_details_controller/course_details_controller.dart';
 import 'package:slidesync/features/browse/presentation/views/course_details/course_details_collection_section.dart';
 import 'package:slidesync/features/browse/presentation/views/course_details/course_details_header.dart';
 import 'package:slidesync/features/browse/presentation/views/course_details/positioned_course_options.dart';
 import 'package:slidesync/features/manage/presentation/collections/views/modify_collections/collections_view_search_bar.dart';
+import 'package:slidesync/features/manage/presentation/collections/views/modify_collections/create_collection_bottom_sheet.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 const double courseDetailsAppBarHeight = 180;
@@ -63,6 +65,23 @@ class CourseDetailsView extends ConsumerWidget {
                               curve: CustomCurves.defaultIosSpring,
                             );
                           },
+                          trailing: CustomElevatedButton(
+                            pixelHeight: 48,
+                            pixelWidth: 48,
+                            backgroundColor: ref.adjustBgAndPrimaryWithLerp,
+                            shape: CircleBorder(side: BorderSide(color: ref.onBackground.withAlpha(10))),
+                            onClick: () {
+                              if (context.mounted) {
+                                CustomDialog.show(
+                                  context,
+                                  canPop: true,
+                                  barrierColor: Colors.black.withAlpha(150),
+                                  child: CreateCollectionBottomSheet(courseId: courseId, title: "Create collection"),
+                                );
+                              }
+                            },
+                            child: Icon(Iconsax.add_circle, color: ref.onPrimary),
+                          ),
                         ),
                       ),
                       CourseDetailsCollectionSection(courseId: courseId),

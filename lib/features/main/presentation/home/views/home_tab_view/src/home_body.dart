@@ -6,10 +6,10 @@ import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/main/presentation/home/controllers/home_tab_controller.dart';
-import 'package:slidesync/features/main/presentation/home/views/home_tab_view/home_body/home_dashboard.dart';
-import 'package:slidesync/features/main/presentation/home/views/home_tab_view/home_body/more_section.dart';
-import 'package:slidesync/features/main/presentation/home/views/home_tab_view/home_body/recents_section/recents_section_body.dart';
-import 'package:slidesync/features/main/presentation/home/views/home_tab_view/home_body/recents_section/recents_section_header.dart';
+import 'package:slidesync/features/main/presentation/home/views/home_tab_view/src/home_body/home_dashboard.dart';
+import 'package:slidesync/features/main/presentation/home/views/home_tab_view/src/home_body/more_section.dart';
+import 'package:slidesync/features/main/presentation/home/views/home_tab_view/src/home_body/recents_section/recents_section_body.dart';
+import 'package:slidesync/features/main/presentation/home/views/home_tab_view/src/home_body/recents_section/recents_section_header.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class HomeBody extends ConsumerWidget {

@@ -6,7 +6,7 @@ import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 
 import 'package:slidesync/features/main/presentation/library/controllers/library_tab_controller.dart';
-import 'package:slidesync/features/main/presentation/library/views/library_tab_view/expand_card_dialog.dart';
+import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/expand_card_dialog.dart';
 
 class CourseCardActions {
   final WidgetRef ref;

@@ -7,10 +7,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as p;
 import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/features/browse/presentation/controlllers/src/course_materials_controller/course_materials_controller.dart';
+import 'package:slidesync/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:slidesync/features/study/domain/services/drive_result_extractor.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/routes/routes.dart';
@@ -30,6 +34,13 @@ import 'package:url_launcher/url_launcher.dart';
 class ContentViewGateActions {
   static Future<void> redirectToViewer(WidgetRef ref, CourseContent content) async {
     final context = ref.context;
+    final isBuiltInViewer = (await ref.readSettings).useBuiltInViewer;
+    if (isBuiltInViewer && content.courseContentType != CourseContentType.link) {
+      await OpenFilex.open(content.path.filePath);
+      context.pop();
+      UiUtils.showFlushBar(context, msg: "Opening with external application...");
+      return;
+    }
     await Future.delayed(Durations.medium2);
     if (!context.mounted) return;
     final filePath = content.path.filePath;

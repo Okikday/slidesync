@@ -6,14 +6,15 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:isar/isar.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
-import 'package:slidesync/features/main/presentation/library/views/library_tab_view/library_tab_view_app_bar/build_button.dart';
+import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/features/browse/presentation/views/course_materials/course_material_list_card.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class MaterialsSearchButton extends ConsumerWidget {
   final Color? backgroundColor;
-  const MaterialsSearchButton({super.key, this.backgroundColor});
+  final String collectionId;
+  const MaterialsSearchButton({super.key, this.backgroundColor, required this.collectionId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -43,6 +44,7 @@ class MaterialsSearchButton extends ConsumerWidget {
           ];
         }
         final List<CourseContent> searchResults = await (await CourseContentRepo.filter)
+            .parentIdEqualTo(collectionId)
             .titleContains(controller.text, caseSensitive: false)
             .findAll();
         return [
@@ -51,7 +53,7 @@ class MaterialsSearchButton extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: CourseMaterialListCard(
-                courseContent: searchResults[i],
+                content: searchResults[i],
                 onTapCard: () {
                   context.pop();
                   context.pushNamed(Routes.contentGate.name, extra: searchResults[i]);

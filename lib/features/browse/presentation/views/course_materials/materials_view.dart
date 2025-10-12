@@ -1,13 +1,17 @@
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/features/browse/presentation/controlllers/src/course_materials_controller/course_materials_controller.dart';
 import 'package:slidesync/features/browse/presentation/views/course_materials/content_card.dart';
+import 'package:slidesync/features/browse/presentation/views/course_materials/course_material_list_card.dart';
+import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
@@ -32,7 +36,11 @@ class MaterialsView extends ConsumerWidget {
           return Consumer(
             builder: (context, ref, child) {
               final int cardViewType = ref.watch(CourseMaterialsController.cardViewType).value ?? 0;
-              final isGrid = cardViewType == 0 ? true : false;
+              final isGrid = cardViewType == 0
+                  ? true
+                  : cardViewType == 1
+                  ? false
+                  : null;
               return PagingListener(
                 controller: data,
                 builder: (context, state, fetchNextPage) {
@@ -60,7 +68,7 @@ class PagedSliverContentView extends ConsumerWidget {
   final VoidCallback fetchNextPage;
   final PagingController pagingController;
   final String collectionId;
-  final bool isGrid;
+  final bool? isGrid;
   const PagedSliverContentView({
     super.key,
     required this.state,
@@ -72,7 +80,23 @@ class PagedSliverContentView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (isGrid) {
+    if (isGrid == null) {
+      return PagedSliverList<int, CourseContent>(
+        state: state,
+        fetchNextPage: fetchNextPage,
+        builderDelegate: PagedChildBuilderDelegate(
+          itemBuilder: (context, item, index) {
+            return CourseMaterialListCard(content: item).animate().fadeIn().moveY(
+              begin: index.isEven ? 40 : 20,
+              end: 0,
+              curve: Curves.fastEaseInToSlowEaseOut,
+              duration: Durations.medium3,
+            );
+          },
+        ),
+      );
+    }
+    if (isGrid!) {
       return PagedSliverGrid<int, CourseContent>(
         state: state,
         fetchNextPage: fetchNextPage,

@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/features/main/presentation/home/views/home_tab_view/home_app_bar.dart';
-import 'package:slidesync/features/main/presentation/home/views/home_tab_view/home_body.dart';
+import 'package:slidesync/features/main/presentation/home/views/home_tab_view/src/home_app_bar.dart';
+import 'package:slidesync/features/main/presentation/home/views/home_tab_view/src/home_body.dart';
 import 'package:slidesync/features/main/presentation/main/controllers/main_view_controller.dart';
+import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 const double isScrolledLvl = 40.0;
 
@@ -74,13 +75,13 @@ class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAli
                 prev = cb;
                 return !cb;
               });
-
+    
               UiUtils.showFlushBar(context, msg: "Focus mode ${prev ? "disabled" : "enabled"}");
             },
           ),
         ];
       },
-
+    
       body: HomeBody(),
     );
   }

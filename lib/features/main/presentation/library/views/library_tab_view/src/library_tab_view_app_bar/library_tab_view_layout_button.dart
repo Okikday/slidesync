@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/shared/global/notifiers/common/card_view_type_notifier.dart';
-import 'package:slidesync/features/main/presentation/library/views/library_tab_view/library_tab_view_app_bar/build_button.dart';
+import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 
 class LibraryTabViewLayoutButton extends ConsumerWidget {
   final AsyncNotifierProvider<CardViewTypeNotifier, int> layoutProvider;

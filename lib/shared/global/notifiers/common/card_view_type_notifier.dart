@@ -3,10 +3,10 @@ import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 
 class CardViewTypeNotifier extends AsyncIntNotifier {
-  CardViewTypeNotifier(this._key, this._maxType);
+  CardViewTypeNotifier(this._key, this._maxNumofType);
 
   final String _key;
-  final int _maxType;
+  final int _maxNumofType;
 
   @override
   Future<int> build() async {
@@ -16,7 +16,7 @@ class CardViewTypeNotifier extends AsyncIntNotifier {
 
   Future<void> toggle() async {
     final current = (state.value ?? 0) + 1;
-    final toSet = current < 0 || current > (_maxType - 1) ? 0 : current;
+    final toSet = current < 0 || current > (_maxNumofType - 1) ? 0 : current;
     state = AsyncData(toSet);
     await AppHiveData.instance.setData(key: _key, value: toSet);
   }

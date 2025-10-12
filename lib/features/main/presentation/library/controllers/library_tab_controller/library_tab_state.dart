@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/base/leak_prevention.dart';
 import 'package:slidesync/features/main/presentation/library/controllers/library_tab_controller.dart';
-import 'package:slidesync/features/main/presentation/library/views/library_tab_view/library_tab_view_app_bar.dart';
+import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/library_tab_view_app_bar.dart';
 
 final rawLibraryTabStateProvider = Provider<LibraryTabState>((ref) {
   final lts = LibraryTabState.of(ref);

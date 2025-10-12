@@ -9,6 +9,7 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
+import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
 import 'package:slidesync/routes/app_router.dart';
 
 import 'package:slidesync/routes/routes.dart';
@@ -41,7 +42,9 @@ class _ContentCardState extends ConsumerState<ContentCard> {
   @override
   void initState() {
     super.initState();
-    progressStream = ContentTrackRepo.watchByContentId(widget.content.contentId).map((c) => c?.progress ?? 0.0).asBroadcastStream();
+    progressStream = ContentTrackRepo.watchByContentId(
+      widget.content.contentId,
+    ).map((c) => c?.progress ?? 0.0).asBroadcastStream();
   }
 
   @override
@@ -72,7 +75,7 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                     decoration: BoxDecoration(
                       color: theme.background.lightenColor(theme.isDarkMode ? 0.1 : 0.9),
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.fromBorderSide(BorderSide(color: theme.altBackgroundSecondary.withAlpha(100))),
+                      border: Border.fromBorderSide(BorderSide(color: theme.onBackground.withAlpha(10))),
                     ),
                     child: Column(
                       children: [
@@ -184,16 +187,8 @@ class ContentCardPopUpMenuButton extends StatelessWidget {
         PopupMenuAction(
           title: "Share",
           iconData: Iconsax.share_copy,
-          onTap: () {
-            UiUtils.showFlushBar(context, msg: "Preparing content...");
-            if (content.courseContentType == CourseContentType.document ||
-                content.courseContentType == CourseContentType.image) {
-              ShareContentUc().shareFile(context, File(content.path.filePath), filename: content.title);
-            } else if (content.courseContentType == CourseContentType.link) {
-              ShareContentUc().shareText(context, content.path.urlPath);
-            } else {
-              UiUtils.showFlushBar(context, msg: "Unable to share content!");
-            }
+          onTap: () async {
+            ShareContentActions.shareContent(context, content.contentId);
           },
         ),
         PopupMenuAction(
@@ -282,7 +277,7 @@ class ContentTypeBadge extends ConsumerWidget {
             decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: theme.altBackgroundPrimary),
             child: Padding(
               padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              child: CustomText(res, color: theme.primaryColor, fontSize: 11, fontWeight: FontWeight.bold),
+              child: CustomText(res, color: theme.onBackground, fontSize: 11, fontWeight: FontWeight.bold),
             ),
           );
         },

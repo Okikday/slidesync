@@ -17,7 +17,7 @@ class CourseStreamNotifier extends StreamNotifier<Course> {
   CourseStreamNotifier(this.courseId);
   @override
   Stream<Course> build() async* {
-    await Future.delayed(Durations.medium2);
+    await Future.delayed(const Duration(milliseconds: 200));
     yield* CourseRepo.watchCourseById(courseId).map((c) => c ?? defaultCourse);
   }
 

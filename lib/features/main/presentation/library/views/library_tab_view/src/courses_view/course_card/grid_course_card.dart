@@ -36,26 +36,27 @@ class GridCourseCard extends ConsumerWidget {
     final categoriesCount = course.collections.length;
     final shadowSurfaceColor = theme.surface.lightenColor(0.5).withValues(alpha: 0.1);
     log("Rebuild Grid course card");
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      margin: const EdgeInsets.all(1.5),
-
-      constraints: BoxConstraints(maxWidth: 320, maxHeight: 200),
-      decoration: BoxDecoration(
-        color: theme.surface,
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: shadowSurfaceColor),
-      ),
-      child: Column(
-        // fit: StackFit.expand,
-        // clipBehavior: Clip.antiAlias,
-        children: [
-          Expanded(
-            child: GridCourseCardStackedCard(course: course, courseCode: courseCode),
+    return Padding(
+      padding: const EdgeInsets.all(1.5),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: 320, maxHeight: 200),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: theme.surface,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(color: shadowSurfaceColor),
           ),
-
-          GridCourseCardBottomStack(courseName: course.courseName, categoriesCount: categoriesCount),
-        ],
+          child: Column(
+            // fit: StackFit.expand,
+            // clipBehavior: Clip.antiAlias,
+            children: [
+              Expanded(
+                child: GridCourseCardStackedCard(course: course, courseCode: courseCode),
+              ),
+              GridCourseCardBottomStack(courseName: course.courseName, categoriesCount: categoriesCount),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -194,30 +195,27 @@ class GridCourseCardBottomStack extends ConsumerWidget {
           width: double.infinity,
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                spacing: 2,
-                children: [
-                  Flexible(
-                    child: CustomText(
-                      courseName,
-                      color: theme.onBackground,
-                      fontWeight: FontWeight.bold,
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.fade,
-                      fontSize: 13,
-                      height: 1.1,
-                    ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              spacing: 2,
+              children: [
+                Flexible(
+                  child: CustomText(
+                    courseName,
+                    color: theme.onBackground,
+                    fontWeight: FontWeight.bold,
+                    textAlign: TextAlign.center,
+                    overflow: TextOverflow.fade,
+                    fontSize: 13,
+                    height: 1.1,
                   ),
-                  CustomText(
-                    "${categoriesCount < 1 ? "No" : categoriesCount} ${categoriesCount == 1 ? "category" : "categories"}",
-                    fontSize: 10,
-                    color: theme.supportingText.withAlpha(200),
-                  ),
-                ],
-              ),
+                ),
+                CustomText(
+                  "${categoriesCount < 1 ? "No" : categoriesCount} ${categoriesCount == 1 ? "category" : "categories"}",
+                  fontSize: 10,
+                  color: theme.supportingText.withAlpha(200),
+                ),
+              ],
             ),
           ),
         ),

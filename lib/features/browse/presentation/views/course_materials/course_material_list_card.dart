@@ -1,28 +1,35 @@
+import 'dart:math' as math;
+
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/features/manage/domain/usecases/contents/create_content_preview_image.dart';
+import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
+import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 import 'package:slidesync/shared/helpers/formatter.dart';
 import 'package:slidesync/shared/helpers/widget_helper.dart';
 
-
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 class CourseMaterialListCard extends ConsumerStatefulWidget {
-  final CourseContent courseContent;
-  final void Function() onTapCard;
+  final CourseContent content;
+  final void Function()? onTapCard;
   final void Function()? onLongPressed;
 
-  const CourseMaterialListCard({super.key, required this.courseContent, required this.onTapCard, this.onLongPressed});
+  const CourseMaterialListCard({super.key, required this.content, this.onTapCard, this.onLongPressed});
 
   @override
   ConsumerState<CourseMaterialListCard> createState() => _CourseMaterialListCardState();
 }
 
 class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard> with SingleTickerProviderStateMixin {
+  late final Stream<double> progressStream;
   late final ValueNotifier<bool> isCardExpandedNotifier;
   late AnimationController expandAnimationController;
   late Animation<double> expandAnim;
@@ -44,6 +51,7 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
         reverseCurve: CustomCurves.defaultIosSpring,
       ),
     );
+    progressStream = ContentTrackRepo.watchByContentId(widget.content.contentId).map((c) => c?.progress ?? 0.0);
   }
 
   void cardExpandListener() {
@@ -60,11 +68,24 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
 
   @override
   Widget build(BuildContext context) {
+    final CourseContent content = widget.content;
     List<CourseMaterialListCardActionModel> courseMaterialListCardActionModels = [
-      CourseMaterialListCardActionModel(label: "Open", icon: Icons.play_circle, onTap: () {}),
+      CourseMaterialListCardActionModel(
+        label: "Open",
+        icon: Iconsax.play_circle,
+        onTap: () {
+          context.pushNamed(Routes.contentGate.name, extra: content);
+        },
+      ),
+      CourseMaterialListCardActionModel(
+        label: "Share",
+        icon: Iconsax.share_copy,
+        onTap: () {
+          ShareContentActions.shareContent(context, content.contentId);
+        },
+      ),
     ];
 
-    final CourseContent courseContent = widget.courseContent;
     final theme = ref;
     return AnimatedContainer(
       duration: Durations.extralong4,
@@ -72,13 +93,21 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
       decoration: BoxDecoration(
         color: theme.background.lightenColor(theme.isDarkMode ? 0.1 : 0.9),
         borderRadius: BorderRadius.circular(12),
+        border: Border.fromBorderSide(BorderSide(width: 2, color: theme.onBackground.withAlpha(10))),
       ),
       child: Material(
         type: MaterialType.transparency,
         child: InkWell(
           borderRadius: BorderRadius.circular(10),
           overlayColor: WidgetStatePropertyAll(theme.altBackgroundPrimary),
-          onTap: widget.onTapCard,
+          onTap: () {
+            if (widget.onTapCard != null) {
+              widget.onTapCard!();
+              return;
+            }
+            isCardExpandedNotifier.value = !isCardExpandedNotifier.value;
+            // context.pushNamed(Routes.contentGate.name, extra: courseContent);
+          },
           onLongPress: widget.onLongPressed,
           child: Padding(
             padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
@@ -99,14 +128,9 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
                       ),
                       child: BuildImagePathWidget(
                         fileDetails: FileDetails(
-                          filePath: CreateContentPreviewImage.genPreviewImagePath(
-                            filePath: courseContent.path.filePath,
-                          ),
+                          filePath: CreateContentPreviewImage.genPreviewImagePath(filePath: content.path.filePath),
                         ),
-                        fallbackWidget: Icon(
-                          WidgetHelper.resolveIconData(courseContent.courseContentType, true),
-                          size: 20,
-                        ),
+                        fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, true), size: 20),
                       ),
                     ),
                     ConstantSizing.rowSpacingMedium,
@@ -119,7 +143,7 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
                           children: [
                             Flexible(
                               child: CustomText(
-                                courseContent.title,
+                                content.title,
                                 fontSize: 13,
                                 color: theme.onBackground,
                                 fontWeight: FontWeight.w600,
@@ -128,24 +152,33 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
                             ),
                             // ConstantSizing.columnSpacing(2),
                             CustomText(
-                              Formatter.formatEnumName(courseContent.courseContentType.name),
+                              Formatter.formatEnumName(content.courseContentType.name),
                               fontSize: 11,
                               color: theme.supportingText,
                             ),
-                            // ConstantSizing.columnSpacing(8),
-                            // LinearProgressIndicator(
-                            //   minHeight: 8,
-                            //   borderRadius: BorderRadius.circular(36),
-                            //   value: math.Random().nextDouble(),
-                            //   backgroundColor: Colors.black.withAlpha(40),
-                            //   color: theme.primaryColor, //.withAlpha(40)
-                            // ),
+                            ConstantSizing.columnSpacing(8),
+                            StreamBuilder(
+                              stream: progressStream,
+                              builder: (context, asyncSnapshot) {
+                                return LinearProgressIndicator(
+                                  minHeight: 8,
+                                  borderRadius: BorderRadius.circular(36),
+                                  value: asyncSnapshot.data,
+                                  backgroundColor: Colors.black.withAlpha(40),
+                                  color: theme.primaryColor, //.withAlpha(40)
+                                );
+                              },
+                            ),
                           ],
                         ),
                       ),
                     ),
                     ConstantSizing.rowSpacingMedium,
-                    // Icon(Iconsax.arrow_circle_right, color: theme.bgSupportingText),
+                    CustomElevatedButton(
+                      backgroundColor: theme.onSurface.withAlpha(10),
+                      contentPadding: EdgeInsets.all(8.0),
+                      child: Icon(Iconsax.arrow_circle_right, color: theme.onSurface),
+                    ),
                   ],
                 ),
 
