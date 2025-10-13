@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:slidesync/routes/app_router.dart';
 
 /// Helper class for accessing root context globally
@@ -34,4 +35,6 @@ class GlobalNav {
   static OverlayState? get overlay {
     return rootNavigatorKey.currentState?.overlay;
   }
+
+  static void popGlobal() => GlobalNav.withContext((c) => c.pop());
 }

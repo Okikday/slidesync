@@ -36,8 +36,9 @@ class ListCourseCard extends ConsumerWidget {
       height: 100,
       constraints: BoxConstraints(maxWidth: 500),
       decoration: BoxDecoration(
-        color: theme.surface,
+        color: theme.adjustBgAndPrimaryWithLerpExtra,
         borderRadius: BorderRadius.circular(14),
+        border: Border.fromBorderSide(BorderSide(color: theme.adjustBgAndPrimaryWithLerp)),
         boxShadow: context.isDarkMode
             ? [
                 BoxShadow(

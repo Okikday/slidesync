@@ -20,6 +20,8 @@ import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 import 'package:slidesync/features/manage/domain/usecases/contents/create_content_preview_image.dart';
+import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_viewer_controller.dart';
+import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 
 const Duration readValidityDuration = Duration(seconds: 5);
 
@@ -27,8 +29,10 @@ class PdfDocViewerState extends LeakPrevention {
   static final ScreenshotController screenshotController = ScreenshotController();
 
   final String contentId;
+  Ref? ref;
 
   late final PdfViewerController pdfViewerController;
+  late final ValueNotifier<double> scrollOffsetNotifier;
   late final ValueNotifier<ContentTrack?> progressTrackNotifier;
   late final ValueNotifier<bool> isAppBarVisibleNotifier;
   late final ValueNotifier<bool> isToolsMenuVisible;
@@ -38,16 +42,26 @@ class PdfDocViewerState extends LeakPrevention {
   int? currentPageNumber;
   int? lastUpdatedPage; // For progress updates
 
-  PdfDocViewerState(this.contentId) {
+  PdfDocViewerState(this.contentId, [this.ref]) {
     pdfViewerController = PdfViewerController();
+    scrollOffsetNotifier = ValueNotifier(0.0);
     progressTrackNotifier = ValueNotifier(null);
     isAppBarVisibleNotifier = ValueNotifier(true);
     isToolsMenuVisible = ValueNotifier(true);
+    pdfViewerController.addListener(posListener);
+  }
+
+  void posListener() {
+    if (ref == null) return;
+    log("currentPageNumber: ${pdfViewerController.pageNumber}");
+    final newValue = double.parse(
+      pdfViewerController.value.row1[3].abs().clamp(0.0, double.infinity).toStringAsFixed(2),
+    );
+    ref!.read(PdfDocViewerController.scrollOffsetNotifierProvider.notifier).update((cb) => newValue);
   }
 
   Future<bool> initialize() async {
     final ContentTrack? progressTrack = await getLastProgressTrack();
-
     if (progressTrack == null) return false;
     progressTrackNotifier.value = progressTrack;
     if (progressTrack.pages.isNotEmpty) {
@@ -242,8 +256,10 @@ class PdfDocViewerState extends LeakPrevention {
 
   @override
   void onDispose() {
+    pdfViewerController.removeListener(posListener);
     pdfViewerController.removeListener(monitorPageListener);
     final oldPtm = progressTrackNotifier.value;
+    scrollOffsetNotifier.dispose();
     progressTrackNotifier.dispose();
     isAppBarVisibleNotifier.dispose();
     isToolsMenuVisible.dispose();

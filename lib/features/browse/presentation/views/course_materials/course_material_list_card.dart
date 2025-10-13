@@ -2,18 +2,25 @@ import 'dart:math' as math;
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:path/path.dart' as p;
+import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/features/manage/domain/usecases/contents/create_content_preview_image.dart';
+import 'package:slidesync/features/manage/presentation/contents/actions/modify_contents_action.dart';
 import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 import 'package:slidesync/shared/helpers/formatter.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/helpers/widget_helper.dart';
+import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
@@ -51,7 +58,9 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
         reverseCurve: CustomCurves.defaultIosSpring,
       ),
     );
-    progressStream = ContentTrackRepo.watchByContentId(widget.content.contentId).map((c) => c?.progress ?? 0.0);
+    progressStream = ContentTrackRepo.watchByContentId(
+      widget.content.contentId,
+    ).map((c) => c?.progress ?? 0.0).asBroadcastStream();
   }
 
   void cardExpandListener() {
@@ -63,6 +72,7 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
     isCardExpandedNotifier.removeListener(cardExpandListener);
     isCardExpandedNotifier.dispose();
     expandAnimationController.dispose();
+    progressStream.drain();
     super.dispose();
   }
 
@@ -75,6 +85,56 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
         icon: Iconsax.play_circle,
         onTap: () {
           context.pushNamed(Routes.contentGate.name, extra: content);
+        },
+      ),
+      if (content.courseContentType == CourseContentType.link)
+        CourseMaterialListCardActionModel(
+          label: "Copy",
+          icon: Icons.copy,
+          onTap: () {
+            Clipboard.setData(ClipboardData(text: content.path.fileDetails.urlPath));
+          },
+        ),
+      CourseMaterialListCardActionModel(
+        label: "Delete",
+        icon: Icons.delete,
+        onTap: () async {
+          UiUtils.showCustomDialog(
+            context,
+            child: ConfirmDeletionDialog(
+              content: "Are you sure you want to delete this item?",
+              onPop: () {
+                if (context.mounted) {
+                  UiUtils.hideDialog(context);
+                } else {
+                  GlobalNav.popGlobal();
+                }
+              },
+              onCancel: () {
+                GlobalNav.popGlobal();
+              },
+              onDelete: () async {
+                UiUtils.hideDialog(context);
+
+                if (context.mounted) {
+                  UiUtils.showLoadingDialog(context, message: "Removing content");
+                }
+                final outcome = await ModifyContentsAction().onDeleteContent(content.contentId);
+
+                GlobalNav.popGlobal();
+
+                if (context.mounted) {
+                  if (outcome == null) {
+                    UiUtils.showFlushBar(context, msg: "Deleted content!", vibe: FlushbarVibe.success);
+                  } else if (outcome.toLowerCase().contains("error")) {
+                    UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.error);
+                  } else {
+                    UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.warning);
+                  }
+                }
+              },
+            ),
+          );
         },
       ),
       CourseMaterialListCardActionModel(
@@ -97,98 +157,117 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
       ),
       child: Material(
         type: MaterialType.transparency,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(10),
-          overlayColor: WidgetStatePropertyAll(theme.altBackgroundPrimary),
-          onTap: () {
-            if (widget.onTapCard != null) {
-              widget.onTapCard!();
-              return;
-            }
-            isCardExpandedNotifier.value = !isCardExpandedNotifier.value;
-            // context.pushNamed(Routes.contentGate.name, extra: courseContent);
-          },
-          onLongPress: widget.onLongPressed,
-          child: Padding(
-            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 50,
-                      height: 50,
-                      clipBehavior: Clip.antiAlias,
-                      decoration: BoxDecoration(
-                        color: theme.primaryColor.withAlpha(40),
-                        borderRadius: BorderRadius.circular(12),
-                        // boxShadow: [BoxShadow(color: theme.primaryColor.withAlpha(80), blurRadius: 2, spreadRadius: 2)],
-                      ),
-                      child: BuildImagePathWidget(
-                        fileDetails: FileDetails(
-                          filePath: CreateContentPreviewImage.genPreviewImagePath(filePath: content.path.filePath),
+        child: Tooltip(
+          message: content.title,
+          triggerMode: TooltipTriggerMode.longPress,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(10),
+            overlayColor: WidgetStatePropertyAll(theme.altBackgroundPrimary),
+            onTap: () {
+              if (widget.onTapCard != null) {
+                widget.onTapCard!();
+                return;
+              }
+              isCardExpandedNotifier.value = !isCardExpandedNotifier.value;
+              // context.pushNamed(Routes.contentGate.name, extra: courseContent);
+            },
+            onLongPress: widget.onLongPressed,
+            child: Padding(
+              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 50,
+                        height: 50,
+                        clipBehavior: Clip.antiAlias,
+                        decoration: BoxDecoration(
+                          color: theme.primaryColor.withAlpha(40),
+                          borderRadius: BorderRadius.circular(12),
+                          // boxShadow: [BoxShadow(color: theme.primaryColor.withAlpha(80), blurRadius: 2, spreadRadius: 2)],
                         ),
-                        fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, true), size: 20),
+                        child: BuildImagePathWidget(
+                          fileDetails: FileDetails(
+                            filePath: CreateContentPreviewImage.genPreviewImagePath(filePath: content.path.filePath),
+                          ),
+                          fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, true), size: 20),
+                        ),
                       ),
-                    ),
-                    ConstantSizing.rowSpacingMedium,
-                    Expanded(
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(maxHeight: 100),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Flexible(
-                              child: CustomText(
-                                content.title,
-                                fontSize: 13,
-                                color: theme.onBackground,
-                                fontWeight: FontWeight.w600,
-                                overflow: TextOverflow.fade,
+                      ConstantSizing.rowSpacingMedium,
+                      Expanded(
+                        child: ConstrainedBox(
+                          constraints: BoxConstraints(maxHeight: 100),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Flexible(
+                                child: CustomText(
+                                  content.courseContentType == CourseContentType.link
+                                      ? content.path.urlPath
+                                      : content.title + p.extension(content.path.filePath),
+                                  fontSize: 13,
+                                  color: theme.onBackground,
+                                  fontWeight: FontWeight.w600,
+                                  overflow: TextOverflow.fade,
+                                ),
                               ),
-                            ),
-                            // ConstantSizing.columnSpacing(2),
-                            CustomText(
-                              Formatter.formatEnumName(content.courseContentType.name),
-                              fontSize: 11,
-                              color: theme.supportingText,
-                            ),
-                            ConstantSizing.columnSpacing(8),
-                            StreamBuilder(
-                              stream: progressStream,
-                              builder: (context, asyncSnapshot) {
-                                return LinearProgressIndicator(
-                                  minHeight: 8,
-                                  borderRadius: BorderRadius.circular(36),
-                                  value: asyncSnapshot.data,
-                                  backgroundColor: Colors.black.withAlpha(40),
-                                  color: theme.primaryColor, //.withAlpha(40)
-                                );
-                              },
-                            ),
-                          ],
+                              // ConstantSizing.columnSpacing(2),
+                              CustomText(
+                                Formatter.formatEnumName(content.courseContentType.name),
+                                fontSize: 11,
+                                color: theme.supportingText,
+                              ),
+                              ConstantSizing.columnSpacing(8),
+                              StreamBuilder(
+                                stream: progressStream,
+                                builder: (context, asyncSnapshot) {
+                                  return Row(
+                                    spacing: 4.0,
+                                    children: [
+                                      Expanded(
+                                        child: LinearProgressIndicator(
+                                          minHeight: 8,
+                                          borderRadius: BorderRadius.circular(36),
+                                          value: asyncSnapshot.data,
+                                          backgroundColor: Colors.black.withAlpha(40),
+                                          color: theme.primaryColor, //.withAlpha(40)
+                                        ),
+                                      ),
+                                      CustomText(
+                                        "${asyncSnapshot.data == null ? 0.0 : (asyncSnapshot.data! * 100).truncate()}%",
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: theme.primary,
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                    ),
-                    ConstantSizing.rowSpacingMedium,
-                    CustomElevatedButton(
-                      backgroundColor: theme.onSurface.withAlpha(10),
-                      contentPadding: EdgeInsets.all(8.0),
-                      child: Icon(Iconsax.arrow_circle_right, color: theme.onSurface),
-                    ),
-                  ],
-                ),
+                      ConstantSizing.rowSpacingMedium,
+                      CustomElevatedButton(
+                        backgroundColor: theme.onSurface.withAlpha(10),
+                        contentPadding: EdgeInsets.all(8.0),
+                        child: Icon(Iconsax.arrow_circle_right, color: theme.onSurface),
+                      ),
+                    ],
+                  ),
 
-                SizeTransition(sizeFactor: expandAnim, child: ConstantSizing.columnSpacingMedium),
+                  SizeTransition(sizeFactor: expandAnim, child: ConstantSizing.columnSpacingMedium),
 
-                AnimatedCourseMaterialListCardMenu(
-                  courseMaterialListCardActionModels: courseMaterialListCardActionModels,
-                  expandAnim: expandAnim,
-                ),
-              ],
+                  AnimatedCourseMaterialListCardMenu(
+                    courseMaterialListCardActionModels: courseMaterialListCardActionModels,
+                    expandAnim: expandAnim,
+                  ),
+                ],
+              ),
             ),
           ),
         ),

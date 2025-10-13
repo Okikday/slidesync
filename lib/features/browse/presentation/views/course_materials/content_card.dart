@@ -56,107 +56,110 @@ class _ContentCardState extends ConsumerState<ContentCard> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Flexible(
-          child: ConstrainedBox(
-            constraints: BoxConstraints.tightFor(width: 440, height: 180),
-            child: Stack(
+          child: InkWell(
+            borderRadius: BorderRadius.circular(14),
+            onTap: () {
+              context.pushNamed(Routes.contentGate.name, extra: content);
+            },
+            child: Container(
+              // curve: CustomCurves.defaultIosSpring,
+              // duration: Durations.extralong1,
+              constraints: BoxConstraints(maxHeight: 200, maxWidth: 320),
               clipBehavior: Clip.antiAlias,
-              fit: StackFit.expand,
-              children: [
-                InkWell(
-                  borderRadius: BorderRadius.circular(16),
-                  onTap: () {
-                    context.pushNamed(Routes.contentGate.name, extra: content);
-                  },
-                  child: Container(
-                    // curve: CustomCurves.defaultIosSpring,
-                    // duration: Durations.extralong1,
-                    constraints: BoxConstraints(maxHeight: 200, maxWidth: 320),
-                    clipBehavior: Clip.antiAlias,
-                    decoration: BoxDecoration(
-                      color: theme.background.lightenColor(theme.isDarkMode ? 0.1 : 0.9),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.fromBorderSide(BorderSide(color: theme.onBackground.withAlpha(10))),
-                    ),
-                    child: Column(
-                      children: [
-                        Expanded(
-                          child: SizedBox.expand(
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.only(
-                                topLeft: Radius.circular(15),
-                                topRight: Radius.circular(15),
-                              ),
-                              child: ContentCardPreviewImage(content: content),
+              decoration: BoxDecoration(
+                color: theme.background.lightenColor(theme.isDarkMode ? 0.1 : 0.9),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.fromBorderSide(BorderSide(color: theme.onBackground.withAlpha(40))),
+              ),
+              child: Stack(
+                // clipBehavior: Clip.antiAlias,
+                fit: StackFit.expand,
+                children: [
+                  Column(
+                    children: [
+                      Expanded(
+                        child: SizedBox.expand(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(15),
+                              topRight: Radius.circular(15),
                             ),
+                            child: Opacity(opacity: 0.6, child: ContentCardPreviewImage(content: content)),
                           ),
                         ),
-                        StreamBuilder(
-                          stream: progressStream,
-                          builder: (context, asyncSnapshot) {
-                            return LinearProgressIndicator(
-                              value: asyncSnapshot.hasData && asyncSnapshot.data != null ? asyncSnapshot.data : 0.0,
-                              color: theme.primaryColor,
-                              backgroundColor: theme.background
-                                  .lightenColor(theme.isDarkMode ? 0.15 : 0.85)
-                                  .withAlpha(200),
-                            );
-                          },
-                        ),
+                      ),
+                      StreamBuilder(
+                        stream: progressStream,
+                        builder: (context, asyncSnapshot) {
+                          return LinearProgressIndicator(
+                            value: asyncSnapshot.hasData && asyncSnapshot.data != null ? asyncSnapshot.data : 0.0,
+                            color: theme.primaryColor,
+                            backgroundColor: theme.background
+                                .lightenColor(theme.isDarkMode ? 0.15 : 0.85)
+                                .withAlpha(200),
+                          );
+                        },
+                      ),
 
-                        Container(
+                      Container(
+                        padding: EdgeInsets.fromLTRB(12, 8, 4, 8),
+                        decoration: BoxDecoration(
                           color: theme.background.lightenColor(theme.isDarkMode ? 0.15 : 0.85).withAlpha(200),
-                          padding: EdgeInsets.fromLTRB(12, 8, 4, 8),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  mainAxisSize: MainAxisSize.min,
-                                  spacing: 2.5,
-                                  children: [
-                                    Flexible(
-                                      child: Tooltip(
-                                        message: content.title,
-                                        triggerMode: TooltipTriggerMode.tap,
-                                        child: CustomText(
-                                          content.title,
-                                          color: theme.onBackground,
-                                          fontWeight: FontWeight.w600,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                          borderRadius: BorderRadius.only(
+                            bottomLeft: const Radius.circular(16),
+                            bottomRight: const Radius.circular(16),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                spacing: 2.5,
+                                children: [
+                                  Flexible(
+                                    child: Tooltip(
+                                      message: content.title,
+                                      triggerMode: TooltipTriggerMode.tap,
+                                      child: CustomText(
+                                        content.title,
+                                        color: theme.onBackground,
+                                        fontWeight: FontWeight.w600,
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
-                                    StreamBuilder(
-                                      stream: progressStream,
-                                      builder: (context, asyncSnapshot) {
-                                        final progress = asyncSnapshot.hasData && asyncSnapshot.data != null
-                                            ? asyncSnapshot.data
-                                            : 0.0;
-                                        return CustomText(
-                                          progress == 0.0
-                                              ? "Start reading!"
-                                              : progress == 1.0
-                                              ? "Completed!"
-                                              : "${((progress?.clamp(0, 100) ?? 0.0) * 100.0).toInt()}% read",
-                                          fontSize: 10,
-                                          color: progress == 1.0 ? theme.primary : theme.supportingText,
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
+                                  ),
+                                  StreamBuilder(
+                                    stream: progressStream,
+                                    builder: (context, asyncSnapshot) {
+                                      final progress = asyncSnapshot.hasData && asyncSnapshot.data != null
+                                          ? asyncSnapshot.data
+                                          : 0.0;
+                                      return CustomText(
+                                        progress == 0.0
+                                            ? "Start reading!"
+                                            : progress == 1.0
+                                            ? "Completed!"
+                                            : "${((progress?.clamp(0, 100) ?? 0.0) * 100.0).toInt()}% read",
+                                        fontSize: 10,
+                                        color: progress == 1.0 ? theme.primary : theme.supportingText,
+                                      );
+                                    },
+                                  ),
+                                ],
                               ),
+                            ),
 
-                              ContentCardPopUpMenuButton(content: content),
-                            ],
-                          ),
+                            ContentCardPopUpMenuButton(content: content),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ),
-                ContentTypeBadge(content: content),
-              ],
+                  ContentTypeBadge(content: content),
+                ],
+              ),
             ),
           ),
         ),
