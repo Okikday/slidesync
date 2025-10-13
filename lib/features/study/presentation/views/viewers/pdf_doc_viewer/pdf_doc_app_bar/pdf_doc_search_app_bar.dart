@@ -1,20 +1,13 @@
-import 'dart:developer';
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/features/study/presentation/controllers/state/pdf_doc_search_state.dart';
-import 'package:slidesync/shared/theme/src/app_theme.dart';
+import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_search_controller.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
-import 'package:pdfrx/pdfrx.dart';
-
 class PdfDocSearchAppBar extends ConsumerStatefulWidget {
-  const PdfDocSearchAppBar({super.key, required this.pdfViewerController, required this.pdsa, required this.focusNode});
-
-  final PdfViewerController pdfViewerController;
-  final PdfDocSearchState pdsa;
+  const PdfDocSearchAppBar({super.key, required this.contentId, required this.focusNode});
+  final String contentId;
   final FocusNode focusNode;
 
   @override
@@ -24,45 +17,49 @@ class PdfDocSearchAppBar extends ConsumerStatefulWidget {
 class _PdfDocSearchAppBarState extends ConsumerState<PdfDocSearchAppBar> {
   @override
   Widget build(BuildContext context) {
-    final AppTheme theme = ref.theme;
-    final pdsa = widget.pdsa;
-    
+    final theme = ref.theme;
 
-    return ValueListenableBuilder(
-      valueListenable: pdsa.isSearchingNotifier,
-      builder: (context, isSearching, _) {
-        return Visibility(
-          maintainState: true,
-          maintainAnimation: true,
-          visible: isSearching,
-          child: Row(
+    final pdsaP = pdfDocSearchStateProvider(widget.contentId);
+    final isSearching =
+        ref.watch(pdfDocSearchStateProvider(widget.contentId).select((s) => s.value?.isSearching)) ?? false;
+
+    return Visibility(
+      maintainState: true,
+      maintainAnimation: true,
+      visible: isSearching,
+      child: Consumer(
+        child: AppBackButton(
+          onPressed: () {
+            final pdsa = ref.read(pdsaP.notifier);
+            widget.focusNode.unfocus();
+            pdsa.setSearching(false);
+          },
+        ),
+        builder: (context, ref, child) {
+          final pdsa = ref.watch(pdsaP).value;
+          return Row(
             children: [
-              AppBackButton(
-                onPressed: () {
-                  pdsa.focusNode.unfocus();
-                  pdsa.isSearchingNotifier.value = false;
-                },
-              ),
+              child!,
               ConstantSizing.rowSpacing(4),
               Expanded(
                 child: CustomTextfield(
                   autoDispose: false,
-                  controller: pdsa.searchController,
+                  controller: pdsa?.searchController,
                   focusNode: widget.focusNode,
                   hint: "Search in document...",
-                  textInputAction: pdsa.textSearcher == null ? TextInputAction.search : TextInputAction.next,
+                  textInputAction: pdsa?.textSearcher == null ? TextInputAction.search : TextInputAction.next,
                   onTapOutside: () {},
-                  onSubmitted: pdsa.performSearch,
+                  onSubmitted: ref.read(pdsaP.notifier).performSearch,
                   onchanged: (text) {
-                    if (text.isEmpty) pdsa.clearSearch();
+                    if (text.isEmpty) ref.read(pdsaP.notifier).clearSearch();
                   },
-                  suffixIcon: ValueListenableBuilder(
-                    valueListenable: pdsa.searchController,
-                    builder: (context, controller, _) {
-                      if (controller.text.isEmpty) return const SizedBox.shrink();
+                  suffixIcon: Builder(
+                    builder: (context) {
+                      final controller = ref.watch(pdsaP).value?.searchController;
+                      if (controller == null || controller.text.isEmpty) return const SizedBox.shrink();
                       return InkWell(
                         customBorder: CircleBorder(),
-                        onTap: pdsa.clearSearch,
+                        onTap: ref.read(pdsaP.notifier).clearSearch,
                         child: CircleAvatar(
                           radius: 13,
                           backgroundColor: theme.supportingText.withAlpha(20),
@@ -81,10 +78,10 @@ class _PdfDocSearchAppBarState extends ConsumerState<PdfDocSearchAppBar> {
                 ),
               ),
               ConstantSizing.rowSpacing(8),
-              ValueListenableBuilder(
-                valueListenable: pdsa.isSearchInProgressNotifier,
-                builder: (context, isInProgress, _) {
-                  if (!isInProgress) return const SizedBox.shrink();
+              Builder(
+                builder: (context) {
+                  final isInProgress = ref.watch(pdsaP).value?.isSearchInProgress;
+                  if (isInProgress == null || !isInProgress) return const SizedBox.shrink();
                   return SizedBox(
                     width: 16,
                     height: 16,
@@ -93,9 +90,9 @@ class _PdfDocSearchAppBarState extends ConsumerState<PdfDocSearchAppBar> {
                 },
               ),
             ],
-          ),
-        );
-      },
+          );
+        },
+      ),
     );
   }
 }

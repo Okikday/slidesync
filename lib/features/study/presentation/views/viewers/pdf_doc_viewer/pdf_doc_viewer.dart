@@ -12,9 +12,6 @@ class PdfDocViewer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return PdfDocViewerStateLoader(
-      contentId: content.contentId,
-      child: (pdva, pdsa) => PdfDocViewerInnerSection(content: content, pdva: pdva, pdsa: pdsa),
-    );
+    return PdfDocViewerInnerSection(content: content,);
   }
 }

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/ask_ai/presentation/ai_interaction_view.dart';
+import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_viewer_controller.dart';
 import 'package:slidesync/features/study/presentation/controllers/state/pdf_doc_viewer_state.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 import 'package:dotted_border/dotted_border.dart';
@@ -102,7 +103,7 @@ class AiScreenCapture extends ConsumerWidget {
           child: GestureDetector(
             onTap: () async {
               final pixelRatio = MediaQuery.devicePixelRatioOf(context);
-              imageNotifier.value = await PdfDocViewerState.screenshotController.capture(pixelRatio: pixelRatio);
+              imageNotifier.value = await PdfDocViewerNotifier.screenshotController.capture(pixelRatio: pixelRatio);
             },
             child: CustomText("Capture screen content behind"),
           ),

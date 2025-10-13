@@ -2,21 +2,19 @@ import 'dart:async';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pdfrx/pdfrx.dart';
-import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_doc_viewer.dart';
+import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_search_controller.dart';
 import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_overlay_widgets/navigation_button.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class NavigationControls extends ConsumerWidget {
-  const NavigationControls({super.key, required this.textSearcher, required this.onNavigateToInstance});
+  const NavigationControls({super.key, required this.contentId});
 
-  final PdfTextSearcher? textSearcher;
-  final Future<void> Function(bool) onNavigateToInstance;
+  final String contentId;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    final s = textSearcher;
+    final s = ref.watch(pdfDocSearchStateProvider(contentId).select((s) => s.value?.textSearcher));
     final hasMatches = s?.hasMatches == true;
     final inProgress = s?.isSearching == true;
 
@@ -25,6 +23,9 @@ class NavigationControls extends ConsumerWidget {
         : "0 of 0";
 
     final canNavigate = hasMatches;
+
+    Future<void> onNavigateToInstance(bool isNext) async =>
+        await ref.read(pdfDocSearchStateProvider(contentId).notifier).navigateToInstance(isNext);
 
     return Row(
       mainAxisSize: MainAxisSize.min,

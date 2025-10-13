@@ -1,5 +1,3 @@
-import 'dart:developer';
-import 'dart:io';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
@@ -7,47 +5,36 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:path/path.dart' as p;
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/browse/presentation/controlllers/src/course_materials_controller/course_materials_controller.dart';
 import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
+import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_search_controller.dart';
 import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_viewer_controller.dart';
-import 'package:slidesync/features/study/presentation/controllers/state/pdf_doc_search_state.dart';
-import 'package:slidesync/features/study/presentation/controllers/state/pdf_doc_viewer_state.dart';
-import 'package:slidesync/features/share/domain/usecases/share_content_uc.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
 
 class PdfDocNormalAppBar extends ConsumerWidget {
-  const PdfDocNormalAppBar({
-    super.key,
-    required this.title,
-    required this.pdva,
-    required this.pdsa,
-    required this.onSearch,
-  });
-
+  const PdfDocNormalAppBar({super.key, required this.contentId, required this.title, required this.onSearch});
+  final String contentId;
   final String title;
-  final PdfDocViewerState pdva;
-  final PdfDocSearchState pdsa;
   final VoidCallback onSearch;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    return ValueListenableBuilder(
-      valueListenable: pdsa.isSearchingNotifier,
+    return Consumer(
       builder: (context, value, child) {
+        final docViewP = pdfDocSearchStateProvider(contentId);
+        final isSearching = ref.watch(docViewP.select((s) => s.value?.isSearching)) ?? false;
         return AppBarContainerChild(
               theme.isDarkMode,
               title: title,
               onBackButtonClicked: () async {
-                final content = await CourseContentRepo.getByContentId(pdva.contentId);
+                final content = await CourseContentRepo.getByContentId(contentId);
                 if (content != null) {
                   (await ref.read(
                     CourseMaterialsController.contentPaginationProvider(content.parentId).future,
@@ -75,14 +62,15 @@ class PdfDocNormalAppBar extends ConsumerWidget {
                           title: "Go to last page",
                           iconData: Iconsax.play,
                           onTap: () {
-                            pdva.pdfViewerController.goToPage(pageNumber: pdva.initialPage);
+                            final p = ref.read(pdfDocViewerStateProvider(contentId)).value;
+                            p?.pdfViewerController.goToPage(pageNumber: p.initialPage);
                           },
                         ),
                         PopupMenuAction(
                           title: "Share",
                           iconData: Icons.share_rounded,
                           onTap: () async {
-                            ShareContentActions.shareFileContent(context, pdva.contentId);
+                            ShareContentActions.shareFileContent(context, contentId);
                           },
                         ),
                         // PopupMenuAction(
@@ -118,7 +106,7 @@ class PdfDocNormalAppBar extends ConsumerWidget {
                 ),
               ),
             )
-            .animate(target: value ? 0 : 1)
+            .animate(target: isSearching ? 0 : 1)
             .scale(
               begin: Offset(0, 0),
               end: Offset(1, 1),
