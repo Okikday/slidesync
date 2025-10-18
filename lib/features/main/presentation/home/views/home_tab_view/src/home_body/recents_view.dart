@@ -9,7 +9,7 @@ import 'package:slidesync/features/main/presentation/home/controllers/home_tab_c
 import 'package:slidesync/features/main/presentation/home/views/home_tab_view/src/home_body/recents_section/recent_list_tile.dart';
 import 'package:slidesync/features/main/presentation/home/views/home_tab_view/src/home_body/recents_section/recents_section_body.dart';
 
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 
 class RecentsView extends ConsumerWidget {

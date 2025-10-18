@@ -16,7 +16,7 @@ import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_view.dart';
 
 import 'courses_view/course_card/grid_course_card.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class CoursesView extends ConsumerStatefulWidget {
   const CoursesView({super.key});

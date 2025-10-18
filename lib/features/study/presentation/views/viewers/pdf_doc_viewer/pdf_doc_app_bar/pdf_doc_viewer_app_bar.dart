@@ -1,10 +1,7 @@
-import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_search_controller.dart';
 import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_viewer_controller.dart';
-import 'package:slidesync/features/study/presentation/controllers/state/pdf_doc_search_state.dart';
-import 'package:slidesync/features/study/presentation/controllers/state/pdf_doc_viewer_state.dart';
 import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_doc_app_bar/pdf_doc_normal_app_bar.dart';
 import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_doc_app_bar/pdf_doc_search_app_bar.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';

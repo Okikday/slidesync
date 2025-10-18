@@ -1,12 +1,12 @@
+
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/features/ask_ai/presentation/ai_interaction_view.dart';
+import 'package:slidesync/features/ask_ai/presentation/views/ai_interaction_view.dart';
 import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_viewer_controller.dart';
-import 'package:slidesync/features/study/presentation/controllers/state/pdf_doc_viewer_state.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:dotted_border/dotted_border.dart';
 
 class AskAiScreen extends ConsumerStatefulWidget {
@@ -16,10 +16,12 @@ class AskAiScreen extends ConsumerStatefulWidget {
   ConsumerState<ConsumerStatefulWidget> createState() => _AskAiScreenState();
 }
 
-class _AskAiScreenState extends ConsumerState<AskAiScreen> {
+class _AskAiScreenState extends ConsumerState<AskAiScreen> with SingleTickerProviderStateMixin {
   late final ValueNotifier<Uint8List?> imageNotifier;
   late final ValueNotifier<String?> aiResponseNotifier;
   late final TextEditingController textEditingController;
+  late final AnimationController animationController;
+  late final Animation<double> gradientAnimation;
   bool isProcessing = false;
   @override
   void initState() {
@@ -27,6 +29,9 @@ class _AskAiScreenState extends ConsumerState<AskAiScreen> {
     imageNotifier = ValueNotifier(null);
     aiResponseNotifier = ValueNotifier(null);
     textEditingController = TextEditingController();
+    animationController = AnimationController(vsync: this, duration: const Duration(seconds: 2));
+    gradientAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(animationController);
+    animationController.loop(reverse: true);
     WidgetsBinding.instance.addPostFrameCallback(
       (_) => SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]),
     );
@@ -38,6 +43,7 @@ class _AskAiScreenState extends ConsumerState<AskAiScreen> {
     imageNotifier.dispose();
     aiResponseNotifier.dispose();
     textEditingController.dispose();
+    animationController.dispose();
     super.dispose();
   }
 
@@ -51,7 +57,23 @@ class _AskAiScreenState extends ConsumerState<AskAiScreen> {
         child: Stack(
           alignment: Alignment.bottomCenter,
           children: [
-            RepaintBoundary(child: OrganicBackgroundEffect(particleOpacity: 0.4, gradientOpacity: 0.1)),
+            AnimatedBuilder(
+              animation: gradientAnimation,
+              child: const SizedBox.expand(),
+              builder: (context, child) {
+                return DecoratedBox(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Colors.blue.withAlpha(100), Colors.purple.withAlpha(100)],
+                      transform: GradientRotation(gradientAnimation.value * 2 * 3.14159),
+                    ),
+                  ),
+                  child: child,
+                );
+              },
+            ),
             Positioned(
               top: (context.topPadding + 12) * 2,
               child: AiScreenCapture(imageNotifier: imageNotifier),

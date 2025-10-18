@@ -9,7 +9,7 @@ import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/features/browse/presentation/views/course_materials/course_material_list_card.dart';
 import 'package:slidesync/routes/routes.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class MaterialsSearchButton extends ConsumerWidget {
   final Color? backgroundColor;

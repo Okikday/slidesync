@@ -8,9 +8,7 @@ import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/features/manage/presentation/collections/views/modify_collections/add_collection_action_button.dart';
 import 'package:slidesync/features/manage/presentation/collections/views/modify_collections/collections_list_view.dart';
 import 'package:slidesync/features/manage/presentation/collections/views/modify_collections/collections_view_search_bar.dart';
-import 'package:slidesync/features/manage/presentation/collections/views/modify_collections/create_collection_bottom_sheet.dart';
-import 'package:slidesync/features/manage/presentation/collections/views/modify_collections/empty_collections_view.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 

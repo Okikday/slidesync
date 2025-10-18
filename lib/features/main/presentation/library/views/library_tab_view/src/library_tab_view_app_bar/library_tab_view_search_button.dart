@@ -9,7 +9,7 @@ import 'package:slidesync/features/main/presentation/library/actions/course_card
 import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/courses_view/course_card.dart';
 import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class LibraryTabViewSearchButton extends ConsumerWidget {
   final Color? backgroundColor;

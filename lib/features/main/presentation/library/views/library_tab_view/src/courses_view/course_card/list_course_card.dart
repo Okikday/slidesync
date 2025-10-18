@@ -1,5 +1,3 @@
-import 'dart:developer';
-import 'dart:ui';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +8,7 @@ import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/models/progress_track_models/course_track.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
@@ -284,7 +282,7 @@ class _ListCourseCardProgressIndicatorState extends ConsumerState<ListCourseCard
                   child: progress == null || (progress <= 0.0)
                       ? Icon(Iconsax.play, color: theme.onBackground)
                       : CustomText(
-                          "${((progress?.clamp(0, 1.0) ?? 0.0) * 100.0).toInt()}%",
+                          "${((progress.clamp(0, 1.0)) * 100.0).toInt()}%",
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
                           color: theme.supportingText.withValues(alpha: 0.5),

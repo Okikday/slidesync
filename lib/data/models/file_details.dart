@@ -39,7 +39,7 @@ class FileDetails {
 }
 
 extension FileDetailsStringExtension on String {
-  FileDetails get fileDetails => this.isEmpty ? FileDetails.fromJson('{}') : FileDetails.fromJson(this);
+  FileDetails get fileDetails => isEmpty ? FileDetails.fromJson('{}') : FileDetails.fromJson(this);
   bool get containsFilePath => urlPath.isNotEmpty || filePath.isNotEmpty;
   bool get containsAnyFilePath => containsFilePath;
   String get filePath => fileDetails.filePath;

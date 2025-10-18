@@ -9,7 +9,7 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/manage/presentation/contents/actions/add_link_actions.dart';
 import 'package:slidesync/features/manage/domain/usecases/contents/retrieve_content_uc.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/bottom_sheets/input_text_bottom_sheet.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 

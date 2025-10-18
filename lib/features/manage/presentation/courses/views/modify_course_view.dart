@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
@@ -9,11 +8,10 @@ import 'package:slidesync/shared/global/providers/course_providers.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
-import 'package:slidesync/features/manage/presentation/collections/views/modify_collections/create_collection_bottom_sheet.dart';
 import 'package:slidesync/features/manage/presentation/courses/views/modify_course/collections_section.dart';
 import 'package:slidesync/features/manage/presentation/courses/views/modify_course/modify_course_header.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 /// VIEW
 class ModifyCourseView extends ConsumerStatefulWidget {

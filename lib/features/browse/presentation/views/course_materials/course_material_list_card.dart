@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
@@ -16,7 +15,7 @@ import 'package:slidesync/features/manage/domain/usecases/contents/create_conten
 import 'package:slidesync/features/manage/presentation/contents/actions/modify_contents_action.dart';
 import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
 import 'package:slidesync/routes/routes.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/formatter.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/helpers/widget_helper.dart';

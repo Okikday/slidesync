@@ -11,7 +11,7 @@ import 'package:slidesync/features/browse/presentation/views/course_details/cour
 import 'package:slidesync/features/manage/presentation/collections/views/modify_collections/create_collection_bottom_sheet.dart';
 import 'package:slidesync/features/manage/presentation/collections/views/modify_collections/empty_collections_view.dart';
 import 'package:slidesync/shared/global/providers/collections_providers.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class CourseDetailsCollectionSection extends ConsumerWidget {
   const CourseDetailsCollectionSection({super.key, required this.courseId});

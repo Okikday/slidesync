@@ -9,9 +9,8 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/features/manage/presentation/contents/actions/modify_content_card_actions.dart';
 import 'package:slidesync/features/manage/presentation/contents/controllers/src/modify_contents_controller.dart';
-import 'package:slidesync/features/manage/presentation/contents/controllers/state/modify_contents_state.dart';
 import 'package:slidesync/routes/app_router.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 
 class ModifyContentsHeader extends ConsumerWidget {
@@ -64,7 +63,7 @@ class ModifyContentsHeader extends ConsumerWidget {
                       context,
                       child: ConfirmDeletionDialog(
                         content:
-                            "Are you sure you want to delete ${mcvp.selectedContentsNotifier.value.length} item(s) from \"${collectionTitle}\".",
+                            "Are you sure you want to delete ${mcvp.selectedContentsNotifier.value.length} item(s) from \"$collectionTitle\".",
                         onPop: () {
                           if (context.mounted) {
                             UiUtils.hideDialog(context);

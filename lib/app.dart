@@ -8,7 +8,7 @@ import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:slidesync/routes/app_router.dart';
-import 'package:slidesync/shared/helpers/extensions/src/extension_on_app_theme.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/theme/theme.dart';
 
 final NotifierProvider<AppThemeProvider, AppTheme> appThemeProvider = NotifierProvider(AppThemeProvider.new);

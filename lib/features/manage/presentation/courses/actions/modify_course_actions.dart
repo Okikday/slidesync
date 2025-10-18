@@ -20,7 +20,7 @@ import 'package:slidesync/features/manage/presentation/courses/views/modify_cour
 import 'package:slidesync/features/manage/presentation/courses/views/modify_course/modify_course_header/preview_modify_course_image_dialog.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 
 class ModifyCourseActions {

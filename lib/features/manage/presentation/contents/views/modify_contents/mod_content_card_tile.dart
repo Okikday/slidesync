@@ -11,7 +11,7 @@ import 'package:slidesync/features/manage/presentation/contents/actions/modify_c
 import 'package:slidesync/shared/helpers/widget_helper.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 import 'package:slidesync/shared/widgets/common/modifying_list_tile.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_view.dart';
 

@@ -9,7 +9,7 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/share/domain/usecases/share_content_uc.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class ShareContentActions {
   static Future<void> shareContent(BuildContext context, String contentId) async {
@@ -31,13 +31,11 @@ class ShareContentActions {
     UiUtils.showFlushBar(context, msg: "Preparing file...");
     final content = await CourseContentRepo.getByContentId(contentId);
     if (content == null) return;
-    // ignore: use_build_context_synchronously
     final metadata = (content.metadataJson.decodeJson);
     final origFilename = (metadata['originalFilename']);
     final fileName = (metadata['filename'] ?? metadata['fileName']) as String? ?? content.title;
 
     ShareContentUc().shareFile(
-      // ignore: use_build_context_synchronously
       context,
       File(content.path.filePath),
       filename: origFilename ?? p.setExtension(fileName, p.extension(content.path.filePath)),

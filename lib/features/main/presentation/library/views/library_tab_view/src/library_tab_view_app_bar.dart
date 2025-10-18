@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
@@ -8,7 +7,7 @@ import 'package:slidesync/features/main/presentation/library/views/library_tab_v
 import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/library_tab_view_app_bar/library_tab_view_layout_button.dart';
 import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/library_tab_view_app_bar/library_tab_view_search_button.dart';
 import 'package:slidesync/core/assets/assets.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 const double libraryAppBarMaxHeight = 220;
 const double libraryAppBarMinHeight = kToolbarHeight;

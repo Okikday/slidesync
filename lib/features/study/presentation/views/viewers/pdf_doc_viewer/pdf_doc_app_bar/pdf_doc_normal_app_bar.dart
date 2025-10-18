@@ -1,4 +1,3 @@
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -15,7 +14,7 @@ import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_vi
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class PdfDocNormalAppBar extends ConsumerWidget {
   const PdfDocNormalAppBar({super.key, required this.contentId, required this.title, required this.onSearch});

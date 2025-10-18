@@ -9,7 +9,7 @@ import 'package:slidesync/features/manage/presentation/contents/views/add_conten
 import 'package:slidesync/features/browse/presentation/views/course_materials/materials_view.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class CourseMaterialsView extends ConsumerStatefulWidget {
   final CourseCollection collection;

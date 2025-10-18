@@ -10,7 +10,7 @@ import 'package:slidesync/features/main/presentation/home/views/home_tab_view/sr
 import 'package:slidesync/features/main/presentation/home/views/home_tab_view/src/home_body/more_section.dart';
 import 'package:slidesync/features/main/presentation/home/views/home_tab_view/src/home_body/recents_section/recents_section_body.dart';
 import 'package:slidesync/features/main/presentation/home/views/home_tab_view/src/home_body/recents_section/recents_section_header.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class HomeBody extends ConsumerWidget {
   const HomeBody({super.key});

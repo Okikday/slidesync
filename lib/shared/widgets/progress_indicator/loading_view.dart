@@ -1,7 +1,7 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/shared/helpers/extensions/src/extension_on_app_theme.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 import 'loading_logo.dart';
 

@@ -2,7 +2,6 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/data/models/file_details.dart';
-import 'package:slidesync/features/study/domain/services/drive_result_extractor.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/features/study/presentation/views/content_view_gate.dart';

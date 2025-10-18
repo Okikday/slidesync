@@ -1,9 +1,7 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/routes/app_router.dart';
-import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/features/manage/presentation/collections/views/modify_collections_view.dart';
 import 'package:slidesync/features/manage/presentation/contents/views/modify_contents_view.dart';
 import 'package:slidesync/features/manage/presentation/courses/views/create_course_view.dart';

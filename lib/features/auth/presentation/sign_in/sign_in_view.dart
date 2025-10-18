@@ -1,12 +1,10 @@
 import 'dart:developer';
-import 'dart:ui';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/file_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
@@ -14,7 +12,7 @@ import 'package:slidesync/features/auth/domain/services/user_auth/firebase_googl
 import 'package:slidesync/core/assets/assets.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class SignInView extends ConsumerWidget {
   const SignInView({super.key});

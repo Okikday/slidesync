@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
@@ -9,7 +8,7 @@ import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/features/settings/domain/models/settings_model.dart';
 import 'package:slidesync/features/settings/presentation/controllers/settings_controller.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/theme/src/app_theme.dart';
 import 'package:slidesync/shared/theme/src/built_in_themes.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_customizable_dialog.dart';

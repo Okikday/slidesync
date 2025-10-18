@@ -2,7 +2,6 @@ import 'dart:collection';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/base/leak_prevention.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 

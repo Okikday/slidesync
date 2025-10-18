@@ -11,7 +11,7 @@ import 'package:slidesync/features/browse/presentation/views/course_details/cour
 import 'package:slidesync/features/browse/presentation/views/course_details/positioned_course_options.dart';
 import 'package:slidesync/features/manage/presentation/collections/views/modify_collections/collections_view_search_bar.dart';
 import 'package:slidesync/features/manage/presentation/collections/views/modify_collections/create_collection_bottom_sheet.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 const double courseDetailsAppBarHeight = 180;
 

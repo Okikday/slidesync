@@ -6,7 +6,7 @@ import 'package:lottie/lottie.dart';
 import 'package:slidesync/core/assets/assets.dart';
 import 'package:slidesync/routes/routes.dart';
 
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 // class SimpleActionModel {
 //   final String title;

@@ -1,4 +1,3 @@
-import 'dart:math' as math;
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,10 +9,7 @@ import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/main/presentation/main/controllers/main_view_controller.dart';
 import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_search_controller.dart';
 import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_viewer_controller.dart';
-import 'package:slidesync/features/study/presentation/controllers/state/pdf_doc_search_state.dart';
-import 'package:slidesync/features/study/presentation/controllers/state/pdf_doc_viewer_state.dart';
-import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_overlay_widgets/pdf_scrollbar_overlay.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/circular_loading_indicator.dart';
 
 class PdfViewerWidget extends ConsumerWidget {

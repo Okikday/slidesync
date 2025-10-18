@@ -3,10 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/features/main/presentation/library/controllers/courses_view_controller.dart';
-import 'package:slidesync/shared/helpers/extensions/src/extension_on_app_theme.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 
-import 'package:slidesync/shared/helpers/extensions/src/extension_on_course_sort.dart';
+
 import 'package:slidesync/shared/widgets/progress_indicator/circular_loading_indicator.dart';
 
 class LibraryTabViewFilterButton extends ConsumerWidget {

@@ -8,7 +8,7 @@ import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/main/presentation/library/controllers/library_tab_controller.dart';
 import 'package:slidesync/features/main/presentation/main/controllers/main_view_controller.dart';
 import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/library_tab_view_app_bar.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class LibraryFloatingActionButton extends ConsumerWidget {
   const LibraryFloatingActionButton({super.key});

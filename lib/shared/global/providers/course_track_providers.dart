@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/data/models/progress_track_models/course_track.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';

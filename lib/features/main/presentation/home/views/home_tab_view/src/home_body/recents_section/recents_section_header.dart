@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/main/presentation/home/controllers/home_tab_controller.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class RecentsSectionHeader extends ConsumerWidget {
   const RecentsSectionHeader({super.key});

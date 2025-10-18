@@ -2,7 +2,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:slidesync/shared/helpers/extensions/src/extension_on_color.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/theme/theme.dart';
 
 // The unified theme that contains both light and dark variants

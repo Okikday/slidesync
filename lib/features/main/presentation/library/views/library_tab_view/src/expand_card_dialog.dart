@@ -14,7 +14,7 @@ import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 class ExpandCardDialog extends ConsumerWidget {

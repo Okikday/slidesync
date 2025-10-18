@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_search_controller.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class PdfDocSearchAppBar extends ConsumerStatefulWidget {
   const PdfDocSearchAppBar({super.key, required this.contentId, required this.focusNode});

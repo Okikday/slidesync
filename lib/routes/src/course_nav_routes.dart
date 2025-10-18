@@ -1,5 +1,4 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';

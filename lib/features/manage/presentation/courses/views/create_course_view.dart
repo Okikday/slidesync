@@ -1,6 +1,5 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/manage/presentation/courses/views/create_course/add_image_avatar.dart';
@@ -8,7 +7,7 @@ import 'package:slidesync/features/manage/presentation/courses/views/create_cour
 import 'package:slidesync/features/manage/presentation/courses/views/create_course/input_course_code_field.dart';
 import 'package:slidesync/features/manage/presentation/courses/views/create_course/input_course_title_field.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class CreateCourseView extends ConsumerStatefulWidget {
   const CreateCourseView({super.key});

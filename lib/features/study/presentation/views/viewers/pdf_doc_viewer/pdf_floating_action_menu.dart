@@ -4,7 +4,7 @@ import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_se
 import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_viewer_controller.dart';
 import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_overlay_widgets/navigation_controls.dart';
 import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_overlay_widgets/pdf_tools_menu.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class PdfFloatingActionMenu extends ConsumerWidget {
   const PdfFloatingActionMenu({super.key, required this.contentId});

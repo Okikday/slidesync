@@ -2,14 +2,12 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
-import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/settings/domain/models/settings_model.dart';
 import 'package:slidesync/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:slidesync/features/settings/presentation/views/sub/settings_appearance_dialog.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class SettingsView extends ConsumerWidget {
   const SettingsView({super.key});

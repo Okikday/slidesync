@@ -4,12 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/shared/global/providers/course_providers.dart';
 import 'package:slidesync/routes/app_router.dart';
-import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/manage/presentation/courses/actions/modify_course_actions.dart';
 import 'package:slidesync/features/manage/presentation/courses/views/modify_course/edit_course_bottom_sheet.dart';
-import 'package:slidesync/shared/widgets/progress_indicator/circular_loading_indicator.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 class ModifyCourseHeader extends ConsumerWidget {

@@ -1,4 +1,3 @@
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -13,7 +12,7 @@ import 'package:slidesync/shared/global/providers/course_providers.dart';
 import 'package:slidesync/shared/global/providers/course_track_providers.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class CourseDetailsHeader extends ConsumerWidget {
   const CourseDetailsHeader({super.key, required this.courseId});

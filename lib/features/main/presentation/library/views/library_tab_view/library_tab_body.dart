@@ -2,7 +2,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/courses_view.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class LibraryTabBody extends ConsumerWidget {
   const LibraryTabBody({super.key});

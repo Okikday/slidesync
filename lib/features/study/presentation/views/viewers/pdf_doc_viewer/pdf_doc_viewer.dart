@@ -1,10 +1,8 @@
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_doc_viewer_inner_section.dart';
-import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_doc_viewer_state_loader.dart';
 
 class PdfDocViewer extends ConsumerWidget {
   final CourseContent content;

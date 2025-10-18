@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
@@ -10,7 +9,7 @@ import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/study/domain/services/drive_browser.dart';
 import 'package:slidesync/features/study/domain/services/drive_result_extractor.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 
 /// Navigation history provider
@@ -94,7 +93,7 @@ class DriveListingView extends ConsumerWidget {
               color: theme.onSurfaceColor,
             ),
             loading: () => CustomText('Loading...', fontSize: 18, color: theme.onSurfaceColor),
-            error: (_, __) => CustomText('Drive Files', fontSize: 18, color: theme.onSurfaceColor),
+            error: (_, _) => CustomText('Drive Files', fontSize: 18, color: theme.onSurfaceColor),
           ),
           actions: [
             if (resourceAsync?.hasValue == true &&
@@ -152,7 +151,7 @@ class DriveListingView extends ConsumerWidget {
       collectionId: collectionId,
       apiKey: dotenv.env['DRIVE_API_KEY'] ?? '',
       showProgress: true,
-      contentType: CourseContentType.link
+      contentType: CourseContentType.link,
     );
 
     // Show result message
@@ -161,7 +160,7 @@ class DriveListingView extends ConsumerWidget {
           ? 'Successfully added ${result.addedFiles} file(s)'
           : result.error ?? 'Failed to add files';
 
-      GlobalNav.withContext((context){
+      GlobalNav.withContext((context) {
         UiUtils.showFlushBar(context, msg: message, vibe: result.success ? FlushbarVibe.success : FlushbarVibe.error);
       });
     }
@@ -300,8 +299,8 @@ class _FileIcon extends ConsumerWidget {
           width: 48,
           height: 48,
           fit: BoxFit.cover,
-          placeholder: (_, __) => _buildIconContainer(Icons.image, Colors.purple, theme),
-          errorWidget: (_, __, ___) => _buildIcon(mimeType, theme),
+          placeholder: (_, _) => _buildIconContainer(Icons.image, Colors.purple, theme),
+          errorWidget: (_, _, _) => _buildIcon(mimeType, theme),
         ),
       );
     }

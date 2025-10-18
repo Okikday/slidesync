@@ -1,19 +1,17 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/manage/presentation/contents/controllers/src/modify_contents_controller.dart';
 import 'package:slidesync/features/manage/presentation/contents/controllers/state/modify_contents_state.dart';
 import 'package:slidesync/features/manage/presentation/contents/views/add_contents/add_content_fab.dart';
-import 'package:slidesync/features/manage/presentation/contents/views/modify_contents/empty_contents_view.dart';
 import 'package:slidesync/features/manage/presentation/contents/views/modify_contents/mod_content_search_view_button.dart';
 import 'package:slidesync/features/manage/presentation/contents/views/modify_contents/modify_content_list_view.dart';
 import 'package:slidesync/features/manage/presentation/contents/views/modify_contents/modify_contents_header.dart';
 import 'package:slidesync/features/manage/presentation/contents/views/modify_contents/move_to_collection_bottom_sheet.dart';
 import 'package:slidesync/shared/global/providers/collections_providers.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 
 class ModifyContentsView extends ConsumerStatefulWidget {

@@ -57,7 +57,7 @@ final splashRoute = GoRoute(
 );
 
 dynamic defaultTransition(
-  pageKey, {
+  LocalKey pageKey, {
   required Widget child,
   TransitionType defaultIncoming = TransitionType.rightToLeft,
   TransitionType? outgoing,

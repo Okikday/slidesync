@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 
 

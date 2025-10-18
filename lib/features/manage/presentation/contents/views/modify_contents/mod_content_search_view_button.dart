@@ -7,7 +7,7 @@ import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/features/manage/presentation/contents/views/modify_contents/mod_content_card_tile.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class ModContentSearchViewButton extends ConsumerWidget {
   final Color? backgroundColor;

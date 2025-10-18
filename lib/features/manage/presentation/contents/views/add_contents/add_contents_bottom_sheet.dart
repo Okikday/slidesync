@@ -13,7 +13,7 @@ import 'package:slidesync/features/manage/presentation/contents/controllers/prov
 import 'package:slidesync/features/manage/presentation/contents/views/add_contents/add_link_bottom_sheet.dart';
 import 'package:slidesync/features/manage/presentation/contents/actions/add_contents_actions.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class AddContentsBottomSheet extends ConsumerStatefulWidget {
   final CourseCollection collection;

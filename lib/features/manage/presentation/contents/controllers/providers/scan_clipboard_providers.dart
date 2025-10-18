@@ -7,7 +7,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/constants/constants.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/features/manage/domain/usecases/contents/scan_clipboard_content_uc.dart';
-import 'package:slidesync/features/manage/presentation/contents/actions/add_contents_actions.dart';
 import 'package:slidesync/features/manage/presentation/contents/views/add_contents/add_from_clipboard_dialog/add_from_clipboard_dialog.dart';
 
 class ScanClipboardProviders {

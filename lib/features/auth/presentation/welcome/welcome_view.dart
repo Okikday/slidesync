@@ -7,9 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/assets/assets.dart';
 import 'package:slidesync/features/auth/presentation/onboarding/onboarding_1.dart';
 
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
-import 'package:slidesync/shared/helpers/extensions/src/extension_on_app_theme.dart';
-import 'package:slidesync/shared/helpers/extensions/src/extension_on_context.dart';
 import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
 
 class WelcomeView extends ConsumerWidget {

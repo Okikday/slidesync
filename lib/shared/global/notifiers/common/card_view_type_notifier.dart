@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 

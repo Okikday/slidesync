@@ -1,8 +1,7 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class InputCourseTitleField extends ConsumerWidget {
   const InputCourseTitleField({

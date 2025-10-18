@@ -1,4 +1,4 @@
-import 'package:slidesync/core/constants/constants.dart';
+part of '../extensions.dart';
 
 extension CourseSortX on CourseSortOption {
   PlainCourseSortOption toPlain() {

@@ -15,7 +15,7 @@ import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/manage/domain/usecases/contents/create_content_preview_image.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class ImageViewer extends ConsumerStatefulWidget {
   final CourseContent content;

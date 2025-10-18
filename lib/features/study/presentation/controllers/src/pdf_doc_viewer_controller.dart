@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/features/study/presentation/controllers/state/pdf_doc_viewer_state.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
@@ -9,7 +8,6 @@ import 'dart:collection';
 import 'dart:convert';
 import 'dart:developer';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar/isar.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:screenshot/screenshot.dart';
@@ -23,7 +21,6 @@ import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 import 'package:slidesync/features/manage/domain/usecases/contents/create_content_preview_image.dart';
-import 'package:slidesync/features/study/presentation/controllers/state/pdf_doc_viewer_state.dart';
 
 const Duration readValidityDuration = Duration(seconds: 5);
 final _pdfDocViewerStateProvider = AsyncNotifierProvider.autoDispose.family(

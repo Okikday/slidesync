@@ -5,8 +5,7 @@ import 'package:lottie/lottie.dart';
 import 'package:slidesync/core/assets/assets.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/features/manage/presentation/contents/views/add_contents/add_contents_bottom_sheet.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
-
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class EmptyContentsView extends ConsumerWidget {
   final CourseCollection collection;

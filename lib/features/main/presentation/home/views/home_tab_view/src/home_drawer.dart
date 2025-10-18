@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/auth/domain/usecases/auth_uc/user_data_functions.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class HomeDrawer extends ConsumerWidget {
   const HomeDrawer({super.key});

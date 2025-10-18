@@ -1,36 +1,14 @@
-import 'dart:async';
-import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
 
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
-import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
-import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
-import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
-import 'package:slidesync/core/utils/basic_utils.dart';
-import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
-import 'package:slidesync/data/models/course_model/course_content.dart';
-import 'package:slidesync/data/models/file_details.dart';
-import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
-import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
-import 'package:slidesync/data/repos/course_repo/course_repo.dart';
-import 'package:slidesync/features/manage/domain/usecases/contents/create_content_preview_image.dart';
-import 'package:slidesync/features/manage/domain/usecases/contents/store_contents.dart';
 import 'package:slidesync/features/manage/domain/usecases/types/add_content_result.dart';
 import 'package:slidesync/features/manage/presentation/contents/views/add_contents/adding_content_overlay.dart';
 import 'package:slidesync/features/manage/domain/usecases/contents/add_contents_uc.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
-import 'package:slidesync/shared/helpers/helpers.dart';
-import 'package:slidesync/shared/widgets/dialogs/app_alert_dialog.dart';
-import 'package:super_clipboard/super_clipboard.dart';
 
 
 

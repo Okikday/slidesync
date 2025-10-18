@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/routes/routes.dart';
@@ -11,7 +10,7 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/features/manage/domain/usecases/courses/create_course_uc.dart';
 import 'package:slidesync/routes/app_router.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class CreateCourseButton extends ConsumerWidget {
   const CreateCourseButton({

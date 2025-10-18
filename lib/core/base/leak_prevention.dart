@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-/// Desist from using Riverpod Providers in the class extending this
 abstract class LeakPrevention {
   static final Finalizer<String> _finalizer = Finalizer<String>(
     (hashCode) => log(' #$hashCode was not disposed!', level: 900),

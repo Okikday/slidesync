@@ -1,4 +1,3 @@
-import 'dart:ui';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
@@ -6,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/features/main/presentation/main/controllers/main_view_controller.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class HomeAppBar extends ConsumerWidget {
   const HomeAppBar({super.key, required this.onClickUserIcon, required this.title, required this.onClickNotification});
@@ -53,7 +52,6 @@ class HomeAppBar extends ConsumerWidget {
                       )
                     : null,
                 child: AnimatedContainer(
-                  
                   duration: Durations.medium3,
                   clipBehavior: Clip.hardEdge,
                   color: isScrolled ? theme.surface.withValues(alpha: 0.9) : theme.background,

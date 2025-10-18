@@ -1,19 +1,15 @@
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/features/browse/presentation/controlllers/src/course_materials_controller/course_materials_controller.dart';
 import 'package:slidesync/features/browse/presentation/views/course_materials/content_card.dart';
 import 'package:slidesync/features/browse/presentation/views/course_materials/course_material_list_card.dart';
-import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class MaterialsView extends ConsumerWidget {
   final String collectionId;

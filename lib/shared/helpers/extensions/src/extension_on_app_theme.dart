@@ -1,7 +1,4 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/app.dart';
-import 'package:slidesync/shared/theme/src/app_theme.dart';
+part of '../extensions.dart';
 
 extension AppProviderTheme on WidgetRef {
   AppTheme get theme => watch(appThemeProvider);

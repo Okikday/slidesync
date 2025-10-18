@@ -8,7 +8,7 @@ import 'package:isar/isar.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/courses_view/course_card.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class LibrarySearchView extends ConsumerStatefulWidget {
   const LibrarySearchView({super.key});

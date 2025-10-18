@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart';
-import 'package:slidesync/shared/helpers/extensions/src/extension_on_app_theme.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class FileManagerPage extends ConsumerStatefulWidget {
   const FileManagerPage({super.key});

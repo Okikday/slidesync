@@ -10,7 +10,7 @@ import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/manage/presentation/collections/views/modify_collections/collections_list_view/mod_collection_card_tile.dart';
 import 'package:slidesync/features/manage/presentation/collections/views/modify_collections/collections_list_view/mod_collection_dialog.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:stacked_card_carousel/stacked_card_carousel.dart';
 
 /// COLLECTION SECTION

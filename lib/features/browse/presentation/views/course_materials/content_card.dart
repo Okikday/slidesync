@@ -1,4 +1,3 @@
-import 'dart:io';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
@@ -18,9 +17,8 @@ import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/browse/presentation/actions/content_card_actions.dart';
 import 'package:slidesync/features/manage/presentation/contents/actions/modify_contents_action.dart';
 import 'package:slidesync/features/manage/domain/usecases/contents/create_content_preview_image.dart';
-import 'package:slidesync/features/share/domain/usecases/share_content_uc.dart';
 
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/widget_helper.dart';
 
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';

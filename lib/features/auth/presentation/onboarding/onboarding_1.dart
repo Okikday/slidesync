@@ -7,9 +7,8 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/auth/presentation/sign_in/sign_in_view.dart';
 import 'package:slidesync/core/assets/assets.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
-
 
 class Onboarding1 extends ConsumerWidget {
   const Onboarding1({super.key});

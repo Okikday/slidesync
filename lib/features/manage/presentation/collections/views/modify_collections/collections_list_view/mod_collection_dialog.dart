@@ -16,7 +16,7 @@ import 'package:slidesync/features/manage/presentation/collections/actions/modif
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
 import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class ModCollectionDialog extends ConsumerStatefulWidget {
   final String courseId;

@@ -7,7 +7,7 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/features/manage/presentation/collections/actions/edit_collection_actions.dart';
 import 'package:slidesync/features/manage/presentation/collections/actions/modify_collection_actions.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class EditCollectionTitleBottomSheet extends ConsumerStatefulWidget {
   final CourseCollection collection;

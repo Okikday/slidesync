@@ -9,7 +9,7 @@ import 'package:slidesync/features/browse/presentation/views/course_materials/ma
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_customizable_dialog.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/circular_loading_indicator.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class CourseMaterialsViewAppBar extends ConsumerWidget {
   final String collectionId;

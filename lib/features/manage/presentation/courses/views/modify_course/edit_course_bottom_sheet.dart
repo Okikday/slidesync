@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/shared/global/providers/course_providers.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
@@ -9,7 +8,7 @@ import 'package:slidesync/features/manage/presentation/courses/actions/edit_cour
 import 'package:slidesync/features/manage/presentation/courses/views/create_course/input_course_code_field.dart';
 import 'package:slidesync/features/manage/presentation/courses/views/create_course/input_course_title_field.dart';
 import 'package:slidesync/features/manage/presentation/courses/views/modify_course/edit_course_bottom_sheet/edit_course_input_description_field.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class EditCourseBottomSheet extends ConsumerStatefulWidget {
   final bool isEditingDescription;

@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
@@ -16,11 +15,9 @@ import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/manage/presentation/courses/views/select_to_modify_course/empty_courses_view.dart';
 import 'package:slidesync/features/manage/presentation/courses/views/select_to_modify_course/edit_course_tile.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
-import 'package:slidesync/shared/widgets/progress_indicator/loading_view.dart';
-import 'package:slidesync/shared/widgets/z_rand/selected_items_count_popup.dart';
 
 class MoveToCollectionBottomSheet extends ConsumerStatefulWidget {
   final List<CourseContent> contents;

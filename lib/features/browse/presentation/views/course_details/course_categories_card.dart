@@ -4,7 +4,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/browse/presentation/views/course_details/course_details_header/animated_shape.dart';
-import 'package:slidesync/shared/helpers/extensions/extension_helper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class CourseCategoriesCard extends ConsumerStatefulWidget {
   final bool isDarkMode;
