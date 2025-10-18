@@ -10,7 +10,7 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as p;
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
-import 'package:slidesync/features/browse/presentation/controlllers/src/course_materials_controller/course_materials_controller.dart';
+import 'package:slidesync/features/browse/presentation/logic/course_materials_provider.dart';
 import 'package:slidesync/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/routes/routes.dart';
@@ -46,7 +46,7 @@ class ContentViewGateActions {
       case CourseContentType.document:
         if (filenameExt.toLowerCase().contains("pdf") || p.extension(urlPath).toLowerCase().contains("pdf")) {
           final pageProvider = await ref.read(
-            CourseMaterialsController.contentPaginationProvider(content.parentId).future,
+            CourseMaterialsProvider.contentPaginationProvider(content.parentId).future,
           );
           if (pageProvider.isUpdating) return;
           pageProvider.stopIsolate();

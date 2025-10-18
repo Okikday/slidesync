@@ -5,7 +5,7 @@ import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/features/manage/domain/usecases/types/add_content_result.dart';
-import 'package:slidesync/features/manage/presentation/contents/views/add_contents/adding_content_overlay.dart';
+import 'package:slidesync/features/manage/presentation/contents/ui/add_contents/adding_content_overlay.dart';
 import 'package:slidesync/features/manage/domain/usecases/contents/add_contents_uc.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';

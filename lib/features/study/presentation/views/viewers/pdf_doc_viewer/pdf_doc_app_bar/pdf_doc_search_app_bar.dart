@@ -1,7 +1,8 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_search_controller.dart';
+import 'package:slidesync/features/study/presentation/logic/pdf_doc_viewer_provider.dart';
+import 'package:slidesync/features/study/presentation/logic/src/pdf_doc_search_state.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
@@ -19,9 +20,9 @@ class _PdfDocSearchAppBarState extends ConsumerState<PdfDocSearchAppBar> {
   Widget build(BuildContext context) {
     final theme = ref.theme;
 
-    final pdsaP = pdfDocSearchStateProvider(widget.contentId);
+    final pdsaP = PdfDocViewerProvider.searchState(widget.contentId);
     final isSearching =
-        ref.watch(pdfDocSearchStateProvider(widget.contentId).select((s) => s.value?.isSearching)) ?? false;
+        ref.watch(PdfDocViewerProvider.searchState(widget.contentId).select((s) => s.value?.isSearching)) ?? false;
 
     return Visibility(
       maintainState: true,
@@ -30,9 +31,9 @@ class _PdfDocSearchAppBarState extends ConsumerState<PdfDocSearchAppBar> {
       child: Consumer(
         child: AppBackButton(
           onPressed: () {
-            final pdsa = ref.read(pdsaP.notifier);
+            final pdsa = ref.read(pdsaP).value;
             widget.focusNode.unfocus();
-            pdsa.setSearching(false);
+            pdsa?.setSearching(false);
           },
         ),
         builder: (context, ref, child) {
@@ -49,9 +50,9 @@ class _PdfDocSearchAppBarState extends ConsumerState<PdfDocSearchAppBar> {
                   hint: "Search in document...",
                   textInputAction: pdsa?.textSearcher == null ? TextInputAction.search : TextInputAction.next,
                   onTapOutside: () {},
-                  onSubmitted: ref.read(pdsaP.notifier).performSearch,
+                  onSubmitted: ref.read(pdsaP).value?.performSearch,
                   onchanged: (text) {
-                    if (text.isEmpty) ref.read(pdsaP.notifier).clearSearch();
+                    if (text.isEmpty) ref.read(pdsaP).value?.clearSearch();
                   },
                   suffixIcon: Builder(
                     builder: (context) {
@@ -59,7 +60,7 @@ class _PdfDocSearchAppBarState extends ConsumerState<PdfDocSearchAppBar> {
                       if (controller == null || controller.text.isEmpty) return const SizedBox.shrink();
                       return InkWell(
                         customBorder: CircleBorder(),
-                        onTap: ref.read(pdsaP.notifier).clearSearch,
+                        onTap: ref.read(pdsaP).value?.clearSearch,
                         child: CircleAvatar(
                           radius: 13,
                           backgroundColor: theme.supportingText.withAlpha(20),

@@ -2,11 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
+import 'package:slidesync/features/main/presentation/library/logic/src/library_tab_state.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 
-import 'package:slidesync/features/main/presentation/library/controllers/library_tab_controller.dart';
-import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/expand_card_dialog.dart';
+import 'package:slidesync/features/main/presentation/library/logic/library_tab_provider.dart';
+import 'package:slidesync/features/main/presentation/library/ui/src/expand_card_dialog.dart';
 
 class CourseCardActions {
   final WidgetRef ref;
@@ -16,17 +17,17 @@ class CourseCardActions {
   BuildContext get context => ref.context;
 
   void onTapCourseCard(Course course) async {
-    final isCourseCardAnimating = LibraryTabController.isCourseCardAnimating;
+    final isCourseCardAnimating = LibraryTabState.isCourseCardAnimating;
     if (isCourseCardAnimating) return;
-    LibraryTabController.isCourseCardAnimating = true; // Tell that a course is currently opened
+    LibraryTabState.isCourseCardAnimating = true; // Tell that a course is currently opened
     await Future.delayed(Durations.short4);
 
     if (context.mounted) context.pushNamed(Routes.courseDetails.name, extra: course.courseId);
-    LibraryTabController.isCourseCardAnimating = false;
+    LibraryTabState.isCourseCardAnimating = false;
   }
 
   void onHoldCourseCard(Course course) async {
-    final Offset? tapPosition = LibraryTabController.cardTapPositionDetails;
+    final Offset? tapPosition = LibraryTabState.cardTapPositionDetails;
     if (tapPosition == null) return;
     UiUtils.showCustomDialog(
       context,

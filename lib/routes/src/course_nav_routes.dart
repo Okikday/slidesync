@@ -3,9 +3,9 @@ import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/routes/app_router.dart';
-import 'package:slidesync/features/browse/presentation/views/course_details_view.dart';
+import 'package:slidesync/features/browse/presentation/ui/course_details_view.dart';
 import 'package:slidesync/routes/routes.dart';
-import 'package:slidesync/features/browse/presentation/views/course_materials_view.dart';
+import 'package:slidesync/features/browse/presentation/ui/course_materials_view.dart';
 
 final courseNavRoute = GoRoute(
   name: Routes.courseDetails.name,

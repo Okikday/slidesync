@@ -6,11 +6,11 @@ import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
-import 'package:slidesync/features/browse/presentation/controlllers/src/course_materials_controller/course_materials_controller.dart';
-import 'package:slidesync/features/main/presentation/library/views/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
+import 'package:slidesync/features/browse/presentation/logic/course_materials_provider.dart';
+import 'package:slidesync/features/main/presentation/library/ui/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
-import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_search_controller.dart';
-import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_viewer_controller.dart';
+import 'package:slidesync/features/study/presentation/logic/src/pdf_doc_search_state.dart';
+import 'package:slidesync/features/study/presentation/logic/pdf_doc_viewer_provider.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
@@ -27,7 +27,7 @@ class PdfDocNormalAppBar extends ConsumerWidget {
     final theme = ref;
     return Consumer(
       builder: (context, value, child) {
-        final docViewP = pdfDocSearchStateProvider(contentId);
+        final docViewP = PdfDocViewerProvider.searchState(contentId);
         final isSearching = ref.watch(docViewP.select((s) => s.value?.isSearching)) ?? false;
         return AppBarContainerChild(
               theme.isDarkMode,
@@ -36,7 +36,7 @@ class PdfDocNormalAppBar extends ConsumerWidget {
                 final content = await CourseContentRepo.getByContentId(contentId);
                 if (content != null) {
                   (await ref.read(
-                    CourseMaterialsController.contentPaginationProvider(content.parentId).future,
+                    CourseMaterialsProvider.contentPaginationProvider(content.parentId).future,
                   )).restartIsolate();
                 }
                 if (context.mounted) {
@@ -60,9 +60,9 @@ class PdfDocNormalAppBar extends ConsumerWidget {
                         PopupMenuAction(
                           title: "Go to last page",
                           iconData: Iconsax.play,
-                          onTap: () {
-                            final p = ref.read(pdfDocViewerStateProvider(contentId)).value;
-                            p?.pdfViewerController.goToPage(pageNumber: p.initialPage);
+                          onTap: () async {
+                            final p = await ref.read(PdfDocViewerProvider.state(contentId).future);
+                            p.controller.goToPage(pageNumber: p.initialPage ?? 1);
                           },
                         ),
                         PopupMenuAction(
@@ -80,12 +80,12 @@ class PdfDocNormalAppBar extends ConsumerWidget {
                         //   },
                         // ),
                         () {
-                          final isDarkMode = (ref.watch(PdfDocViewerController.ispdfViewerInDarkMode).value ?? false);
+                          final isDarkMode = (ref.watch(PdfDocViewerProvider.ispdfViewerInDarkMode).value ?? false);
                           return PopupMenuAction(
                             title: isDarkMode ? "Normal mode(Light)" : "Inverted mode(Dark)",
                             iconData: isDarkMode ? Iconsax.sun_1 : Iconsax.moon,
                             onTap: () {
-                              ref.read(PdfDocViewerController.ispdfViewerInDarkMode.notifier).toggle();
+                              ref.read(PdfDocViewerProvider.ispdfViewerInDarkMode.notifier).toggle();
                             },
                           );
                         }(),

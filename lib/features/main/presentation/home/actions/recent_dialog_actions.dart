@@ -1,6 +1,6 @@
 import 'dart:collection';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
@@ -12,16 +12,8 @@ import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/routes/routes.dart';
 
-
-
-
 class RecentDialogActions {
-  final WidgetRef ref;
-  RecentDialogActions._(this.ref);
-  static RecentDialogActions of(WidgetRef ref) => RecentDialogActions._(ref);
-
-  Future<void> onRemoveFromRecents(ContentTrack contentTrack) async {
-    final context = ref.context;
+  Future<void> onRemoveFromRecents(BuildContext context, ContentTrack contentTrack) async {
     // final contentId = contentId;
     if (context.mounted) UiUtils.hideDialog(context);
     final resultRemoveFromRecents = await ContentTrackRepo.add(contentTrack.copyWith(lastRead: null));
@@ -54,8 +46,7 @@ class RecentDialogActions {
         false;
   }
 
-  Future<void> onContinueReading(String contentId) async {
-    final context = ref.context;
+  Future<void> onContinueReading(BuildContext context, String contentId) async {
     final newContent = await CourseContentRepo.getByContentId(contentId);
     if (context.mounted) UiUtils.hideDialog(context);
     if (newContent == null) {

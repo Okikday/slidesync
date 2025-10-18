@@ -23,7 +23,7 @@ import 'package:slidesync/features/manage/domain/usecases/contents/select_conten
 import 'package:slidesync/features/manage/domain/usecases/contents/store_contents.dart';
 import 'package:slidesync/features/manage/domain/usecases/types/add_content_result.dart';
 import 'package:slidesync/features/manage/domain/usecases/types/store_content_args.dart';
-import 'package:slidesync/features/manage/presentation/contents/views/add_contents/adding_content_overlay.dart';
+import 'package:slidesync/features/manage/presentation/contents/ui/add_contents/adding_content_overlay.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:uuid/uuid.dart';

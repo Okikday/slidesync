@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_search_controller.dart';
-import 'package:slidesync/features/study/presentation/controllers/src/pdf_doc_viewer_controller.dart';
+import 'package:slidesync/features/study/presentation/logic/src/pdf_doc_search_state.dart';
+import 'package:slidesync/features/study/presentation/logic/pdf_doc_viewer_provider.dart';
 import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_overlay_widgets/navigation_controls.dart';
 import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_overlay_widgets/pdf_tools_menu.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -17,11 +17,11 @@ class PdfFloatingActionMenu extends ConsumerWidget {
 
     return Consumer(
       builder: (context, ref, child) {
-        ref.watch(pdfDocSearchStateProvider(contentId).select((s) => s.value?.searchTick));
+        ref.watch(PdfDocViewerProvider.searchState(contentId).select((s) => s.value?.searchTick));
         return Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (ref.watch(pdfDocSearchStateProvider(contentId).select((s) => s.value?.textSearcher)) != null)
+            if (ref.watch(PdfDocViewerProvider.searchState(contentId).select((s) => s.value?.textSearcher)) != null)
               DecoratedBox(
                 decoration: BoxDecoration(color: theme.background, borderRadius: BorderRadius.circular(20)),
                 child: Padding(
@@ -31,10 +31,10 @@ class PdfFloatingActionMenu extends ConsumerWidget {
               ),
             Consumer(
               builder: (context, ref, child) {
-                final value = ref.watch(pdfDocViewerStateProvider(contentId).select((s) => s.value?.isAppBarVisible));
+                final value = ref.watch(PdfDocViewerProvider.state(contentId).select((s) => s.value?.isAppBarVisible));
                 if (value == null ||
                     !value ||
-                    ref.watch(pdfDocSearchStateProvider(contentId).select((s) => s.value?.textSearcher)) != null) {
+                    ref.watch(PdfDocViewerProvider.searchState(contentId).select((s) => s.value?.textSearcher)) != null) {
                   return const SizedBox();
                 }
                 return PdfToolsMenu(isVisible: true);
