@@ -3,34 +3,33 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:pdfrx/pdfrx.dart';
+import 'package:slidesync/core/base/use_value_notifier.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_alert_dialog.dart';
 
-class PdfDocSearchState {
+class PdfDocSearchState with ValueNotifierFactoryMixin {
   final String contentId;
   final PdfViewerController pdfViewerController;
   final FocusNode focusNode;
   final TextEditingController searchController;
-  
+
   PdfTextSearcher? textSearcher;
-  bool isSearching = false;
-  bool isSearchInProgress = false;
-  int searchTick = 0;
+  late final ValueNotifier<bool> isSearchingNotifier;
+  late final ValueNotifier<bool> isSearchInProgressNotifier;
+  late final ValueNotifier<int> searchTickNotifier;
 
-  PdfDocSearchState({
-    required this.contentId,
-    required this.pdfViewerController,
-  })  : focusNode = FocusNode(),
-        searchController = TextEditingController();
-
-  Future<void> initialize() async {
-    // Setup is already done in constructor
-    // Add any async initialization if needed
+  PdfDocSearchState({required this.contentId, required this.pdfViewerController})
+    : focusNode = FocusNode(),
+      searchController = TextEditingController() {
+    isSearchingNotifier = useValueNotifier(false);
+    isSearchInProgressNotifier = useValueNotifier(false);
+    searchTickNotifier = useValueNotifier(0);
   }
 
   void dispose() {
     focusNode.dispose();
     searchController.dispose();
+    disposeNotifiers();
     if (textSearcher != null) {
       textSearcher!.removeListener(_onSearcherChanged);
       textSearcher!.dispose();
@@ -43,7 +42,7 @@ class PdfDocSearchState {
   // ============================================================================
 
   void setSearching(bool searching) {
-    isSearching = searching;
+    isSearchingNotifier.value = searching;
     if (searching) {
       focusNode.requestFocus();
     } else {
@@ -73,7 +72,7 @@ class PdfDocSearchState {
     searcher.startTextSearch(text, caseInsensitive: true, goToFirstMatch: true, searchImmediately: kIsWeb);
 
     textSearcher = searcher;
-    isSearchInProgress = searcher.isSearching;
+    isSearchInProgressNotifier.value = searcher.isSearching;
 
     if (kIsWeb && !searcher.isSearching && !searcher.hasMatches) {
       _showNoResultsMessage();
@@ -91,7 +90,7 @@ class PdfDocSearchState {
     }
 
     textSearcher = null;
-    isSearchInProgress = false;
+    isSearchInProgressNotifier.value = false;
     _incrementTick();
   }
 
@@ -122,7 +121,7 @@ class PdfDocSearchState {
   void _onSearcherChanged() {
     if (textSearcher == null) return;
 
-    isSearchInProgress = textSearcher!.isSearching;
+    isSearchInProgressNotifier.value = textSearcher!.isSearching;
 
     if (!textSearcher!.isSearching && !textSearcher!.hasMatches) {
       _showNoResultsMessage();
@@ -132,7 +131,7 @@ class PdfDocSearchState {
   }
 
   void _incrementTick() {
-    searchTick++;
+    searchTickNotifier.value++;
   }
 
   void _showNoResultsMessage() {

@@ -3,7 +3,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/features/main/presentation/library/actions/course_card_actions.dart';
-import 'package:slidesync/features/main/presentation/library/logic/library_tab_provider.dart';
 import 'package:slidesync/features/main/presentation/library/logic/src/library_tab_state.dart';
 import 'package:slidesync/features/main/presentation/library/ui/src/courses_view/course_card/grid_course_card.dart';
 import 'package:slidesync/features/main/presentation/library/ui/src/courses_view/course_card/list_course_card.dart';

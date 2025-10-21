@@ -11,7 +11,7 @@ export 'package:slidesync/shared/theme/src/app_theme.dart';
 class AppThemeProvider extends Notifier<AppTheme> {
   @override
   AppTheme build() {
-    return AppTheme.of(defaultUnifiedThemeModels[1], Brightness.dark);
+    return AppTheme.of(defaultUnifiedThemeModels[0], Brightness.dark);
   }
 
   void update(Brightness brightness, [UnifiedThemeModel? theme]) {

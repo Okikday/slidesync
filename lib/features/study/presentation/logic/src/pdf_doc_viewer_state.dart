@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar/isar.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:screenshot/screenshot.dart';
@@ -17,8 +16,9 @@ import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 import 'package:slidesync/features/manage/domain/usecases/contents/create_content_preview_image.dart';
-import 'package:slidesync/features/study/presentation/logic/pdf_doc_viewer_provider.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 
 class PdfDocViewerState with ValueNotifierFactoryMixin {
   static final screenshotController = ScreenshotController();
@@ -32,17 +32,16 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
   final String contentId;
   final Ref ref;
 
+  late Future<void> isInitialized;
+
   late final ValueNotifier<double> scrollOffsetNotifier;
+  late final ValueNotifier<bool> isAppBarVisibleNotifier;
 
   final Stopwatch _pageStayStopwatch = Stopwatch();
   int? initialPage;
   late final PdfViewerController controller;
   ContentTrack? progressTrack;
   bool isUpdatingProgressTrack = false;
-
-  // State variables previously managed by notifier
-  bool isAppBarVisible = true;
-  bool isToolsMenuVisible = false;
 
   int? currentPageNumber;
   int? lastUpdatedPage;
@@ -52,10 +51,12 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
 
   PdfDocViewerState(this.ref, this.contentId) {
     controller = PdfViewerController();
+    isAppBarVisibleNotifier = useValueNotifier(true);
     scrollOffsetNotifier = useValueNotifier(0.0);
+    isInitialized = _initialize();
   }
 
-  Future<void> initialize() async {
+  Future<void> _initialize() async {
     // Setup listener
     controller.addListener(_posListener);
 
@@ -71,6 +72,7 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
     if (progressTrack?.pages.isNotEmpty ?? false) {
       controller.addListener(_monitorPageListener);
     }
+    // GlobalNav.withContext((c) => Result.tryRun(() => updateScrollOffset(c.topPadding + 56.0 + 12)));
   }
 
   void dispose() {
@@ -86,15 +88,12 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
   // ============================================================================
 
   void setAppBarVisible(bool visible) {
-    isAppBarVisible = visible;
-  }
-
-  void setToolsMenuVisible(bool visible) {
-    isToolsMenuVisible = visible;
+    isAppBarVisibleNotifier.value = visible;
   }
 
   void updateScrollOffset(double offset) {
     scrollOffsetNotifier.value = offset;
+    log("Called to update Scroll Offset notifier");
   }
 
   // ============================================================================

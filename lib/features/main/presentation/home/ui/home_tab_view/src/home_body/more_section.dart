@@ -20,7 +20,11 @@ class MoreSection extends ConsumerWidget {
         children: [
           MoreSectionOption(title: "Timetable", iconData: Iconsax.heart_copy),
           Padding(
-            padding: const EdgeInsets.only(left: 16.0, right: 12.0),
+            padding: const EdgeInsets.only(left: 16.0),
+            child: MoreSectionOption(title: "References", iconData: Iconsax.bookmark),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(left: 16.0),
             child: MoreSectionOption(title: "Tasks", iconData: Iconsax.menu_copy),
           ),
         ],

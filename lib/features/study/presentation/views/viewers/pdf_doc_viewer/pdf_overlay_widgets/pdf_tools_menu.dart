@@ -8,7 +8,8 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class PdfToolsMenu extends ConsumerWidget {
   final bool isVisible;
-  const PdfToolsMenu({super.key, required this.isVisible});
+  final String contentId;
+  const PdfToolsMenu({super.key, required this.isVisible, required this.contentId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -19,7 +20,7 @@ class PdfToolsMenu extends ConsumerWidget {
         Navigator.push(
           context,
           PageAnimation.pageRouteBuilder(
-            AskAiScreen(),
+            AskAiScreen(contentId: contentId),
             type: TransitionType.none,
             reverseDuration: Durations.short1,
             opaque: false,

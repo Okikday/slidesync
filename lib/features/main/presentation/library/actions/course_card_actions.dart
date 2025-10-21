@@ -6,7 +6,6 @@ import 'package:slidesync/features/main/presentation/library/logic/src/library_t
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 
-import 'package:slidesync/features/main/presentation/library/logic/library_tab_provider.dart';
 import 'package:slidesync/features/main/presentation/library/ui/src/expand_card_dialog.dart';
 
 class CourseCardActions {

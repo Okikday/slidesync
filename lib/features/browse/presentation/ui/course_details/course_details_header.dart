@@ -65,7 +65,6 @@ class CourseDetailsHeaderContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final topPadding = context.topPadding;
     final shapeSize = kToolbarHeight * 2;
-    final theme = ref;
     final courseDetail = ref.watch(
       CourseProviders.courseProvider(courseId).select(
         (s) => s.whenData(

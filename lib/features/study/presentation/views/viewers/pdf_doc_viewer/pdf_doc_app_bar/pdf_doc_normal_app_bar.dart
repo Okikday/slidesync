@@ -9,7 +9,6 @@ import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/browse/presentation/logic/course_materials_provider.dart';
 import 'package:slidesync/features/main/presentation/library/ui/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
-import 'package:slidesync/features/study/presentation/logic/src/pdf_doc_search_state.dart';
 import 'package:slidesync/features/study/presentation/logic/pdf_doc_viewer_provider.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
@@ -28,92 +27,96 @@ class PdfDocNormalAppBar extends ConsumerWidget {
     return Consumer(
       builder: (context, value, child) {
         final docViewP = PdfDocViewerProvider.searchState(contentId);
-        final isSearching = ref.watch(docViewP.select((s) => s.value?.isSearching)) ?? false;
-        return AppBarContainerChild(
-              theme.isDarkMode,
-              title: title,
-              onBackButtonClicked: () async {
-                final content = await CourseContentRepo.getByContentId(contentId);
-                if (content != null) {
-                  (await ref.read(
-                    CourseMaterialsProvider.contentPaginationProvider(content.parentId).future,
-                  )).restartIsolate();
-                }
-                if (context.mounted) {
-                  context.pop();
-                } else {
-                  GlobalNav.withContext((c) => c.pop());
-                }
-              },
-              trailing: Padding(
-                padding: const EdgeInsets.only(left: 8.0),
-                child: Row(
-                  children: [
-                    BuildButton(
-                      iconData: Iconsax.search_normal_copy,
-                      backgroundColor: Colors.transparent,
-                      onTap: onSearch,
-                    ),
-                    AppPopupMenuButton(
-                      tooltip: "More options",
-                      actions: [
-                        PopupMenuAction(
-                          title: "Go to last page",
-                          iconData: Iconsax.play,
-                          onTap: () async {
-                            final p = await ref.read(PdfDocViewerProvider.state(contentId).future);
-                            p.controller.goToPage(pageNumber: p.initialPage ?? 1);
-                          },
+        return ValueListenableBuilder(
+          valueListenable: ref.watch(docViewP.select((s) => s.isSearchingNotifier)),
+          builder: (context, isSearching, child) {
+            return AppBarContainerChild(
+                  theme.isDarkMode,
+                  title: title,
+                  onBackButtonClicked: () async {
+                    final content = await CourseContentRepo.getByContentId(contentId);
+                    if (content != null) {
+                      (await ref.read(
+                        CourseMaterialsProvider.contentPaginationProvider(content.parentId).future,
+                      )).restartIsolate();
+                    }
+                    if (context.mounted) {
+                      context.pop();
+                    } else {
+                      GlobalNav.withContext((c) => c.pop());
+                    }
+                  },
+                  trailing: Padding(
+                    padding: const EdgeInsets.only(left: 8.0),
+                    child: Row(
+                      children: [
+                        BuildButton(
+                          iconData: Iconsax.search_normal_copy,
+                          backgroundColor: Colors.transparent,
+                          onTap: onSearch,
                         ),
-                        PopupMenuAction(
-                          title: "Share",
-                          iconData: Icons.share_rounded,
-                          onTap: () async {
-                            ShareContentActions.shareFileContent(context, contentId);
-                          },
-                        ),
-                        // PopupMenuAction(
-                        //   title: "Horizontal layout",
-                        //   iconData: Iconsax.book_1,
-                        //   onTap: () {
-                        //     UiUtils.showFlushBar(context, msg: "Coming soon!");
-                        //   },
-                        // ),
-                        () {
-                          final isDarkMode = (ref.watch(PdfDocViewerProvider.ispdfViewerInDarkMode).value ?? false);
-                          return PopupMenuAction(
-                            title: isDarkMode ? "Normal mode(Light)" : "Inverted mode(Dark)",
-                            iconData: isDarkMode ? Iconsax.sun_1 : Iconsax.moon,
-                            onTap: () {
-                              ref.read(PdfDocViewerProvider.ispdfViewerInDarkMode.notifier).toggle();
-                            },
-                          );
-                        }(),
+                        AppPopupMenuButton(
+                          tooltip: "More options",
+                          actions: [
+                            PopupMenuAction(
+                              title: "Go to last page",
+                              iconData: Iconsax.play,
+                              onTap: () async {
+                                final p = ref.read(PdfDocViewerProvider.state(contentId));
+                                p.controller.goToPage(pageNumber: p.initialPage ?? 1);
+                              },
+                            ),
+                            PopupMenuAction(
+                              title: "Share",
+                              iconData: Icons.share_rounded,
+                              onTap: () async {
+                                ShareContentActions.shareFileContent(context, contentId);
+                              },
+                            ),
+                            // PopupMenuAction(
+                            //   title: "Horizontal layout",
+                            //   iconData: Iconsax.book_1,
+                            //   onTap: () {
+                            //     UiUtils.showFlushBar(context, msg: "Coming soon!");
+                            //   },
+                            // ),
+                            () {
+                              final isDarkMode = (ref.watch(PdfDocViewerProvider.ispdfViewerInDarkMode).value ?? false);
+                              return PopupMenuAction(
+                                title: isDarkMode ? "Normal mode(Light)" : "Inverted mode(Dark)",
+                                iconData: isDarkMode ? Iconsax.sun_1 : Iconsax.moon,
+                                onTap: () {
+                                  ref.read(PdfDocViewerProvider.ispdfViewerInDarkMode.notifier).toggle();
+                                },
+                              );
+                            }(),
 
-                        PopupMenuAction(
-                          title: "Enable AI button",
-                          iconData: Iconsax.book_1,
-                          onTap: () {
-                            UiUtils.showFlushBar(context, msg: "Coming soon!");
-                          },
+                            PopupMenuAction(
+                              title: "Enable AI button",
+                              iconData: Iconsax.book_1,
+                              onTap: () {
+                                UiUtils.showFlushBar(context, msg: "Coming soon!");
+                              },
+                            ),
+                          ],
                         ),
+
+                        // Printing, Share, Save to Google drive
                       ],
                     ),
-
-                    // Printing, Share, Save to Google drive
-                  ],
-                ),
-              ),
-            )
-            .animate(target: isSearching ? 0 : 1)
-            .scale(
-              begin: Offset(0, 0),
-              end: Offset(1, 1),
-              alignment: Alignment.bottomRight,
-              curve: CustomCurves.defaultIosSpring,
-              duration: Durations.medium4,
-            )
-            .fadeIn();
+                  ),
+                )
+                .animate(target: isSearching ? 0 : 1)
+                .scale(
+                  begin: Offset(0, 0),
+                  end: Offset(1, 1),
+                  alignment: Alignment.bottomRight,
+                  curve: CustomCurves.defaultIosSpring,
+                  duration: Durations.medium4,
+                )
+                .fadeIn();
+          },
+        );
       },
     );
   }

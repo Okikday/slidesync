@@ -6,17 +6,16 @@ import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart'
 import '../../../../shared/global/notifiers/toggle_notifier.dart';
 
 class PdfDocViewerProvider {
-  static final state = FutureProvider.family.autoDispose<PdfDocViewerState, String>((ref, arg) async {
+  static final state = Provider.family.autoDispose<PdfDocViewerState, String>((ref, arg) {
     final pdvs = PdfDocViewerState(ref, arg);
-    await pdvs.initialize();
+    pdvs.updateScrollOffset(0.0);
     ref.onDispose(pdvs.dispose);
     return pdvs;
   });
 
-  static final searchState = FutureProvider.family.autoDispose<PdfDocSearchState, String>((ref, arg) async {
-    final controller = await ref.read(state(arg).selectAsync((s) => s.controller));
+  static final searchState = Provider.family.autoDispose<PdfDocSearchState, String>((ref, arg) {
+    final controller = ref.read(state(arg).select((s) => s.controller));
     final pdss = PdfDocSearchState(contentId: arg, pdfViewerController: controller);
-    await pdss.initialize();
     ref.onDispose(pdss.dispose);
     return pdss;
   });
@@ -24,6 +23,4 @@ class PdfDocViewerProvider {
   static final ispdfViewerInDarkMode = AsyncNotifierProvider.autoDispose<ToggleNotifier, bool>(
     () => ToggleNotifier(HiveDataPathKey.ispdfViewerInDarkMode.name),
   );
-
- 
 }

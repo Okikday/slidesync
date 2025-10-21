@@ -31,7 +31,7 @@ class ContentViewGateActions {
   static Future<void> redirectToViewer(WidgetRef ref, CourseContent content) async {
     final context = ref.context;
     final isBuiltInViewer = (await ref.readSettings).useBuiltInViewer;
-    if (isBuiltInViewer && content.courseContentType != CourseContentType.link) {
+    if (!isBuiltInViewer && content.courseContentType != CourseContentType.link) {
       await OpenFilex.open(content.path.filePath);
       context.pop();
       UiUtils.showFlushBar(context, msg: "Opening with external application...");

@@ -1,4 +1,3 @@
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -62,7 +61,7 @@ class _ContentCardState extends ConsumerState<ContentCard> {
             child: Container(
               // curve: CustomCurves.defaultIosSpring,
               // duration: Durations.extralong1,
-              constraints: BoxConstraints(maxHeight: 200, maxWidth: 320),
+              constraints: BoxConstraints(maxHeight: 200, maxWidth: 400),
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: theme.background.lightenColor(theme.isDarkMode ? 0.1 : 0.9),

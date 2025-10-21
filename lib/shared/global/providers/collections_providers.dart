@@ -10,7 +10,6 @@ final _collectionById = StreamNotifierProvider.autoDispose.family<CollectionNoti
   (collectionId) => CollectionNotifier(collectionId),
 );
 final _collectionsByParentId = StreamProvider.autoDispose.family<List<CourseCollection>, String>((ref, arg) async* {
-  await Future.delayed(const Duration(milliseconds: 200));
   yield* (await CourseCollectionRepo.filter).parentIdEqualTo(arg).watch(fireImmediately: true);
 });
 
@@ -27,7 +26,6 @@ class CollectionNotifier extends StreamNotifier<CourseCollection> {
   CollectionNotifier(this.collectionId);
   @override
   Stream<CourseCollection> build() async* {
-    await Future.delayed(const Duration(milliseconds: 200));
     yield* CourseCollectionRepo.watchCollectionById(collectionId).map((c) {
       log("detect collection change");
       return c ?? defaultCollection;

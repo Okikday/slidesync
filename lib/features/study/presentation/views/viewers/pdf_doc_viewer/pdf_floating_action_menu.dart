@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/features/study/presentation/logic/src/pdf_doc_search_state.dart';
 import 'package:slidesync/features/study/presentation/logic/pdf_doc_viewer_provider.dart';
 import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_overlay_widgets/navigation_controls.dart';
 import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_overlay_widgets/pdf_tools_menu.dart';
@@ -15,32 +14,36 @@ class PdfFloatingActionMenu extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
 
-    return Consumer(
-      builder: (context, ref, child) {
-        ref.watch(PdfDocViewerProvider.searchState(contentId).select((s) => s.value?.searchTick));
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (ref.watch(PdfDocViewerProvider.searchState(contentId).select((s) => s.value?.textSearcher)) != null)
-              DecoratedBox(
-                decoration: BoxDecoration(color: theme.background, borderRadius: BorderRadius.circular(20)),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  child: NavigationControls(contentId: contentId),
+    return ValueListenableBuilder(
+      valueListenable: ref.watch(PdfDocViewerProvider.searchState(contentId).select((s) => s.searchTickNotifier)),
+      builder: (context, searchTick, child) {
+        return Consumer(
+          builder: (context, ref, child) {
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (ref.watch(PdfDocViewerProvider.searchState(contentId).select((s) => s.textSearcher)) != null)
+                  DecoratedBox(
+                    decoration: BoxDecoration(color: theme.background, borderRadius: BorderRadius.circular(20)),
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      child: NavigationControls(contentId: contentId),
+                    ),
+                  ),
+                ValueListenableBuilder(
+                  valueListenable: ref.watch(
+                    PdfDocViewerProvider.state(contentId).select((s) => s.isAppBarVisibleNotifier),
+                  ),
+                  builder: (context, isAppBarVisible, child) {
+                    final value =
+                        ref.watch(PdfDocViewerProvider.searchState(contentId).select((s) => s.textSearcher)) != null;
+                    if (!isAppBarVisible || value) return const SizedBox();
+                    return PdfToolsMenu(isVisible: true, contentId: contentId);
+                  },
                 ),
-              ),
-            Consumer(
-              builder: (context, ref, child) {
-                final value = ref.watch(PdfDocViewerProvider.state(contentId).select((s) => s.value?.isAppBarVisible));
-                if (value == null ||
-                    !value ||
-                    ref.watch(PdfDocViewerProvider.searchState(contentId).select((s) => s.value?.textSearcher)) != null) {
-                  return const SizedBox();
-                }
-                return PdfToolsMenu(isVisible: true);
-              },
-            ),
-          ],
+              ],
+            );
+          },
         );
       },
     );

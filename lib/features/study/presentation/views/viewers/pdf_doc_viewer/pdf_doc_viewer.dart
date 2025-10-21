@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
@@ -16,46 +18,49 @@ class PdfDocViewer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // log("doc inner section rebuild");
-    // final theme = ref;
-    final maxOffset = context.topPadding + kToolbarHeight + 12;
-
-    ref.listen(PdfDocViewerState.scrollOffsetProvider, (prev, next) async {
-      PdfDocViewerActions.calcAppBarTranslation(ref, content.contentId, maxOffset, prev, next);
-    });
-
-    return Consumer(
-      builder: (context, ref, child) {
-        final isSearching =
-            ref.watch(PdfDocViewerProvider.searchState(content.contentId).select((s) => s.value?.isSearching)) ?? false;
-        return PopScope(
-          canPop: !isSearching,
-          onPopInvokedWithResult: (didPop, result) async {
-            await PdfDocViewerActions.onPopInvoked(ref, content.contentId, content.parentId);
+    return FutureBuilder(
+      future: ref.watch(PdfDocViewerProvider.state(content.contentId).select((s) => s.isInitialized)),
+      builder: (context, asyncSnapshot) {
+        return Consumer(
+          builder: (context, ref, child) {
+            log("root pdf viewer section rebuild");
+            return ValueListenableBuilder(
+              valueListenable: ref.watch(
+                PdfDocViewerProvider.searchState(content.contentId).select((s) => s.isSearchingNotifier),
+              ),
+              builder: (context, isSearching, _) {
+                return PopScope(
+                  canPop: !isSearching,
+                  onPopInvokedWithResult: (didPop, result) async {
+                    await PdfDocViewerActions.onPopInvoked(ref, content.contentId, content.parentId);
+                  },
+                  child: child!,
+                );
+              },
+            );
           },
-          child: child!,
+          child: AnnotatedRegion(
+            value: UiUtils.getSystemUiOverlayStyle(context.scaffoldBackgroundColor, context.isDarkMode),
+            child: Scaffold(
+              floatingActionButton: PdfFloatingActionMenu(contentId: content.contentId),
+
+              body: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Positioned.fill(child: PdfViewerWidget(content: content)),
+
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: PdfDocViewerAppBar(title: content.title, contentId: content.contentId),
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
       },
-      child: AnnotatedRegion(
-        value: UiUtils.getSystemUiOverlayStyle(context.scaffoldBackgroundColor, context.isDarkMode),
-        child: Scaffold(
-          floatingActionButton: PdfFloatingActionMenu(contentId: content.contentId),
-
-          body: Stack(
-            fit: StackFit.expand,
-            children: [
-              Positioned.fill(child: PdfViewerWidget(content: content)),
-
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                child: PdfDocViewerAppBar(title: content.title, contentId: content.contentId),
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

@@ -13,7 +13,8 @@ final courseNavRoute = GoRoute(
 
   pageBuilder: (context, state) => defaultTransition(
     state.pageKey,
-    defaultIncoming: TransitionType.scale(from: .8, to: 1, alignment: Alignment.bottomCenter, fade: true),
+    defaultIncoming: TransitionType.topLevel,
+    //.scale(from: .8, to: 1, alignment: Alignment.bottomCenter, fade: true)
     // defaultIncomingDuration: Durations.medium2,
     // defaultIncomingCurve: Curves.fastEaseInToSlowEaseOut,
     child: CourseDetailsView(courseId: state.extra as String),

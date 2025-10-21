@@ -17,7 +17,7 @@ class SettingsModel {
   SettingsModel({
     this.useSystemBrightness = true,
     this.contentNotCopied = false,
-    this.useBuiltInViewer = false,
+    this.useBuiltInViewer = true,
     this.summarizedSuggestions = false,
     this.allowMultipleContents = false,
   });

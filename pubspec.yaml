@@ -94,6 +94,7 @@ dependencies:
   window_manager: ^0.5.1
   web_smooth_scroll: ^2.0.0
   gradient_glow_border: ^1.0.3
+  supabase_flutter: ^2.10.3
 
   #docx_file_viewer: ^0.0.1
 

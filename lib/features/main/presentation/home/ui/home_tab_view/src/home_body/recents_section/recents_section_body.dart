@@ -29,7 +29,7 @@ class RecentsSectionBody extends ConsumerWidget {
     return asyncProgressTrackValues.when(
       data: (data) {
         if (data.isEmpty) {
-          return SliverToBoxAdapter(child: RecommendedSection());
+          return const SliverToBoxAdapter(child: RecommendedSection());
         }
         return SliverPadding(
           padding: EdgeInsets.only(bottom: kBottomNavigationBarHeight + context.bottomPadding),
@@ -130,11 +130,16 @@ class LoadingRecentsSection extends ConsumerWidget {
   }
 }
 
-class RecommendedSection extends ConsumerWidget {
+class RecommendedSection extends ConsumerStatefulWidget {
   const RecommendedSection({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RecommendedSection> createState() => _RecommendedSectionState();
+}
+
+class _RecommendedSectionState extends ConsumerState<RecommendedSection> {
+  @override
+  Widget build(BuildContext context) {
     final theme = ref;
     return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: 220),
@@ -148,64 +153,67 @@ class RecommendedSection extends ConsumerWidget {
             child: CustomText("Recommended", fontWeight: FontWeight.bold, fontSize: 16, color: theme.onBackground),
           ),
           Expanded(
-            child: ListView.builder(
-              itemCount: 10,
-              scrollDirection: Axis.horizontal,
-              shrinkWrap: true,
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              itemBuilder: (context, index) {
-                return SizedBox.square(
-                  dimension: 180,
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      Positioned(
-                        top: 0,
-                        bottom: 0,
-                        left: 12,
-                        right: 12,
-                        child: Container(
-                          width: 180,
-                          height: 180,
-                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          margin: EdgeInsets.only(left: index == 0 ? 0 : 12),
-                          decoration: BoxDecoration(
-                            color: theme.surface.withValues(alpha: 0.6),
-                            borderRadius: BorderRadius.circular(32),
-                          ),
-                        ),
-                      ),
-                      Positioned.fill(
-                        bottom: 12,
-                        child: Container(
-                          width: 180,
-                          height: 180,
-                          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                          margin: EdgeInsets.only(left: index == 0 ? 0 : 12),
-                          decoration: BoxDecoration(color: theme.surface, borderRadius: BorderRadius.circular(32)),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              CircleAvatar(radius: 20, backgroundColor: theme.surface.lightenColor(0.5)),
-                              Padding(
-                                padding: const EdgeInsets.only(bottom: 8),
-                                child: CustomText(
-                                  "Suggested $index",
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.onSurface,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+            child: Center(child: CustomText("No Recommendations", color: theme.onBackground.withValues(alpha: 0.5))),
           ),
+          // Expanded(
+          //   child: ListView.builder(
+          //     itemCount: 10,
+          //     scrollDirection: Axis.horizontal,
+          //     shrinkWrap: true,
+          //     padding: EdgeInsets.symmetric(horizontal: 16),
+          //     itemBuilder: (context, index) {
+          //       return SizedBox.square(
+          //         dimension: 180,
+          //         child: Stack(
+          //           fit: StackFit.expand,
+          //           children: [
+          //             Positioned(
+          //               top: 0,
+          //               bottom: 0,
+          //               left: 12,
+          //               right: 12,
+          //               child: Container(
+          //                 width: 180,
+          //                 height: 180,
+          //                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          //                 margin: EdgeInsets.only(left: index == 0 ? 0 : 12),
+          //                 decoration: BoxDecoration(
+          //                   color: theme.surface.withValues(alpha: 0.6),
+          //                   borderRadius: BorderRadius.circular(32),
+          //                 ),
+          //               ),
+          //             ),
+          //             Positioned.fill(
+          //               bottom: 12,
+          //               child: Container(
+          //                 width: 180,
+          //                 height: 180,
+          //                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          //                 margin: EdgeInsets.only(left: index == 0 ? 0 : 12),
+          //                 decoration: BoxDecoration(color: theme.surface, borderRadius: BorderRadius.circular(32)),
+          //                 child: Column(
+          //                   crossAxisAlignment: CrossAxisAlignment.start,
+          //                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //                   children: [
+          //                     CircleAvatar(radius: 20, backgroundColor: theme.surface.lightenColor(0.5)),
+          //                     Padding(
+          //                       padding: const EdgeInsets.only(bottom: 8),
+          //                       child: CustomText(
+          //                         "Suggested $index",
+          //                         fontWeight: FontWeight.bold,
+          //                         color: theme.onSurface,
+          //                       ),
+          //                     ),
+          //                   ],
+          //                 ),
+          //               ),
+          //             ),
+          //           ],
+          //         ),
+          //       );
+          //     },
+          //   ),
+          // ),
         ],
       ),
     );

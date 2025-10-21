@@ -5,12 +5,10 @@ import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 final defaultCourseTrack = CourseTrack.create(courseId: "_");
 
 final _courseTrackById = StreamProvider.autoDispose.family<CourseTrack, String>((ref, courseId) async* {
-  await Future.delayed(const Duration(milliseconds: 200));
   yield* CourseTrackRepo.watchByCourseId(courseId).map((e) => defaultCourseTrack);
 });
 
 final _courseTrackProgress = StreamProvider.autoDispose.family<double, String>((ref, courseId) async* {
-  await Future.delayed(const Duration(milliseconds: 200));
   yield* CourseTrackRepo.watchByCourseId(courseId).map((e) => e?.progress ?? 0.0);
 });
 
