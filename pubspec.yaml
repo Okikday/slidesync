@@ -96,6 +96,7 @@ dependencies:
   gradient_glow_border: ^1.0.3
   supabase_flutter: ^2.10.3
   xxh3: ^1.2.0
+  markdown_widget: ^2.3.2+8
 
   #docx_file_viewer: ^0.0.1
 

@@ -77,17 +77,31 @@ class _AiInteractionViewState extends ConsumerState<AiInteractionView> {
             if (index == chatController.messages.length - 1) {
               return ValueListenableBuilder<bool>(
                 valueListenable: state.isProcessingNotifier,
-                builder: (context, value, child) {
+                builder: (context, isProcessing, child) {
                   if (message.text.trim().isEmpty) {
                     return LoadingLogo(color: theme.primary, rotate: false);
                   }
-                  return StreamingTextMarkdown.chatGPT(
-                    text: message.text,
+                  if (isProcessing) {
+                    return StreamingTextMarkdown.chatGPT(
+                      text: message.text,
 
-                    styleSheet: aiTextStyle,
-                    latexStyle: aiTextStyle,
-                    latexEnabled: true,
-                    markdownEnabled: true,
+                      styleSheet: aiTextStyle,
+                      latexStyle: aiTextStyle,
+                      latexEnabled: true,
+                      markdownEnabled: true,
+                    );
+                  }
+                  return SelectionArea(
+                    child: StreamingTextMarkdown(
+                      text: message.text,
+                      styleSheet: aiTextStyle,
+                      typingSpeed: Duration.zero,
+                      fadeInDuration: Duration.zero,
+                      latexStyle: aiTextStyle,
+                      latexEnabled: true,
+                      markdownEnabled: true,
+                      animationsEnabled: false,
+                    ),
                   );
                 },
               );
@@ -116,12 +130,16 @@ class _AiInteractionViewState extends ConsumerState<AiInteractionView> {
           final bool isFirst = index == 0;
           return Align(
             alignment: isSentByMe ? Alignment.centerRight : Alignment.centerLeft,
-            child:
-                AnimatedContainer(
+            child: ValueListenableBuilder(
+              valueListenable: ref.watch(AskAiScreenProvider.state.select((s) => s.aiFieldInputController)),
+              builder: (context, textValue, child) {
+                return AnimatedContainer(
                       duration: Durations.extralong1,
                       curve: CustomCurves.defaultIosSpring,
                       margin: EdgeInsets.only(
-                        bottom: isLast ? 60 : (isSamePrevUser || isSameNextUser ? 4 : 12),
+                        bottom: isLast
+                            ? 72 + ('\n'.allMatches(textValue.text).length * 60)
+                            : (isSamePrevUser || isSameNextUser ? 4 : 12),
                         right: 12,
                         left: isSentByMe ? 48 : 12,
                         top: isFirst ? 20 : 0,
@@ -156,7 +174,9 @@ class _AiInteractionViewState extends ConsumerState<AiInteractionView> {
                       end: 1,
                       duration: Durations.medium1,
                     )
-                    .fadeIn(),
+                    .fadeIn();
+              },
+            ),
           );
         },
         composerBuilder: (context) {

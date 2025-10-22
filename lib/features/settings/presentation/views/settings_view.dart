@@ -1,11 +1,17 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
+import 'package:slidesync/core/utils/file_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/settings/domain/models/settings_model.dart';
 import 'package:slidesync/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:slidesync/features/settings/presentation/views/sub/settings_appearance_dialog.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
@@ -125,18 +131,58 @@ class SettingsView extends ConsumerWidget {
 
                   ConstantSizing.columnSpacingMedium,
 
+                  // SettingsCard(
+                  //   title: "Repair",
+                  //   iconData: Icons.fire_extinguisher,
+                  //   content: "Attempts to fix any anomaly",
+                  // ),
+
+                  // ConstantSizing.columnSpacingMedium,
+
+                  // SettingsCard(
+                  //   title: "Allow opening multiple contents (Experimental)",
+                  //   iconData: Icons.view_agenda,
+                  //   content: "Allows to view more than one content by overlaying the others maxing out at 3",
+                  // ),
                   SettingsCard(
-                    title: "Repair",
-                    iconData: Icons.fire_extinguisher,
-                    content: "Attempts to fix any anomaly",
+                    title: "Clear App's cache",
+                    iconData: Icons.view_agenda,
+                    content: "This can help free up phone space by clearing temporary files.",
+                    trailing: CustomElevatedButton(
+                      label: "Clear",
+                      backgroundColor: theme.altBackgroundPrimary,
+                      textColor: theme.supportingText,
+                      textSize: 14,
+                      onClick: () async {
+                        final token = RootIsolateToken.instance;
+                        if (token != null) {
+                          await compute(FileUtils.deleteEmptyCoursesDirsInIsolate, {'rootIsolateToken': token});
+                          await AppHiveData.instance.setData(
+                            key: HiveDataPathKey.lastClearedCacheDate.name,
+                            value: DateTime.now(),
+                          );
+                          GlobalNav.withContext(
+                            (context) =>
+                                UiUtils.showFlushBar(context, msg: "Successfully cleared up temporary files.."),
+                          );
+                        }
+                      },
+                    ),
                   ),
 
-                  ConstantSizing.columnSpacingMedium,
-
                   SettingsCard(
-                    title: "Allow opening multiple contents (Experimental)",
+                    title: "Backup contents organization",
                     iconData: Icons.view_agenda,
-                    content: "Allows to view more than one content by overlaying the others maxing out at 3",
+                    content: "This backs up how your files are arranged without uploading your files.",
+                    trailing: CustomElevatedButton(
+                      label: "Backup",
+                      backgroundColor: theme.altBackgroundPrimary,
+                      textColor: theme.supportingText,
+                      textSize: 14,
+                      onClick: () async {
+                        
+                      },
+                    ),
                   ),
 
                   // Help: Note, Materials won't be uploaded except you explicitly share them.

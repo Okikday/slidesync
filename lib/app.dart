@@ -58,9 +58,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    // if (RootIsolateToken.instance != null) {
-    //   compute(FileUtils.deleteEmptyCoursesDirsInIsolate, {'rootIsolateToken': RootIsolateToken.instance});
-    // }
+
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       await _loadThemeFromHive();

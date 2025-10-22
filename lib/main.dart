@@ -3,12 +3,15 @@ import 'dart:developer';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
+import 'package:slidesync/core/utils/file_utils.dart';
 import 'package:slidesync/core/utils/isolate_worker.dart';
 
 import 'package:slidesync/app.dart';
@@ -25,6 +28,7 @@ void main() async {
 
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await Result.tryRunAsync(() async => await _initialize());
+
   runApp(
     const ProviderScope(
       // observers: [obs],
@@ -49,13 +53,26 @@ Future<void> _initialize() async {
   if (!kIsWeb) await IsarData.initializeDefault();
   pdfrxFlutterInitialize();
   await IsolateWorker.init();
+  await _appLaunchRoutine();
 }
 
-
-Future<void> _appLaunchRoutine()async{
-
+Future<void> _appLaunchRoutine() async {
+  /// Clear App Cache every 23 hours
+  final lastDateString =
+      (await AppHiveData.instance.getData(key: HiveDataPathKey.lastClearedCacheDate.name)) as String?;
+  if (lastDateString == null) {
+    await AppHiveData.instance.setData(key: HiveDataPathKey.lastClearedCacheDate.name, value: DateTime.now());
+    return;
+  }
+  final lastDate = DateTime.tryParse(lastDateString);
+  final dateDiff = lastDate?.difference(DateTime.now());
+  if (dateDiff != null && dateDiff.inHours > 20) {
+    final token = RootIsolateToken.instance;
+    if (token != null) {
+      compute(FileUtils.deleteEmptyCoursesDirsInIsolate, {'rootIsolateToken': token});
+      await AppHiveData.instance.setData(key: HiveDataPathKey.lastClearedCacheDate.name, value: DateTime.now());
+    }
+  }
 }
 
-Future<void> _firstAppLaunch()async{
-
-}
+Future<void> _firstAppLaunch() async {}
