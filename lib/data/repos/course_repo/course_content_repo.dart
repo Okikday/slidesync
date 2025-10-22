@@ -2,7 +2,6 @@ import 'dart:developer';
 
 import 'package:isar/isar.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
-import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
@@ -74,58 +73,58 @@ class CourseContentRepo {
     return (collection.contents.where((content) => content.contentHash == contentHash)).firstOrNull;
   }
 
-  // Check
-  static Future<bool> addContent(CourseContent content, [CourseCollection? collection]) async {
-    if (content.parentId.isEmpty) return false;
-    final result = await Result.tryRunAsync<bool>(() async {
-      final isar = (await _isar);
+  // // Check
+  // static Future<bool> addContent(CourseContent content, [CourseCollection? collection]) async {
+  //   if (content.parentId.isEmpty) return false;
+  //   final result = await Result.tryRunAsync<bool>(() async {
+  //     final isar = (await _isar);
 
-      final fetchResult = await _fetchCourseAndCollection(isar, collection, content.parentId);
-      final getCollection = fetchResult.$2;
-      final course = fetchResult.$1;
+  //     final fetchResult = await _fetchCourseAndCollection(isar, collection, content.parentId);
+  //     final getCollection = fetchResult.$2;
+  //     final course = fetchResult.$1;
 
-      if (getCollection == null || course == null) return false;
+  //     if (getCollection == null || course == null) return false;
 
-      await getCollection.contents.load();
+  //     await getCollection.contents.load();
 
-      final contentTrack = ContentTrack.create(
-        contentId: content.contentId,
-        parentId: course.courseId,
-        contentHash: content.contentHash,
-        title: content.title,
-        description: content.description,
-        progress: 0.0,
-      );
-      final courseTrack = await (await CourseTrackRepo.filter).courseIdEqualTo(contentTrack.parentId).findFirst();
-      if (courseTrack == null) {
-        log("Couldn't find the parent course Track");
-        return false;
-      }
-      await courseTrack.contentTracks.load();
+  //     final contentTrack = ContentTrack.create(
+  //       contentId: content.contentId,
+  //       parentId: course.courseId,
+  //       contentHash: content.contentHash,
+  //       title: content.title,
+  //       description: content.description,
+  //       progress: 0.0,
+  //     );
+  //     final courseTrack = await (await CourseTrackRepo.filter).courseIdEqualTo(contentTrack.parentId).findFirst();
+  //     if (courseTrack == null) {
+  //       log("Couldn't find the parent course Track");
+  //       return false;
+  //     }
+  //     await courseTrack.contentTracks.load();
 
-      // Calculate new course progress before adding the new content track
-      final currentTotalProgress = courseTrack.contentTracks.fold<double>(
-        0.0,
-        (sum, track) => sum + (track.progress ?? 0.0),
-      );
-      final newContentsLength = courseTrack.contentTracks.length + 1;
-      final newCourseProgress = currentTotalProgress / newContentsLength;
+  //     // Calculate new course progress before adding the new content track
+  //     final currentTotalProgress = courseTrack.contentTracks.fold<double>(
+  //       0.0,
+  //       (sum, track) => sum + (track.progress ?? 0.0),
+  //     );
+  //     final newContentsLength = courseTrack.contentTracks.length + 1;
+  //     final newCourseProgress = currentTotalProgress / newContentsLength;
 
-      courseTrack.contentTracks.add(contentTrack);
-      await isar.writeTxn(() async {
-        await isar.courseContents.put(content);
-        await isar.contentTracks.put(contentTrack);
-        await getCollection.contents.save();
-        await courseTrack.contentTracks.save();
-        await isar.courseCollections.put(getCollection);
-        await isar.courseTracks.put(courseTrack.copyWith(progress: newCourseProgress));
-      });
-      log("Successfully added content!");
-      return true;
-    });
+  //     courseTrack.contentTracks.add(contentTrack);
+  //     await isar.writeTxn(() async {
+  //       await isar.courseContents.put(content);
+  //       await isar.contentTracks.put(contentTrack);
+  //       await getCollection.contents.save();
+  //       await courseTrack.contentTracks.save();
+  //       await isar.courseCollections.put(getCollection);
+  //       await isar.courseTracks.put(courseTrack.copyWith(progress: newCourseProgress));
+  //     });
+  //     log("Successfully added content!");
+  //     return true;
+  //   });
 
-    return result.data ?? false;
-  }
+  //   return result.data ?? false;
+  // }
 
   // Check
   static Future<bool> deleteContent(CourseContent content, [CourseCollection? collection]) async {

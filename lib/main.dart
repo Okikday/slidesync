@@ -50,3 +50,12 @@ Future<void> _initialize() async {
   pdfrxFlutterInitialize();
   await IsolateWorker.init();
 }
+
+
+Future<void> _appLaunchRoutine()async{
+
+}
+
+Future<void> _firstAppLaunch()async{
+
+}

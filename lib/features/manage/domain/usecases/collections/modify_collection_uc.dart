@@ -1,3 +1,4 @@
+import 'dart:convert';
 
 import 'package:slidesync/core/utils/file_utils.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
@@ -14,7 +15,9 @@ class ModifyCollectionUc {
       if (!dupHashExists) {
         final filePath = item.path.filePath;
         await FileUtils.deleteFileAtPath(filePath);
-        await FileUtils.deleteFileAtPath(CreateContentPreviewImage.genPreviewImagePath(filePath: filePath));
+
+        final previewPath = jsonDecode(item.metadataJson)['previewPath'];
+        if (previewPath is String) await FileUtils.deleteFileAtPath(previewPath);
       }
     }
     // await CourseCollectionRepo.deleteMultipleContents(collection.contents.toList(), collection);

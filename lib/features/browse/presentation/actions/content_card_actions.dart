@@ -10,7 +10,6 @@ import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/manage/domain/usecases/contents/retrieve_content_uc.dart';
 import 'package:slidesync/features/manage/presentation/contents/actions/add_link_actions.dart';
-import 'package:slidesync/features/manage/domain/usecases/contents/create_content_preview_image.dart';
 
 class ContentCardActions {
   static Future<FileDetails> resolvePreviewPath(CourseContent content) async {
@@ -41,10 +40,7 @@ class ContentCardActions {
           return FileDetails(urlPath: previewUrl);
         }
       default:
-        return FileDetails(
-          filePath: CreateContentPreviewImage.genPreviewImagePath(filePath: content.path.filePath),
-          urlPath: content.path.urlPath,
-        );
+        return FileDetails(filePath: content.previewPath ?? '', urlPath: content.path.urlPath);
     }
   }
 

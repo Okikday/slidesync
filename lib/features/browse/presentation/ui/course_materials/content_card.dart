@@ -15,7 +15,6 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/browse/presentation/actions/content_card_actions.dart';
 import 'package:slidesync/features/manage/presentation/contents/actions/modify_contents_action.dart';
-import 'package:slidesync/features/manage/domain/usecases/contents/create_content_preview_image.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/widget_helper.dart';
@@ -48,7 +47,6 @@ class _ContentCardState extends ConsumerState<ContentCard> {
   Widget build(BuildContext context) {
     final theme = ref;
     final content = widget.content;
-    // final previewDataProvider = ref.watch(ContentCardProviders.fetchLinkPreviewDataProvider(content));
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -248,9 +246,7 @@ class ContentCardPreviewImage extends StatelessWidget {
     return ImageFiltered(
       imageFilter: ColorFilter.mode(Colors.black.withAlpha(10), BlendMode.color),
       child: BuildImagePathWidget(
-        fileDetails: FileDetails(
-          filePath: CreateContentPreviewImage.genPreviewImagePath(filePath: content.path.filePath),
-        ),
+        fileDetails: FileDetails(filePath: content.previewPath ?? ''),
         fit: BoxFit.cover,
         fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, false), size: 36),
       ),

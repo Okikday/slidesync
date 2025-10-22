@@ -145,7 +145,9 @@ class ModifyContentsOuterSection extends ConsumerWidget {
                         borderRadius: BorderRadius.only(topLeft: Radius.circular(40), topRight: Radius.circular(40)),
                       ),
                       builder: (context) {
-                        return MoveToCollectionBottomSheet(contents: mcvp.selectedContentsNotifier.value.toList());
+                        final toMove = mcvp.selectedContentsNotifier.value.toList();
+                        mcvp.clearContents();
+                        return MoveToCollectionBottomSheet(contents: toMove);
                       },
                     );
                   },

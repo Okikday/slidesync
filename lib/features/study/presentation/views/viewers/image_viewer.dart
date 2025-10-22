@@ -54,9 +54,7 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
         contentHash: content.contentHash,
         progress: 0.0,
         lastRead: DateTime.now(),
-        metadataJson: jsonEncode({
-          'previewPath': CreateContentPreviewImage.genPreviewImagePath(filePath: content.path.filePath),
-        }),
+        metadataJson: jsonEncode({'previewPath': content.previewPath}),
       );
       return (await isarData.getById(await isarData.store(newPtm)));
     });

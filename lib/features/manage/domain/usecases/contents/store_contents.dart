@@ -5,6 +5,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/core/storage/isar_data/isar_schemas.dart';
 import 'package:slidesync/core/utils/smart_isolate.dart';
@@ -44,6 +46,7 @@ Future<List<Map<String, dynamic>>> storeContents(
 
         final String dirToStoreAt = collection.absolutePath;
         final contentPathsLength = args.filePaths.length;
+        int totalFilesSizeSum = 0;
 
         for (int i = 0; i < contentPathsLength; i++) {
           final filePath = args.filePaths[i];
@@ -51,7 +54,8 @@ Future<List<Map<String, dynamic>>> storeContents(
           if (!(await file.exists())) continue;
           final fileName = p.basename(file.path);
           final fileNameWithoutExt = p.basenameWithoutExtension(fileName);
-          final hash = await BasicUtils.calculateFileHash(file.path);
+          final hash = await BasicUtils.calculateFileHashXXH3(file.path);
+          final fileSize = await BasicUtils.getFileSize(file.path);
 
           if (seenHashesSet.contains(hash)) {
             addContentResultList.add(AddContentResult(hasDuplicate: true, isSuccess: false, fileName: fileName));
@@ -74,6 +78,12 @@ Future<List<Map<String, dynamic>>> storeContents(
                   overwrite: true,
                 ),
               );
+              totalFilesSizeSum += fileSize;
+              final previewPath = await CreateContentPreviewImage.createPreviewImageForContent(
+                storedAt.path,
+                courseContentType: contentType,
+                filePath: storedAt.path,
+              );
 
               final CourseContent content = CourseContent.create(
                 contentHash: hash,
@@ -84,14 +94,11 @@ Future<List<Map<String, dynamic>>> storeContents(
                 courseContentType: contentType,
                 metadataJson: jsonEncode(<String, dynamic>{
                   'originalFilename': p.basename(storedAt.path),
-                  'previewPath': CreateContentPreviewImage.genPreviewImagePath(filePath: storedAt.path),
+                  'previewPath': previewPath,
+                  'fileSize': fileSize,
                 }),
               );
-              await CreateContentPreviewImage.createPreviewImageForContent(
-                storedAt.path,
-                courseContentType: contentType,
-                genPreviewPathRecord: CreateContentPreviewImage.genPreviewImagePathRecord(filePath: storedAt.path),
-              );
+
               contentsToAdd.add(content);
               seenHashesSet.add(hash);
               return content.contentId;
@@ -101,6 +108,7 @@ Future<List<Map<String, dynamic>>> storeContents(
                 hash,
               );
               if (sameHashedContentInColl == null) {
+                final metadataJson = jsonDecode(sameHashedContent.metadataJson);
                 final CourseContent content = CourseContent.create(
                   contentId: uuid,
                   contentHash: hash,
@@ -109,7 +117,9 @@ Future<List<Map<String, dynamic>>> storeContents(
                   path: sameHashedContent.path.fileDetails,
                   courseContentType: contentType,
                   metadataJson: jsonEncode(<String, dynamic>{
-                    'originalFilename': jsonDecode(sameHashedContent.metadataJson)['originalFilename'],
+                    'originalFilename': metadataJson['originalFilename'],
+                    'previewPath': metadataJson['previewPath'],
+                    'fileSize': fileSize,
                   }),
                 );
                 contentsToAdd.add(content);
@@ -142,7 +152,17 @@ Future<List<Map<String, dynamic>>> storeContents(
 
         if (contentsToAdd.isNotEmpty) {
           await CourseContentRepo.addMultipleContents(collection.collectionId, contentsToAdd);
+          final prevFileSum = (await AppHiveData.instance.getData(key: HiveDataPathKey.globalFileSizeSum.name)) as int?;
+          if (prevFileSum == null) {
+            await AppHiveData.instance.setData(key: HiveDataPathKey.globalFileSizeSum.name, value: totalFilesSizeSum);
+          } else {
+            await AppHiveData.instance.setData(
+              key: HiveDataPathKey.globalFileSizeSum.name,
+              value: prevFileSum + totalFilesSizeSum,
+            );
+          }
         }
+        await FileUtils.deleteFiles(args.filePaths); // Delete the cache
 
         return addContentResultList;
       });

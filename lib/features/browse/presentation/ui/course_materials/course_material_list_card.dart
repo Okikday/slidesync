@@ -1,4 +1,3 @@
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,7 +10,6 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
-import 'package:slidesync/features/manage/domain/usecases/contents/create_content_preview_image.dart';
 import 'package:slidesync/features/manage/presentation/contents/actions/modify_contents_action.dart';
 import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
 import 'package:slidesync/routes/routes.dart';
@@ -189,9 +187,7 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
                           // boxShadow: [BoxShadow(color: theme.primaryColor.withAlpha(80), blurRadius: 2, spreadRadius: 2)],
                         ),
                         child: BuildImagePathWidget(
-                          fileDetails: FileDetails(
-                            filePath: CreateContentPreviewImage.genPreviewImagePath(filePath: content.path.filePath),
-                          ),
+                          fileDetails: FileDetails(filePath: content.previewPath ?? ''),
                           fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, true), size: 20),
                         ),
                       ),

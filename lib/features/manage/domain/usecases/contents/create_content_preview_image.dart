@@ -3,8 +3,10 @@ import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/storage/native/app_paths.dart';
 
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/core/utils/image_utils.dart';
@@ -12,11 +14,11 @@ import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:image/image.dart';
 
-typedef PreviewImagePathRecord<Record> = ({String previewDirPath, String previewPath});
+// typedef PreviewImagePathRecord<Record> = ({String previewDirPath, String previewPath});
 
 class CreateContentPreviewImage {
   /// Returns the preview path where the image file is stored at after making a compressed version of the image
-  static Future<String?> _createForTypeImage(String path, PreviewImagePathRecord previewPathRecord) async {
+  static Future<String?> _createForTypeImage(String path, String genToPreviewPath) async {
     final Result<String?> result = await Result.tryRunAsync(() async {
       log("Creating preview for Type Image");
       final Result<File> result = await ImageUtils.compressImage(
@@ -26,10 +28,17 @@ class CreateContentPreviewImage {
       );
 
       if (result.isSuccess) {
-        final String cachePath = result.data!.path;
-        await Directory(previewPathRecord.previewDirPath).create();
-        final file = File(cachePath);
-        final copyToPath = previewPathRecord.previewPath;
+        final File file = result.data!;
+        final appDocDir = await getApplicationDocumentsDirectory();
+
+        // separate the path into directory + file name
+        final dirPath = p.join(appDocDir.path, p.dirname(genToPreviewPath));
+        final fileName = p.basename(genToPreviewPath);
+
+        // create the directory if it doesn't exist
+        await Directory(dirPath).create(recursive: true);
+
+        final copyToPath = p.join(dirPath, fileName);
         await file.copy(copyToPath);
         await file.delete();
         return copyToPath;
@@ -40,7 +49,7 @@ class CreateContentPreviewImage {
     return result.data;
   }
 
-  static Future<String?> _createForTypeDocument(String path, PreviewImagePathRecord previewPathRecord) async {
+  static Future<String?> _createForTypeDocument(String path, String genToPreviewPath) async {
     final Result<String?> result = await Result.tryRunAsync(() async {
       log("Creating preview for Type Document");
 
@@ -87,13 +96,19 @@ class CreateContentPreviewImage {
         );
 
         if (compressionResult.isSuccess) {
-          await Directory(previewPathRecord.previewDirPath).create(recursive: true);
-          final compressedFile = compressionResult.data!;
-          final copyToPath = previewPathRecord.previewPath;
-          await compressedFile.copy(copyToPath);
+          final File file = compressionResult.data!;
+          final appDocDir = await getApplicationDocumentsDirectory();
 
-          // Clean up temporary files
-          await compressedFile.delete();
+          // separate the path into directory + file name
+          final dirPath = p.join(appDocDir.path, p.dirname(genToPreviewPath));
+          final fileName = p.basename(genToPreviewPath);
+
+          await Directory(dirPath).create(recursive: true);
+
+          final copyToPath = p.join(dirPath, fileName);
+          await file.copy(copyToPath);
+          await file.delete();
+
           await tempDir.delete(recursive: true);
 
           await document.dispose();
@@ -119,39 +134,41 @@ class CreateContentPreviewImage {
 
   void createForTypeLink() {}
 
-  static Future<void> createPreviewImageForContent(
+  static Future<String?> createPreviewImageForContent(
     String path, {
     required CourseContentType courseContentType,
-    required PreviewImagePathRecord genPreviewPathRecord,
+    required String filePath,
   }) async {
+    final genPreviewPath = genRelativePreviewPath(filePath: filePath);
+    if (genPreviewPath == null) return null;
     log("ContentType for preview: ${courseContentType.name}");
     switch (courseContentType) {
       case CourseContentType.image:
-        await _createForTypeImage(path, genPreviewPathRecord);
-        break;
+        return await _createForTypeImage(path, genPreviewPath);
       case CourseContentType.document:
-        await _createForTypeDocument(path, genPreviewPathRecord);
-        break;
+        return await _createForTypeDocument(path, genPreviewPath);
+
       default:
-        break;
+        return null;
     }
-    return;
   }
 
-  static String genPreviewImagePath({required String filePath}) =>
-      genPreviewImagePathRecord(filePath: filePath).previewPath;
-
-  static PreviewImagePathRecord genPreviewImagePathRecord({required String filePath}) {
-    final int lastIndexOfPathSep = filePath.lastIndexOf(Platform.pathSeparator);
-    if (lastIndexOfPathSep == -1) {
-      return (previewPath: '', previewDirPath: '');
+  /// Gets the preview image path for a file
+  /// Make sure you are sending in a relative path
+  static String? genRelativePreviewPath({required String filePath}) {
+    final lastIndexOfPathSep = filePath.lastIndexOf(Platform.pathSeparator);
+    if (lastIndexOfPathSep < 0) {
+      return null;
     } else {
-      final sep = Platform.pathSeparator;
-      final previewDirPath =
-          "${filePath.substring(0, lastIndexOfPathSep.clamp(0, filePath.length))}$sep"
-          "preview_images";
-      final previewPath = "$previewDirPath$sep${p.basenameWithoutExtension(filePath)}";
-      return (previewPath: previewPath, previewDirPath: previewDirPath);
+      final segments = p.split(filePath);
+      if (segments.isEmpty) return null;
+
+      final lastSegments = segments.length > 3 ? segments.sublist(segments.length - 3) : segments;
+
+      final previewDir = AppPaths.previewsFolder;
+      final relativePath = p.joinAll(lastSegments);
+
+      return p.join(previewDir, relativePath);
     }
   }
 
@@ -173,9 +190,8 @@ class CreateContentPreviewImage {
         final String path = fileDetailsFromJson(content.path).filePath;
         final bool fileExists = await File(path).exists();
         if (fileExists) {
-          final genPreviewPathRecord = genPreviewImagePathRecord(filePath: path);
-          final previewPath = genPreviewPathRecord.previewPath;
-
+          final previewPath = genRelativePreviewPath(filePath: path);
+          if (previewPath == null) continue;
           final bool previewExists = await File(previewPath).exists();
           if (previewExists) {
             continue;
@@ -185,7 +201,7 @@ class CreateContentPreviewImage {
             await createPreviewImageForContent(
               path,
               courseContentType: content.courseContentType,
-              genPreviewPathRecord: genPreviewPathRecord,
+              filePath: previewPath,
             );
           }
         }
@@ -202,8 +218,8 @@ class CreateContentPreviewImage {
   static Future<List<CourseContent>> filterContentsWithoutPreview(List<CourseContent> courseContents) async {
     final List<CourseContent> nonExistingPreviewCourseContents = [];
     for (final content in courseContents) {
-      final String previewPath = genPreviewImagePath(filePath: content.path.filePath);
-      if (previewPath.isEmpty) continue;
+      final previewPath = genRelativePreviewPath(filePath: content.path.filePath);
+      if (previewPath == null || previewPath.isEmpty) continue;
       if (!(await File(previewPath).exists())) {
         nonExistingPreviewCourseContents.add(content);
       }

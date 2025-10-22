@@ -1,6 +1,7 @@
 enum HiveDataPathKey {
   /// Miscellaneous
   isBuiltInViewer,
+  globalFileSizeSum,
 
   /// List of filePaths that was being added from last session, appended with the collectionId
   contentsAddingProgressList,

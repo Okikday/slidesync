@@ -42,7 +42,7 @@ class ModifyContentsState extends LeakPrevention with ValueNotifierFactoryMixin 
   void clearContents() {
     if (selectedContentsNotifier.value.isNotEmpty) {
       selectedContentsNotifier.value.clear();
-      selectedContentsNotifier.value = LinkedHashSet();
+      // selectedContentsNotifier.value = LinkedHashSet();
     }
   }
 

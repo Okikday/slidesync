@@ -108,7 +108,7 @@ class SettingsView extends ConsumerWidget {
                     title: "Built-in viewer",
                     iconData: Iconsax.sun,
                     content:
-                        "When enabled, materials will open using the app’s built-in viewer instead of an external app.\nDoesn't apply for unsupported files*",
+                        "When enabled, materials will open using the app’s built-in viewer instead of an external app.\nDoesn't apply for unsupported files.\nProgress won't be tracked if disabled*",
                     trailing: Switch(
                       value: settingsModel.useBuiltInViewer,
                       onChanged: (p) async {

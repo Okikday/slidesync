@@ -4,7 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/ask_ai/presentation/ui/ai_interaction_view.dart';
 import 'package:slidesync/features/ask_ai/presentation/ui/widgets/ai_screen_capture_button.dart';
-import 'package:slidesync/features/study/presentation/logic/pdf_doc_viewer_provider.dart';
+import 'package:slidesync/features/ask_ai/presentation/ui/widgets/shimmery_gradient_background.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class AskAiScreen extends ConsumerStatefulWidget {
@@ -50,23 +50,7 @@ class _AskAiScreenState extends ConsumerState<AskAiScreen> with SingleTickerProv
         child: Stack(
           alignment: Alignment.bottomCenter,
           children: [
-            AnimatedBuilder(
-              animation: gradientAnimation,
-              child: const SizedBox.expand(),
-              builder: (context, child) {
-                return DecoratedBox(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Colors.blue.withAlpha(100), Colors.purple.withAlpha(100)],
-                      transform: GradientRotation(gradientAnimation.value * 2 * 3.14159),
-                    ),
-                  ),
-                  child: child,
-                );
-              },
-            ),
+            ShimmeryGradientBackground(gradientAnimation: gradientAnimation),
             Positioned(top: (context.topPadding + 12) * 2, child: const AiScreenCaptureButton()),
             SingleChildScrollView(
               child: SizedBox(

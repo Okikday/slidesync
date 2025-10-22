@@ -99,9 +99,7 @@ class _ContentViewGateState extends ConsumerState<ContentViewGate> {
                       Expanded(
                         child: SizedBox.expand(
                           child: BuildImagePathWidget(
-                            fileDetails: FileDetails(
-                              filePath: CreateContentPreviewImage.genPreviewImagePath(filePath: content.path.filePath),
-                            ),
+                            fileDetails: FileDetails(filePath: content.previewPath ?? ''),
                             fit: BoxFit.cover,
                             fallbackWidget: Icon(
                               WidgetHelper.resolveIconData(content.courseContentType, false),

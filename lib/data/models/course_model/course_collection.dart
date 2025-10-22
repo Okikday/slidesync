@@ -1,8 +1,9 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:isar/isar.dart';
+import 'package:path/path.dart' as p;
+import 'package:slidesync/core/storage/native/app_paths.dart';
 import 'package:uuid/uuid.dart';
 
 import 'course_content.dart';
@@ -113,11 +114,10 @@ class CourseCollection {
 }
 
 extension CourseCollectionExtension on CourseCollection {
-  String get relativePath => "$parentId${Platform.pathSeparator}$collectionId";
-  String get absolutePath => "courses${Platform.pathSeparator}$relativePath";
+  String get absolutePath => p.join(AppPaths.coursesFolder, parentId, collectionId);
   String get courseId => parentId;
 
-  String joinAbsWithChild(String childId) => "$absolutePath${Platform.pathSeparator}$childId";
+  String joinAbsWithChild(String childId) => p.join(absolutePath, childId);
 
   CourseCollection copyWith({
     String? collectionId,

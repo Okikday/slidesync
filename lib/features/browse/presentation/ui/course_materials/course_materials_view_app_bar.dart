@@ -110,6 +110,8 @@ class CourseMaterialsViewAppBar extends ConsumerWidget {
                 );
               },
             ),
+
+            PopupMenuAction(title: "Group", iconData: Iconsax.arrange_circle, onTap: () {}),
           ],
         ),
       ],

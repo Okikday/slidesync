@@ -92,7 +92,15 @@ class PdfDocNormalAppBar extends ConsumerWidget {
                             }(),
 
                             PopupMenuAction(
-                              title: "Enable AI button",
+                              title: "Add current page to references",
+                              iconData: Iconsax.book_1,
+                              onTap: () {
+                                UiUtils.showFlushBar(context, msg: "Coming soon!");
+                              },
+                            ),
+
+                            PopupMenuAction(
+                              title: "Share current page",
                               iconData: Iconsax.book_1,
                               onTap: () {
                                 UiUtils.showFlushBar(context, msg: "Coming soon!");

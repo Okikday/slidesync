@@ -8,17 +8,13 @@ import 'package:screenshot/screenshot.dart';
 import 'package:slidesync/core/base/use_value_notifier.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
-import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/data/models/progress_track_models/course_track.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
-import 'package:slidesync/features/manage/domain/usecases/contents/create_content_preview_image.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
-import 'package:slidesync/shared/helpers/extensions/extensions.dart';
-import 'package:slidesync/shared/helpers/global_nav.dart';
 
 class PdfDocViewerState with ValueNotifierFactoryMixin {
   static final screenshotController = ScreenshotController();
@@ -93,7 +89,6 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
 
   void updateScrollOffset(double offset) {
     scrollOffsetNotifier.value = offset;
-    log("Called to update Scroll Offset notifier");
   }
 
   // ============================================================================
@@ -121,9 +116,7 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
           lastRead: DateTime.now(),
           pages: ptm.pages.isEmpty ? const ["1"] : null,
           metadataJson: jsonEncode(<String, dynamic>{
-            'previewPath':
-                jsonDecode(content.metadataJson)['previewPath'] ??
-                CreateContentPreviewImage.genPreviewImagePath(filePath: content.path.filePath),
+            'previewPath': jsonDecode(content.metadataJson)['previewPath'] ?? content.previewPath,
           }),
         ),
       );
@@ -148,9 +141,7 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
         progress: 0.0,
         pages: const ["1"],
         lastRead: DateTime.now(),
-        metadataJson: jsonEncode({
-          'previewPath': CreateContentPreviewImage.genPreviewImagePath(filePath: content.path.filePath),
-        }),
+        metadataJson: jsonEncode({'previewPath': content.previewPath}),
       );
 
       return await ContentTrackRepo.isarData.getById(await ContentTrackRepo.isarData.store(newPtm));

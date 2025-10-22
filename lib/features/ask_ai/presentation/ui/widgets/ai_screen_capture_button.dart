@@ -75,7 +75,7 @@ class AiScreenCaptureButton extends ConsumerWidget {
               padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               strokeCap: StrokeCap.round,
             ),
-            child: CustomText("Capture screen content behind"),
+            child: CustomText("Capture screen context"),
           ),
         );
       },

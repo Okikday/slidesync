@@ -1,9 +1,9 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:isar/isar.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:uuid/uuid.dart';
 
@@ -142,8 +142,6 @@ class CourseContent {
 }
 
 extension CourseContentExtension on CourseContent {
-  String get relativePath => "$parentId${Platform.pathSeparator}$contentId";
-  String get absolutePath => "courses${Platform.pathSeparator}$relativePath";
   String get collectionId => parentId;
 
   CourseContent copyWith({
@@ -168,6 +166,10 @@ extension CourseContentExtension on CourseContent {
       ..courseContentType = courseContentType ?? this.courseContentType
       ..metadataJson = metadataJson ?? this.metadataJson;
   }
+
+  Map<String, dynamic> get metadata =>
+      Result.tryRun(() => Map<String, dynamic>.from(jsonDecode(metadataJson))).data ?? <String, dynamic>{};
+  String? get previewPath => metadata['previewPath'];
 }
 
 extension CourseContentMapX on Map<String, dynamic> {

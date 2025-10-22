@@ -226,4 +226,38 @@ class FileUtils {
       } catch (_) {}
     }
   }
+
+  /// Deletes files in paths provided. Returns the count of files that were deleted
+  static Future<int> deleteFiles(List<String> paths) async {
+    int count = 0;
+    for (final path in paths) {
+      final file = File(path);
+      if (await file.exists()) {
+        try {
+          await file.delete();
+          count++;
+        } catch (_) {}
+      }
+    }
+    return count;
+  }
+
+  Future<int> getFolderSize(String folderPath) async {
+    final directory = Directory(folderPath);
+    if (!await directory.exists()) return 0;
+
+    int totalSize = 0;
+
+    await for (final entity in directory.list(recursive: true, followLinks: false)) {
+      if (entity is File) {
+        try {
+          totalSize += await entity.length();
+        } catch (_) {
+          // skip unreadable files
+        }
+      }
+    }
+
+    return totalSize;
+  }
 }

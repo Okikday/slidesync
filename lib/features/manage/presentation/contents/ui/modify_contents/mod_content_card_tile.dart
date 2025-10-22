@@ -6,8 +6,8 @@ import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/features/browse/presentation/actions/content_card_actions.dart';
 import 'package:slidesync/features/manage/presentation/contents/actions/modify_content_card_actions.dart';
-import 'package:slidesync/features/manage/presentation/contents/logic/modify_content_provider.dart';
 import 'package:slidesync/shared/helpers/widget_helper.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 import 'package:slidesync/shared/widgets/common/modifying_list_tile.dart';
@@ -29,10 +29,12 @@ class ModContentCardTile extends ConsumerStatefulWidget {
 }
 
 class _ModContentCardTileState extends ConsumerState<ModContentCardTile> {
+  late final Future<FileDetails> previewDetailsFuture;
   late final StreamProvider contentProvider;
   @override
   void initState() {
     super.initState();
+    previewDetailsFuture = ContentCardActions.resolvePreviewPath(widget.content);
     contentProvider = StreamProvider.autoDispose((ref) async* {
       yield* CourseContentRepo.watchByDbId(widget.content.id);
     });
@@ -41,23 +43,28 @@ class _ModContentCardTileState extends ConsumerState<ModContentCardTile> {
   @override
   Widget build(BuildContext context) {
     final CourseContent content = ref.watch(contentProvider).value ?? widget.content;
-    final previewDataProvider = ref.watch(ModifyContentsProvider.linkPreviewDataProvider(content));
+    // final previewDataProvider = ref.watch(ModifyContentsProvider.linkPreviewDataProvider(content));
     return Padding(
       padding: EdgeInsets.only(bottom: 16),
       child: ModifyingListTile(
         onTapTile: widget.onTap,
-        leading: previewDataProvider.when(
-          data: (data) => BuildImagePathWidget(
-            fileDetails: data,
+        leading:
+        FutureBuilder(future: previewDetailsFuture, builder: (context, dataSnapshot){
+          if(dataSnapshot.data != null && dataSnapshot.hasData){
+            return  BuildImagePathWidget(
+            fileDetails: dataSnapshot.data!,
             fit: BoxFit.cover,
             fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, false), size: 36),
-          ),
-          error: (e, st) => BuildImagePathWidget(
+          );
+          }else if(dataSnapshot.hasError){
+            return BuildImagePathWidget(
             fileDetails: FileDetails(),
             fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, false), size: 36),
-          ),
-          loading: () => LoadingView(msg: ''),
-        ),
+          );
+          }else{
+return LoadingView(msg: '');
+          }
+        }),
         trailing: widget.isSelected == null
             ? AppPopupMenuButton(
                 actions: [

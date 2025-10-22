@@ -23,7 +23,7 @@ import 'package:slidesync/features/manage/domain/usecases/contents/select_conten
 import 'package:slidesync/features/manage/domain/usecases/contents/store_contents.dart';
 import 'package:slidesync/features/manage/domain/usecases/types/add_content_result.dart';
 import 'package:slidesync/features/manage/domain/usecases/types/store_content_args.dart';
-import 'package:slidesync/features/manage/presentation/contents/ui/add_contents/adding_content_overlay.dart';
+import 'package:slidesync/features/manage/presentation/contents/ui/add_contents/loading_overlay.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:uuid/uuid.dart';
@@ -189,7 +189,7 @@ class AddContentsUc {
         toRemoveUuidWithExt.map((e) => selectedContentPathsOnStorage.remove(e));
 
         log("alreadyExists: $alreadyExists");
-
+        final List<CourseContent> contentsToAdd = [];
         for (final uuidWithExtFull in alreadyExists) {
           final uuidWithExt = p.basename(uuidWithExtFull);
           final filePath = uuidWithExtFull;
@@ -211,10 +211,11 @@ class AddContentsUc {
           await CreateContentPreviewImage.createPreviewImageForContent(
             filePath,
             courseContentType: contentType,
-            genPreviewPathRecord: CreateContentPreviewImage.genPreviewImagePathRecord(filePath: filePath),
+            filePath: filePath,
           );
-          await CourseContentRepo.addContent(content);
+          contentsToAdd.add(content);
         }
+        await CourseContentRepo.addMultipleContents(collectionId, contentsToAdd);
         // Done, no more last progress
         await AppHiveData.instance.deleteData(key: HiveDataPathKey.contentsAddingProgressList.name);
 
@@ -223,7 +224,14 @@ class AddContentsUc {
         final entry = OverlayEntry(
           builder: (context) => ValueListenableBuilder(
             valueListenable: valueNotifier,
-            builder: (context, value, child) => LoadingOverlay(message: value),
+            builder: (context, value, child) => LoadingOverlay(
+              message: value,
+              onCancel: (ref) {
+                GlobalNav.withContext(
+                  (c) => UiUtils.showFlushBar(context, msg: "Can't cancel operation Please keep app open"),
+                );
+              },
+            ),
           ),
         );
         GlobalNav.overlay?.insert(entry);

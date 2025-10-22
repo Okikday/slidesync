@@ -30,9 +30,9 @@ class _AddContentsBottomSheetState extends ConsumerState<AddContentsBottomSheet>
   void initState() {
     super.initState();
     fixedExtentScrollController = FixedExtentScrollController(initialItem: 1);
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      ref.read(ScanClipboardProviders.lastClipboardDataProvider.notifier).scanClipboard(ref);
-    });
+    // WidgetsBinding.instance.addPostFrameCallback((_) async {
+    //   ref.read(ScanClipboardProviders.lastClipboardDataProvider.notifier).scanClipboard(ref);
+    // });
   }
 
   @override
@@ -43,9 +43,9 @@ class _AddContentsBottomSheetState extends ConsumerState<AddContentsBottomSheet>
 
   @override
   Widget build(BuildContext context) {
-    final canPop = ref.watch(ScanClipboardProviders.addFromClipboardOverlayEntry) == null;
+    // final canPop = ref.watch(ScanClipboardProviders.addFromClipboardOverlayEntry) == null;
     return PopScope(
-      canPop: canPop,
+      // canPop: canPop,
       child: Stack(
         children: [
           Positioned.fill(child: GestureDetector(onTap: () => UiUtils.hideDialog(context))),

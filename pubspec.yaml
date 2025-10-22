@@ -95,6 +95,7 @@ dependencies:
   web_smooth_scroll: ^2.0.0
   gradient_glow_border: ^1.0.3
   supabase_flutter: ^2.10.3
+  xxh3: ^1.2.0
 
   #docx_file_viewer: ^0.0.1
 

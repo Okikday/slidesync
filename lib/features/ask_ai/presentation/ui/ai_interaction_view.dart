@@ -41,7 +41,10 @@ class _AiInteractionViewState extends ConsumerState<AiInteractionView> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 SizedBox.square(dimension: 60, child: Image.asset("assets/logo/ic_foreground.png")),
-                CustomText("AI Study assistant", style: TextStyle(color: theme.onBackground)),
+                CustomText(
+                  "AI Study",
+                  style: TextStyle(color: theme.onBackground, fontWeight: FontWeight.bold),
+                ),
                 CustomText(
                   "Powered by Gemini\nAI responses may contain mistakes",
                   style: TextStyle(fontSize: 8, color: theme.onBackground),
@@ -159,11 +162,10 @@ class _AiInteractionViewState extends ConsumerState<AiInteractionView> {
         composerBuilder: (context) {
           return Align(
             alignment: Alignment.bottomCenter,
-            child: Padding(padding: EdgeInsets.only(left: 16.0, right: 16.0, bottom: 20), child: AiChatTextfield())
-                .animate()
-                .scaleXY(begin: 0.8, end: 1.0, alignment: Alignment.bottomCenter)
-                .slideY(begin: -0.1, end: 0)
-                .fadeIn(duration: Durations.medium3),
+            child: Padding(
+              padding: EdgeInsets.only(left: 16.0, right: 16.0, bottom: 20),
+              child: const AiChatTextfield(),
+            ),
           );
         },
       ),

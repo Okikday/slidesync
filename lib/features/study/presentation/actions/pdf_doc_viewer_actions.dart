@@ -24,9 +24,9 @@ class PdfDocViewerActions {
     double? prev,
     double next,
   ) async {
-    log("prev: $prev, next: $next");
+    // log("prev: $prev, next: $next");
     final maxOffset = ref.context.topPadding + kToolbarHeight + 12;
-    log("maxOffset: $maxOffset");
+    // log("maxOffset: $maxOffset");
     final docStateProvider = PdfDocViewerProvider.state(contentId);
     void updateScrollOffset(double value) => ref.read(docStateProvider).updateScrollOffset(value);
 
@@ -39,7 +39,7 @@ class PdfDocViewerActions {
         final scrollDifference = next - prev;
         final diff = (formerValue + scrollDifference);
         final newValue = diff.clamp(0.0, maxOffset);
-        log("diff: $diff");
+        // log("diff: $diff");
         if (diff > maxOffset && prev == 0.0) {
           updateScrollOffset(0);
         } else {

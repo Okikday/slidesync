@@ -50,7 +50,7 @@ class AddLinkActions {
             'previewUrl': previewLinkDetails.previewUrl,
           }),
         );
-        return await CourseContentRepo.addContent(newContent);
+        return await CourseContentRepo.addMultipleContents(newContent.collectionId, [newContent]);
       }
     } else {
       newContent = CourseContent.create(
@@ -62,7 +62,7 @@ class AddLinkActions {
         courseContentType: CourseContentType.link,
         metadataJson: jsonEncode({'previewUrl': previewLinkDetails.previewUrl}),
       );
-      return await CourseContentRepo.addContent(newContent);
+      return await CourseContentRepo.addMultipleContents(newContent.collectionId, [newContent]);
     }
     return false;
   }

@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
+import 'package:xxh3/xxh3.dart';
 
 class BasicUtils {
   static Future<String> calculatePartialHash(String path, {int chunkSize = 32 * 1024}) async {
@@ -65,5 +67,30 @@ class BasicUtils {
     final bytes = utf8.encode(str);
     final digest = sha256.convert(bytes);
     return digest.toString();
+  }
+
+  static Future<String> calculateFileHashXXH3(String path) async {
+    final file = File(path);
+    final Stream<List<int>> input = file.openRead();
+    final hashStream = xxh3Stream();
+
+    await for (final chunk in input) {
+      hashStream.update(Uint8List.fromList(chunk));
+    }
+
+    return hashStream.digestString();
+  }
+
+  static Future<int> getFilesSize(List<File> files) async {
+    int total = 0;
+    for (final file in files) {
+      total += await file.length();
+    }
+    return total;
+  }
+
+  static Future<int> getFileSize(String path) async {
+    final file = File(path);
+    return await file.length();
   }
 }
