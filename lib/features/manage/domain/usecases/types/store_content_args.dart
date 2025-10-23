@@ -5,12 +5,14 @@ class StoreContentArgs {
   final String collectionId;
   final List<String> filePaths;
   final List<String> uuids;
+  final bool deleteCache;
 
   const StoreContentArgs({
     required this.token,
     required this.collectionId,
     required this.filePaths,
     required this.uuids,
+    required this.deleteCache,
   });
 
   Map<String, dynamic> toMap() => {
@@ -18,6 +20,7 @@ class StoreContentArgs {
     'collectionId': collectionId,
     'filePaths': filePaths,
     'uuids': uuids,
+    'deleteCache': deleteCache,
   };
 
   factory StoreContentArgs.fromMap(Map map) => StoreContentArgs(
@@ -25,8 +28,6 @@ class StoreContentArgs {
     collectionId: map['collectionId'],
     filePaths: List<String>.from(map['filePaths']),
     uuids: List<String>.from(map['uuids']),
+    deleteCache: map['deleteCache'] as bool,
   );
 }
-
-
-

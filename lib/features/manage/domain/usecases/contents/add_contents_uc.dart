@@ -77,6 +77,7 @@ class AddContentsUc {
         collectionId: collection.collectionId,
         filePaths: filePaths,
         uuids: uuids,
+        deleteCache: true,
       ).toMap();
 
       final result = await storeContents(args, valueNotifier);
@@ -130,6 +131,7 @@ class AddContentsUc {
         collectionId: collection.collectionId,
         filePaths: filePaths,
         uuids: uuids,
+        deleteCache: true,
       ).toMap();
 
       final result = await storeContents(args, valueNotifier);

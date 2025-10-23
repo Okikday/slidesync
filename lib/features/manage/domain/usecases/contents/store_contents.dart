@@ -94,7 +94,7 @@ Future<List<Map<String, dynamic>>> storeContents(
                 fileSize: fileSize,
                 courseContentType: contentType,
                 metadataJson: jsonEncode(<String, dynamic>{
-                  'originalFilename': p.basename(storedAt.path),
+                  'originalFilename': p.basename(filePath),
                   'previewPath': previewPath,
                   'fileSize': fileSize,
                 }),
@@ -164,7 +164,7 @@ Future<List<Map<String, dynamic>>> storeContents(
             );
           }
         }
-        await FileUtils.deleteFiles(args.filePaths); // Delete the cache
+        if (args.deleteCache) await FileUtils.deleteFiles(args.filePaths); // Delete the cache
 
         return addContentResultList;
       });
@@ -197,16 +197,16 @@ CourseContentType checkContentType(String pathOrExt) {
 
   if (AllowedFileExtensions.allowedImageExtensions.contains(ext)) {
     return CourseContentType.image;
-  } 
+  }
   // else if (AllowedFileExtensions.allowedVideoExtensions.contains(ext)) {
   //   return CourseContentType.video;
-  // } 
+  // }
   else if (AllowedFileExtensions.allowedDocumentExtensions.contains(ext)) {
     return CourseContentType.document;
-  } 
+  }
   // else if (AllowedFileExtensions.allowedAudioExtensions.contains(ext)) {
   //   return CourseContentType.audio;
-  // } 
+  // }
   else if (['txt', 'md'].contains(ext)) {
     return CourseContentType.note;
   } else {

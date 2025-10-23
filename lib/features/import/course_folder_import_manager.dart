@@ -1,13 +1,18 @@
 import 'dart:io';
+import 'dart:math' as math;
+import 'dart:developer';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
+import 'package:path_provider/path_provider.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/result.dart';
+import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
@@ -15,10 +20,10 @@ import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/manage/domain/usecases/contents/store_contents.dart';
 import 'package:slidesync/features/manage/domain/usecases/types/store_content_args.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/theme/src/app_theme.dart';
 import 'package:uuid/uuid.dart';
 
-/// Model representing a folder structure
 class FolderNode {
   final String name;
   final String path;
@@ -108,7 +113,7 @@ class ImportProgress {
 class CourseFolderImportManager {
   static const int kMaxContents = 1000;
 
-  /// Default file type filters
+  /// Default file type filters (NO audio/video)
   static List<FileTypeFilter> getDefaultFileFilters() {
     return [
       // Documents
@@ -132,18 +137,6 @@ class CourseFolderImportManager {
       FileTypeFilter(extension: '.bmp', displayName: 'Bitmap Images', icon: Icons.image, isEnabled: false),
       FileTypeFilter(extension: '.svg', displayName: 'SVG Graphics', icon: Icons.brush, isEnabled: false),
 
-      // Videos
-      FileTypeFilter(extension: '.mp4', displayName: 'MP4 Videos', icon: Icons.video_library, isEnabled: false),
-      FileTypeFilter(extension: '.mov', displayName: 'MOV Videos', icon: Icons.video_library, isEnabled: false),
-      FileTypeFilter(extension: '.avi', displayName: 'AVI Videos', icon: Icons.video_library, isEnabled: false),
-      FileTypeFilter(extension: '.mkv', displayName: 'MKV Videos', icon: Icons.video_library, isEnabled: false),
-      FileTypeFilter(extension: '.webm', displayName: 'WebM Videos', icon: Icons.video_library, isEnabled: false),
-
-      // Audio
-      FileTypeFilter(extension: '.mp3', displayName: 'MP3 Audio', icon: Icons.audiotrack, isEnabled: false),
-      FileTypeFilter(extension: '.wav', displayName: 'WAV Audio', icon: Icons.audiotrack, isEnabled: false),
-      FileTypeFilter(extension: '.m4a', displayName: 'M4A Audio', icon: Icons.audiotrack, isEnabled: false),
-
       // Archives
       FileTypeFilter(extension: '.zip', displayName: 'ZIP Archives', icon: Icons.folder_zip, isEnabled: false),
       FileTypeFilter(extension: '.rar', displayName: 'RAR Archives', icon: Icons.folder_zip, isEnabled: false),
@@ -155,29 +148,86 @@ class CourseFolderImportManager {
     return await FilePicker.platform.getDirectoryPath(dialogTitle: 'Select Course Folder');
   }
 
+  /// Generate a unique course name
+  static String generateUniqueName(String baseName) {
+    final random = math.Random();
+    final number = random.nextInt(900) + 100;
+    return '$baseName $number';
+  }
+
   /// Scan a folder and build its structure
   static Future<Result<FolderNode?>> scanFolder(String folderPath) async {
     return await Result.tryRunAsync(() async {
+      log('📂 Scanning folder: $folderPath');
       final directory = Directory(folderPath);
+
       if (!await directory.exists()) {
+        log('❌ Directory does not exist: $folderPath');
         throw Exception('Folder does not exist: $folderPath');
       }
 
+      log('✅ Directory exists, checking permissions...');
+
+      // Try to list with different options to debug
       final List<FolderNode> subfolders = [];
       final List<String> files = [];
 
-      await for (final entity in directory.list()) {
-        if (entity is Directory) {
-          final subfolder = await scanFolder(entity.path);
-          if (subfolder.isSuccess && subfolder.data != null) {
-            subfolders.add(subfolder.data!);
+      int entityCount = 0;
+      try {
+        log('🔄 Starting directory.list() with recursive: false, followLinks: false');
+        await for (final entity in directory.list(recursive: false, followLinks: false)) {
+          entityCount++;
+          log('📌 Found entity #$entityCount: ${entity.path} (type: ${entity.runtimeType})');
+
+          if (entity is Directory) {
+            log('   └─ Is Directory: ${p.basename(entity.path)}');
+            final subfolder = await scanFolder(entity.path);
+            if (subfolder.isSuccess && subfolder.data != null) {
+              subfolders.add(subfolder.data!);
+            }
+          } else if (entity is File) {
+            log('   └─ Is File: ${p.basename(entity.path)} (${p.extension(entity.path)})');
+            files.add(entity.path);
+          } else {
+            log('   └─ Unknown type: ${entity.runtimeType}');
           }
-        } else if (entity is File) {
-          files.add(entity.path);
+        }
+        log('✅ Finished listing. Total entities found: $entityCount');
+      } catch (e, stackTrace) {
+        log('❌ ERROR during directory.list(): $e');
+        log('Stack trace: $stackTrace');
+        throw Exception('Failed to list directory contents: $e');
+      }
+
+      if (entityCount == 0) {
+        log('⚠️ WARNING: directory.list() returned 0 entities. This might be a permissions issue!');
+        log('   Path: $folderPath');
+        log('   Exists: ${await directory.exists()}');
+        log('   Trying listSync() as fallback...');
+
+        try {
+          final syncEntities = directory.listSync(recursive: false, followLinks: false);
+          log('   listSync() found ${syncEntities.length} entities');
+          for (final entity in syncEntities) {
+            log('   📌 Sync entity: ${entity.path} (type: ${entity.runtimeType})');
+            if (entity is Directory) {
+              final subfolder = await scanFolder(entity.path);
+              if (subfolder.isSuccess && subfolder.data != null) {
+                subfolders.add(subfolder.data!);
+              }
+            } else if (entity is File) {
+              files.add(entity.path);
+            }
+          }
+        } catch (e) {
+          log('   ❌ listSync() also failed: $e');
         }
       }
 
-      return FolderNode(name: p.basename(folderPath), path: folderPath, subfolders: subfolders, files: files);
+      final node = FolderNode(name: p.basename(folderPath), path: folderPath, subfolders: subfolders, files: files);
+
+      log('✅ Scanned ${node.name}: ${files.length} files, ${subfolders.length} subfolders');
+      return node;
     });
   }
 
@@ -186,13 +236,23 @@ class CourseFolderImportManager {
     final List<String> allFiles = [];
     final enabledExtensions = filters.where((f) => f.isEnabled).map((f) => f.extension.toLowerCase()).toSet();
 
+    log('🔍 Getting filtered files from ${node.name}. Enabled extensions: $enabledExtensions');
+
+    // If no filters are enabled, return empty
+    if (enabledExtensions.isEmpty) {
+      log('⚠️ No file type filters enabled');
+      return allFiles;
+    }
+
     // Add files from current folder
     for (final file in node.files) {
       final ext = p.extension(file).toLowerCase();
-      if (enabledExtensions.isEmpty || enabledExtensions.contains(ext)) {
+      if (enabledExtensions.contains(ext)) {
         allFiles.add(file);
       }
     }
+
+    log('📄 Found ${allFiles.length} matching files in ${node.name}');
 
     // Add files from subfolders if enabled
     if (includeSubfolders) {
@@ -204,32 +264,89 @@ class CourseFolderImportManager {
     return allFiles;
   }
 
-  /// Show the folder import dialog
-  static Future<void> showFolderImportDialog(BuildContext context) async {
+  /// Calculate what will actually be imported (matches processImport logic)
+  static Map<String, List<String>> calculateImportStructure(
+    FolderNode targetFolder,
+    List<FileTypeFilter> filters,
+    bool includeSubfolders,
+  ) {
+    final Map<String, List<String>> collections = {};
+    final hasSubfolders = targetFolder.subfolders.isNotEmpty;
+
+    log('📊 Calculating import structure for ${targetFolder.name}');
+    log('   Has subfolders: $hasSubfolders, Include subfolders: $includeSubfolders');
+
+    if (hasSubfolders) {
+      // Create collection for each subfolder
+      for (final subfolder in targetFolder.subfolders) {
+        final files = getFilteredFiles(subfolder, filters, includeSubfolders);
+        if (files.isNotEmpty) {
+          collections[subfolder.name] = files;
+          log('   Collection "${subfolder.name}": ${files.length} files');
+        }
+      }
+
+      // Add root files as "Base" collection if they exist
+      final rootFiles = targetFolder.files.where((file) {
+        final ext = p.extension(file).toLowerCase();
+        final enabledExtensions = filters.where((f) => f.isEnabled).map((f) => f.extension.toLowerCase()).toSet();
+        return enabledExtensions.contains(ext);
+      }).toList();
+
+      if (rootFiles.isNotEmpty) {
+        collections['Base'] = rootFiles;
+        log('   Collection "Base": ${rootFiles.length} files');
+      }
+    } else {
+      // No subfolders, create single "Materials" collection
+      final files = getFilteredFiles(targetFolder, filters, false);
+      if (files.isNotEmpty) {
+        collections['Materials'] = files;
+        log('   Collection "Materials": ${files.length} files');
+      }
+    }
+
+    final totalFiles = collections.values.fold<int>(0, (sum, files) => sum + files.length);
+    log('✅ Total structure: ${collections.length} collections, $totalFiles files');
+
+    return collections;
+  }
+
+  /// Show the folder import screen (full screen)
+  static Future<void> showFolderImportScreen(BuildContext context) async {
     final folderPath = await pickFolder();
 
-    if (folderPath == null) return;
+    if (folderPath == null) {
+      log('❌ No folder selected');
+      return;
+    }
 
-    // Scan the folder first
+    log('🎯 Selected folder: $folderPath');
+
+    // Show loading while scanning
+    GlobalNav.withContext((c) => UiUtils.showLoadingDialog(c, message: 'Scanning folder...'));
+
+    // Scan the folder
     final scanResult = await scanFolder(folderPath);
 
+    // Hide loading
+    GlobalNav.popGlobal();
+
     if (!scanResult.isSuccess || scanResult.data == null) {
+      log('❌ Scan failed: ${scanResult.message}');
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error scanning folder: ${scanResult.message}')));
+        UiUtils.showFlushBar(context, msg: 'Error scanning folder: ${scanResult.message}', vibe: FlushbarVibe.error);
       }
       return;
     }
 
     final folderNode = scanResult.data!;
+    log('✅ Scan complete. Opening import screen...');
 
     if (context.mounted) {
-      await showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => _FolderImportDialog(folderNode: folderNode),
-      );
+      await Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (context) => _FolderImportScreen(folderNode: folderNode)));
     }
   }
 
@@ -239,6 +356,7 @@ class CourseFolderImportManager {
     ValueNotifier<ImportProgress> progressNotifier,
   ) async {
     return await Result.tryRunAsync(() async {
+      log('🚀 Starting import process...');
       progressNotifier.value = ImportProgress(message: 'Scanning folder structure...');
 
       // Scan the folder
@@ -251,37 +369,54 @@ class CourseFolderImportManager {
       }
 
       final folderNode = scanResult.data!;
+      log('📂 Folder scanned: ${folderNode.name}');
+
       progressNotifier.value = ImportProgress(message: 'Creating course...');
 
       // Determine if we have subfolders or just files
       final hasSubfolders = folderNode.subfolders.isNotEmpty;
-      final courseName = folderNode.name;
+      final baseCourseName = folderNode.name;
+      final uniqueCourseName = generateUniqueName(baseCourseName);
+
+      log('📚 Creating course: $uniqueCourseName (has subfolders: $hasSubfolders)');
 
       // Create the Course
-      final course = Course.create(courseTitle: courseName, description: 'Imported from folder: ${folderNode.path}');
+      final course = Course.create(
+        courseTitle: uniqueCourseName,
+        description: 'Imported from folder: ${folderNode.path}',
+      );
 
       final courseDbId = await CourseRepo.addCourse(course);
       if (courseDbId == -1) {
         throw Exception('Failed to create course');
       }
 
+      log('✅ Course created with ID: ${course.courseId}');
+
+      // Get filtered root files
+      final rootFiles = folderNode.files.where((file) {
+        final ext = p.extension(file).toLowerCase();
+        final enabledExtensions = config.fileFilters
+            .where((f) => f.isEnabled)
+            .map((f) => f.extension.toLowerCase())
+            .toSet();
+        return enabledExtensions.contains(ext);
+      }).toList();
+
+      log('📄 Root files: ${rootFiles.length}');
+
       // Calculate total collections to process
       int totalCollections = 0;
       if (hasSubfolders) {
         totalCollections = folderNode.subfolders.length;
-        if (folderNode.files.where((file) {
-          final ext = p.extension(file).toLowerCase();
-          final enabledExtensions = config.fileFilters
-              .where((f) => f.isEnabled)
-              .map((f) => f.extension.toLowerCase())
-              .toSet();
-          return enabledExtensions.isEmpty || enabledExtensions.contains(ext);
-        }).isNotEmpty) {
-          totalCollections++; // Add one for root materials
+        if (rootFiles.isNotEmpty) {
+          totalCollections++; // Add one for Base collection
         }
       } else {
         totalCollections = 1; // Just the Materials collection
       }
+
+      log('📦 Will create $totalCollections collection(s)');
 
       int currentCollectionIndex = 0;
 
@@ -298,6 +433,8 @@ class CourseFolderImportManager {
             currentCollectionName: subfolder.name,
           );
 
+          log('📁 Processing subfolder: ${subfolder.name}');
+
           final collection = CourseCollection.create(
             parentId: course.courseId,
             collectionTitle: subfolder.name,
@@ -306,7 +443,7 @@ class CourseFolderImportManager {
 
           final addResult = await CourseCollectionRepo.addCollectionNoDuplicateTitle(collection);
           if (addResult != null) {
-            // Collection already exists or error, skip
+            log('⚠️ Collection "${subfolder.name}" already exists or error: $addResult');
             continue;
           }
 
@@ -315,6 +452,8 @@ class CourseFolderImportManager {
 
           if (files.isNotEmpty) {
             final limitedFiles = files.take(config.maxContents).toList();
+            log('📤 Adding ${limitedFiles.length} files to ${subfolder.name}');
+
             progressNotifier.value = ImportProgress(
               message: 'Adding ${limitedFiles.length} files...',
               currentCollection: currentCollectionIndex,
@@ -330,46 +469,47 @@ class CourseFolderImportManager {
               totalCollections,
               subfolder.name,
             );
+
+            log('✅ Files added to ${subfolder.name}');
+          } else {
+            log('ℹ️ No matching files in ${subfolder.name}');
           }
         }
 
-        // Also add any files in the root folder
-        final rootFiles = folderNode.files.where((file) {
-          final ext = p.extension(file).toLowerCase();
-          final enabledExtensions = config.fileFilters
-              .where((f) => f.isEnabled)
-              .map((f) => f.extension.toLowerCase())
-              .toSet();
-          return enabledExtensions.isEmpty || enabledExtensions.contains(ext);
-        }).toList();
-
+        // Handle root files - create "Base" collection
         if (rootFiles.isNotEmpty) {
           currentCollectionIndex++;
 
           progressNotifier.value = ImportProgress(
-            message: 'Creating root materials collection...',
+            message: 'Creating base collection...',
             currentCollection: currentCollectionIndex,
             totalCollections: totalCollections,
-            currentCollectionName: 'Materials',
+            currentCollectionName: 'Base',
           );
+
+          log('📁 Creating Base collection for root files');
 
           final rootCollection = CourseCollection.create(
             parentId: course.courseId,
-            collectionTitle: 'Materials',
-            description: 'Root folder materials',
+            collectionTitle: 'Base',
+            description: 'Base folder materials',
           );
 
           await CourseCollectionRepo.addCollectionNoDuplicateTitle(rootCollection);
 
           final limitedFiles = rootFiles.take(config.maxContents).toList();
+          log('📤 Adding ${limitedFiles.length} files to Base');
+
           await _addFilesToCollection(
             rootCollection,
             limitedFiles,
             progressNotifier,
             currentCollectionIndex,
             totalCollections,
-            'Materials',
+            'Base',
           );
+
+          log('✅ Base collection created');
         }
       } else {
         // No subfolders, just files - create a single "Materials" collection
@@ -381,6 +521,8 @@ class CourseFolderImportManager {
           totalCollections: totalCollections,
           currentCollectionName: 'Materials',
         );
+
+        log('📁 Creating Materials collection (no subfolders)');
 
         final collection = CourseCollection.create(
           parentId: course.courseId,
@@ -396,6 +538,8 @@ class CourseFolderImportManager {
         final files = getFilteredFiles(folderNode, config.fileFilters, false);
         if (files.isNotEmpty) {
           final limitedFiles = files.take(config.maxContents).toList();
+          log('📤 Adding ${limitedFiles.length} files to Materials');
+
           progressNotifier.value = ImportProgress(
             message: 'Adding ${limitedFiles.length} files...',
             currentCollection: currentCollectionIndex,
@@ -411,15 +555,20 @@ class CourseFolderImportManager {
             totalCollections,
             'Materials',
           );
+
+          log('✅ Materials collection created');
+        } else {
+          log('⚠️ No matching files found');
         }
       }
 
       progressNotifier.value = ImportProgress(message: 'Import complete!');
-      return 'Successfully imported course: $courseName with $totalCollections collection(s)';
+      log('🎉 Import complete: $uniqueCourseName');
+
+      return 'Successfully imported course: $uniqueCourseName with $totalCollections collection(s)';
     });
   }
 
-  /// Helper method to add files to a collection using storeContents
   static Future<void> _addFilesToCollection(
     CourseCollection collection,
     List<String> filePaths,
@@ -441,55 +590,97 @@ class CourseFolderImportManager {
       for (int i = 0; i < limitedPaths.length; i++) p.setExtension(uuids[i], p.extension(limitedPaths[i])),
     ];
 
-    await Result.tryRunAsync(() async {
-      await AppHiveData.instance.setData(
-        key: HiveDataPathKey.contentsAddingProgressList.name,
-        value: <String, dynamic>{
-          for (int i = 0; i < uuidFileNames.length; i++) uuidFileNames[i]: limitedPaths[i],
-          'collectionId': collection.collectionId,
-        },
-      );
-    });
+    // NEW: Copy files to temp directory instead of using original paths
+    final Directory tempDir = await getApplicationCacheDirectory();
+    final List<String> copiedFilePaths = [];
 
-    final args = StoreContentArgs(
-      token: rootIsolateToken,
-      collectionId: collection.collectionId,
-      filePaths: limitedPaths,
-      uuids: uuids,
-    ).toMap();
-
-    // Create a wrapper ValueNotifier to update the import progress
-    final contentProgressNotifier = ValueNotifier<String>('');
-    contentProgressNotifier.addListener(() {
+    try {
       progressNotifier.value = ImportProgress(
-        message: contentProgressNotifier.value,
+        message: 'Copying files...',
         currentCollection: currentCollection,
         totalCollections: totalCollections,
         currentCollectionName: collectionName,
       );
-    });
 
-    await storeContents(args, contentProgressNotifier);
+      for (int i = 0; i < limitedPaths.length; i++) {
+        final originalFile = File(limitedPaths[i]);
+        final newFileName = uuidFileNames[i];
+        final copiedFile = File(p.join(tempDir.path, 'course_import_', newFileName));
 
-    await Result.tryRunAsync(() async {
-      await AppHiveData.instance.deleteData(key: HiveDataPathKey.contentsAddingProgressList.name);
-    });
+        // Copy the file instead of moving
+        await originalFile.copy(copiedFile.path);
+        copiedFilePaths.add(copiedFile.path);
 
-    contentProgressNotifier.dispose();
+        if (i % 10 == 0) {
+          progressNotifier.value = ImportProgress(
+            message: 'Copying files... ${i + 1}/${limitedPaths.length}',
+            currentCollection: currentCollection,
+            totalCollections: totalCollections,
+            currentCollectionName: collectionName,
+          );
+        }
+      }
+
+      await Result.tryRunAsync(() async {
+        await AppHiveData.instance.setData(
+          key: HiveDataPathKey.contentsAddingProgressList.name,
+          value: <String, dynamic>{
+            for (int i = 0; i < uuidFileNames.length; i++) uuidFileNames[i]: copiedFilePaths[i],
+            'collectionId': collection.collectionId,
+          },
+        );
+      });
+
+      final args = StoreContentArgs(
+        token: rootIsolateToken,
+        collectionId: collection.collectionId,
+        filePaths: copiedFilePaths, // Use copied file paths instead of original
+        uuids: uuids,
+        deleteCache: false,
+      ).toMap();
+
+      // Create a wrapper ValueNotifier to update the import progress
+      final contentProgressNotifier = ValueNotifier<String>('');
+      contentProgressNotifier.addListener(() {
+        progressNotifier.value = ImportProgress(
+          message: contentProgressNotifier.value,
+          currentCollection: currentCollection,
+          totalCollections: totalCollections,
+          currentCollectionName: collectionName,
+        );
+      });
+
+      await storeContents(args, contentProgressNotifier);
+
+      await Result.tryRunAsync(() async {
+        await AppHiveData.instance.deleteData(key: HiveDataPathKey.contentsAddingProgressList.name);
+      });
+
+      contentProgressNotifier.dispose();
+    } finally {
+      // Clean up temp directory after import completes
+      try {
+        if (await tempDir.exists()) {
+          await tempDir.delete(recursive: true);
+        }
+      } catch (e) {
+        log('⚠️ Failed to clean up temp directory: $e');
+      }
+    }
   }
 }
 
-/// Dialog widget for folder import
-class _FolderImportDialog extends ConsumerStatefulWidget {
+/// Full screen widget for folder import
+class _FolderImportScreen extends ConsumerStatefulWidget {
   final FolderNode folderNode;
 
-  const _FolderImportDialog({required this.folderNode});
+  const _FolderImportScreen({required this.folderNode});
 
   @override
-  ConsumerState<_FolderImportDialog> createState() => _FolderImportDialogState();
+  ConsumerState<_FolderImportScreen> createState() => _FolderImportScreenState();
 }
 
-class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
+class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
   late bool useAsBaseFolder;
   late bool includeSubfolders;
   late List<FileTypeFilter> fileFilters;
@@ -502,115 +693,86 @@ class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
     useAsBaseFolder = true;
     includeSubfolders = false;
     fileFilters = CourseFolderImportManager.getDefaultFileFilters();
+    log('🎬 Import screen initialized');
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref;
+    final theme = ref.theme;
 
-    return Dialog(
-      backgroundColor: theme.surface,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      child: Container(
-        constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.85, maxWidth: 600),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
+    return Scaffold(
+      backgroundColor: theme.background,
+      appBar: AppBar(
+        backgroundColor: theme.surface,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.close, color: theme.onSurface),
+          onPressed: () => context.pop(),
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Header
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: theme.primary.withValues(alpha: 0.1),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-              ),
+            CustomText('Import Course from Folder', fontSize: 18, fontWeight: FontWeight.bold, color: theme.onSurface),
+            CustomText('Step ${_currentStep + 1} of 3', fontSize: 12, color: theme.supportingText),
+          ],
+        ),
+      ),
+      body: Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: ColorScheme.fromSeed(seedColor: theme.primary, brightness: theme.brightness),
+        ),
+        child: Stepper(
+          currentStep: _currentStep,
+          onStepContinue: _onStepContinue,
+          onStepCancel: _currentStep > 0 ? () => setState(() => _currentStep--) : null,
+          controlsBuilder: (context, details) {
+            return Padding(
+              padding: const EdgeInsets.only(top: 16),
               child: Row(
                 children: [
-                  Icon(Icons.folder_open, color: theme.primary, size: 28),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        CustomText(
-                          'Import Course from Folder',
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                          color: theme.onSurface,
-                        ),
-                        const SizedBox(height: 4),
-                        CustomText('Step ${_currentStep + 1} of 3', fontSize: 14, color: theme.supportingText),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(Icons.close, color: theme.supportingText),
-                    onPressed: () => Navigator.of(context).pop(),
-                  ),
-                ],
-              ),
-            ),
-
-            // Stepper
-            Expanded(
-              child: Theme(
-                data: Theme.of(context).copyWith(
-                  colorScheme: ColorScheme.fromSeed(seedColor: theme.primary, brightness: theme.brightness),
-                ),
-                child: Stepper(
-                  currentStep: _currentStep,
-                  onStepContinue: _onStepContinue,
-                  onStepCancel: _currentStep > 0 ? () => setState(() => _currentStep--) : null,
-                  controlsBuilder: (context, details) {
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Row(
-                        children: [
-                          if (_currentStep < 2)
-                            ElevatedButton(
-                              onPressed: details.onStepContinue,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: theme.primary,
-                                foregroundColor: theme.onPrimary,
-                              ),
-                              child: const Text('Continue'),
-                            ),
-                          if (_currentStep > 0) ...[
-                            const SizedBox(width: 12),
-                            TextButton(
-                              onPressed: details.onStepCancel,
-                              child: Text('Back', style: TextStyle(color: theme.supportingText)),
-                            ),
-                          ],
-                        ],
+                  if (_currentStep < 2)
+                    ElevatedButton(
+                      onPressed: details.onStepContinue,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: theme.primary,
+                        foregroundColor: theme.onPrimary,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                       ),
-                    );
-                  },
-                  steps: [
-                    Step(
-                      title: Text('Select Base Folder', style: TextStyle(color: theme.onSurface)),
-                      content: _buildBaseFolderStep(),
-                      isActive: _currentStep >= 0,
-                      state: _currentStep > 0 ? StepState.complete : StepState.indexed,
+                      child: const Text('Continue'),
                     ),
-                    Step(
-                      title: Text('Configure Options', style: TextStyle(color: theme.onSurface)),
-                      content: _buildOptionsStep(),
-                      isActive: _currentStep >= 1,
-                      state: _currentStep > 1
-                          ? StepState.complete
-                          : _currentStep == 1
-                          ? StepState.indexed
-                          : StepState.disabled,
-                    ),
-                    Step(
-                      title: Text('Review & Import', style: TextStyle(color: theme.onSurface)),
-                      content: _buildPreviewStep(),
-                      isActive: _currentStep >= 2,
-                      state: _currentStep == 2 ? StepState.indexed : StepState.disabled,
+                  if (_currentStep > 0) ...[
+                    const SizedBox(width: 12),
+                    TextButton(
+                      onPressed: details.onStepCancel,
+                      child: Text('Back', style: TextStyle(color: theme.supportingText)),
                     ),
                   ],
-                ),
+                ],
               ),
+            );
+          },
+          steps: [
+            Step(
+              title: Text('Select Base Folder', style: TextStyle(color: theme.onSurface)),
+              content: _buildBaseFolderStep(),
+              isActive: _currentStep >= 0,
+              state: _currentStep > 0 ? StepState.complete : StepState.indexed,
+            ),
+            Step(
+              title: Text('Configure Options', style: TextStyle(color: theme.onSurface)),
+              content: _buildOptionsStep(),
+              isActive: _currentStep >= 1,
+              state: _currentStep > 1
+                  ? StepState.complete
+                  : _currentStep == 1
+                  ? StepState.indexed
+                  : StepState.disabled,
+            ),
+            Step(
+              title: Text('Review & Import', style: TextStyle(color: theme.onSurface)),
+              content: _buildPreviewStep(),
+              isActive: _currentStep >= 2,
+              state: _currentStep == 2 ? StepState.indexed : StepState.disabled,
             ),
           ],
         ),
@@ -619,7 +781,7 @@ class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
   }
 
   Widget _buildBaseFolderStep() {
-    final theme = ref;
+    final theme = ref.theme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -627,7 +789,9 @@ class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
         Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: theme.altBackgroundPrimary,
+            gradient: LinearGradient(
+              colors: [theme.primary.withValues(alpha: 0.15), theme.secondary.withValues(alpha: 0.15)],
+            ),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: theme.primary.withValues(alpha: 0.3)),
           ),
@@ -654,7 +818,6 @@ class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
           ),
         ),
         const SizedBox(height: 20),
-
         Container(
           decoration: BoxDecoration(
             color: theme.surface,
@@ -673,10 +836,10 @@ class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
             onChanged: (value) => setState(() {
               useAsBaseFolder = value;
               if (value) selectedSubfolder = null;
+              log('🔄 Use as base folder: $value');
             }),
           ),
         ),
-
         if (!useAsBaseFolder && widget.folderNode.subfolders.isNotEmpty) ...[
           const SizedBox(height: 20),
           CustomText('Select subfolder:', fontWeight: FontWeight.bold, color: theme.onSurface, fontSize: 16),
@@ -710,7 +873,10 @@ class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
                   value: folder,
                   groupValue: selectedSubfolder,
                   activeColor: theme.primary,
-                  onChanged: (value) => setState(() => selectedSubfolder = value),
+                  onChanged: (value) => setState(() {
+                    selectedSubfolder = value;
+                    log('📁 Selected subfolder: ${value?.name}');
+                  }),
                   secondary: Icon(Icons.folder_outlined, color: isSelected ? theme.primary : theme.supportingText),
                 );
               },
@@ -740,7 +906,7 @@ class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
   }
 
   Widget _buildOptionsStep() {
-    final theme = ref;
+    final theme = ref.theme;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -752,6 +918,7 @@ class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
             border: Border.all(color: theme.supportingText.withValues(alpha: 0.2)),
           ),
           child: SwitchListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             title: CustomText('Include subfolders', color: theme.onSurface, fontWeight: FontWeight.w600),
             subtitle: CustomText(
               'Add files from all subfolders recursively',
@@ -761,12 +928,13 @@ class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
             value: includeSubfolders,
             activeColor: theme.primary,
             secondary: Icon(includeSubfolders ? Icons.account_tree : Icons.folder, color: theme.primary),
-            onChanged: (value) => setState(() => includeSubfolders = value),
+            onChanged: (value) => setState(() {
+              includeSubfolders = value;
+              log('🔄 Include subfolders: $value');
+            }),
           ),
         ),
-
         const SizedBox(height: 24),
-
         Row(
           children: [
             Icon(Icons.filter_list, color: theme.primary, size: 20),
@@ -780,6 +948,7 @@ class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
                   for (var filter in fileFilters) {
                     filter.isEnabled = !allEnabled;
                   }
+                  log('🔄 ${allEnabled ? "Deselected" : "Selected"} all filters');
                 });
               },
               child: CustomText(
@@ -790,9 +959,7 @@ class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
             ),
           ],
         ),
-
         const SizedBox(height: 12),
-
         Container(
           constraints: const BoxConstraints(maxHeight: 400),
           decoration: BoxDecoration(
@@ -801,6 +968,7 @@ class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
           ),
           child: ListView.separated(
             shrinkWrap: true,
+            padding: EdgeInsets.zero,
             itemCount: fileFilters.length,
             separatorBuilder: (context, index) =>
                 Divider(height: 1, color: theme.supportingText.withValues(alpha: 0.1)),
@@ -808,13 +976,17 @@ class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
               final filter = fileFilters[index];
 
               return SwitchListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                 dense: true,
                 title: CustomText(filter.displayName, color: theme.onSurface, fontSize: 14),
                 subtitle: CustomText(filter.extension, color: theme.supportingText, fontSize: 12),
                 value: filter.isEnabled,
                 activeColor: theme.primary,
                 secondary: Icon(filter.icon, color: filter.isEnabled ? theme.primary : theme.supportingText, size: 20),
-                onChanged: (value) => setState(() => filter.isEnabled = value),
+                onChanged: (value) => setState(() {
+                  filter.isEnabled = value;
+                  log('🔄 ${filter.extension} ${value ? "enabled" : "disabled"}');
+                }),
               );
             },
           ),
@@ -824,7 +996,7 @@ class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
   }
 
   Widget _buildPreviewStep() {
-    final theme = ref;
+    final theme = ref.theme;
     final targetFolder = useAsBaseFolder ? widget.folderNode : selectedSubfolder;
 
     if (targetFolder == null) {
@@ -840,10 +1012,16 @@ class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
       );
     }
 
-    final files = CourseFolderImportManager.getFilteredFiles(targetFolder, fileFilters, includeSubfolders);
-
-    final hasSubfolders = targetFolder.subfolders.isNotEmpty;
+    // Use the new calculation method that matches processImport
+    final importStructure = CourseFolderImportManager.calculateImportStructure(
+      targetFolder,
+      fileFilters,
+      includeSubfolders,
+    );
+    final totalFiles = importStructure.values.fold<int>(0, (sum, files) => sum + files.length);
     final enabledFilters = fileFilters.where((f) => f.isEnabled).toList();
+
+    log('📊 Preview: ${importStructure.length} collections, $totalFiles files');
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -872,7 +1050,7 @@ class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
                         CustomText('Course Name', fontSize: 12, color: theme.supportingText),
                         const SizedBox(height: 4),
                         CustomText(
-                          targetFolder.name,
+                          CourseFolderImportManager.generateUniqueName(targetFolder.name),
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
                           color: theme.onSurface,
@@ -887,22 +1065,15 @@ class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  _buildStatChip(ref.theme, Icons.insert_drive_file, '${files.length}', 'Files'),
+                  _buildStatChip(theme, Icons.insert_drive_file, '$totalFiles', 'Files'),
                   const SizedBox(width: 12),
-                  _buildStatChip(
-                    ref.theme,
-                    Icons.folder,
-                    hasSubfolders ? '${targetFolder.subfolders.length}' : '1',
-                    'Collections',
-                  ),
+                  _buildStatChip(theme, Icons.folder, '${importStructure.length}', 'Collections'),
                 ],
               ),
             ],
           ),
         ),
-
         const SizedBox(height: 20),
-
         // File Types Summary
         if (enabledFilters.isNotEmpty) ...[
           CustomText('Enabled File Types:', fontWeight: FontWeight.bold, color: theme.onSurface, fontSize: 16),
@@ -931,11 +1102,9 @@ class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
           ),
           const SizedBox(height: 20),
         ],
-
         // Collections Preview
         CustomText('Collections:', fontWeight: FontWeight.bold, color: theme.onSurface, fontSize: 16),
         const SizedBox(height: 12),
-
         Container(
           constraints: const BoxConstraints(maxHeight: 200),
           decoration: BoxDecoration(
@@ -944,80 +1113,59 @@ class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
           ),
           child: ListView.separated(
             shrinkWrap: true,
-            itemCount: hasSubfolders ? targetFolder.subfolders.length + (targetFolder.files.isNotEmpty ? 1 : 0) : 1,
+            padding: EdgeInsets.zero,
+            itemCount: importStructure.length,
             separatorBuilder: (context, index) =>
                 Divider(height: 1, color: theme.supportingText.withValues(alpha: 0.1)),
             itemBuilder: (context, index) {
-              if (hasSubfolders) {
-                if (index < targetFolder.subfolders.length) {
-                  final folder = targetFolder.subfolders[index];
-                  final subFiles = CourseFolderImportManager.getFilteredFiles(folder, fileFilters, includeSubfolders);
-                  return ListTile(
-                    dense: true,
-                    leading: Icon(Icons.folder, color: theme.primary, size: 20),
-                    title: CustomText(folder.name, color: theme.onSurface, fontSize: 14),
-                    trailing: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: theme.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: CustomText('${subFiles.length} files', fontSize: 12, color: theme.primary),
-                    ),
-                  );
-                } else {
-                  return ListTile(
-                    dense: true,
-                    leading: Icon(Icons.folder_special, color: theme.secondary, size: 20),
-                    title: CustomText('Materials', color: theme.onSurface, fontSize: 14),
-                    trailing: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: theme.secondary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: CustomText('${targetFolder.files.length} files', fontSize: 12, color: theme.secondary),
-                    ),
-                  );
-                }
-              } else {
-                return ListTile(
-                  dense: true,
-                  leading: Icon(Icons.folder_special, color: theme.primary, size: 20),
-                  title: CustomText('Materials', color: theme.onSurface, fontSize: 14),
-                  trailing: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: theme.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: CustomText('${files.length} files', fontSize: 12, color: theme.primary),
+              final entry = importStructure.entries.elementAt(index);
+              final collectionName = entry.key;
+              final files = entry.value;
+              final isBase = collectionName == 'Base';
+
+              return ListTile(
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                dense: true,
+                leading: Icon(
+                  isBase ? Icons.folder_special : Icons.folder,
+                  color: isBase ? theme.secondary : theme.primary,
+                  size: 20,
+                ),
+                title: CustomText(collectionName, color: theme.onSurface, fontSize: 14),
+                trailing: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: (isBase ? theme.secondary : theme.primary).withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
                   ),
-                );
-              }
+                  child: CustomText(
+                    '${files.length} files',
+                    fontSize: 12,
+                    color: isBase ? theme.secondary : theme.primary,
+                  ),
+                ),
+              );
             },
           ),
         ),
-
         const SizedBox(height: 24),
-
         // Import Button
         SizedBox(
           width: double.infinity,
           child: ElevatedButton.icon(
-            onPressed: files.isEmpty ? null : _processImport,
+            onPressed: totalFiles == 0 ? null : _processImport,
             icon: const Icon(Icons.upload_file),
             label: const Text('Start Import'),
             style: ElevatedButton.styleFrom(
               backgroundColor: theme.primary,
               foregroundColor: theme.onPrimary,
+              disabledBackgroundColor: theme.supportingText.withValues(alpha: 0.3),
               padding: const EdgeInsets.symmetric(vertical: 16),
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
         ),
-
-        if (files.isEmpty)
+        if (totalFiles == 0)
           Padding(
             padding: const EdgeInsets.only(top: 12),
             child: Row(
@@ -1026,7 +1174,9 @@ class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
                 const SizedBox(width: 8),
                 Expanded(
                   child: CustomText(
-                    'No files match the selected file types',
+                    enabledFilters.isEmpty
+                        ? 'Please enable at least one file type'
+                        : 'No files match the selected file types in this folder',
                     color: theme.supportingText,
                     fontSize: 12,
                   ),
@@ -1067,9 +1217,7 @@ class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
   void _onStepContinue() {
     if (_currentStep == 0) {
       if (!useAsBaseFolder && selectedSubfolder == null) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: const Text('Please select a subfolder'), backgroundColor: ref.secondary));
+        UiUtils.showFlushBar(context, msg: 'Please select a subfolder', vibe: FlushbarVibe.warning);
         return;
       }
     }
@@ -1080,7 +1228,7 @@ class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
   }
 
   Future<void> _processImport() async {
-    final theme = ref;
+    log('🚀 Starting import...');
     final progressNotifier = ValueNotifier<ImportProgress>(ImportProgress(message: 'Starting import...'));
 
     // Show loading overlay
@@ -1101,21 +1249,19 @@ class _FolderImportDialogState extends ConsumerState<_FolderImportDialog> {
     final result = await CourseFolderImportManager.processImport(config, progressNotifier);
 
     if (mounted) {
-      Navigator.of(context).pop(); // Close progress dialog
-      Navigator.of(context).pop(); // Close import dialog
+      context.pop(); // Close progress dialog
+      context.pop(); // Close import screen
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(result.isSuccess ? result.data! : 'Error: ${result.message}'),
-          backgroundColor: result.isSuccess ? Colors.green : theme.secondary,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          duration: const Duration(seconds: 4),
-        ),
+      UiUtils.showFlushBar(
+        context,
+        msg: result.isSuccess ? result.data! : 'Error: ${result.message}',
+        vibe: result.isSuccess ? FlushbarVibe.success : FlushbarVibe.warning,
       );
+
+      progressNotifier.dispose();
     }
 
-    progressNotifier.dispose();
+    log(result.isSuccess ? '✅ Import completed successfully' : '❌ Import failed: ${result.message}');
   }
 }
 
@@ -1127,7 +1273,7 @@ class _ImportProgressDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = ref.theme;
 
     return Dialog(
       backgroundColor: theme.surface,
@@ -1142,18 +1288,18 @@ class _ImportProgressDialog extends ConsumerWidget {
               children: [
                 Icon(Icons.cloud_upload, color: theme.primary, size: 48),
                 const SizedBox(height: 20),
-
                 CustomText('Importing Course', fontSize: 20, fontWeight: FontWeight.bold, color: theme.onSurface),
-
                 const SizedBox(height: 24),
-
                 CircularProgressIndicator(color: theme.primary),
-
                 const SizedBox(height: 24),
-
                 Container(
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(color: theme.altBackgroundPrimary, borderRadius: BorderRadius.circular(12)),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [theme.primary.withValues(alpha: 0.1), theme.secondary.withValues(alpha: 0.1)],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                   child: Column(
                     children: [
                       if (progress.currentCollection != null && progress.totalCollections != null) ...[
@@ -1192,9 +1338,7 @@ class _ImportProgressDialog extends ConsumerWidget {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 16),
-
                 CustomText(
                   'Please do not close the app',
                   color: theme.supportingText,

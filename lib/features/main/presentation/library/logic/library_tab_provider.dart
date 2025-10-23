@@ -1,4 +1,3 @@
-
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
@@ -14,7 +13,7 @@ class LibraryTabProvider {
   /// ===================================================================================================
   /// STATE
   /// ===================================================================================================
-  static final state = Provider.autoDispose<LibraryTabState>((ref) {
+  static final state = Provider<LibraryTabState>((ref) {
     final lts = LibraryTabState.of(ref);
     ref.onDispose(lts.dispose);
     return lts;
@@ -31,7 +30,7 @@ class LibraryTabProvider {
     yield* stream.map((c) => DateTime.now().millisecondsSinceEpoch);
   });
 
-  static final coursesPaginationProvider = FutureProvider.autoDispose<CoursesPagination>((ref) async {
+  static final coursesPaginationProvider = FutureProvider<CoursesPagination>((ref) async {
     final sortOption = await ref.read(coursesFilterProvider.future);
     final cp = CoursesPagination.of(sortOption: sortOption);
     // Listen for when there's any change in any of the courses

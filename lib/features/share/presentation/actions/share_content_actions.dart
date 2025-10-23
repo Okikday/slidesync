@@ -32,13 +32,13 @@ class ShareContentActions {
     final content = await CourseContentRepo.getByContentId(contentId);
     if (content == null) return;
     final metadata = (content.metadataJson.decodeJson);
-    final origFilename = (metadata['originalFilename']);
-    final fileName = (metadata['filename'] ?? metadata['fileName']) as String? ?? content.title;
+    final origFilename = (metadata['originalFilename'] as String?);
+    // final fileName = (metadata['filename'] ?? metadata['fileName']) as String? ?? content.title;
 
-    ShareContentUc().shareFile(
+    await ShareContentUc().shareFile(
       context,
       File(content.path.filePath),
-      filename: origFilename ?? p.setExtension(fileName, p.extension(content.path.filePath)),
+      filename: origFilename ?? p.setExtension(content.title, p.extension(content.path.filePath)),
     );
   }
 }

@@ -8,6 +8,10 @@ import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/file_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
+import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/data/repos/course_repo/course_repo.dart';
+import 'package:slidesync/data/services/firebase_course_services.dart';
 import 'package:slidesync/features/settings/domain/models/settings_model.dart';
 import 'package:slidesync/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:slidesync/features/settings/presentation/views/sub/settings_appearance_dialog.dart';
@@ -170,6 +174,8 @@ class SettingsView extends ConsumerWidget {
                     ),
                   ),
 
+                  ConstantSizing.columnSpacingMedium,
+
                   SettingsCard(
                     title: "Backup contents organization",
                     iconData: Icons.view_agenda,
@@ -180,7 +186,13 @@ class SettingsView extends ConsumerWidget {
                       textColor: theme.supportingText,
                       textSize: 14,
                       onClick: () async {
-                        
+                        UiUtils.showLoadingDialog(context, canPop: false);
+                        await FirebaseCourseService().uploadBackup(
+                          courses: await CourseRepo.getAllCourses(),
+                          collections: await CourseCollectionRepo.getAll(),
+                          contents: await CourseContentRepo.getAll(),
+                        );
+                        GlobalNav.popGlobal();
                       },
                     ),
                   ),

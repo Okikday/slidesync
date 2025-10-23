@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/quiz/presentation/logic/quiz_screen_provider.dart';
@@ -19,6 +21,8 @@ class QuizScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(QuizScreenProvider.state(config));
     final theme = ref;
+
+    log("question: ${config.questions}");
 
     return Scaffold(
       backgroundColor: theme.background,

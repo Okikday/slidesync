@@ -1322,7 +1322,7 @@ packages:
     source: hosted
     version: "1.16.0"
   mime:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: mime
       sha256: "41a20518f0cb1256669420fdba0cd90d21561e560ac240f26ef8322e45bb7ed6"
@@ -1625,6 +1625,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
+  saf:
+    dependency: "direct main"
+    description:
+      name: saf
+      sha256: f1c45cbf65f578b4b9e86fc95d945ad554eed778594c6580afa1b2fc99e909b7
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.4"
   screen_retriever:
     dependency: transitive
     description:

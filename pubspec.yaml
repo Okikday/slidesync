@@ -97,6 +97,8 @@ dependencies:
   supabase_flutter: ^2.10.3
   xxh3: ^1.2.0
   markdown_widget: ^2.3.2+8
+  saf: ^1.0.4
+  mime: ^2.0.0
 
   #docx_file_viewer: ^0.0.1
 

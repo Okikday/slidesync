@@ -22,6 +22,7 @@ class QuestionSection extends ConsumerWidget {
 
         return Container(
           padding: const EdgeInsets.all(16),
+          constraints: BoxConstraints(maxHeight: 400),
           decoration: BoxDecoration(
             color: theme.surface,
             borderRadius: BorderRadius.circular(12),
@@ -69,14 +70,16 @@ class QuestionSection extends ConsumerWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              MarkdownWidget(
-                data: question.question,
-                config: MarkdownConfig(
-                  configs: [
-                    PConfig(
-                      textStyle: TextStyle(color: theme.onSurface, fontSize: 16, fontFamily: theme.fontFamily),
-                    ),
-                  ],
+              Expanded(
+                child: MarkdownWidget(
+                  data: question.question,
+                  config: MarkdownConfig(
+                    configs: [
+                      PConfig(
+                        textStyle: TextStyle(color: theme.onSurface, fontSize: 16, fontFamily: theme.fontFamily),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
