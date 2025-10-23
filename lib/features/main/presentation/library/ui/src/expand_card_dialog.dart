@@ -179,10 +179,10 @@ class ExpandCardDialog extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    BuildExpandCardButton(title: "Select", iconData: Iconsax.tick_circle, onTap: () {}),
-                    divider,
-                    BuildExpandCardButton(title: "Pin", iconData: Icons.pin_rounded, onTap: () {}),
-                    divider,
+                    // BuildExpandCardButton(title: "Select", iconData: Iconsax.tick_circle, onTap: () {}),
+                    // divider,
+                    // BuildExpandCardButton(title: "Pin", iconData: Icons.pin_rounded, onTap: () {}),
+                    // divider,
                     BuildExpandCardButton(
                       title: "Edit course",
                       iconData: Iconsax.grid_edit,

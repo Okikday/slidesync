@@ -9,7 +9,7 @@ import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/main/presentation/main/logic/main_provider.dart';
 import 'package:slidesync/features/study/presentation/logic/pdf_doc_viewer_provider.dart';
-import 'package:slidesync/features/study/presentation/logic/src/pdf_doc_viewer_state.dart';
+import 'package:slidesync/features/study/presentation/logic/src/pdf_doc_viewer_state/pdf_doc_viewer_state.dart';
 import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_overlay_widgets/pdf_scrollbar_overlay.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 

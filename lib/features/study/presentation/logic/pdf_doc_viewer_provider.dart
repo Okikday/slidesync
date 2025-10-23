@@ -1,6 +1,6 @@
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
-import 'package:slidesync/features/study/presentation/logic/src/pdf_doc_search_state.dart';
-import 'package:slidesync/features/study/presentation/logic/src/pdf_doc_viewer_state.dart';
+import 'package:slidesync/features/study/presentation/logic/src/pdf_doc_viewer_state/pdf_doc_search_state.dart';
+import 'package:slidesync/features/study/presentation/logic/src/pdf_doc_viewer_state/pdf_doc_viewer_state.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 
 import '../../../../shared/global/notifiers/toggle_notifier.dart';

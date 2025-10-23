@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
+import 'package:slidesync/features/share/export/course_export_manager.dart';
 import 'package:slidesync/shared/global/providers/course_providers.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/data/models/file_details.dart';
@@ -118,6 +119,17 @@ class ModifyCourseHeader extends ConsumerWidget {
                     },
                     theme: theme,
                   ),
+                ),
+                CustomElevatedButton(
+                  pixelHeight: 48,
+                  onClick: () {
+                    if (courseId.isEmpty) return;
+                    CourseFolderExportManager.showExportScreen(context, courseId);
+                  },
+                  contentPadding: EdgeInsets.all(16),
+                  backgroundColor: theme.secondary.withAlpha(50),
+                  shape: CircleBorder(),
+                  child: Icon(Iconsax.export_1_copy, color: theme.secondary),
                 ),
                 CustomElevatedButton(
                   pixelHeight: 48,

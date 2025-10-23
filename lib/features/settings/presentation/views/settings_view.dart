@@ -161,6 +161,7 @@ class SettingsView extends ConsumerWidget {
                         final token = RootIsolateToken.instance;
                         if (token != null) {
                           await compute(FileUtils.deleteEmptyCoursesDirsInIsolate, {'rootIsolateToken': token});
+                          await FileUtils().clearCacheOrTemp();
                           await AppHiveData.instance.setData(
                             key: HiveDataPathKey.lastClearedCacheDate.name,
                             value: DateTime.now(),

@@ -28,6 +28,13 @@ class PdfDocViewerActions {
     final maxOffset = ref.context.topPadding + kToolbarHeight + 12;
     // log("maxOffset: $maxOffset");
     final docStateProvider = PdfDocViewerProvider.state(contentId);
+    if (ref.read(PdfDocViewerProvider.searchState(contentId)).isSearchingNotifier.value) {
+      if (ref.read(docStateProvider).scrollOffsetNotifier.value != 0) {
+        ref.read(docStateProvider).updateScrollOffset(0);
+        return;
+      }
+      return;
+    }
     void updateScrollOffset(double value) => ref.read(docStateProvider).updateScrollOffset(value);
 
     if (prev == null) {

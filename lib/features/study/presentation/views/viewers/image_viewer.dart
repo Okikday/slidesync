@@ -14,6 +14,7 @@ import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/manage/domain/usecases/contents/create_content_preview_image.dart';
+import 'package:slidesync/features/study/presentation/logic/image_viewer_provider.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
@@ -27,58 +28,27 @@ class ImageViewer extends ConsumerStatefulWidget {
 
 class _ImageViewerState extends ConsumerState<ImageViewer> {
   @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (context.mounted) {
-        await Future.delayed(Duration(seconds: 15), () {
-          _createProgressTrackModel(widget.content);
-        });
-      }
-    });
-  }
-
-  static Future<ContentTrack?> _createProgressTrackModel(CourseContent content) async {
-    final isarData = IsarData.instance<ContentTrack>();
-    final result = await Result.tryRunAsync(() async {
-      final courseId = (await CourseCollectionRepo.getById(content.parentId))?.parentId;
-      if (courseId == null) return null;
-
-      final parentId = (await CourseRepo.getCourseById(courseId))?.courseId;
-      if (parentId == null) return null;
-      final ContentTrack newPtm = ContentTrack.create(
-        contentId: content.contentId,
-        parentId: parentId,
-        title: content.title,
-        description: content.description,
-        contentHash: content.contentHash,
-        progress: 0.0,
-        lastRead: DateTime.now(),
-        metadataJson: jsonEncode({'previewPath': content.previewPath}),
-      );
-      return (await isarData.getById(await isarData.store(newPtm)));
-    });
-    return result.data;
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     final theme = ref;
+    final imageViewerStateProvider = ImageViewerProvider.state(widget.content.contentId);
     return AnnotatedRegion(
       value: UiUtils.getSystemUiOverlayStyle(theme.background, theme.isDarkMode),
       child: Scaffold(
         appBar: AppBarContainer(child: AppBarContainerChild(theme.isDarkMode, title: widget.content.title)),
-        body: PhotoView(
-          imageProvider: widget.content.courseContentType == CourseContentType.link
-              ? NetworkImage(widget.content.path)
-              : FileImage(File(widget.content.path.filePath)),
-          minScale: PhotoViewComputedScale.contained,
-          maxScale: PhotoViewComputedScale.covered,
+        body: FutureBuilder(
+          future: ref.watch(imageViewerStateProvider.select((s) => s.isInitialized)),
+          builder: (context, asyncSnapshot) {
+            if (asyncSnapshot.connectionState != ConnectionState.done) return const SizedBox();
+            return PhotoView(
+              enableRotation: true,
+              controller: ref.watch(imageViewerStateProvider.select((s) => s.controller)),
+              imageProvider: widget.content.path.fileDetails.containsFilePath
+                  ? FileImage(File(widget.content.path.filePath))
+                  : NetworkImage(widget.content.path.urlPath),
+              minScale: PhotoViewComputedScale.contained,
+              maxScale: PhotoViewComputedScale.covered,
+            );
+          },
         ),
       ),
     );

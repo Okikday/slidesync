@@ -1,8 +1,7 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:slidesync/features/import/course_folder_import_manager.dart';
-import 'package:slidesync/features/import/saf_course_folder_import_manager.dart';
+import 'package:go_router/go_router.dart';
+import 'package:slidesync/features/share/import/saf_course_folder_import_manager.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/manage/presentation/courses/ui/create_course/add_image_avatar.dart';
@@ -99,6 +98,23 @@ class _CreateCourseOuterSectionState extends ConsumerState<CreateCourseOuterSect
                       isCourseCodeFieldVisible: isCourseCodeFieldVisible,
                     ),
 
+                    ValueListenableBuilder(
+                      valueListenable: courseNameController,
+                      builder: (context, value, child) {
+                        if (value.text.isNotEmpty) return const SizedBox();
+                        return CustomElevatedButton(
+                          backgroundColor: ref.secondary.withAlpha(50),
+                          textColor: ref.secondary,
+                          borderRadius: 40,
+                          pixelHeight: 50,
+                          label: "Import Folder",
+                          onClick: () {
+                            CourseFolderImportManager.showFolderImportScreen(context);
+                          },
+                        );
+                      },
+                    ),
+
                     ConstantSizing.columnSpacing(72),
                   ],
                 ),
@@ -109,39 +125,11 @@ class _CreateCourseOuterSectionState extends ConsumerState<CreateCourseOuterSect
               bottom: 12,
               left: 0,
               right: 0,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                spacing: 8,
-                children: [
-                  ValueListenableBuilder(
-                    valueListenable: courseNameController,
-                    builder: (context, value, child) {
-                      if (value.text.isNotEmpty) return const SizedBox();
-                      return CustomElevatedButton(
-                        backgroundColor: ref.secondary,
-                        textColor: ref.onSecondary,
-                        pixelHeight: 40,
-                        label: "Import from Folder",
-                        onClick: () async {
-                          Future<void> requestStoragePermission() async {
-                            if (await Permission.manageExternalStorage.isDenied) {
-                              await Permission.manageExternalStorage.request();
-                            }
-                          }
-
-                          await requestStoragePermission();
-                          CourseFolderImportManager.showFolderImportScreen(context);
-                        },
-                      );
-                    },
-                  ),
-                  CreateCourseButton(
-                    courseNameController: courseNameController,
-                    courseCodeController: courseCodeController,
-                    isCourseCodeFieldVisible: isCourseCodeFieldVisible,
-                    courseImagePathProvider: courseImagePathProvider,
-                  ),
-                ],
+              child: CreateCourseButton(
+                courseNameController: courseNameController,
+                courseCodeController: courseCodeController,
+                isCourseCodeFieldVisible: isCourseCodeFieldVisible,
+                courseImagePathProvider: courseImagePathProvider,
               ),
             ),
           ],

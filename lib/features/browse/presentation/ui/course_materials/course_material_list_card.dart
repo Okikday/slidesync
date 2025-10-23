@@ -249,6 +249,9 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
                       ConstantSizing.rowSpacingMedium,
                       CustomElevatedButton(
                         backgroundColor: theme.onSurface.withAlpha(10),
+                        onClick: () {
+                          context.pushNamed(Routes.contentGate.name, extra: content);
+                        },
                         contentPadding: EdgeInsets.all(8.0),
                         child: Icon(Iconsax.arrow_circle_right, color: theme.onSurface),
                       ),

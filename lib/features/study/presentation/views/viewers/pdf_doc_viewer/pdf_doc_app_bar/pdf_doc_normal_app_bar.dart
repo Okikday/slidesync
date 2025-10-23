@@ -146,10 +146,10 @@ class PdfDocNormalAppBar extends ConsumerWidget {
 
                                 final fileSize = content.fileSize;
                                 // 1 MB = 1,000,000 bytes
-                                if (fileSize > 1000000) {
+                                if (fileSize > 100000) {
                                   GlobalNav.withContext(
                                     (context) =>
-                                        UiUtils.showFlushBar(context, msg: "File is too big (must be under 1MB)"),
+                                        UiUtils.showFlushBar(context, msg: "File is too big (must be under 100KB)"),
                                   );
                                   return;
                                 }

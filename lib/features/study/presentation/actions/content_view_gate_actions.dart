@@ -54,7 +54,10 @@ class ContentViewGateActions {
 
           return;
         }
-        if (context.mounted) context.pop();
+        context.pop();
+        await OpenFilex.open(content.path.filePath);
+
+        UiUtils.showFlushBar(context, msg: "Opening with external application...");
       case CourseContentType.image:
         context.pushReplacementNamed(Routes.imageViewer.name, extra: content);
         return;
@@ -83,7 +86,7 @@ class ContentViewGateActions {
         if (await HandleArchiveUc().isSupportedByArchive(File(filePath))) {
           await Result.tryRunAsync(() async {
             if (rootNavigatorKey.currentContext!.mounted) {
-              UiUtils.showCustomDialog(
+              await UiUtils.showCustomDialog(
                 rootNavigatorKey.currentContext!,
                 child: AppAlertDialog(
                   title: "Unknown archive file",
@@ -131,9 +134,14 @@ class ContentViewGateActions {
                   },
                 ),
               );
+              return;
             }
           });
         }
+
+        await OpenFilex.open(content.path.filePath);
+
+        UiUtils.showFlushBar(context, msg: "Opening with external application...");
         // if (context.mounted) UiUtils.showFlushBar(context, msg: "This content is not supported right now!");
 
         return;

@@ -145,12 +145,18 @@ class FileUtils {
     try {
       final tempDir = await getTemporaryDirectory();
       if (tempDir.existsSync()) {
-        tempDir.deleteSync(recursive: true);
+        // Delete contents, not the directory itself
+        tempDir.listSync().forEach((file) {
+          file.deleteSync(recursive: true);
+        });
       }
 
       final cacheDir = await getApplicationCacheDirectory();
       if (cacheDir.existsSync()) {
-        cacheDir.deleteSync(recursive: true);
+        // Delete contents, not the directory itself
+        cacheDir.listSync().forEach((file) {
+          file.deleteSync(recursive: true);
+        });
       }
 
       log('Cache and temporary directories cleared.');

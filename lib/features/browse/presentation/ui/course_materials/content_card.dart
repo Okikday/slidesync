@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -173,7 +175,13 @@ class ContentCardPopUpMenuButton extends StatelessWidget {
     return AppPopupMenuButton(
       iconSize: 16,
       actions: [
-        PopupMenuAction(title: "Add to Group", iconData: Iconsax.additem, onTap: () {}),
+        PopupMenuAction(
+          title: "Open in App",
+          iconData: Iconsax.play,
+          onTap: () {
+            context.pushNamed(Routes.contentGate.name, extra: content);
+          },
+        ),
         if (content.courseContentType == CourseContentType.link)
           PopupMenuAction(
             title: "Copy",
@@ -184,14 +192,14 @@ class ContentCardPopUpMenuButton extends StatelessWidget {
           ),
         PopupMenuAction(
           title: "Share",
-          iconData: Iconsax.share_copy,
+          iconData: Iconsax.send_1_copy,
           onTap: () async {
             ShareContentActions.shareContent(context, content.contentId);
           },
         ),
         PopupMenuAction(
           title: "Delete",
-          iconData: Icons.delete,
+          iconData: Iconsax.trash_copy,
           onTap: () async {
             UiUtils.showCustomDialog(
               context,
@@ -269,11 +277,17 @@ class ContentTypeBadge extends ConsumerWidget {
         builder: (context) {
           final res = ContentCardActions.resolveExtension(content);
           if (res.isEmpty) return const SizedBox();
-          return DecoratedBox(
-            decoration: BoxDecoration(borderRadius: BorderRadius.circular(20), color: theme.altBackgroundPrimary),
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-              child: CustomText(res, color: theme.onBackground, fontSize: 11, fontWeight: FontWeight.bold),
+          return ClipRRect(
+            borderRadius: BorderRadius.circular(20),
+            child: ColoredBox(
+              color: theme.altBackgroundSecondary.withAlpha(200),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  child: CustomText(res, color: theme.secondary, fontSize: 11, fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
           );
         },

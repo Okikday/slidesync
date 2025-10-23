@@ -11,7 +11,7 @@ import 'package:slidesync/core/base/use_value_notifier.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/features/ask_ai/domain/services/ai_gen_client.dart';
 import 'package:slidesync/features/ask_ai/presentation/logic/ask_ai_screen_provider.dart';
-import 'package:slidesync/features/study/presentation/logic/src/pdf_doc_viewer_state.dart';
+import 'package:slidesync/features/study/presentation/logic/src/pdf_doc_viewer_state/pdf_doc_viewer_state.dart';
 import 'package:uuid/uuid.dart';
 
 class AskAiScreenState extends LeakPrevention with ValueNotifierFactoryMixin {

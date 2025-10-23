@@ -6,9 +6,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
+import 'dart:typed_data';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
+import 'package:saf_util/saf_util_platform_interface.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/result.dart';
@@ -23,17 +25,19 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/theme/src/app_theme.dart';
 import 'package:uuid/uuid.dart';
+import 'package:saf_stream/saf_stream.dart';
+import 'package:saf_util/saf_util.dart';
 
 class FolderNode {
   final String name;
-  final String path;
+  final String uri;
   final List<FolderNode> subfolders;
-  final List<String> files;
+  final List<SafDocumentFile> files; // Changed to SafDocumentFile
   bool isSelected;
 
   FolderNode({
     required this.name,
-    required this.path,
+    required this.uri,
     this.subfolders = const [],
     this.files = const [],
     this.isSelected = false,
@@ -41,14 +45,14 @@ class FolderNode {
 
   FolderNode copyWith({
     String? name,
-    String? path,
+    String? uri,
     List<FolderNode>? subfolders,
-    List<String>? files,
+    List<SafDocumentFile>? files,
     bool? isSelected,
   }) {
     return FolderNode(
       name: name ?? this.name,
-      path: path ?? this.path,
+      uri: uri ?? this.uri,
       subfolders: subfolders ?? this.subfolders,
       files: files ?? this.files,
       isSelected: isSelected ?? this.isSelected,
@@ -68,17 +72,17 @@ class FileTypeFilter {
 
 /// Configuration for folder import
 class FolderImportConfig {
-  final String baseFolderPath;
+  final String baseFolderUri;
   final bool useAsBaseFolder;
-  final String? selectedSubfolderPath;
+  final String? selectedSubfolderUri;
   final bool includeSubfolders;
   final List<FileTypeFilter> fileFilters;
   final int maxContents;
 
   FolderImportConfig({
-    required this.baseFolderPath,
+    required this.baseFolderUri,
     this.useAsBaseFolder = true,
-    this.selectedSubfolderPath,
+    this.selectedSubfolderUri,
     this.includeSubfolders = false,
     required this.fileFilters,
     this.maxContents = 1000,
@@ -109,9 +113,11 @@ class ImportProgress {
   }
 }
 
-/// Main class for managing folder imports
+/// Main class for managing folder imports with SAF
 class CourseFolderImportManager {
   static const int kMaxContents = 1000;
+  static final SafUtil _safUtil = SafUtil();
+  static final SafStream _safStream = SafStream();
 
   /// Default file type filters (NO audio/video)
   static List<FileTypeFilter> getDefaultFileFilters() {
@@ -143,102 +149,103 @@ class CourseFolderImportManager {
     ];
   }
 
-  /// Pick a folder using file_picker
+  /// Pick a folder using SAF
   static Future<String?> pickFolder() async {
-    return await FilePicker.platform.getDirectoryPath(dialogTitle: 'Select Course Folder');
+    try {
+      final String? treeUri = (await _safUtil.pickDirectory())?.uri;
+
+      if (treeUri != null) {
+        log('📂 Selected folder URI: $treeUri');
+        return treeUri;
+      }
+
+      return null;
+    } catch (e) {
+      log('❌ Error picking folder: $e');
+      return null;
+    }
   }
 
-  /// Generate a unique course name
-  static String generateUniqueName(String baseName) {
-    final random = math.Random();
-    final number = random.nextInt(900) + 100;
-    return '$baseName $number';
-  }
-
-  /// Scan a folder and build its structure
-  static Future<Result<FolderNode?>> scanFolder(String folderPath) async {
+  /// Scan a folder and build its structure using SAF
+  static Future<Result<FolderNode?>> scanFolder(String folderUri) async {
     return await Result.tryRunAsync(() async {
-      log('📂 Scanning folder: $folderPath');
-      final directory = Directory(folderPath);
+      log('📂 Scanning folder URI: $folderUri');
 
-      if (!await directory.exists()) {
-        log('❌ Directory does not exist: $folderPath');
-        throw Exception('Folder does not exist: $folderPath');
-      }
-
-      log('✅ Directory exists, checking permissions...');
-
-      // Try to list with different options to debug
-      final List<FolderNode> subfolders = [];
-      final List<String> files = [];
-
-      int entityCount = 0;
       try {
-        log('🔄 Starting directory.list() with recursive: false, followLinks: false');
-        await for (final entity in directory.list(recursive: false, followLinks: false)) {
-          entityCount++;
-          log('📌 Found entity #$entityCount: ${entity.path} (type: ${entity.runtimeType})');
+        // Get directory contents using saf_util
+        final List<SafDocumentFile> contents = await _safUtil.list(folderUri);
 
-          if (entity is Directory) {
-            log('   └─ Is Directory: ${p.basename(entity.path)}');
-            final subfolder = await scanFolder(entity.path);
-            if (subfolder.isSuccess && subfolder.data != null) {
-              subfolders.add(subfolder.data!);
-            }
-          } else if (entity is File) {
-            log('   └─ Is File: ${p.basename(entity.path)} (${p.extension(entity.path)})');
-            files.add(entity.path);
-          } else {
-            log('   └─ Unknown type: ${entity.runtimeType}');
-          }
-        }
-        log('✅ Finished listing. Total entities found: $entityCount');
-      } catch (e, stackTrace) {
-        log('❌ ERROR during directory.list(): $e');
-        log('Stack trace: $stackTrace');
-        throw Exception('Failed to list directory contents: $e');
-      }
+        log('✅ Found ${contents.length} items in folder');
 
-      if (entityCount == 0) {
-        log('⚠️ WARNING: directory.list() returned 0 entities. This might be a permissions issue!');
-        log('   Path: $folderPath');
-        log('   Exists: ${await directory.exists()}');
-        log('   Trying listSync() as fallback...');
+        final List<FolderNode> subfolders = [];
+        final List<SafDocumentFile> files = [];
 
-        try {
-          final syncEntities = directory.listSync(recursive: false, followLinks: false);
-          log('   listSync() found ${syncEntities.length} entities');
-          for (final entity in syncEntities) {
-            log('   📌 Sync entity: ${entity.path} (type: ${entity.runtimeType})');
-            if (entity is Directory) {
-              final subfolder = await scanFolder(entity.path);
+        // Process each item
+        for (final item in contents) {
+          try {
+            if (item.isDir) {
+              log('   └─ Is Directory: ${item.name}');
+              // Recursively scan subfolder
+              final subfolder = await scanFolder(item.uri);
               if (subfolder.isSuccess && subfolder.data != null) {
                 subfolders.add(subfolder.data!);
               }
-            } else if (entity is File) {
-              files.add(entity.path);
+            } else {
+              log('   └─ Is File: ${item.name}');
+              files.add(item);
+            }
+          } catch (e) {
+            log('⚠️ Error processing item ${item.name}: $e');
+            continue;
+          }
+        }
+
+        // Extract folder name from URI
+        String folderName = 'Folder';
+        try {
+          // SAF URIs typically end with the encoded folder name after the last '/'
+          final decodedUri = Uri.decodeComponent(folderUri);
+          final lastSlashIndex = decodedUri.lastIndexOf('/');
+          if (lastSlashIndex != -1 && lastSlashIndex < decodedUri.length - 1) {
+            // Get everything after the last slash
+            final afterSlash = decodedUri.substring(lastSlashIndex + 1);
+            // If it contains a colon (like "primary:Documents/Year 1/FSC 101"), get after last colon
+            final lastColonIndex = afterSlash.lastIndexOf(':');
+            if (lastColonIndex != -1) {
+              final afterColon = afterSlash.substring(lastColonIndex + 1);
+              // Get the last folder name (after last '/')
+              final pathParts = afterColon.split('/');
+              folderName = pathParts.last.trim();
+            } else {
+              folderName = afterSlash.trim();
             }
           }
+
+          if (folderName.isEmpty) folderName = 'Folder';
         } catch (e) {
-          log('   ❌ listSync() also failed: $e');
+          log('⚠️ Could not extract folder name from URI: $e');
+          folderName = 'Folder';
         }
+
+        final node = FolderNode(name: folderName, uri: folderUri, subfolders: subfolders, files: files);
+
+        log('✅ Scanned $folderName: ${files.length} files, ${subfolders.length} subfolders');
+        return node;
+      } catch (e, stackTrace) {
+        log('❌ ERROR during SAF scan: $e');
+        log('Stack trace: $stackTrace');
+        throw Exception('Failed to scan folder: $e');
       }
-
-      final node = FolderNode(name: p.basename(folderPath), path: folderPath, subfolders: subfolders, files: files);
-
-      log('✅ Scanned ${node.name}: ${files.length} files, ${subfolders.length} subfolders');
-      return node;
     });
   }
 
   /// Get all files from a folder node based on filters
-  static List<String> getFilteredFiles(FolderNode node, List<FileTypeFilter> filters, bool includeSubfolders) {
-    final List<String> allFiles = [];
+  static List<SafDocumentFile> getFilteredFiles(FolderNode node, List<FileTypeFilter> filters, bool includeSubfolders) {
+    final List<SafDocumentFile> allFiles = [];
     final enabledExtensions = filters.where((f) => f.isEnabled).map((f) => f.extension.toLowerCase()).toSet();
 
     log('🔍 Getting filtered files from ${node.name}. Enabled extensions: $enabledExtensions');
 
-    // If no filters are enabled, return empty
     if (enabledExtensions.isEmpty) {
       log('⚠️ No file type filters enabled');
       return allFiles;
@@ -246,7 +253,8 @@ class CourseFolderImportManager {
 
     // Add files from current folder
     for (final file in node.files) {
-      final ext = p.extension(file).toLowerCase();
+      final fileName = file.name;
+      final ext = p.extension(fileName).toLowerCase();
       if (enabledExtensions.contains(ext)) {
         allFiles.add(file);
       }
@@ -264,13 +272,13 @@ class CourseFolderImportManager {
     return allFiles;
   }
 
-  /// Calculate what will actually be imported (matches processImport logic)
-  static Map<String, List<String>> calculateImportStructure(
+  /// Calculate what will actually be imported
+  static Map<String, List<SafDocumentFile>> calculateImportStructure(
     FolderNode targetFolder,
     List<FileTypeFilter> filters,
     bool includeSubfolders,
   ) {
-    final Map<String, List<String>> collections = {};
+    final Map<String, List<SafDocumentFile>> collections = {};
     final hasSubfolders = targetFolder.subfolders.isNotEmpty;
 
     log('📊 Calculating import structure for ${targetFolder.name}');
@@ -288,7 +296,8 @@ class CourseFolderImportManager {
 
       // Add root files as "Base" collection if they exist
       final rootFiles = targetFolder.files.where((file) {
-        final ext = p.extension(file).toLowerCase();
+        final fileName = file.name ?? '';
+        final ext = p.extension(fileName).toLowerCase();
         final enabledExtensions = filters.where((f) => f.isEnabled).map((f) => f.extension.toLowerCase()).toSet();
         return enabledExtensions.contains(ext);
       }).toList();
@@ -312,22 +321,22 @@ class CourseFolderImportManager {
     return collections;
   }
 
-  /// Show the folder import screen (full screen)
+  /// Show the folder import screen
   static Future<void> showFolderImportScreen(BuildContext context) async {
-    final folderPath = await pickFolder();
+    final folderUri = await pickFolder();
 
-    if (folderPath == null) {
+    if (folderUri == null) {
       log('❌ No folder selected');
       return;
     }
 
-    log('🎯 Selected folder: $folderPath');
+    log('🎯 Selected folder URI: $folderUri');
 
     // Show loading while scanning
     GlobalNav.withContext((c) => UiUtils.showLoadingDialog(c, message: 'Scanning folder...'));
 
     // Scan the folder
-    final scanResult = await scanFolder(folderPath);
+    final scanResult = await scanFolder(folderUri);
 
     // Hide loading
     GlobalNav.popGlobal();
@@ -344,9 +353,9 @@ class CourseFolderImportManager {
     log('✅ Scan complete. Opening import screen...');
 
     if (context.mounted) {
-      await Navigator.of(
-        context,
-      ).push(MaterialPageRoute(builder: (context) => _FolderImportScreen(folderNode: folderNode)));
+      await Navigator.of(context).push(
+        PageAnimation.pageRouteBuilder(_FolderImportScreen(folderNode: folderNode), type: TransitionType.rightToLeft),
+      );
     }
   }
 
@@ -360,9 +369,7 @@ class CourseFolderImportManager {
       progressNotifier.value = ImportProgress(message: 'Scanning folder structure...');
 
       // Scan the folder
-      final scanResult = await scanFolder(
-        config.useAsBaseFolder ? config.baseFolderPath : config.selectedSubfolderPath!,
-      );
+      final scanResult = await scanFolder(config.useAsBaseFolder ? config.baseFolderUri : config.selectedSubfolderUri!);
 
       if (!scanResult.isSuccess || scanResult.data == null) {
         throw Exception('Failed to scan folder: ${scanResult.message}');
@@ -376,14 +383,13 @@ class CourseFolderImportManager {
       // Determine if we have subfolders or just files
       final hasSubfolders = folderNode.subfolders.isNotEmpty;
       final baseCourseName = folderNode.name;
-      final uniqueCourseName = generateUniqueName(baseCourseName);
 
-      log('📚 Creating course: $uniqueCourseName (has subfolders: $hasSubfolders)');
+      log('📚 Creating course: $baseCourseName (has subfolders: $hasSubfolders)');
 
       // Create the Course
       final course = Course.create(
-        courseTitle: uniqueCourseName,
-        description: 'Imported from folder: ${folderNode.path}',
+        courseTitle: baseCourseName,
+        description: 'Imported from folder: ${folderNode.name}',
       );
 
       final courseDbId = await CourseRepo.addCourse(course);
@@ -395,7 +401,8 @@ class CourseFolderImportManager {
 
       // Get filtered root files
       final rootFiles = folderNode.files.where((file) {
-        final ext = p.extension(file).toLowerCase();
+        final fileName = file.name ?? '';
+        final ext = p.extension(fileName).toLowerCase();
         final enabledExtensions = config.fileFilters
             .where((f) => f.isEnabled)
             .map((f) => f.extension.toLowerCase())
@@ -410,10 +417,10 @@ class CourseFolderImportManager {
       if (hasSubfolders) {
         totalCollections = folderNode.subfolders.length;
         if (rootFiles.isNotEmpty) {
-          totalCollections++; // Add one for Base collection
+          totalCollections++;
         }
       } else {
-        totalCollections = 1; // Just the Materials collection
+        totalCollections = 1;
       }
 
       log('📦 Will create $totalCollections collection(s)');
@@ -471,8 +478,6 @@ class CourseFolderImportManager {
             );
 
             log('✅ Files added to ${subfolder.name}');
-          } else {
-            log('ℹ️ No matching files in ${subfolder.name}');
           }
         }
 
@@ -512,7 +517,7 @@ class CourseFolderImportManager {
           log('✅ Base collection created');
         }
       } else {
-        // No subfolders, just files - create a single "Materials" collection
+        // No subfolders, just files
         currentCollectionIndex++;
 
         progressNotifier.value = ImportProgress(
@@ -557,21 +562,19 @@ class CourseFolderImportManager {
           );
 
           log('✅ Materials collection created');
-        } else {
-          log('⚠️ No matching files found');
         }
       }
 
       progressNotifier.value = ImportProgress(message: 'Import complete!');
-      log('🎉 Import complete: $uniqueCourseName');
+      log('🎉 Import complete: $baseCourseName');
 
-      return 'Successfully imported course: $uniqueCourseName with $totalCollections collection(s)';
+      return 'Successfully imported course: $baseCourseName with $totalCollections collection(s)';
     });
   }
 
   static Future<void> _addFilesToCollection(
     CourseCollection collection,
-    List<String> filePaths,
+    List<SafDocumentFile> safFiles,
     ValueNotifier<ImportProgress> progressNotifier,
     int currentCollection,
     int totalCollections,
@@ -582,45 +585,61 @@ class CourseFolderImportManager {
       throw Exception('Unable to process adding content in background');
     }
 
-    // Limit to max contents
-    final limitedPaths = filePaths.take(kMaxContents).toList();
-
-    final uuids = [for (int i = 0; i < limitedPaths.length; i++) const Uuid().v4()];
-    final uuidFileNames = [
-      for (int i = 0; i < limitedPaths.length; i++) p.setExtension(uuids[i], p.extension(limitedPaths[i])),
-    ];
-
-    // NEW: Copy files to temp directory instead of using original paths
+    final limitedFiles = safFiles.take(kMaxContents).toList();
     final Directory tempDir = await getApplicationCacheDirectory();
     final List<String> copiedFilePaths = [];
+    final List<String> uuids = [];
+    final List<String> uuidFileNames = [];
 
     try {
       progressNotifier.value = ImportProgress(
-        message: 'Copying files...',
+        message: 'Processing files...',
         currentCollection: currentCollection,
         totalCollections: totalCollections,
         currentCollectionName: collectionName,
       );
 
-      for (int i = 0; i < limitedPaths.length; i++) {
-        final originalFile = File(limitedPaths[i]);
-        final newFileName = uuidFileNames[i];
-        final copiedFile = File(p.join(tempDir.path, 'course_import_', newFileName));
+      for (int i = 0; i < limitedFiles.length; i++) {
+        final safFile = limitedFiles[i];
 
-        // Copy the file instead of moving
-        await originalFile.copy(copiedFile.path);
-        copiedFilePaths.add(copiedFile.path);
+        try {
+          final List<int> bytesList = await _safStream.readFileBytes(safFile.uri);
+          final Uint8List bytes = Uint8List.fromList(bytesList);
 
-        if (i % 10 == 0) {
-          progressNotifier.value = ImportProgress(
-            message: 'Copying files... ${i + 1}/${limitedPaths.length}',
-            currentCollection: currentCollection,
-            totalCollections: totalCollections,
-            currentCollectionName: collectionName,
-          );
+          // Generate UUID and keep original file name
+          final uuid = const Uuid().v4();
+          final originalFileName = safFile.name;
+
+          uuids.add(uuid);
+          uuidFileNames.add(originalFileName);
+
+          // Write to temp directory with original filename
+          final tempFile = File(p.join(tempDir.path, originalFileName));
+          await tempFile.writeAsBytes(bytes);
+          copiedFilePaths.add(tempFile.path);
+
+          if (i % 5 == 0) {
+            progressNotifier.value = ImportProgress(
+              message: 'Processing files... ${i + 1}/${limitedFiles.length}',
+              currentCollection: currentCollection,
+              totalCollections: totalCollections,
+              currentCollectionName: collectionName,
+            );
+          }
+
+          log('✅ Copied file ${i + 1}/${limitedFiles.length}: $originalFileName');
+        } catch (e) {
+          log('❌ Failed to read file ${safFile.name}: $e');
+          // Continue with next file instead of failing entire import
+          continue;
         }
       }
 
+      if (copiedFilePaths.isEmpty) {
+        throw Exception('No files could be read from the selected folder');
+      }
+
+      // Store progress data
       await Result.tryRunAsync(() async {
         await AppHiveData.instance.setData(
           key: HiveDataPathKey.contentsAddingProgressList.name,
@@ -634,12 +653,12 @@ class CourseFolderImportManager {
       final args = StoreContentArgs(
         token: rootIsolateToken,
         collectionId: collection.collectionId,
-        filePaths: copiedFilePaths, // Use copied file paths instead of original
+        filePaths: copiedFilePaths,
         uuids: uuids,
-        deleteCache: false,
+        deleteCache: true,
       ).toMap();
 
-      // Create a wrapper ValueNotifier to update the import progress
+      // Create progress notifier wrapper
       final contentProgressNotifier = ValueNotifier<String>('');
       contentProgressNotifier.addListener(() {
         progressNotifier.value = ImportProgress(
@@ -657,15 +676,10 @@ class CourseFolderImportManager {
       });
 
       contentProgressNotifier.dispose();
-    } finally {
-      // Clean up temp directory after import completes
-      try {
-        if (await tempDir.exists()) {
-          await tempDir.delete(recursive: true);
-        }
-      } catch (e) {
-        log('⚠️ Failed to clean up temp directory: $e');
-      }
+    } catch (e, stackTrace) {
+      log('❌ Error adding files to collection: $e');
+      log('Stack trace: $stackTrace');
+      rethrow;
     }
   }
 }
@@ -962,7 +976,9 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
         const SizedBox(height: 12),
         Container(
           constraints: const BoxConstraints(maxHeight: 400),
+          clipBehavior: Clip.hardEdge,
           decoration: BoxDecoration(
+            color: theme.background,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: theme.supportingText.withValues(alpha: 0.2)),
           ),
@@ -970,8 +986,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
             shrinkWrap: true,
             padding: EdgeInsets.zero,
             itemCount: fileFilters.length,
-            separatorBuilder: (context, index) =>
-                Divider(height: 1, color: theme.supportingText.withValues(alpha: 0.1)),
+            separatorBuilder: (context, index) => const Divider(height: 0),
             itemBuilder: (context, index) {
               final filter = fileFilters[index];
 
@@ -980,6 +995,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
                 dense: true,
                 title: CustomText(filter.displayName, color: theme.onSurface, fontSize: 14),
                 subtitle: CustomText(filter.extension, color: theme.supportingText, fontSize: 12),
+                shape: const RoundedRectangleBorder(),
                 value: filter.isEnabled,
                 activeColor: theme.primary,
                 secondary: Icon(filter.icon, color: filter.isEnabled ? theme.primary : theme.supportingText, size: 20),
@@ -1050,7 +1066,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
                         CustomText('Course Name', fontSize: 12, color: theme.supportingText),
                         const SizedBox(height: 4),
                         CustomText(
-                          CourseFolderImportManager.generateUniqueName(targetFolder.name),
+                          targetFolder.name,
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
                           color: theme.onSurface,
@@ -1115,8 +1131,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
             shrinkWrap: true,
             padding: EdgeInsets.zero,
             itemCount: importStructure.length,
-            separatorBuilder: (context, index) =>
-                Divider(height: 1, color: theme.supportingText.withValues(alpha: 0.1)),
+            separatorBuilder: (context, index) => const Divider(height: 0),
             itemBuilder: (context, index) {
               final entry = importStructure.entries.elementAt(index);
               final collectionName = entry.key;
@@ -1126,6 +1141,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
               return ListTile(
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 dense: true,
+                shape: const RoundedRectangleBorder(),
                 leading: Icon(
                   isBase ? Icons.folder_special : Icons.folder,
                   color: isBase ? theme.secondary : theme.primary,
@@ -1239,9 +1255,9 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
     );
 
     final config = FolderImportConfig(
-      baseFolderPath: widget.folderNode.path,
+      baseFolderUri: widget.folderNode.uri,
       useAsBaseFolder: useAsBaseFolder,
-      selectedSubfolderPath: selectedSubfolder?.path,
+      selectedSubfolderUri: selectedSubfolder?.uri,
       includeSubfolders: includeSubfolders,
       fileFilters: fileFilters,
     );
