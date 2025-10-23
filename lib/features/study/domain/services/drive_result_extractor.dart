@@ -220,11 +220,12 @@ Future<CourseContent?> _createCourseContentFromDriveFile(
     parentId: collectionId,
     title: fileName,
     path: fileDetails,
+    fileSize: 0,
     createdAt: driveFile.createdTime != null ? DateTime.tryParse(driveFile.createdTime!) : DateTime.now(),
     lastModified: driveFile.modifiedTime != null ? DateTime.tryParse(driveFile.modifiedTime!) : DateTime.now(),
     courseContentType: determinedType,
     description: driveFile.description ?? '',
-    metadataJson: jsonEncode({'previewUrl': metadata['thumbnailLink'], 'resolved': true}),
+    metadataJson: jsonEncode({'previewUrl': metadata['thumbnailLink'], 'resolved': true, 'size': driveFile.size}),
   );
 }
 
@@ -240,20 +241,20 @@ String? _getExtensionForGoogleFile(String mimeType) {
 
 /// Determines CourseContentType based on MIME type
 CourseContentType _determineCourseContentType(String mimeType) {
-  // Video types
-  if (mimeType.contains('video')) {
-    return CourseContentType.video;
-  }
+  // // Video types
+  // if (mimeType.contains('video')) {
+  //   return CourseContentType.video;
+  // }
 
   // Image types
   if (mimeType.contains('image')) {
     return CourseContentType.image;
   }
 
-  // Audio types
-  if (mimeType.contains('audio')) {
-    return CourseContentType.audio;
-  }
+  // // Audio types
+  // if (mimeType.contains('audio')) {
+  //   return CourseContentType.audio;
+  // }
 
   // Document types
   if (mimeType.contains('pdf') ||

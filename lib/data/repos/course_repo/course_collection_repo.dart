@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:collection/collection.dart';
 import 'package:isar/isar.dart';
+import 'package:slidesync/core/constants/constants.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
@@ -148,5 +149,37 @@ class CourseCollectionRepo {
     final bool result = await addCollection(collection);
     if (result) return null;
     return "An error occured while adding collection";
+  }
+
+  static Future<void> addContentToAppCollection(AppCourseCollections type, {required CourseContent content}) async {
+    final collection = await getById(type.name);
+    if (collection == null) return;
+    collection.contents.load();
+    collection.contents.add(content);
+
+    final isar = (await _isar);
+    await isar.writeTxn(() async {
+      await collection.contents.save();
+      await isar.courseCollections.put(collection);
+    });
+  }
+
+  static Future<void> addContentsToAppCollection(
+    AppCourseCollections type, {
+    required List<CourseContent> contents,
+  }) async {
+    if (contents.isEmpty) return;
+
+    final collection = await getById(type.name);
+    if (collection == null) return;
+
+    await collection.contents.load();
+    collection.contents.addAll(contents);
+
+    final isar = await _isar;
+    await isar.writeTxn(() async {
+      await collection.contents.save();
+      await isar.courseCollections.put(collection);
+    });
   }
 }

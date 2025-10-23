@@ -16,6 +16,7 @@ final defaultContent = CourseContent.create(
   contentHash: '_',
   parentId: '_',
   title: '_',
+  fileSize: 0,
   path: const FileDetails(),
   courseContentType: CourseContentType.unknown,
 );

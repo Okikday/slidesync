@@ -25,10 +25,9 @@ class CreateCourseUc {
       );
       if (previewImgPath != null) {
         final author = (await UserDataFunctions().getUserDetails()).data?.userID;
-        course = course.copyWith(
-          imageLocationJson: FileDetails(filePath: previewImgPath).toJson(),
-          courseMetadataJson: jsonEncode({'author': author}),
-        );
+        course = course
+            .copyWith(metadataJson: jsonEncode({'author': author}))
+            .setImageLocation(FileDetails(filePath: previewImgPath));
       }
 
       final createdId = await CourseRepo.addCourse(course);

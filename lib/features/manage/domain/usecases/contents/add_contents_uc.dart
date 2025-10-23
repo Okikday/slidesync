@@ -11,6 +11,7 @@ import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/basic_utils.dart';
+import 'package:slidesync/core/utils/file_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
@@ -204,6 +205,7 @@ class AddContentsUc {
             contentId: uuid,
             title: fileNameWithoutExt,
             parentId: collection.collectionId,
+            fileSize: await FileUtils.getFileSize(filePath),
             path: FileDetails(filePath: filePath),
             courseContentType: contentType,
             metadataJson: jsonEncode(<String, dynamic>{'filename': fileName}),

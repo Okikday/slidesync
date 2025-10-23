@@ -55,7 +55,7 @@ Future<List<Map<String, dynamic>>> storeContents(
           final fileName = p.basename(file.path);
           final fileNameWithoutExt = p.basenameWithoutExtension(fileName);
           final hash = await BasicUtils.calculateFileHashXXH3(file.path);
-          final fileSize = await BasicUtils.getFileSize(file.path);
+          final fileSize = await FileUtils.getFileSize(file.path);
 
           if (seenHashesSet.contains(hash)) {
             addContentResultList.add(AddContentResult(hasDuplicate: true, isSuccess: false, fileName: fileName));
@@ -91,6 +91,7 @@ Future<List<Map<String, dynamic>>> storeContents(
                 title: fileNameWithoutExt,
                 parentId: collection.collectionId,
                 path: FileDetails(filePath: storedAt.path),
+                fileSize: fileSize,
                 courseContentType: contentType,
                 metadataJson: jsonEncode(<String, dynamic>{
                   'originalFilename': p.basename(storedAt.path),
@@ -115,6 +116,7 @@ Future<List<Map<String, dynamic>>> storeContents(
                   title: fileNameWithoutExt,
                   parentId: collection.collectionId,
                   path: sameHashedContent.path.fileDetails,
+                  fileSize: fileSize,
                   courseContentType: contentType,
                   metadataJson: jsonEncode(<String, dynamic>{
                     'originalFilename': metadataJson['originalFilename'],
@@ -195,13 +197,17 @@ CourseContentType checkContentType(String pathOrExt) {
 
   if (AllowedFileExtensions.allowedImageExtensions.contains(ext)) {
     return CourseContentType.image;
-  } else if (AllowedFileExtensions.allowedVideoExtensions.contains(ext)) {
-    return CourseContentType.video;
-  } else if (AllowedFileExtensions.allowedDocumentExtensions.contains(ext)) {
+  } 
+  // else if (AllowedFileExtensions.allowedVideoExtensions.contains(ext)) {
+  //   return CourseContentType.video;
+  // } 
+  else if (AllowedFileExtensions.allowedDocumentExtensions.contains(ext)) {
     return CourseContentType.document;
-  } else if (AllowedFileExtensions.allowedAudioExtensions.contains(ext)) {
-    return CourseContentType.audio;
-  } else if (['txt', 'md'].contains(ext)) {
+  } 
+  // else if (AllowedFileExtensions.allowedAudioExtensions.contains(ext)) {
+  //   return CourseContentType.audio;
+  // } 
+  else if (['txt', 'md'].contains(ext)) {
     return CourseContentType.note;
   } else {
     return CourseContentType.unknown;

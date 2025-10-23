@@ -21,11 +21,15 @@ class MoreSection extends ConsumerWidget {
           MoreSectionOption(title: "Timetable", iconData: Iconsax.heart_copy),
           Padding(
             padding: const EdgeInsets.only(left: 16.0),
-            child: MoreSectionOption(title: "References", iconData: Iconsax.bookmark),
+            child: MoreSectionOption(title: "Quiz", iconData: Iconsax.menu_copy, onTap: () {
+              
+            },),
           ),
           Padding(
             padding: const EdgeInsets.only(left: 16.0),
-            child: MoreSectionOption(title: "Tasks", iconData: Iconsax.menu_copy),
+            child: MoreSectionOption(title: "References", iconData: Iconsax.bookmark, onTap: () {
+              
+            },),
           ),
         ],
       ),
@@ -36,13 +40,15 @@ class MoreSection extends ConsumerWidget {
 class MoreSectionOption extends ConsumerWidget {
   final String title;
   final IconData iconData;
-  const MoreSectionOption({super.key, required this.title, required this.iconData});
+  final void Function()? onTap;
+  const MoreSectionOption({super.key, required this.title, required this.iconData, this.onTap});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
     return ScaleClickWrapper(
       borderRadius: 36,
+      onTap: onTap,
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: theme.surface,

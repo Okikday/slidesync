@@ -261,4 +261,17 @@ class FileUtils {
 
     return totalSize;
   }
+
+  static Future<int> getFilesSize(List<File> files) async {
+    int total = 0;
+    for (final file in files) {
+      total += await file.length();
+    }
+    return total;
+  }
+
+  static Future<int> getFileSize(String path) async {
+    final file = File(path);
+    return await file.length();
+  }
 }

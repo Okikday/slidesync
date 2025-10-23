@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 
-import 'package:slidesync/features/quiz/domain/models/quiz_question.dart';
+import 'package:slidesync/data/models/quiz_question_model/quiz_question.dart';
 
 // ===================================================================================================
 // STATE

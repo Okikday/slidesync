@@ -43,33 +43,38 @@ const CourseContentSchema = CollectionSchema(
       name: r'description',
       type: IsarType.string,
     ),
-    r'hashCode': PropertySchema(
+    r'fileSize': PropertySchema(
       id: 5,
+      name: r'fileSize',
+      type: IsarType.long,
+    ),
+    r'hashCode': PropertySchema(
+      id: 6,
       name: r'hashCode',
       type: IsarType.long,
     ),
     r'lastModified': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'lastModified',
       type: IsarType.dateTime,
     ),
     r'metadataJson': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'metadataJson',
       type: IsarType.string,
     ),
     r'parentId': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'parentId',
       type: IsarType.string,
     ),
     r'path': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'path',
       type: IsarType.string,
     ),
     r'title': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'title',
       type: IsarType.string,
     )
@@ -168,12 +173,13 @@ void _courseContentSerialize(
   writer.writeByte(offsets[2], object.courseContentType.index);
   writer.writeDateTime(offsets[3], object.createdAt);
   writer.writeString(offsets[4], object.description);
-  writer.writeLong(offsets[5], object.hashCode);
-  writer.writeDateTime(offsets[6], object.lastModified);
-  writer.writeString(offsets[7], object.metadataJson);
-  writer.writeString(offsets[8], object.parentId);
-  writer.writeString(offsets[9], object.path);
-  writer.writeString(offsets[10], object.title);
+  writer.writeLong(offsets[5], object.fileSize);
+  writer.writeLong(offsets[6], object.hashCode);
+  writer.writeDateTime(offsets[7], object.lastModified);
+  writer.writeString(offsets[8], object.metadataJson);
+  writer.writeString(offsets[9], object.parentId);
+  writer.writeString(offsets[10], object.path);
+  writer.writeString(offsets[11], object.title);
 }
 
 CourseContent _courseContentDeserialize(
@@ -190,12 +196,13 @@ CourseContent _courseContentDeserialize(
       CourseContentType.unknown;
   object.createdAt = reader.readDateTimeOrNull(offsets[3]);
   object.description = reader.readString(offsets[4]);
+  object.fileSize = reader.readLong(offsets[5]);
   object.id = id;
-  object.lastModified = reader.readDateTimeOrNull(offsets[6]);
-  object.metadataJson = reader.readString(offsets[7]);
-  object.parentId = reader.readString(offsets[8]);
-  object.path = reader.readString(offsets[9]);
-  object.title = reader.readString(offsets[10]);
+  object.lastModified = reader.readDateTimeOrNull(offsets[7]);
+  object.metadataJson = reader.readString(offsets[8]);
+  object.parentId = reader.readString(offsets[9]);
+  object.path = reader.readString(offsets[10]);
+  object.title = reader.readString(offsets[11]);
   return object;
 }
 
@@ -221,14 +228,16 @@ P _courseContentDeserializeProp<P>(
     case 5:
       return (reader.readLong(offset)) as P;
     case 6:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 7:
-      return (reader.readString(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 8:
       return (reader.readString(offset)) as P;
     case 9:
       return (reader.readString(offset)) as P;
     case 10:
+      return (reader.readString(offset)) as P;
+    case 11:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -240,20 +249,16 @@ const _CourseContentcourseContentTypeEnumValueMap = {
   'document': 1,
   'image': 2,
   'link': 3,
-  'audio': 4,
-  'video': 5,
-  'note': 6,
-  'reference': 7,
+  'note': 4,
+  'reference': 5,
 };
 const _CourseContentcourseContentTypeValueEnumMap = {
   0: CourseContentType.unknown,
   1: CourseContentType.document,
   2: CourseContentType.image,
   3: CourseContentType.link,
-  4: CourseContentType.audio,
-  5: CourseContentType.video,
-  6: CourseContentType.note,
-  7: CourseContentType.reference,
+  4: CourseContentType.note,
+  5: CourseContentType.reference,
 };
 
 Id _courseContentGetId(CourseContent object) {
@@ -1126,6 +1131,62 @@ extension CourseContentQueryFilter
   }
 
   QueryBuilder<CourseContent, CourseContent, QAfterFilterCondition>
+      fileSizeEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'fileSize',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CourseContent, CourseContent, QAfterFilterCondition>
+      fileSizeGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'fileSize',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CourseContent, CourseContent, QAfterFilterCondition>
+      fileSizeLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'fileSize',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<CourseContent, CourseContent, QAfterFilterCondition>
+      fileSizeBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'fileSize',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<CourseContent, CourseContent, QAfterFilterCondition>
       hashCodeEqualTo(int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
@@ -1927,6 +1988,19 @@ extension CourseContentQuerySortBy
     });
   }
 
+  QueryBuilder<CourseContent, CourseContent, QAfterSortBy> sortByFileSize() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fileSize', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CourseContent, CourseContent, QAfterSortBy>
+      sortByFileSizeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fileSize', Sort.desc);
+    });
+  }
+
   QueryBuilder<CourseContent, CourseContent, QAfterSortBy> sortByHashCode() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'hashCode', Sort.asc);
@@ -2074,6 +2148,19 @@ extension CourseContentQuerySortThenBy
     });
   }
 
+  QueryBuilder<CourseContent, CourseContent, QAfterSortBy> thenByFileSize() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fileSize', Sort.asc);
+    });
+  }
+
+  QueryBuilder<CourseContent, CourseContent, QAfterSortBy>
+      thenByFileSizeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'fileSize', Sort.desc);
+    });
+  }
+
   QueryBuilder<CourseContent, CourseContent, QAfterSortBy> thenByHashCode() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'hashCode', Sort.asc);
@@ -2201,6 +2288,12 @@ extension CourseContentQueryWhereDistinct
     });
   }
 
+  QueryBuilder<CourseContent, CourseContent, QDistinct> distinctByFileSize() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'fileSize');
+    });
+  }
+
   QueryBuilder<CourseContent, CourseContent, QDistinct> distinctByHashCode() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'hashCode');
@@ -2279,6 +2372,12 @@ extension CourseContentQueryProperty
   QueryBuilder<CourseContent, String, QQueryOperations> descriptionProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'description');
+    });
+  }
+
+  QueryBuilder<CourseContent, int, QQueryOperations> fileSizeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'fileSize');
     });
   }
 

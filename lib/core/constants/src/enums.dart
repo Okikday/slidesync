@@ -6,7 +6,8 @@ enum PlainCourseSortOption { name, dateCreated, dateModified }
 
 enum AppDirType { documents, appSupport, temporary, cache }
 
-enum CourseContentType { unknown, document, image, link, audio, video, note, reference }
+enum CourseContentType { unknown, document, image, link, note, reference }
 
 enum AppClipboardContentType { empty, text, image, images, file, files, html, unsupported }
 
+enum AppCourseCollections { bookmarks, references }

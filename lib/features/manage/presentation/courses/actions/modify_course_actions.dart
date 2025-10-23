@@ -48,7 +48,7 @@ class ModifyCourseActions {
         folderPath: "courses/${course.courseId}",
       );
       if (newPath != null) {
-        course = course.copyWith(imageLocationJson: FileDetails(filePath: newPath).toJson());
+        course = course.setImageLocation(FileDetails(filePath: newPath));
         await CourseRepo.addCourse(course);
         log("Successfully changed image ");
         return true;
@@ -67,7 +67,7 @@ class ModifyCourseActions {
     Course? course = await CourseRepo.getCourseByDbId(courseDbId);
     if (course == null) return false;
     if (course.imageLocationJson.containsAnyFilePath) {
-      await CourseRepo.addCourse(course.copyWith(imageLocationJson: FileDetails().toJson()));
+      await CourseRepo.addCourse(course.setImageLocation(FileDetails()));
       await FileUtils.deleteFileAtPath(course.imageLocationJson.filePath);
       return true;
     }

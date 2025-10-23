@@ -1,4 +1,3 @@
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -91,18 +90,14 @@ class ListCourseCard extends ConsumerWidget {
         ),
         child: Row(
           children: [
-            ListCourseCardIcon(
-              onTapIcon: onTapIcon,
-              fileDetails: course.imageLocationJson.fileDetails,
-              courseCode: course.courseCode,
-            ),
+            ListCourseCardIcon(onTapIcon: onTapIcon, fileDetails: course.imageLocation, courseCode: course.courseCode),
 
             Expanded(
               child: ListCourseCardTitleColumn(
                 courseCode: course.courseCode,
                 courseName: course.courseName,
                 categoriesCount: course.collections.length,
-                hasImage: course.imageLocationJson.fileDetails.containsFilePath,
+                hasImage: course.imageLocation.containsFilePath,
               ),
             ),
 

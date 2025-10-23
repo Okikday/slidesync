@@ -2,6 +2,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/shared/global/providers/course_providers.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/data/models/file_details.dart';
@@ -59,7 +60,7 @@ class ModifyCourseHeader extends ConsumerWidget {
                   if (courseId.isEmpty) return;
                   final course = (await ref.read(CourseProviders.courseProvider(courseId).future));
                   if (course == defaultCourse) return;
-                  if (!course.imageLocationJson.fileDetails.containsFilePath) {
+                  if (!course.imageLocation.containsFilePath) {
                     // ignore: use_build_context_synchronously
                     ModifyCourseActions().pickImageActionRoute(
                       // ignore: use_build_context_synchronously
@@ -75,7 +76,7 @@ class ModifyCourseHeader extends ConsumerWidget {
                   if (courseId.isEmpty) return;
                   final course = (await ref.read(CourseProviders.courseProvider(courseId).future));
                   if (course == defaultCourse) return;
-                  if (!course.imageLocationJson.fileDetails.containsFilePath) {
+                  if (!course.imageLocation.containsFilePath) {
                     // ignore: use_build_context_synchronously
                     ModifyCourseActions().pickImageActionRoute(
                       // ignore: use_build_context_synchronously

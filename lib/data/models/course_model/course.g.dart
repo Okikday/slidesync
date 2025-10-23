@@ -22,40 +22,35 @@ const CourseSchema = CollectionSchema(
       name: r'courseId',
       type: IsarType.string,
     ),
-    r'courseMetadataJson': PropertySchema(
-      id: 1,
-      name: r'courseMetadataJson',
-      type: IsarType.string,
-    ),
     r'courseTitle': PropertySchema(
-      id: 2,
+      id: 1,
       name: r'courseTitle',
       type: IsarType.string,
     ),
     r'createdAt': PropertySchema(
-      id: 3,
+      id: 2,
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
     r'description': PropertySchema(
-      id: 4,
+      id: 3,
       name: r'description',
       type: IsarType.string,
     ),
     r'hashCode': PropertySchema(
-      id: 5,
+      id: 4,
       name: r'hashCode',
       type: IsarType.long,
     ),
-    r'imageLocationJson': PropertySchema(
-      id: 6,
-      name: r'imageLocationJson',
-      type: IsarType.string,
-    ),
     r'lastUpdated': PropertySchema(
-      id: 7,
+      id: 5,
       name: r'lastUpdated',
       type: IsarType.dateTime,
+    ),
+    r'metadataJson': PropertySchema(
+      id: 6,
+      name: r'metadataJson',
+      type: IsarType.string,
     )
   },
   estimateSize: _courseEstimateSize,
@@ -113,10 +108,9 @@ int _courseEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.courseId.length * 3;
-  bytesCount += 3 + object.courseMetadataJson.length * 3;
   bytesCount += 3 + object.courseTitle.length * 3;
   bytesCount += 3 + object.description.length * 3;
-  bytesCount += 3 + object.imageLocationJson.length * 3;
+  bytesCount += 3 + object.metadataJson.length * 3;
   return bytesCount;
 }
 
@@ -127,13 +121,12 @@ void _courseSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.courseId);
-  writer.writeString(offsets[1], object.courseMetadataJson);
-  writer.writeString(offsets[2], object.courseTitle);
-  writer.writeDateTime(offsets[3], object.createdAt);
-  writer.writeString(offsets[4], object.description);
-  writer.writeLong(offsets[5], object.hashCode);
-  writer.writeString(offsets[6], object.imageLocationJson);
-  writer.writeDateTime(offsets[7], object.lastUpdated);
+  writer.writeString(offsets[1], object.courseTitle);
+  writer.writeDateTime(offsets[2], object.createdAt);
+  writer.writeString(offsets[3], object.description);
+  writer.writeLong(offsets[4], object.hashCode);
+  writer.writeDateTime(offsets[5], object.lastUpdated);
+  writer.writeString(offsets[6], object.metadataJson);
 }
 
 Course _courseDeserialize(
@@ -144,13 +137,12 @@ Course _courseDeserialize(
 ) {
   final object = Course();
   object.courseId = reader.readString(offsets[0]);
-  object.courseMetadataJson = reader.readString(offsets[1]);
-  object.courseTitle = reader.readString(offsets[2]);
-  object.createdAt = reader.readDateTimeOrNull(offsets[3]);
-  object.description = reader.readString(offsets[4]);
+  object.courseTitle = reader.readString(offsets[1]);
+  object.createdAt = reader.readDateTimeOrNull(offsets[2]);
+  object.description = reader.readString(offsets[3]);
   object.id = id;
-  object.imageLocationJson = reader.readString(offsets[6]);
-  object.lastUpdated = reader.readDateTimeOrNull(offsets[7]);
+  object.lastUpdated = reader.readDateTimeOrNull(offsets[5]);
+  object.metadataJson = reader.readString(offsets[6]);
   return object;
 }
 
@@ -166,17 +158,15 @@ P _courseDeserializeProp<P>(
     case 1:
       return (reader.readString(offset)) as P;
     case 2:
-      return (reader.readString(offset)) as P;
-    case 3:
       return (reader.readDateTimeOrNull(offset)) as P;
-    case 4:
+    case 3:
       return (reader.readString(offset)) as P;
-    case 5:
+    case 4:
       return (reader.readLong(offset)) as P;
+    case 5:
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 6:
       return (reader.readString(offset)) as P;
-    case 7:
-      return (reader.readDateTimeOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -541,141 +531,6 @@ extension CourseQueryFilter on QueryBuilder<Course, Course, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'courseId',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> courseMetadataJsonEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'courseMetadataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition>
-      courseMetadataJsonGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'courseMetadataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition>
-      courseMetadataJsonLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'courseMetadataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> courseMetadataJsonBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'courseMetadataJson',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition>
-      courseMetadataJsonStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'courseMetadataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition>
-      courseMetadataJsonEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'courseMetadataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition>
-      courseMetadataJsonContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'courseMetadataJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> courseMetadataJsonMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'courseMetadataJson',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition>
-      courseMetadataJsonIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'courseMetadataJson',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition>
-      courseMetadataJsonIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'courseMetadataJson',
         value: '',
       ));
     });
@@ -1115,140 +970,6 @@ extension CourseQueryFilter on QueryBuilder<Course, Course, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Course, Course, QAfterFilterCondition> imageLocationJsonEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'imageLocationJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition>
-      imageLocationJsonGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'imageLocationJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> imageLocationJsonLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'imageLocationJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> imageLocationJsonBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'imageLocationJson',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition>
-      imageLocationJsonStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'imageLocationJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> imageLocationJsonEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'imageLocationJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> imageLocationJsonContains(
-      String value,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'imageLocationJson',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> imageLocationJsonMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'imageLocationJson',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition>
-      imageLocationJsonIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'imageLocationJson',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition>
-      imageLocationJsonIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'imageLocationJson',
-        value: '',
-      ));
-    });
-  }
-
   QueryBuilder<Course, Course, QAfterFilterCondition> lastUpdatedIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(const FilterCondition.isNull(
@@ -1314,6 +1035,136 @@ extension CourseQueryFilter on QueryBuilder<Course, Course, QFilterCondition> {
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterFilterCondition> metadataJsonEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'metadataJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterFilterCondition> metadataJsonGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'metadataJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterFilterCondition> metadataJsonLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'metadataJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterFilterCondition> metadataJsonBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'metadataJson',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterFilterCondition> metadataJsonStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'metadataJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterFilterCondition> metadataJsonEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'metadataJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterFilterCondition> metadataJsonContains(
+      String value,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'metadataJson',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterFilterCondition> metadataJsonMatches(
+      String pattern,
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'metadataJson',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterFilterCondition> metadataJsonIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'metadataJson',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterFilterCondition> metadataJsonIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'metadataJson',
+        value: '',
       ));
     });
   }
@@ -1393,18 +1244,6 @@ extension CourseQuerySortBy on QueryBuilder<Course, Course, QSortBy> {
     });
   }
 
-  QueryBuilder<Course, Course, QAfterSortBy> sortByCourseMetadataJson() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'courseMetadataJson', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterSortBy> sortByCourseMetadataJsonDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'courseMetadataJson', Sort.desc);
-    });
-  }
-
   QueryBuilder<Course, Course, QAfterSortBy> sortByCourseTitle() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'courseTitle', Sort.asc);
@@ -1453,18 +1292,6 @@ extension CourseQuerySortBy on QueryBuilder<Course, Course, QSortBy> {
     });
   }
 
-  QueryBuilder<Course, Course, QAfterSortBy> sortByImageLocationJson() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'imageLocationJson', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterSortBy> sortByImageLocationJsonDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'imageLocationJson', Sort.desc);
-    });
-  }
-
   QueryBuilder<Course, Course, QAfterSortBy> sortByLastUpdated() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastUpdated', Sort.asc);
@@ -1474,6 +1301,18 @@ extension CourseQuerySortBy on QueryBuilder<Course, Course, QSortBy> {
   QueryBuilder<Course, Course, QAfterSortBy> sortByLastUpdatedDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastUpdated', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterSortBy> sortByMetadataJson() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'metadataJson', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterSortBy> sortByMetadataJsonDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'metadataJson', Sort.desc);
     });
   }
 }
@@ -1488,18 +1327,6 @@ extension CourseQuerySortThenBy on QueryBuilder<Course, Course, QSortThenBy> {
   QueryBuilder<Course, Course, QAfterSortBy> thenByCourseIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'courseId', Sort.desc);
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterSortBy> thenByCourseMetadataJson() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'courseMetadataJson', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterSortBy> thenByCourseMetadataJsonDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'courseMetadataJson', Sort.desc);
     });
   }
 
@@ -1563,18 +1390,6 @@ extension CourseQuerySortThenBy on QueryBuilder<Course, Course, QSortThenBy> {
     });
   }
 
-  QueryBuilder<Course, Course, QAfterSortBy> thenByImageLocationJson() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'imageLocationJson', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterSortBy> thenByImageLocationJsonDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'imageLocationJson', Sort.desc);
-    });
-  }
-
   QueryBuilder<Course, Course, QAfterSortBy> thenByLastUpdated() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastUpdated', Sort.asc);
@@ -1586,6 +1401,18 @@ extension CourseQuerySortThenBy on QueryBuilder<Course, Course, QSortThenBy> {
       return query.addSortBy(r'lastUpdated', Sort.desc);
     });
   }
+
+  QueryBuilder<Course, Course, QAfterSortBy> thenByMetadataJson() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'metadataJson', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterSortBy> thenByMetadataJsonDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'metadataJson', Sort.desc);
+    });
+  }
 }
 
 extension CourseQueryWhereDistinct on QueryBuilder<Course, Course, QDistinct> {
@@ -1593,14 +1420,6 @@ extension CourseQueryWhereDistinct on QueryBuilder<Course, Course, QDistinct> {
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'courseId', caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<Course, Course, QDistinct> distinctByCourseMetadataJson(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'courseMetadataJson',
-          caseSensitive: caseSensitive);
     });
   }
 
@@ -1630,17 +1449,16 @@ extension CourseQueryWhereDistinct on QueryBuilder<Course, Course, QDistinct> {
     });
   }
 
-  QueryBuilder<Course, Course, QDistinct> distinctByImageLocationJson(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'imageLocationJson',
-          caseSensitive: caseSensitive);
-    });
-  }
-
   QueryBuilder<Course, Course, QDistinct> distinctByLastUpdated() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'lastUpdated');
+    });
+  }
+
+  QueryBuilder<Course, Course, QDistinct> distinctByMetadataJson(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'metadataJson', caseSensitive: caseSensitive);
     });
   }
 }
@@ -1655,12 +1473,6 @@ extension CourseQueryProperty on QueryBuilder<Course, Course, QQueryProperty> {
   QueryBuilder<Course, String, QQueryOperations> courseIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'courseId');
-    });
-  }
-
-  QueryBuilder<Course, String, QQueryOperations> courseMetadataJsonProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'courseMetadataJson');
     });
   }
 
@@ -1688,15 +1500,15 @@ extension CourseQueryProperty on QueryBuilder<Course, Course, QQueryProperty> {
     });
   }
 
-  QueryBuilder<Course, String, QQueryOperations> imageLocationJsonProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'imageLocationJson');
-    });
-  }
-
   QueryBuilder<Course, DateTime?, QQueryOperations> lastUpdatedProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'lastUpdated');
+    });
+  }
+
+  QueryBuilder<Course, String, QQueryOperations> metadataJsonProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'metadataJson');
     });
   }
 }

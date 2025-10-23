@@ -19,11 +19,11 @@ class SelectContentsUc {
       case CourseContentType.image:
         return await _selectImages();
 
-      case CourseContentType.video:
-        return await _selectVideos();
+      // case CourseContentType.video:
+      //   return await _selectVideos();
 
-      case CourseContentType.audio:
-        return await _selectAudios();
+      // case CourseContentType.audio:
+      //   return await _selectAudios();
 
       default:
         return null;
@@ -57,19 +57,19 @@ Future<List<File>?> _selectImages() async {
   return _copyToCache(images.map((x) => x.path));
 }
 
-Future<List<File>?> _selectVideos() async {
-  final picker = ImagePicker();
-  final mediaList = await picker.pickMultipleMedia();
-  if (mediaList.isEmpty) return null;
-  // Filter videos if needed, here assuming all mediaList
-  return _copyToCache(mediaList.map((x) => x.path));
-}
+// Future<List<File>?> _selectVideos() async {
+//   final picker = ImagePicker();
+//   final mediaList = await picker.pickMultipleMedia();
+//   if (mediaList.isEmpty) return null;
+//   // Filter videos if needed, here assuming all mediaList
+//   return _copyToCache(mediaList.map((x) => x.path));
+// }
 
-Future<List<File>?> _selectAudios() async {
-  final result = await FilePicker.platform.pickFiles(type: FileType.audio);
-  if (result == null) return null;
-  return _copyToCache(result.paths.whereType<String>());
-}
+// Future<List<File>?> _selectAudios() async {
+//   final result = await FilePicker.platform.pickFiles(type: FileType.audio);
+//   if (result == null) return null;
+//   return _copyToCache(result.paths.whereType<String>());
+// }
 
 /// Copies each source file at [paths] into the app cache directory, returns new File list.
 Future<List<File>> _copyToCache(Iterable<String> paths) async {

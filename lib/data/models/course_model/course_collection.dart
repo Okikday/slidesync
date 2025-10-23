@@ -4,6 +4,10 @@ import 'dart:convert';
 import 'package:isar/isar.dart';
 import 'package:path/path.dart' as p;
 import 'package:slidesync/core/storage/native/app_paths.dart';
+import 'package:slidesync/core/utils/result.dart';
+import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/helpers/extensions/src/extension_on_map.dart';
 import 'package:uuid/uuid.dart';
 
 import 'course_content.dart';
@@ -23,8 +27,8 @@ class CourseCollection {
 
   late String description;
   DateTime? createdAt;
-  late String imageLocationJson;
-  late String collectionMetadataJson;
+  // late String imageLocationJson;
+  late String metadataJson;
 
   final IsarLinks<CourseContent> contents = IsarLinks<CourseContent>();
 
@@ -35,8 +39,8 @@ class CourseCollection {
     required String collectionTitle,
     String description = '',
     DateTime? createdAt,
-    String imageLocationJson = '{}',
-    String collectionMetadataJson = '{}',
+    // String imageLocationJson = '{}',
+    String metadataJson = '{}',
   }) {
     final collection = CourseCollection()
       ..collectionId = const Uuid().v4()
@@ -44,8 +48,8 @@ class CourseCollection {
       ..collectionTitle = collectionTitle
       ..description = description
       ..createdAt = createdAt ?? DateTime.now()
-      ..imageLocationJson = imageLocationJson
-      ..collectionMetadataJson = collectionMetadataJson;
+      // ..imageLocationJson = imageLocationJson
+      ..metadataJson = metadataJson;
     return collection;
   }
 
@@ -57,8 +61,8 @@ class CourseCollection {
       'collectionTitle': collectionTitle,
       'description': description,
       'createdAt': createdAt?.toIso8601String(),
-      'imageLocationJson': imageLocationJson,
-      'collectionMetadataJson': collectionMetadataJson,
+      // 'imageLocationJson': imageLocationJson,
+      'metadataJson': metadataJson,
       // courseContents is IsarLinks, not serialized here
     };
   }
@@ -71,8 +75,8 @@ class CourseCollection {
     collection.collectionTitle = map['collectionTitle'] ?? '';
     collection.description = map['description'] ?? '';
     collection.createdAt = map['createdAt'] != null ? DateTime.tryParse(map['createdAt']) : null;
-    collection.imageLocationJson = map['imageLocationJson'] ?? '{}';
-    collection.collectionMetadataJson = map['collectionMetadataJson'] ?? '{}';
+    // collection.imageLocationJson = map['imageLocationJson'] ?? '{}';
+    collection.metadataJson = map['metadataJson'] ?? '{}';
 
     return collection;
   }
@@ -91,8 +95,8 @@ class CourseCollection {
         other.collectionTitle == collectionTitle &&
         other.description == description &&
         other.createdAt == createdAt &&
-        other.imageLocationJson == imageLocationJson &&
-        other.collectionMetadataJson == collectionMetadataJson;
+        // other.imageLocationJson == imageLocationJson &&
+        other.metadataJson == metadataJson;
   }
 
   @override
@@ -103,13 +107,13 @@ class CourseCollection {
         collectionTitle.hashCode ^
         description.hashCode ^
         createdAt.hashCode ^
-        imageLocationJson.hashCode ^
-        collectionMetadataJson.hashCode;
+        // imageLocationJson.hashCode ^
+        metadataJson.hashCode;
   }
 
   @override
   String toString() {
-    return 'CourseCollection(id: $id, collectionId: $collectionId, parentId: $parentId, collectionTitle: $collectionTitle, description: $description, createdAt: $createdAt, imageLocationJson: $imageLocationJson, collectionMetadataJson: $collectionMetadataJson)';
+    return 'CourseCollection(id: $id, collectionId: $collectionId, parentId: $parentId, collectionTitle: $collectionTitle, description: $description, createdAt: $createdAt, metadataJson: $metadataJson)';
   }
 }
 
@@ -126,7 +130,7 @@ extension CourseCollectionExtension on CourseCollection {
     String? description,
     DateTime? createdAt,
     String? imageLocationJson,
-    String? collectionMetadataJson,
+    String? metadataJson,
   }) {
     return this
       ..collectionId = collectionId ?? this.collectionId
@@ -134,7 +138,13 @@ extension CourseCollectionExtension on CourseCollection {
       ..collectionTitle = collectionTitle ?? this.collectionTitle
       ..description = description ?? this.description
       ..createdAt = createdAt ?? this.createdAt
-      ..imageLocationJson = imageLocationJson ?? this.imageLocationJson
-      ..collectionMetadataJson = collectionMetadataJson ?? this.collectionMetadataJson;
+      // ..imageLocationJson = imageLocationJson ?? this.imageLocationJson
+      ..metadataJson = metadataJson ?? this.metadataJson;
   }
+
+  Map<String, dynamic> get metadata =>
+      Result.tryRun(() => Map<String, dynamic>.from(jsonDecode(metadataJson))).data ?? <String, dynamic>{};
+  String get imageLocationJson => metadataJson.decodeJson['imageLocationJson'];
+  CourseCollection setImageLocation(FileDetails imageDetails) =>
+      copyWith(metadataJson: {...metadataJson.decodeJson, 'imageLocationJson': imageDetails.toJson()}.encodeToJson);
 }

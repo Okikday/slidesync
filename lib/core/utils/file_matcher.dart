@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
+import 'package:slidesync/core/utils/basic_utils.dart';
 import 'package:slidesync/core/utils/smart_isolate.dart';
 
 /// Service class for finding and matching files by size and hash in an isolate.
@@ -296,22 +297,4 @@ class _IsolateProgress {
   _IsolateProgress({this.message});
 }
 
-/// Utility class containing file hash calculation methods.
-///
-/// This is a placeholder for your existing BasicUtils class.
-class BasicUtils {
-  /// Calculates the XXH3 hash of a file.
-  ///
-  /// **Parameters:**
-  /// - [filePath]: Path to the file to hash
-  ///
-  /// **Returns:**
-  /// The XXH3 hash as a hexadecimal string.
-  ///
-  /// **Throws:**
-  /// May throw exceptions if file cannot be read.
-  static Future<String> calculateFileHashXXH3(String filePath) async {
-    // Your existing implementation here
-    throw UnimplementedError('Add your XXH3 implementation');
-  }
-}
+

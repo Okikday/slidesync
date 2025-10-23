@@ -59,6 +59,7 @@ class AddLinkActions {
         title: previewLinkDetails.title ?? "Unknown link",
         description: previewLinkDetails.description ?? '',
         path: FileDetails(urlPath: link),
+        fileSize: link.length,
         courseContentType: CourseContentType.link,
         metadataJson: jsonEncode({'previewUrl': previewLinkDetails.previewUrl}),
       );

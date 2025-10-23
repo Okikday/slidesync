@@ -1,4 +1,3 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
 import 'package:isar/isar.dart';
@@ -6,8 +5,6 @@ import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:uuid/uuid.dart';
-
-export 'course_content_type.dart';
 
 part 'course_content.g.dart';
 
@@ -38,6 +35,9 @@ class CourseContent {
   @Enumerated(EnumType.ordinal)
   late CourseContentType courseContentType;
 
+  /// File size in bytes for better content matching
+  late int fileSize;
+
   late String metadataJson;
 
   CourseContent();
@@ -51,6 +51,7 @@ class CourseContent {
     DateTime? createdAt,
     DateTime? lastModified,
     required CourseContentType courseContentType,
+    required int fileSize,
     String description = '',
     String metadataJson = '{}',
   }) {
@@ -63,6 +64,7 @@ class CourseContent {
       ..createdAt = createdAt ?? DateTime.now()
       ..lastModified = lastModified ?? DateTime.now()
       ..courseContentType = courseContentType
+      ..fileSize = fileSize
       ..description = description
       ..metadataJson = metadataJson;
     return content;
@@ -80,6 +82,7 @@ class CourseContent {
       'lastModified': lastModified?.toIso8601String(),
       'description': description,
       'courseContentType': courseContentType.index,
+      'fileSize': fileSize, // NEW: Include in map
       'metadataJson': metadataJson,
     };
   }
@@ -96,6 +99,9 @@ class CourseContent {
       ..lastModified = map['lastModified'] != null ? DateTime.tryParse(map['lastModified']) : null
       ..description = map['description'] ?? ''
       ..courseContentType = CourseContentType.values[map['courseContentType'] ?? 0]
+      ..fileSize =
+          map['fileSize'] ??
+          0 // NEW: Parse fileSize
       ..metadataJson = map['metadataJson'] ?? '{}';
   }
 
@@ -117,6 +123,7 @@ class CourseContent {
         other.lastModified == lastModified &&
         other.description == description &&
         other.courseContentType == courseContentType &&
+        other.fileSize == fileSize && // NEW: Include in equality
         other.metadataJson == metadataJson;
   }
 
@@ -132,12 +139,13 @@ class CourseContent {
         lastModified.hashCode ^
         description.hashCode ^
         courseContentType.hashCode ^
+        fileSize.hashCode ^ // NEW: Include in hashCode
         metadataJson.hashCode;
   }
 
   @override
   String toString() {
-    return 'CourseContent(id: $id, contentHash: $contentHash, contentId: $contentId, parentId: $parentId, title: $title, path: $path, createdAt: $createdAt, lastModified: $lastModified, description: $description, courseContentType: $courseContentType, metadataJson: $metadataJson)';
+    return 'CourseContent(id: $id, contentHash: $contentHash, contentId: $contentId, parentId: $parentId, title: $title, path: $path, createdAt: $createdAt, lastModified: $lastModified, description: $description, courseContentType: $courseContentType, fileSize: $fileSize, metadataJson: $metadataJson)';
   }
 }
 
@@ -153,6 +161,7 @@ extension CourseContentExtension on CourseContent {
     DateTime? lastModified,
     String? description,
     CourseContentType? courseContentType,
+    int? fileSize, // NEW: Add to copyWith
     String? metadataJson,
   }) {
     return this
@@ -164,6 +173,10 @@ extension CourseContentExtension on CourseContent {
       ..lastModified = lastModified ?? this.lastModified
       ..description = description ?? this.description
       ..courseContentType = courseContentType ?? this.courseContentType
+      ..fileSize =
+          fileSize ??
+          this
+              .fileSize // NEW: Include in copyWith
       ..metadataJson = metadataJson ?? this.metadataJson;
   }
 
@@ -183,5 +196,6 @@ extension CourseContentMapX on Map<String, dynamic> {
   DateTime? get lastModified => this['lastModified'] != null ? DateTime.tryParse(this['lastModified'] as String) : null;
   String get description => this['description'] as String? ?? '';
   int get courseContentTypeIndex => this['courseContentType'] as int? ?? 0;
+  int get fileSize => this['fileSize'] as int? ?? 0; // NEW: Add fileSize getter
   String get metadataJson => this['metadataJson'] as String? ?? '{}';
 }

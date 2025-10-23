@@ -1,4 +1,4 @@
-import 'package:slidesync/features/quiz/domain/models/quiz_question.dart';
+import 'package:slidesync/data/models/quiz_question_model/quiz_question.dart';
 import 'package:slidesync/features/quiz/presentation/logic/quiz_screen_state.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 
