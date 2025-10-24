@@ -7,6 +7,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
@@ -14,6 +15,7 @@ import 'package:slidesync/features/browse/presentation/ui/course_details/course_
 import 'package:slidesync/features/manage/presentation/collections/ui/modify_collections/edit_collection_title_bottom_sheet.dart';
 import 'package:slidesync/features/manage/presentation/collections/actions/modify_collection_actions.dart';
 import 'package:slidesync/routes/app_router.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
 import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -92,6 +94,9 @@ class _ModCollectionDialogState extends ConsumerState<ModCollectionDialog> {
                   padding: const EdgeInsets.only(top: 4),
                   child: CustomText(
                     collection.collectionTitle,
+                    decorationStyle: TextDecorationStyle.wavy,
+                    textDecoration: TextDecoration.underline,
+                    decorationColor: theme.secondary,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: theme.onBackground,
@@ -105,12 +110,11 @@ class _ModCollectionDialogState extends ConsumerState<ModCollectionDialog> {
         ),
       ),
       actions: [
-        AppActionDialogModel(
-          title: "Select",
-          icon: Icon(Iconsax.tick_circle_copy, size: 24, color: theme.supportingText),
-          onTap: () {},
-        ),
-
+        // AppActionDialogModel(
+        //   title: "Select",
+        //   icon: Icon(Iconsax.tick_circle_copy, size: 24, color: theme.supportingText),
+        //   onTap: () {},
+        // ),
         AppActionDialogModel(
           title: "View contents",
           icon: Icon(Iconsax.forward_copy, size: 24, color: theme.supportingText),
@@ -123,17 +127,16 @@ class _ModCollectionDialogState extends ConsumerState<ModCollectionDialog> {
         AppActionDialogModel(
           title: "Share",
           icon: Icon(Icons.share_outlined, size: 24, color: theme.supportingText),
-          onTap: () {},
+          onTap: () async {
+            GlobalNav.popGlobal();
+            await ShareContentActions.shareCollection(context, collection.collectionId);
+          },
         ),
         AppActionDialogModel(
           title: "Delete",
           icon: Icon(Iconsax.box_remove_copy, size: 24, color: Colors.redAccent),
           onTap: () async {
-            if (context.mounted) {
-              CustomDialog.hide(context);
-            } else {
-              rootNavigatorKey.currentContext?.pop();
-            }
+            GlobalNav.popGlobal();
 
             if (context.mounted) {
               CustomDialog.show(
@@ -147,15 +150,10 @@ class _ModCollectionDialogState extends ConsumerState<ModCollectionDialog> {
                       "This will delete \"${collection.collectionTitle}\"."
                       "\n\nAre you sure you want to delete this collection?",
                   onPop: () {
-                    log("Popping");
-                    if (context.mounted) {
-                      CustomDialog.hide(context);
-                    } else {
-                      rootNavigatorKey.currentContext?.pop();
-                    }
+                    GlobalNav.popGlobal();
                   },
                   onCancel: () {
-                    rootNavigatorKey.currentContext?.pop();
+                    GlobalNav.popGlobal();
                   },
                   onDelete: () async {
                     await mca.onDeleteCollection(context, collection: collection);

@@ -35,7 +35,7 @@ class ListCourseCard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: theme.adjustBgAndPrimaryWithLerpExtra,
         borderRadius: BorderRadius.circular(14),
-        border: Border.fromBorderSide(BorderSide(color: theme.adjustBgAndPrimaryWithLerp)),
+        border: Border.fromBorderSide(BorderSide(color: theme.onBackground.withAlpha(10))),
         boxShadow: context.isDarkMode
             ? [
                 BoxShadow(

@@ -10,6 +10,7 @@ import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
+import 'package:slidesync/features/study/presentation/actions/content_view_gate_actions.dart';
 import 'package:slidesync/routes/app_router.dart';
 
 import 'package:slidesync/routes/routes.dart';
@@ -117,10 +118,18 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                                 children: [
                                   Flexible(
                                     child: Tooltip(
-                                      message: content.title,
+                                      message: content.title.toLowerCase() == "unknown"
+                                          ? content.courseContentType == CourseContentType.link
+                                                ? content.path.urlPath
+                                                : content.title
+                                          : content.title,
                                       triggerMode: TooltipTriggerMode.tap,
                                       child: CustomText(
-                                        content.title,
+                                        content.title.toLowerCase() == "unknown"
+                                            ? content.courseContentType == CourseContentType.link
+                                                  ? content.path.urlPath
+                                                  : content.title
+                                            : content.title,
                                         color: theme.onBackground,
                                         fontWeight: FontWeight.w600,
                                         overflow: TextOverflow.ellipsis,
@@ -165,13 +174,13 @@ class _ContentCardState extends ConsumerState<ContentCard> {
   }
 }
 
-class ContentCardPopUpMenuButton extends StatelessWidget {
+class ContentCardPopUpMenuButton extends ConsumerWidget {
   const ContentCardPopUpMenuButton({super.key, required this.content});
 
   final CourseContent content;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return AppPopupMenuButton(
       iconSize: 16,
       actions: [
@@ -180,6 +189,13 @@ class ContentCardPopUpMenuButton extends StatelessWidget {
           iconData: Iconsax.play,
           onTap: () {
             context.pushNamed(Routes.contentGate.name, extra: content);
+          },
+        ),
+        PopupMenuAction(
+          title: "Open Outside App",
+          iconData: Iconsax.send,
+          onTap: () {
+            ContentViewGateActions.redirectToViewer(ref, content, popBefore: false, openOutsideApp: true);
           },
         ),
         if (content.courseContentType == CourseContentType.link)
@@ -251,10 +267,13 @@ class ContentCardPreviewImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    
     return ImageFiltered(
       imageFilter: ColorFilter.mode(Colors.black.withAlpha(10), BlendMode.color),
       child: BuildImagePathWidget(
-        fileDetails: FileDetails(filePath: content.previewPath ?? ''),
+        fileDetails: content.courseContentType == CourseContentType.link
+            ? FileDetails(urlPath: content.previewPath ?? '')
+            : FileDetails(filePath: content.previewPath ?? ''),
         fit: BoxFit.cover,
         fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, false), size: 36),
       ),

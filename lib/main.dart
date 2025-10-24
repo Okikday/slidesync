@@ -56,24 +56,24 @@ Future<void> _initialize() async {
   if (!kIsWeb) await IsarData.initializeDefault();
   pdfrxFlutterInitialize();
   await IsolateWorker.init();
-  await _appLaunchRoutine();
   await _firstAppLaunch();
+  await _appLaunchRoutine();
 }
 
 Future<void> _appLaunchRoutine() async {
   /// Clear App Cache every 23 hours
-  final lastDateString =
-      (await AppHiveData.instance.getData(key: HiveDataPathKey.lastClearedCacheDate.name)) as String?;
-  if (lastDateString == null) {
+  final lastDateHive =
+      (await AppHiveData.instance.getData(key: HiveDataPathKey.lastClearedCacheDate.name)) as DateTime?;
+  if (lastDateHive == null) {
     await AppHiveData.instance.setData(
       key: HiveDataPathKey.lastClearedCacheDate.name,
       value: DateTime.now().toIso8601String(),
     );
     return;
   }
-  final lastDate = DateTime.tryParse(lastDateString);
-  final dateDiff = lastDate?.difference(DateTime.now());
-  if (dateDiff != null && dateDiff.inHours > 20) {
+  final lastDate = lastDateHive;
+  final dateDiff = lastDate.difference(DateTime.now());
+  if (dateDiff.inHours > 20) {
     final token = RootIsolateToken.instance;
     if (token != null) {
       compute(FileUtils.deleteEmptyCoursesDirsInIsolate, {'rootIsolateToken': token});
@@ -90,11 +90,13 @@ Future<void> _firstAppLaunch() async {
   if (isFirstLaunch == null) {
     final referenceCollection = CourseCollection.create(
       parentId: AppCourseCollections.references.name,
+      collectionId: AppCourseCollections.references.name,
       collectionTitle: "References",
       description: "This is the Default App Reference collections",
     );
     final bookMarkCollection = CourseCollection.create(
       parentId: AppCourseCollections.bookmarks.name,
+      collectionId: AppCourseCollections.bookmarks.name,
       collectionTitle: "Bookmarks",
       description: "This is the Default App Bookmark collections",
     );

@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/main/presentation/library/ui/library_floating_action_button.dart';
@@ -61,7 +62,10 @@ class _MainViewState extends ConsumerState<MainView> {
                 onPageChanged: (index) {
                   ref.read(MainProvider.tabIndexProvider.notifier).update((cb) => index);
                 },
-                children: const [HomeTabView(), LibraryTabView(), ExploreTabView()],
+                children: const [
+                  HomeTabView(), LibraryTabView(),
+                  // ExploreTabView()
+                ],
               ),
 
               Positioned(
@@ -72,7 +76,11 @@ class _MainViewState extends ConsumerState<MainView> {
                   onTap: (index) {
                     if (index != ref.read(MainProvider.tabIndexProvider)) {
                       ref.read(MainProvider.tabIndexProvider.notifier).update((cb) => index);
-                      pageController.jumpToPage(index);
+                      pageController.animateToPage(
+                        index,
+                        duration: Durations.extralong1,
+                        curve: CustomCurves.defaultIosSpring,
+                      );
                     }
                   },
                 ),

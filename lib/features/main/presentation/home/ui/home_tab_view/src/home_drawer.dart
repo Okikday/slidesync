@@ -68,14 +68,14 @@ class HomeDrawer extends ConsumerWidget {
                   context.pushNamed(Routes.settings.name);
                 },
               ),
-              ListTile(
-                tileColor: Colors.transparent,
-                leading: Icon(Iconsax.pen_tool, color: theme.supportingText.withValues(alpha: 0.5)),
-                title: CustomText("Tools", color: theme.onBackground),
-                onTap: () {
-                  // Tools like Calculate gpa, Reading Metrics etc
-                },
-              ),
+              // ListTile(
+              //   tileColor: Colors.transparent,
+              //   leading: Icon(Iconsax.pen_tool, color: theme.supportingText.withValues(alpha: 0.5)),
+              //   title: CustomText("Tools", color: theme.onBackground),
+              //   onTap: () {
+              //     // Tools like Calculate gpa, Reading Metrics etc
+              //   },
+              // ),
             ],
           ),
         ),

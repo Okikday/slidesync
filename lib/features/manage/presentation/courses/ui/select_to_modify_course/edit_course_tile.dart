@@ -41,7 +41,7 @@ class EditCourseTile extends ConsumerWidget {
         constraints: BoxConstraints(minHeight: 90, maxHeight: 140),
         decoration: BoxDecoration(
           color: theme.surface,
-          borderRadius: BorderRadius.only(topLeft: Radius.circular(40), bottomRight: Radius.circular(40)),
+          borderRadius: BorderRadius.circular(16),
           border: Border(right: side, bottom: side),
         ),
         child: Row(

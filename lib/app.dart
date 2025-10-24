@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/result.dart';
+import 'package:slidesync/features/main/presentation/main/logic/main_provider.dart';
 import 'package:slidesync/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -52,6 +53,17 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
       }
     });
     super.didChangePlatformBrightness();
+  }
+  @override
+  Future<bool> didPopRoute() {
+    WidgetsBinding.instance.addPostFrameCallback((_){
+      final isFocusMode = ref.read(MainProvider.isFocusModeProvider);
+      if(isFocusMode){
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+      }
+    });
+
+    return super.didPopRoute();
   }
 
   @override

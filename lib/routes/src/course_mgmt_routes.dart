@@ -49,20 +49,15 @@ final courseMgmtRoutes = [
       GoRoute(
         name: Routes.modifyCollections.name,
         path: Routes.modifyCollections.subPath,
-        pageBuilder: (context, state) => defaultTransition(
-          state.pageKey,
-          defaultIncoming: TransitionType.scale(alignment: Alignment.centerRight, from: 0, to: 1),
-          child: ModifyCollectionsView(courseId: (state.extra as String)),
-        ),
+        pageBuilder: (context, state) =>
+            defaultTransition(state.pageKey, child: ModifyCollectionsView(courseId: (state.extra as String))),
         routes: [
           //MODIFY CONTENTS VIEW NAVIGATION
           GoRoute(
             name: Routes.modifyContents.name,
             path: Routes.modifyContents.subPath,
-            pageBuilder: (context, state) => defaultTransition(
-              state.pageKey,
-              child: ModifyContentsView(collectionId: state.extra as String),
-            ),
+            pageBuilder: (context, state) =>
+                defaultTransition(state.pageKey, child: ModifyContentsView(collectionId: state.extra as String)),
           ),
         ],
       ),

@@ -11,6 +11,7 @@ import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/features/manage/domain/usecases/collections/modify_collection_uc.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 
 class ModifyCollectionActions {
   /// Add collection to course
@@ -83,11 +84,7 @@ class ModifyCollectionActions {
   }
 
   Future<void> onDeleteCollection(BuildContext context, {required CourseCollection collection}) async {
-    if (context.mounted) {
-      CustomDialog.hide(context);
-    } else {
-      rootNavigatorKey.currentContext?.pop();
-    }
+    GlobalNav.popGlobal();
     final BuildContext? newContext = rootNavigatorKey.currentContext;
 
     if (newContext != null) {

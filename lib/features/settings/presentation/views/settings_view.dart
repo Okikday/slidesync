@@ -86,32 +86,30 @@ class SettingsView extends ConsumerWidget {
                     ),
                   ),
 
-                  ConstantSizing.columnSpacingLarge,
+                  // ConstantSizing.columnSpacingLarge,
 
-                  CustomText("Experience", color: theme.supportingText),
+                  // CustomText("Experience", color: theme.supportingText),
 
-                  ConstantSizing.columnSpacingMedium,
+                  // ConstantSizing.columnSpacingMedium,
 
-                  SettingsCard(
-                    title: "Summarized suggestions",
-                    iconData: Iconsax.sun,
-                    content: "Use your materials to suggest what to read",
-                    trailing: Switch(value: false, onChanged: (p) {}),
-                  ),
-
+                  // SettingsCard(
+                  //   title: "Summarized suggestions",
+                  //   iconData: Iconsax.sun,
+                  //   content: "Use your materials to suggest what to read",
+                  //   trailing: Switch(value: false, onChanged: (p) {}),
+                  // ),
                   ConstantSizing.columnSpacingLarge,
 
                   CustomText("Technical", color: theme.supportingText),
 
-                  ConstantSizing.columnSpacingMedium,
+                  // ConstantSizing.columnSpacingMedium,
 
-                  SettingsCard(
-                    title: "Content not copied",
-                    iconData: Iconsax.copy,
-                    content: "Turning this on requires storage permission and reduces storage usage.",
-                    trailing: Switch(value: false, onChanged: (p) {}),
-                  ),
-
+                  // SettingsCard(
+                  //   title: "Content not copied",
+                  //   iconData: Iconsax.copy,
+                  //   content: "Turning this on requires storage permission and reduces storage usage.",
+                  //   trailing: Switch(value: false, onChanged: (p) {}),
+                  // ),
                   ConstantSizing.columnSpacingMedium,
 
                   SettingsCard(

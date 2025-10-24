@@ -41,7 +41,7 @@ class RecentsSectionBody extends ConsumerWidget {
               return RecentListTile(
                 dataModel: RecentListTileModel(
                   title: content.title ?? "No title",
-                  subtitle: content.pages.isEmpty ? "Last page unavailable!" : "Page ${content.pages.last}",
+                  subtitle: content.pages.isEmpty ? "Unknown" : "Page ${content.pages.last}",
                   // extraContent: DummySlides.dummySlides[index]['extraContent'] as String? ?? "",
                   previewPath: previewPath,
                   progressLevel: ProgressLevel.neutral,

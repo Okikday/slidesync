@@ -21,7 +21,7 @@ class CourseMaterialsViewAppBar extends ConsumerWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        MaterialsSearchButton(collectionId: collectionId),
+        MaterialsSearchButton(collectionId: collectionId, backgroundColor: theme.secondary.withAlpha(50)),
         AppPopupMenuButton(
           menuPadding: EdgeInsets.only(right: 16),
           actions: [
@@ -110,8 +110,6 @@ class CourseMaterialsViewAppBar extends ConsumerWidget {
                 );
               },
             ),
-
-            PopupMenuAction(title: "Group", iconData: Iconsax.arrange_circle, onTap: () {}),
           ],
         ),
       ],

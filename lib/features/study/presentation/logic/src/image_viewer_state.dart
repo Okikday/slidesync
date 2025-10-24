@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'dart:developer';
-
+import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar/isar.dart';
 import 'package:photo_view/photo_view.dart';
+// import 'package:screenshot/screenshot.dart';
 import 'package:slidesync/core/base/use_value_notifier.dart';
+import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
@@ -16,6 +19,8 @@ import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 
 class ImageViewerState with ValueNotifierFactoryMixin {
+  // static final ScreenshotController screenshotController = ScreenshotController();
+
   ///|
   ///|
   /// ===================================================================================================
@@ -26,6 +31,7 @@ class ImageViewerState with ValueNotifierFactoryMixin {
 
   late Future<void> isInitialized;
   late final ValueNotifier<bool> isAppBarVisibleNotifier;
+  late final ValueNotifier<int> rotationNotifier;
   late final PhotoViewController controller;
 
   final Stopwatch _viewStopwatch = Stopwatch();
@@ -36,12 +42,17 @@ class ImageViewerState with ValueNotifierFactoryMixin {
 
   ImageViewerState(this.ref, this.contentId) {
     isAppBarVisibleNotifier = useValueNotifier(true);
+    rotationNotifier = useValueNotifier(0);
     controller = PhotoViewController();
     isInitialized = _initialize();
   }
 
   Future<void> _initialize() async {
-    progressTrack = await _getLastProgressTrack(contentId);
+    await Result.tryRunAsync(() async {
+      progressTrack = await _getLastProgressTrack(contentId);
+      rotationNotifier.value = (await AppHiveData.instance.getData(key: "${contentId}_rotation") as int?) ?? 0;
+    });
+    controller.rotation = (math.pi / 2) * rotationNotifier.value;
     _viewStopwatch.start();
   }
 
@@ -66,6 +77,20 @@ class ImageViewerState with ValueNotifierFactoryMixin {
 
   void setAppBarVisible(bool visible) {
     isAppBarVisibleNotifier.value = visible;
+  }
+
+  void toggleAppBarVisible() {
+    final visible = isAppBarVisibleNotifier.value;
+    isAppBarVisibleNotifier.value = !visible;
+    SystemChrome.setEnabledSystemUIMode(visible ? SystemUiMode.immersive : SystemUiMode.edgeToEdge);
+  }
+
+  Future<void> setRotation() async {
+    final rotation = rotationNotifier.value;
+    final newRotation = rotation >= 3 ? 0 : rotation + 1;
+    rotationNotifier.value = newRotation;
+    controller.rotation = (math.pi / 2) * newRotation;
+    await AppHiveData.instance.setData(key: "${contentId}_rotation", value: newRotation);
   }
 
   // ============================================================================

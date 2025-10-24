@@ -42,7 +42,7 @@ class CourseDetailsHeader extends ConsumerWidget {
         background: DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [theme.background, theme.adjustBgAndPrimaryWithLerp],
+              colors: [theme.background, theme.adjustBgAndSecondaryWithLerp],
               stops: [.8, 1],
               begin: Alignment.bottomLeft,
               end: Alignment.topRight,

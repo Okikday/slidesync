@@ -15,6 +15,7 @@ import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class PdfDocViewerState with ValueNotifierFactoryMixin {
   static final screenshotController = ScreenshotController();
@@ -43,7 +44,7 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
   int? lastUpdatedPage;
 
   // Read validity duration constant
-  static const Duration readValidityDuration = Duration(seconds: 3);
+  static const Duration readValidityDuration = Duration(seconds: 10);
 
   PdfDocViewerState(this.ref, this.contentId) {
     controller = PdfViewerController();
@@ -96,7 +97,7 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
   // ============================================================================
 
   void _posListener() {
-    log("currentPageNumber: ${controller.pageNumber}");
+    // log("currentPageNumber: ${controller.pageNumber}");
     final newValue = double.parse(controller.value.row1[3].abs().clamp(0.0, double.infinity).toStringAsFixed(2));
 
     ref.read(scrollOffsetProvider.notifier).update((cb) => newValue);
@@ -114,8 +115,9 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
       return await _updateProgressTrack(
         ptm.copyWith(
           lastRead: DateTime.now(),
-          pages: ptm.pages.isEmpty ? const ["1"] : null,
+          pages: ptm.pages.isEmpty ? const ["1"] : ptm.pages,
           metadataJson: jsonEncode(<String, dynamic>{
+            ...ptm.metadataJson.decodeJson,
             'previewPath': jsonDecode(content.metadataJson)['previewPath'] ?? content.previewPath,
           }),
         ),
@@ -234,7 +236,7 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
           _pageStayStopwatch.start();
           return;
         }
-
+        log("Updating page: ${pageNumber}");
         await _updateProgressTrack(
           currentProgressTrack.copyWith(
             lastRead: DateTime.now(),

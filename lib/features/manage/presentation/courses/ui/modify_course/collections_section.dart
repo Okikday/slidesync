@@ -139,21 +139,27 @@ class _CollectionsSectionState extends ConsumerState<CollectionsSection> {
                                     final collection = widget.collections[index];
                                     return RotatedBox(
                                       quarterTurns: 0,
-                                      child: ModCollectionCardTile(
-                                        title: widget.collections[index].collectionTitle,
-                                        contentCount: widget.collections[index].contents.length,
-                                        onSelected: () {
-                                          UiUtils.showCustomDialog(
-                                            context,
-                                            child: ModCollectionDialog(
-                                              courseId: widget.courseId,
-                                              collection: collection,
-                                            ),
-                                          );
-                                        },
-                                        onTap: () async {
-                                          context.pushNamed(Routes.modifyContents.name, extra: collection.collectionId);
-                                        },
+                                      child: Padding(
+                                        padding: const EdgeInsets.only(bottom: 8.0),
+                                        child: ModCollectionCardTile(
+                                          title: widget.collections[index].collectionTitle,
+                                          contentCount: widget.collections[index].contents.length,
+                                          onSelected: () {
+                                            UiUtils.showCustomDialog(
+                                              context,
+                                              child: ModCollectionDialog(
+                                                courseId: widget.courseId,
+                                                collection: collection,
+                                              ),
+                                            );
+                                          },
+                                          onTap: () async {
+                                            context.pushNamed(
+                                              Routes.modifyContents.name,
+                                              extra: collection.collectionId,
+                                            );
+                                          },
+                                        ),
                                       ),
                                     );
                                   },

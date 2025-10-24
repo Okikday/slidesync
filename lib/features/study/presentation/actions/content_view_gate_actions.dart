@@ -28,12 +28,31 @@ import 'package:slidesync/shared/widgets/dialogs/app_alert_dialog.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class ContentViewGateActions {
-  static Future<void> redirectToViewer(WidgetRef ref, CourseContent content) async {
+  static Future<void> redirectToViewer(
+    WidgetRef ref,
+    CourseContent content, {
+    bool popBefore = true,
+    bool openOutsideApp = false,
+  }) async {
     final context = ref.context;
+    if (openOutsideApp) {
+      if (content.courseContentType == CourseContentType.link) {
+        await launchUrl(Uri.parse(content.path.urlPath));
+        if (popBefore) context.pop();
+        UiUtils.showFlushBar(context, msg: "Opening link outside app");
+        return;
+      } else {
+        await OpenFilex.open(content.path.filePath);
+        if (popBefore) context.pop();
+        UiUtils.showFlushBar(context, msg: "Opening with external application...");
+        return;
+      }
+    }
+
     final isBuiltInViewer = (await ref.readSettings).useBuiltInViewer;
     if (!isBuiltInViewer && content.courseContentType != CourseContentType.link) {
       await OpenFilex.open(content.path.filePath);
-      context.pop();
+      if (popBefore) context.pop();
       UiUtils.showFlushBar(context, msg: "Opening with external application...");
       return;
     }
@@ -50,26 +69,32 @@ class ContentViewGateActions {
           );
           if (pageProvider.isUpdating) return;
           pageProvider.stopIsolate();
-          GoRouter.of(context).pushReplacementNamed(Routes.pdfDocumentViewer.name, extra: content);
+          popBefore
+              ? GoRouter.of(context).pushReplacementNamed(Routes.pdfDocumentViewer.name, extra: content)
+              : GoRouter.of(context).pushNamed(Routes.pdfDocumentViewer.name, extra: content);
 
           return;
         }
-        context.pop();
+        if (popBefore) context.pop();
         await OpenFilex.open(content.path.filePath);
 
         UiUtils.showFlushBar(context, msg: "Opening with external application...");
       case CourseContentType.image:
-        context.pushReplacementNamed(Routes.imageViewer.name, extra: content);
+        popBefore
+            ? context.pushReplacementNamed(Routes.imageViewer.name, extra: content)
+            : context.pushNamed(Routes.imageViewer.name, extra: content);
         return;
 
       case CourseContentType.link:
         final urlPath = content.path.urlPath;
 
         if (!(content.metadataJson.decodeJson['resolved'] == true) && DriveBrowser.isGoogleDriveLink(urlPath)) {
-          context.pushReplacementNamed(Routes.driveLinkViewer.name, extra: content);
+          popBefore
+              ? context.pushReplacementNamed(Routes.driveLinkViewer.name, extra: content)
+              : context.pushNamed(Routes.driveLinkViewer.name, extra: content);
           return;
         }
-        context.pop();
+        if (popBefore) context.pop();
         final bool launchResult =
             (await Result.tryRunAsync(() async => await launchUrl(Uri.parse(urlPath)))).data ?? false;
 
@@ -81,7 +106,7 @@ class ContentViewGateActions {
         return;
 
       default:
-        if (context.mounted) context.pop();
+        if (context.mounted && popBefore) context.pop();
 
         if (await HandleArchiveUc().isSupportedByArchive(File(filePath))) {
           await Result.tryRunAsync(() async {

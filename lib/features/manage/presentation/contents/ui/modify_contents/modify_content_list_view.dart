@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/manage/presentation/contents/logic/modify_content_provider.dart';
 import 'package:slidesync/features/manage/presentation/contents/ui/modify_contents/mod_content_card_tile.dart';
+import 'package:slidesync/features/study/presentation/actions/content_view_gate_actions.dart';
 import 'package:slidesync/shared/global/providers/collections_providers.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 
@@ -44,7 +45,7 @@ class ModifyContentListView extends ConsumerWidget {
                               mcvp.selectContent(content);
                             }
                           } else {
-                            // Normal action
+                            ContentViewGateActions.redirectToViewer(ref, content, popBefore: false);
                           }
                         },
                         onSelected: () {

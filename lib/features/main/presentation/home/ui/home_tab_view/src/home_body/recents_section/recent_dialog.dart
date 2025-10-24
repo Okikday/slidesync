@@ -5,8 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/utils/ui_utils.dart';
+import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
 
 class RecentDialog extends ConsumerStatefulWidget {
@@ -75,6 +80,26 @@ class _RecentDialogState extends ConsumerState<RecentDialog> {
                                         backgroundColor: theme.adjustBgAndSecondaryWithLerp,
                                         shape: CircleBorder(),
                                         contentPadding: EdgeInsets.all(12),
+                                        onClick: () async {
+                                          final content = await CourseContentRepo.getByContentId(
+                                            widget.recentDialogModel.contentId,
+                                          );
+                                          if (content == null) {
+                                            GlobalNav.withContext(
+                                              (context) =>
+                                                  UiUtils.showFlushBar(context, msg: "Couldn't add content..."),
+                                            );
+                                            return;
+                                          }
+                                          await CourseCollectionRepo.addContentsToAppCollection(
+                                            AppCourseCollections.bookmarks,
+                                            contents: [content],
+                                          );
+                                          GlobalNav.withContext(
+                                            (context) =>
+                                                UiUtils.showFlushBar(context, msg: "Added content to bookmarks"),
+                                          );
+                                        },
                                         child: Icon(Iconsax.star_copy, size: 26, color: theme.supportingText),
                                       ),
                                       CustomElevatedButton(

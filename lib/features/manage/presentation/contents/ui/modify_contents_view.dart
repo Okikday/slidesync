@@ -146,7 +146,7 @@ class ModifyContentsOuterSection extends ConsumerWidget {
                       ),
                       builder: (context) {
                         final toMove = mcvp.selectedContentsNotifier.value.toList();
-                        mcvp.clearContents();
+                        // mcvp.clearContents();
                         return MoveToCollectionBottomSheet(contents: toMove);
                       },
                     );

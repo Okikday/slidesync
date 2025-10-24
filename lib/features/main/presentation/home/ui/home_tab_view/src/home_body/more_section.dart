@@ -1,11 +1,18 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/assets/assets.dart';
+import 'package:slidesync/core/constants/constants.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
+import 'package:slidesync/core/utils/ui_utils.dart';
+import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/quiz/presentation/ui/quiz_listing.dart';
+import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
 
 class MoreSection extends ConsumerWidget {
@@ -20,21 +27,32 @@ class MoreSection extends ConsumerWidget {
         scrollDirection: Axis.horizontal,
         padding: EdgeInsets.only(left: 12),
         children: [
-          MoreSectionOption(title: "Timetable", iconData: Iconsax.heart_copy),
-          Padding(
-            padding: const EdgeInsets.only(left: 16.0),
-            child: MoreSectionOption(
-              title: "Quiz",
-              iconData: Iconsax.menu_copy,
-              onTap: () {
-                Navigator.push(context, PageAnimation.pageRouteBuilder(const QuizListing()));
-              },
-            ),
+          MoreSectionOption(
+            title: "Bookmarks",
+            iconData: Iconsax.bookmark,
+            onTap: () async {
+              final collection = await CourseCollectionRepo.getById(AppCourseCollections.bookmarks.name);
+              if (collection == null) {
+                GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "No bookmarks..."));
+                return;
+              }
+              GlobalNav.withContext((context) => context.pushNamed(Routes.courseMaterials.name, extra: collection));
+            },
           ),
-          Padding(
-            padding: const EdgeInsets.only(left: 16.0),
-            child: MoreSectionOption(title: "References", iconData: Iconsax.bookmark, onTap: () {}),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.only(left: 16.0),
+          //   child: MoreSectionOption(
+          //     title: "Quiz",
+          //     iconData: Iconsax.menu_copy,
+          //     onTap: () {
+          //       Navigator.push(context, PageAnimation.pageRouteBuilder(const QuizListing()));
+          //     },
+          //   ),
+          // ),
+          // Padding(
+          //   padding: const EdgeInsets.only(left: 16.0),
+          //   child: MoreSectionOption(title: "References", iconData: Iconsax.bookmark, onTap: () {}),
+          // ),
         ],
       ),
     );

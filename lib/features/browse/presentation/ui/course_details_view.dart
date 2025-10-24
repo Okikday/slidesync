@@ -63,7 +63,7 @@ class CourseDetailsView extends ConsumerWidget {
                           trailing: CustomElevatedButton(
                             pixelHeight: 48,
                             pixelWidth: 48,
-                            backgroundColor: ref.adjustBgAndPrimaryWithLerp,
+                            backgroundColor: ref.secondary.withAlpha(50),
                             shape: CircleBorder(side: BorderSide(color: ref.onBackground.withAlpha(10))),
                             onClick: () {
                               if (context.mounted) {
@@ -75,7 +75,7 @@ class CourseDetailsView extends ConsumerWidget {
                                 );
                               }
                             },
-                            child: Icon(Iconsax.add_circle, color: ref.onPrimary),
+                            child: Icon(Iconsax.add_circle, color: ref.secondary),
                           ),
                         ),
                       ),

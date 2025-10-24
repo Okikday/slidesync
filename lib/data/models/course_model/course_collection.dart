@@ -36,6 +36,7 @@ class CourseCollection {
 
   factory CourseCollection.create({
     required String parentId,
+    String? collectionId,
     required String collectionTitle,
     String description = '',
     DateTime? createdAt,
@@ -43,7 +44,7 @@ class CourseCollection {
     String metadataJson = '{}',
   }) {
     final collection = CourseCollection()
-      ..collectionId = const Uuid().v4()
+      ..collectionId = collectionId ?? const Uuid().v4()
       ..parentId = parentId
       ..collectionTitle = collectionTitle
       ..description = description

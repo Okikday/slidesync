@@ -11,10 +11,12 @@ class CourseCategoriesCard extends ConsumerStatefulWidget {
   final String title;
   final int contentCount;
   final void Function() onTap;
+  final Widget? trailing;
   const CourseCategoriesCard({
     super.key,
     required this.isDarkMode,
     required this.title,
+    this.trailing,
     required this.onTap,
     this.contentCount = 0,
   });
@@ -84,6 +86,8 @@ class _CourseCategoriesCardState extends ConsumerState<CourseCategoriesCard> {
                   ],
                 ),
               ),
+
+              if (widget.trailing != null) widget.trailing!,
             ],
           ),
         ),

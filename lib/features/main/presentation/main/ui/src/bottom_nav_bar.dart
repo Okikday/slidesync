@@ -41,11 +41,11 @@ class BottomNavBar extends ConsumerWidget {
                   label: "Library",
                   tooltip: "Library holding all your courses",
                 ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.explore_rounded),
-                  label: "Explore",
-                  tooltip: "Explore courses",
-                ),
+                // BottomNavigationBarItem(
+                //   icon: Icon(Icons.explore_rounded),
+                //   label: "Explore",
+                //   tooltip: "Explore courses",
+                // ),
               ],
             );
           },

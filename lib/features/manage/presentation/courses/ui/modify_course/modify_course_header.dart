@@ -10,6 +10,7 @@ import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/manage/presentation/courses/actions/modify_course_actions.dart';
 import 'package:slidesync/features/manage/presentation/courses/ui/modify_course/edit_course_bottom_sheet.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 class ModifyCourseHeader extends ConsumerWidget {
@@ -234,17 +235,14 @@ class _PhotoAvatarWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      width: 80,
-      height: 80,
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        boxShadow: [BoxShadow(color: theme.altBackgroundPrimary, spreadRadius: 2, blurRadius: 3)],
-      ),
-      child: GestureDetector(
-        onTap: onClickImage,
-        onLongPress: onLongPressImage,
+    return ScaleClickWrapper(
+      onTap: onClickImage,
+      onLongPress: onLongPressImage,
+      child: Container(
+        width: 80,
+        height: 80,
+        clipBehavior: Clip.antiAlias,
+        decoration: BoxDecoration(shape: BoxShape.circle, color: theme.altBackgroundPrimary),
         child: ColoredBox(
           color: theme.altBackgroundPrimary,
           child: SizedBox.square(

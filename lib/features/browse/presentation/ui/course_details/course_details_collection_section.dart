@@ -5,6 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:slidesync/features/manage/presentation/collections/actions/modify_collection_actions.dart';
+import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
+import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/browse/presentation/logic/course_details_provider.dart';
 import 'package:slidesync/features/browse/presentation/ui/course_details/course_categories_card.dart';
@@ -12,6 +15,9 @@ import 'package:slidesync/features/manage/presentation/collections/ui/modify_col
 import 'package:slidesync/features/manage/presentation/collections/ui/modify_collections/empty_collections_view.dart';
 import 'package:slidesync/shared/global/providers/collections_providers.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
+import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
+import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 
 class CourseDetailsCollectionSection extends ConsumerWidget {
   const CourseDetailsCollectionSection({super.key, required this.courseId});
@@ -64,6 +70,17 @@ class CourseDetailsCollectionSection extends ConsumerWidget {
                               isDarkMode: context.isDarkMode,
                               title: list[index].collectionTitle,
                               contentCount: list[index].contents.length,
+                              trailing: AppPopupMenuButton(
+                                actions: [
+                                  PopupMenuAction(
+                                    title: "Share",
+                                    iconData: Iconsax.send,
+                                    onTap: () async {
+                                      await ShareContentActions.shareCollection(context, list[index].collectionId);
+                                    },
+                                  ),
+                                ],
+                              ),
 
                               onTap: () {
                                 context.pushNamed(Routes.courseMaterials.name, extra: list[index]);
@@ -88,7 +105,50 @@ class CourseDetailsCollectionSection extends ConsumerWidget {
                         isDarkMode: context.isDarkMode,
                         title: list[index].collectionTitle,
                         contentCount: list[index].contents.length,
+                        trailing: AppPopupMenuButton(
+                          actions: [
+                            PopupMenuAction(
+                              title: "Share",
+                              iconData: Iconsax.send_2,
+                              onTap: () async {
+                                await ShareContentActions.shareCollection(context, list[index].collectionId);
+                              },
+                            ),
 
+                            PopupMenuAction(
+                              title: "Remove",
+                              iconData: Iconsax.trash,
+                              onTap: () async {
+                                if (context.mounted) {
+                                  CustomDialog.show(
+                                    context,
+                                    canPop: true,
+                                    barrierColor: Colors.black.withValues(alpha: 0.6),
+                                    transitionType: TransitionType.cupertinoDialog,
+                                    transitionDuration: Durations.medium2,
+                                    child: ConfirmDeletionDialog(
+                                      content:
+                                          "This will delete \"${list[index].collectionTitle}\"."
+                                          "\n\nAre you sure you want to delete this collection?",
+                                      onPop: () {
+                                        GlobalNav.popGlobal();
+                                      },
+                                      onCancel: () {
+                                        GlobalNav.popGlobal();
+                                      },
+                                      onDelete: () async {
+                                        await ModifyCollectionActions().onDeleteCollection(
+                                          context,
+                                          collection: list[index],
+                                        );
+                                      },
+                                    ),
+                                  );
+                                }
+                              },
+                            ),
+                          ],
+                        ),
                         onTap: () {
                           context.pushNamed(Routes.courseMaterials.name, extra: list[index]);
                         },
