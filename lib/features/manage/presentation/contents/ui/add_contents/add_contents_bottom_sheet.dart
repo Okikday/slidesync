@@ -9,7 +9,6 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
-import 'package:slidesync/features/manage/presentation/contents/logic/src/scan_clipboard_providers.dart';
 import 'package:slidesync/features/manage/presentation/contents/ui/add_contents/add_link_bottom_sheet.dart';
 import 'package:slidesync/features/manage/presentation/contents/actions/add_contents_actions.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';

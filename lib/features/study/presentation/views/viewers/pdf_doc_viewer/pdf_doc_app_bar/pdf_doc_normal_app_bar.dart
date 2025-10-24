@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
@@ -10,14 +9,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:mime/mime.dart';
-import 'package:slidesync/core/constants/constants.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/models/quiz_question_model/content_questions.dart';
 import 'package:slidesync/data/models/quiz_question_model/quiz_question.dart';
-import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/ask_ai/domain/services/ai_gen_client.dart';
 import 'package:slidesync/features/browse/presentation/logic/course_materials_provider.dart';
@@ -27,7 +23,6 @@ import 'package:slidesync/features/quiz/presentation/logic/quiz_screen_provider.
 import 'package:slidesync/features/quiz/presentation/ui/quiz_screen.dart';
 import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
 import 'package:slidesync/features/study/presentation/logic/pdf_doc_viewer_provider.dart';
-import 'package:slidesync/shared/helpers/extensions/src/extension_on_map.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';

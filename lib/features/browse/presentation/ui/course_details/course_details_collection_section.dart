@@ -7,7 +7,6 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:slidesync/features/manage/presentation/collections/actions/modify_collection_actions.dart';
 import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
-import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/browse/presentation/logic/course_details_provider.dart';
 import 'package:slidesync/features/browse/presentation/ui/course_details/course_categories_card.dart';

@@ -25,6 +25,7 @@ class CourseMaterialListCard extends ConsumerStatefulWidget {
   final CourseContent content;
   final void Function()? onTapCard;
   final void Function()? onLongPressed;
+  
 
   const CourseMaterialListCard({super.key, required this.content, this.onTapCard, this.onLongPressed});
 

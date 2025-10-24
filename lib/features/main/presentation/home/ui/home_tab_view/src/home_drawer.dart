@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,11 +24,25 @@ class HomeDrawer extends ConsumerWidget {
           child: Column(
             children: [
               ConstantSizing.columnSpacing(kToolbarHeight + 24),
-              CircleAvatar(
-                radius: 40,
-                backgroundColor: theme.altBackgroundPrimary,
-                child: Icon(Iconsax.user, color: theme.supportingText),
+              FutureBuilder(
+                future: UserDataFunctions().getUserDetails(),
+                builder: (context, asyncSnapshot) {
+                  if (asyncSnapshot.hasData && asyncSnapshot.data != null && asyncSnapshot.data?.data != null) {
+                    return CircleAvatar(
+                      radius: 40,
+                      backgroundColor: theme.altBackgroundPrimary,
+                      backgroundImage: CachedNetworkImageProvider(asyncSnapshot.data!.data!.photoURL!),
+                      child: Icon(Iconsax.user, color: theme.supportingText),
+                    );
+                  }
+                  return CircleAvatar(
+                    radius: 40,
+                    backgroundColor: theme.altBackgroundPrimary,
+                    child: Icon(Iconsax.user, color: theme.supportingText),
+                  );
+                },
               ),
+
               ConstantSizing.columnSpacingMedium,
               FutureBuilder(
                 future: UserDataFunctions().getUserDetails(),
@@ -55,11 +70,11 @@ class HomeDrawer extends ConsumerWidget {
 
               ConstantSizing.columnSpacingExtraLarge,
 
-              ListTile(
-                tileColor: Colors.transparent,
-                leading: Icon(Iconsax.profile_tick, color: theme.supportingText.withValues(alpha: 0.5)),
-                title: CustomText("Profile", color: theme.onBackground),
-              ),
+              // ListTile(
+              //   tileColor: Colors.transparent,
+              //   leading: Icon(Iconsax.profile_tick, color: theme.supportingText.withValues(alpha: 0.5)),
+              //   title: CustomText("Profile", color: theme.onBackground),
+              // ),
               ListTile(
                 tileColor: Colors.transparent,
                 leading: Icon(Iconsax.setting, color: theme.supportingText.withValues(alpha: 0.5)),

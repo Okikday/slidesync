@@ -1,13 +1,10 @@
-import 'dart:developer';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/dev/file_manager_page.dart';
-import 'package:slidesync/features/manage/presentation/contents/ui/add_contents/loading_overlay.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
-import 'package:slidesync/shared/helpers/global_nav.dart';
 
 class ExploreTabView extends ConsumerStatefulWidget {
   const ExploreTabView({super.key});

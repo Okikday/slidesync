@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/models/progress_track_models/course_track.dart';
+import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
@@ -148,14 +150,7 @@ class GridCourseCardStackedCard extends ConsumerWidget {
                                           color: theme.secondary,
                                         ),
                                       ),
-                                    LinearProgressIndicator(
-                                      minHeight: 16,
-                                      value: 0.2,
-                                      backgroundColor: context.isDarkMode
-                                          ? theme.surface.withAlpha(100)
-                                          : theme.adjustBgAndPrimaryWithLerpExtra.withValues(alpha: 0.5),
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
+                                    GridCourseCardProgressIndicator(courseId: course.courseId),
                                   ],
                                 ),
                               ),
@@ -168,6 +163,63 @@ class GridCourseCardStackedCard extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class GridCourseCardProgressIndicator extends ConsumerStatefulWidget {
+  const GridCourseCardProgressIndicator({super.key, required this.courseId});
+
+  final String courseId;
+
+  @override
+  ConsumerState<GridCourseCardProgressIndicator> createState() => _GridCourseCardProgressIndicatorState();
+}
+
+class _GridCourseCardProgressIndicatorState extends ConsumerState<GridCourseCardProgressIndicator> {
+  late Stream<CourseTrack?> _courseTrackStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _courseTrackStream = CourseTrackRepo.watchByCourseId(widget.courseId);
+  }
+
+  @override
+  void didUpdateWidget(covariant GridCourseCardProgressIndicator oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.courseId != widget.courseId) {
+      setState(() {
+        _courseTrackStream = CourseTrackRepo.watchByCourseId(widget.courseId);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref;
+    return StreamBuilder<CourseTrack?>(
+      stream: _courseTrackStream,
+      builder: (context, asyncSnapshot) {
+        if (asyncSnapshot.connectionState == ConnectionState.active) {
+          final progress = asyncSnapshot.data?.progress;
+          return LinearProgressIndicator(
+            minHeight: 16,
+            value: progress?.clamp(0.05, 1.0) ?? 0.05,
+            backgroundColor: context.isDarkMode
+                ? theme.surface.withAlpha(100)
+                : theme.adjustBgAndPrimaryWithLerpExtra.withValues(alpha: 0.5),
+            borderRadius: BorderRadius.circular(16),
+          );
+        }
+        return LinearProgressIndicator(
+          minHeight: 16,
+          backgroundColor: context.isDarkMode
+              ? theme.surface.withAlpha(100)
+              : theme.adjustBgAndPrimaryWithLerpExtra.withValues(alpha: 0.5),
+          borderRadius: BorderRadius.circular(16),
+        );
+      },
     );
   }
 }

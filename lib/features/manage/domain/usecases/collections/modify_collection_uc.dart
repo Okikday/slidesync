@@ -5,7 +5,6 @@ import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
-import 'package:slidesync/features/manage/domain/usecases/contents/create_content_preview_image.dart';
 
 class ModifyCollectionUc {
   Future<String?> deleteCollection(CourseCollection collection) async {

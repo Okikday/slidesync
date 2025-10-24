@@ -7,7 +7,6 @@ import 'package:slidesync/features/study/presentation/logic/pdf_doc_viewer_provi
 import 'package:slidesync/features/study/presentation/logic/src/pdf_doc_viewer_state/pdf_doc_viewer_state.dart';
 import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_doc_app_bar/pdf_doc_normal_app_bar.dart';
 import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_doc_app_bar/pdf_doc_search_app_bar.dart';
-import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 
 class PdfDocViewerAppBar extends ConsumerStatefulWidget {

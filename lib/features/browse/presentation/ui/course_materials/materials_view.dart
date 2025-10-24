@@ -7,6 +7,7 @@ import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/features/browse/presentation/logic/course_materials_provider.dart';
 import 'package:slidesync/features/browse/presentation/ui/course_materials/content_card.dart';
 import 'package:slidesync/features/browse/presentation/ui/course_materials/course_material_list_card.dart';
+import 'package:slidesync/features/manage/presentation/contents/ui/modify_contents/empty_contents_view.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
@@ -39,6 +40,7 @@ class MaterialsView extends ConsumerWidget {
               return PagingListener(
                 controller: data,
                 builder: (context, state, fetchNextPage) {
+                  if (state.items != null && state.items!.isEmpty) return EmptyContentsView(collectionId: collectionId);
                   return PagedSliverContentView(
                     state: state,
                     pagingController: data,

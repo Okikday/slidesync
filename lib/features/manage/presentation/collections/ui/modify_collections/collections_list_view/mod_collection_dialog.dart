@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:math' as math;
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
@@ -14,7 +13,6 @@ import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/features/browse/presentation/ui/course_details/course_details_header/animated_shape.dart';
 import 'package:slidesync/features/manage/presentation/collections/ui/modify_collections/edit_collection_title_bottom_sheet.dart';
 import 'package:slidesync/features/manage/presentation/collections/actions/modify_collection_actions.dart';
-import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
 import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';

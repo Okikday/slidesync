@@ -1,14 +1,13 @@
-import 'dart:developer';
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:isar/isar.dart';
-import 'package:slidesync/data/models/course_model/course.dart';
-import 'package:slidesync/data/repos/course_repo/course_repo.dart';
-import 'package:slidesync/features/main/presentation/library/ui/src/courses_view/course_card.dart';
+import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/features/browse/presentation/ui/course_materials/course_material_list_card.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/progress_indicator/circular_loading_indicator.dart';
 
 class LibrarySearchView extends ConsumerStatefulWidget {
   const LibrarySearchView({super.key});
@@ -18,6 +17,27 @@ class LibrarySearchView extends ConsumerStatefulWidget {
 }
 
 class _LibrarySearchViewState extends ConsumerState<LibrarySearchView> {
+  late final TextEditingController searchTextController;
+  dynamic filter;
+  late final ValueNotifier<Future<List<CourseContent>>?> futureContentsNotifier;
+
+  @override
+  void initState() {
+    super.initState();
+    searchTextController = TextEditingController();
+    futureContentsNotifier = ValueNotifier(null);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      filter = await CourseContentRepo.filter;
+    });
+  }
+
+  @override
+  void dispose() {
+    searchTextController.dispose();
+    futureContentsNotifier.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = ref;
@@ -27,65 +47,59 @@ class _LibrarySearchViewState extends ConsumerState<LibrarySearchView> {
         child: Column(
           children: [
             ConstantSizing.columnSpacing(context.topPadding + kToolbarHeight),
-            SearchAnchor(
-              builder: (context, controller) {
-                return Container(
-                  clipBehavior: Clip.antiAlias,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    // border: Border.fromBorderSide(BorderSide(color: theme.supportingText.withAlpha(10))),
-                    boxShadow: [
-                      BoxShadow(
-                        color: theme.supportingText,
-                        blurRadius: 6,
-                        spreadRadius: -8,
-                        blurStyle: BlurStyle.normal,
-                      ),
-                    ],
-                  ),
-                  child: CustomTextfield(
-                    controller: controller,
-                    backgroundColor: theme.surface.withValues(alpha: 0.8),
-                    cursorColor: theme.primaryColor,
-                    selectionHandleColor: theme.primaryColor,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20.0),
-                      borderSide: BorderSide(color: theme.altBackgroundPrimary.withAlpha(150)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20.0),
-                      borderSide: BorderSide(color: theme.primaryColor),
-                    ),
-                    autoDispose: false,
-                    onTapOutside: () {},
-                    onchanged: (text) {
-                      if (text.isEmpty) {
-                        log("Text is empty, outta here");
-                        controller.closeView(text);
-                        return;
-                      }
-                      controller.openView();
-                    },
-                    pixelHeight: 60,
-                    inputContentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 18),
-                    hint: "Search a course",
-                    inputTextStyle: TextStyle(fontSize: 16, color: theme.onBackground),
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.only(left: 20.0, right: 10.0, top: 12.0, bottom: 12.0),
-                      child: Icon(Iconsax.search_normal_copy, size: 20, color: theme.supportingText),
-                    ),
-                  ),
-                );
+            CustomTextfield(
+              controller: searchTextController,
+              autoDispose: false,
+              backgroundColor: theme.secondary.withAlpha(50),
+              inputContentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              inputTextStyle: TextStyle(color: theme.onBackground, fontSize: 15),
+              hint: "Search materials",
+              onchanged: (text) {
+                if (text.trim().isEmpty) {
+                  if (futureContentsNotifier.value != null) futureContentsNotifier.value = CourseContentRepo.getAll();
+                } else {
+                  futureContentsNotifier.value =
+                      (filter as QueryBuilder<CourseContent, CourseContent, QFilterCondition>)
+                          .titleContains(searchTextController.text, caseSensitive: false)
+                          .findAll();
+                }
               },
-              suggestionsBuilder: (context, controller) async {
-                log("Searching");
-                final List<Course> searchResults = await (await CourseRepo.filter)
-                    .courseTitleContains(controller.text, caseSensitive: false)
-                    .findAll();
-                log("Done searching");
-                log("Search result: $searchResults");
-                return [for (int i = 0; i < searchResults.length; i++) CourseCard(searchResults[i], false)];
-              },
+              prefixIcon: Padding(
+                padding: const EdgeInsets.only(left: 12, right: 8),
+                child: Icon(Iconsax.search_normal_copy),
+              ),
+            ),
+
+            Expanded(
+              child: ValueListenableBuilder(
+                valueListenable: futureContentsNotifier,
+                builder: (context, futureContents, child) {
+                  return futureContents == null
+                      ? Center(child: CustomText("Input a text to search", color: theme.onBackground))
+                      : FutureBuilder(
+                          future: futureContents,
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData && snapshot.data != null) {
+                              final contents = snapshot.data!;
+                              return ListView.builder(
+                                itemCount: contents.length,
+                                itemBuilder: (context, index) {
+                                  return Padding(
+                                    padding: const EdgeInsets.only(bottom: 8.0),
+                                    child: CourseMaterialListCard(content: contents[index]),
+                                  );
+                                },
+                              );
+                            } else if (snapshot.connectionState == ConnectionState.waiting ||
+                                snapshot.connectionState == ConnectionState.active) {
+                              return CircularLoadingIndicator(dimension: 30);
+                            } else {
+                              return CustomText("No results found for the ${searchTextController.text}");
+                            }
+                          },
+                        );
+                },
+              ),
             ),
           ],
         ),

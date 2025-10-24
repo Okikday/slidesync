@@ -1,12 +1,9 @@
 import 'dart:io';
-import 'dart:math' as math;
 import 'dart:developer';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:file_picker/file_picker.dart';
-import 'dart:typed_data';
 import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -296,7 +293,7 @@ class CourseFolderImportManager {
 
       // Add root files as "Base" collection if they exist
       final rootFiles = targetFolder.files.where((file) {
-        final fileName = file.name ?? '';
+        final fileName = file.name;
         final ext = p.extension(fileName).toLowerCase();
         final enabledExtensions = filters.where((f) => f.isEnabled).map((f) => f.extension.toLowerCase()).toSet();
         return enabledExtensions.contains(ext);
@@ -401,7 +398,7 @@ class CourseFolderImportManager {
 
       // Get filtered root files
       final rootFiles = folderNode.files.where((file) {
-        final fileName = file.name ?? '';
+        final fileName = file.name;
         final ext = p.extension(fileName).toLowerCase();
         final enabledExtensions = config.fileFilters
             .where((f) => f.isEnabled)
@@ -846,7 +843,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
               fontSize: 13,
             ),
             value: useAsBaseFolder,
-            activeColor: theme.primary,
+            activeThumbColor: theme.primary,
             onChanged: (value) => setState(() {
               useAsBaseFolder = value;
               if (value) selectedSubfolder = null;
@@ -940,7 +937,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
               fontSize: 13,
             ),
             value: includeSubfolders,
-            activeColor: theme.primary,
+            activeThumbColor: theme.primary,
             secondary: Icon(includeSubfolders ? Icons.account_tree : Icons.folder, color: theme.primary),
             onChanged: (value) => setState(() {
               includeSubfolders = value;
@@ -997,7 +994,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
                 subtitle: CustomText(filter.extension, color: theme.supportingText, fontSize: 12),
                 shape: const RoundedRectangleBorder(),
                 value: filter.isEnabled,
-                activeColor: theme.primary,
+                activeThumbColor: theme.primary,
                 secondary: Icon(filter.icon, color: filter.isEnabled ? theme.primary : theme.supportingText, size: 20),
                 onChanged: (value) => setState(() {
                   filter.isEnabled = value;

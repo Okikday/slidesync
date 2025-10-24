@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
@@ -7,22 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:screenshot/screenshot.dart';
-import 'package:slidesync/core/constants/constants.dart';
-import 'package:slidesync/core/storage/isar_data/isar_data.dart';
-import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:slidesync/data/models/file_details.dart';
-import 'package:slidesync/data/models/progress_track_models/content_track.dart';
-import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
-import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/ask_ai/presentation/ui/ask_ai_screen.dart';
-import 'package:slidesync/features/main/presentation/library/ui/src/library_tab_view_app_bar/build_button.dart';
-import 'package:slidesync/features/manage/domain/usecases/contents/create_content_preview_image.dart';
 import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
 import 'package:slidesync/features/study/presentation/logic/image_viewer_provider.dart';
-import 'package:slidesync/features/study/presentation/logic/src/image_viewer_state.dart';
 import 'package:slidesync/features/study/presentation/logic/src/pdf_doc_viewer_state/pdf_doc_viewer_state.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -60,7 +49,7 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
                     },
                     child: PhotoView(
                       enablePanAlways: true,
-                      // enableRotation: true,
+                      maxScale: 10.0,
                       onTapUp: (context, details, controllerValue) {
                         ref.read(imageViewerStateProvider).toggleAppBarVisible();
                       },
@@ -69,7 +58,6 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
                           ? FileImage(File(widget.content.path.filePath))
                           : NetworkImage(widget.content.path.urlPath),
                       minScale: PhotoViewComputedScale.contained,
-                      maxScale: PhotoViewComputedScale.covered,
                     ),
                   ),
                 );

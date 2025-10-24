@@ -4,12 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
 import 'package:slidesync/core/assets/assets.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
+import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/features/manage/presentation/contents/ui/add_contents/add_contents_bottom_sheet.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 
 class EmptyContentsView extends ConsumerWidget {
-  final CourseCollection collection;
-  const EmptyContentsView({super.key, required this.collection});
+  final String collectionId;
+  const EmptyContentsView({super.key, required this.collectionId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -37,13 +39,18 @@ class EmptyContentsView extends ConsumerWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: CustomElevatedButton(
-                onClick: () {
-                  CustomDialog.show(
-                    context,
-                    transitionDuration: Durations.short1,
-                    reverseTransitionDuration: Durations.short1,
-                    barrierColor: Colors.black45,
-                    child: AddContentsBottomSheet(collection: collection),
+                onClick: () async {
+                  if (collectionId.isEmpty) return;
+                  final collection = await CourseCollectionRepo.getById(collectionId);
+                  if (collection == null) return;
+                  GlobalNav.withContext(
+                    (context) => CustomDialog.show(
+                      context,
+                      transitionDuration: Durations.short1,
+                      reverseTransitionDuration: Durations.short1,
+                      barrierColor: Colors.black45,
+                      child: AddContentsBottomSheet(collection: collection),
+                    ),
                   );
                 },
                 backgroundColor: ref.primaryColor,

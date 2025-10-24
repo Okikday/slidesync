@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data_isolate.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/core/storage/isar_data/isar_schemas.dart';
@@ -154,15 +155,18 @@ Future<List<Map<String, dynamic>>> storeContents(
 
         if (contentsToAdd.isNotEmpty) {
           await CourseContentRepo.addMultipleContents(collection.collectionId, contentsToAdd);
-          final prevFileSum = (await AppHiveData.instance.getData(key: HiveDataPathKey.globalFileSizeSum.name)) as int?;
-          if (prevFileSum == null) {
-            await AppHiveData.instance.setData(key: HiveDataPathKey.globalFileSizeSum.name, value: totalFilesSizeSum);
-          } else {
-            await AppHiveData.instance.setData(
-              key: HiveDataPathKey.globalFileSizeSum.name,
-              value: prevFileSum + totalFilesSizeSum,
-            );
-          }
+          await Result.tryRunAsync(() async {
+            final hiveInIsolate = HiveDataIsolate(boxName: 'box');
+            final prevFileSum = (await hiveInIsolate.getData(key: HiveDataPathKey.globalFileSizeSum.name)) as int?;
+            if (prevFileSum == null) {
+              await hiveInIsolate.setData(key: HiveDataPathKey.globalFileSizeSum.name, value: totalFilesSizeSum);
+            } else {
+              await hiveInIsolate.setData(
+                key: HiveDataPathKey.globalFileSizeSum.name,
+                value: prevFileSum + totalFilesSizeSum,
+              );
+            }
+          });
         }
         if (args.deleteCache) await FileUtils.deleteFiles(args.filePaths); // Delete the cache
 

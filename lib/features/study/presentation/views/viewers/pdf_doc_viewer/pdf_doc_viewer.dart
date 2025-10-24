@@ -6,7 +6,6 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/features/study/presentation/actions/pdf_doc_viewer_actions.dart';
 import 'package:slidesync/features/study/presentation/logic/pdf_doc_viewer_provider.dart';
-import 'package:slidesync/features/study/presentation/logic/src/pdf_doc_viewer_state/pdf_doc_viewer_state.dart';
 import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_doc_app_bar/pdf_doc_viewer_app_bar.dart';
 import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_floating_action_menu.dart';
 import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_viewer_widget.dart';

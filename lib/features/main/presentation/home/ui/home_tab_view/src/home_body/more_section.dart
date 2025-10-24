@@ -1,18 +1,10 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/assets/assets.dart';
-import 'package:slidesync/core/constants/constants.dart';
-import 'package:slidesync/core/storage/isar_data/isar_data.dart';
-import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
-import 'package:slidesync/data/repos/course_repo/course_repo.dart';
-import 'package:slidesync/features/quiz/presentation/ui/quiz_listing.dart';
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/features/main/presentation/library/ui/src/library_search_view/library_search_view.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
-import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
 
 class MoreSection extends ConsumerWidget {
@@ -28,15 +20,19 @@ class MoreSection extends ConsumerWidget {
         padding: EdgeInsets.only(left: 12),
         children: [
           MoreSectionOption(
-            title: "Bookmarks",
-            iconData: Iconsax.bookmark,
+            title: "Search",
+            iconData: Iconsax.search_normal_copy,
             onTap: () async {
-              final collection = await CourseCollectionRepo.getById(AppCourseCollections.bookmarks.name);
-              if (collection == null) {
-                GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "No bookmarks..."));
-                return;
-              }
-              GlobalNav.withContext((context) => context.pushNamed(Routes.courseMaterials.name, extra: collection));
+              Navigator.push(
+                context,
+                PageAnimation.pageRouteBuilder(const LibrarySearchView(), type: TransitionType.topLevel),
+              );
+              // final collection = await CourseCollectionRepo.getById(AppCourseCollections.bookmarks.name);
+              // if (collection == null) {
+              //   GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "No bookmarks..."));
+              //   return;
+              // }
+              // GlobalNav.withContext((context) => context.pushNamed(Routes.courseMaterials.name, extra: collection));
             },
           ),
           // Padding(

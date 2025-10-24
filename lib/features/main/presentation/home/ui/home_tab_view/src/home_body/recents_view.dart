@@ -3,13 +3,17 @@ import 'dart:convert';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
+import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/main/presentation/home/logic/home_provider.dart';
 import 'package:slidesync/features/main/presentation/home/ui/home_tab_view/src/home_body/recents_section/recent_list_tile.dart';
 import 'package:slidesync/features/main/presentation/home/ui/home_tab_view/src/home_body/recents_section/recents_section_body.dart';
+import 'package:slidesync/routes/routes.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 
 class RecentsView extends ConsumerWidget {
@@ -22,7 +26,7 @@ class RecentsView extends ConsumerWidget {
     return AnnotatedRegion(
       value: UiUtils.getSystemUiOverlayStyle(theme.scaffoldBackgroundColor, theme.isDarkMode),
       child: Scaffold(
-        appBar: AppBarContainer(child: AppBarContainerChild(theme.isDarkMode, title: "Recents reads")),
+        appBar: AppBarContainer(child: AppBarContainerChild(theme.isDarkMode, title: "Recent reads")),
         body: asyncProgressTrackValues.when(
           data: (data) {
             if (data.isEmpty) {
@@ -46,7 +50,13 @@ class RecentsView extends ConsumerWidget {
                       progressLevel: ProgressLevel.neutral,
                       isStarred: false,
                       progress: content.progress?.clamp(0, 1.0),
-                      onTapTile: () {},
+                      onTapTile: () async {
+                        final toPushContent = await CourseContentRepo.getByContentId(content.contentId);
+                        if (toPushContent != null) return;
+                        GlobalNav.withContext(
+                          (context) => context.pushNamed(Routes.contentGate.name, extra: toPushContent),
+                        );
+                      },
                       onLongTapTile: () {},
                     ),
                   );

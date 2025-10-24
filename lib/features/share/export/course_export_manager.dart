@@ -10,7 +10,6 @@ import 'package:saf_util/saf_util.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
-import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/browse/presentation/ui/course_details/course_categories_card.dart';
@@ -199,7 +198,6 @@ class CourseFolderExportManager {
           );
 
           // Build path: CourseName/CollectionName/filename.ext
-          final relativePath = '$courseFolderName/$collectionFolderName';
           final result = await _exportFile(content, exportFolderUri, courseFolderName, collectionFolderName);
 
           if (result.success) {
@@ -238,7 +236,7 @@ class CourseFolderExportManager {
     try {
       // Get original filename
       final metadata = content.metadata;
-      String originalFilename = metadata['originalFilename'] as String ?? content.title;
+      String originalFilename = metadata['originalFilename'] as String;
 
       if (!p.extension(originalFilename).isNotEmpty) {
         final pathDetails = content.path;
@@ -285,7 +283,7 @@ class CourseFolderExportManager {
       // }
 
       // Get/create collection folder inside course folder
-      final collectionFolderDoc = await _safUtil.mkdirp(courseFolderDoc.uri!, [collectionFolderName]);
+      final collectionFolderDoc = await _safUtil.mkdirp(courseFolderDoc.uri, [collectionFolderName]);
 
       // if (collectionFolderDoc == null) {
       //   return FileExportResult(
@@ -297,7 +295,7 @@ class CourseFolderExportManager {
 
       // Write file to collection folder
       await _safStream.writeFileBytes(
-        collectionFolderDoc.uri!,
+        collectionFolderDoc.uri,
         originalFilename,
         _getMimeType(originalFilename),
         bytes,

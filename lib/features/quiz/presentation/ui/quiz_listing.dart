@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/data/models/quiz_question_model/content_questions.dart';
 import 'package:slidesync/data/models/quiz_question_model/quiz_question.dart';
 import 'package:slidesync/data/repos/content_questions_repo.dart';

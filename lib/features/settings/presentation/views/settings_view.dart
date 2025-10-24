@@ -7,6 +7,7 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/file_utils.dart';
+import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
@@ -192,6 +193,21 @@ class SettingsView extends ConsumerWidget {
                           contents: await CourseContentRepo.getAll(),
                         );
                         GlobalNav.popGlobal();
+                      },
+                    ),
+                  ),
+
+                  ConstantSizing.columnSpacingMedium,
+
+                  Center(
+                    child: FutureBuilder(
+                      future: AppHiveData.instance.getData(key: HiveDataPathKey.globalFileSizeSum.name),
+                      builder: (context, asyncSnapshot) {
+                        if (asyncSnapshot.hasData && asyncSnapshot.data != null) {
+                          final mb = Result.tryRun(() => (asyncSnapshot.data as int?) ?? 0 / (1024 * 1024)).data ?? 0.0;
+                          return CustomText("Storage usage: ${mb.toStringAsFixed(2)} MB", color: theme.supportingText);
+                        }
+                        return CustomText("Storage usage details unavailable", color: theme.supportingText);
                       },
                     ),
                   ),

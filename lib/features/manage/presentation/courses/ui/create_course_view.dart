@@ -1,6 +1,5 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:slidesync/features/share/import/saf_course_folder_import_manager.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';

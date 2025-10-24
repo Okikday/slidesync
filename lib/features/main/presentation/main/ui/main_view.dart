@@ -7,7 +7,6 @@ import 'package:slidesync/features/main/presentation/library/ui/library_floating
 import 'package:slidesync/features/main/presentation/main/logic/main_provider.dart';
 import 'package:slidesync/features/main/presentation/home/ui/home_tab_view/src/home_drawer.dart';
 import 'package:slidesync/features/main/presentation/library/ui/library_tab_view.dart';
-import 'package:slidesync/features/main/presentation/explore/ui/explore_tab_view.dart';
 
 import '../../home/ui/home_tab_view/home_tab_view.dart';
 import 'src/bottom_nav_bar.dart';

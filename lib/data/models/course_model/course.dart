@@ -1,11 +1,9 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:isar/isar.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/file_details.dart';
-import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/extensions/src/extension_on_map.dart';
 import 'package:slidesync/shared/helpers/formatter.dart';
 import 'package:uuid/uuid.dart';

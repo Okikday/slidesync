@@ -236,7 +236,7 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
           _pageStayStopwatch.start();
           return;
         }
-        log("Updating page: ${pageNumber}");
+        log("Updating page: $pageNumber");
         await _updateProgressTrack(
           currentProgressTrack.copyWith(
             lastRead: DateTime.now(),
