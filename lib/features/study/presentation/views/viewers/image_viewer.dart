@@ -20,6 +20,7 @@ import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/ask_ai/presentation/ui/ask_ai_screen.dart';
 import 'package:slidesync/features/main/presentation/library/ui/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/features/manage/domain/usecases/contents/create_content_preview_image.dart';
+import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
 import 'package:slidesync/features/study/presentation/logic/image_viewer_provider.dart';
 import 'package:slidesync/features/study/presentation/logic/src/image_viewer_state.dart';
 import 'package:slidesync/features/study/presentation/logic/src/pdf_doc_viewer_state/pdf_doc_viewer_state.dart';
@@ -94,6 +95,14 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
                               ref.read(imageViewerStateProvider).setRotation();
                             },
                           ),
+
+                           PopupMenuAction(
+                              title: "Share",
+                              iconData: Icons.share_rounded,
+                              onTap: () async {
+                                ShareContentActions.shareFileContent(context, widget.content.contentId);
+                              },
+                            ),
 
                           PopupMenuAction(
                             title: "Invoke Study AI",
