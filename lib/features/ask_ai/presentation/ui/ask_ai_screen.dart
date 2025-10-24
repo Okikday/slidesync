@@ -51,6 +51,7 @@ class _AskAiScreenState extends ConsumerState<AskAiScreen> with SingleTickerProv
           alignment: Alignment.bottomCenter,
           children: [
             ShimmeryGradientBackground(gradientAnimation: gradientAnimation),
+            Positioned(top: 24, right: 12, child: CloseButton()),
             Positioned(top: (context.topPadding + 12) * 2, child: const AiScreenCaptureButton()),
             SingleChildScrollView(
               child: SizedBox(

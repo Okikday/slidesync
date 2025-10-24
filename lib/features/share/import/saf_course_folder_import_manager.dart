@@ -600,9 +600,6 @@ class CourseFolderImportManager {
         final safFile = limitedFiles[i];
 
         try {
-          final List<int> bytesList = await _safStream.readFileBytes(safFile.uri);
-          final Uint8List bytes = Uint8List.fromList(bytesList);
-
           // Generate UUID and keep original file name
           final uuid = const Uuid().v4();
           final originalFileName = safFile.name;
@@ -610,9 +607,21 @@ class CourseFolderImportManager {
           uuids.add(uuid);
           uuidFileNames.add(originalFileName);
 
-          // Write to temp directory with original filename
+          // Write to temp directory with original filename using streaming
           final tempFile = File(p.join(tempDir.path, originalFileName));
-          await tempFile.writeAsBytes(bytes);
+          final sink = tempFile.openWrite();
+
+          try {
+            // Stream the file in chunks instead of loading all into memory
+            final Stream<List<int>> fileStream = await _safStream.readFileStream(safFile.uri);
+            await for (final chunk in fileStream) {
+              sink.add(chunk);
+            }
+          } finally {
+            await sink.flush();
+            await sink.close();
+          }
+
           copiedFilePaths.add(tempFile.path);
 
           if (i % 5 == 0) {

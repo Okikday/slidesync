@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
 import 'package:slidesync/core/assets/assets.dart';
-import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/features/manage/presentation/contents/ui/add_contents/add_contents_bottom_sheet.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';

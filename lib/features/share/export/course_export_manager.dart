@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:typed_data';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -272,35 +273,29 @@ class CourseFolderExportManager {
         return FileExportResult(originalName: originalFilename, success: false, error: 'File does not exist');
       }
 
-      // Read file bytes
-      final bytes = await file.readAsBytes();
-
       // Get/create course folder
       final courseFolderDoc = await _safUtil.mkdirp(baseUri, [courseFolderName]);
-
-      // if (courseFolderDoc == null) {
-      //   return FileExportResult(originalName: originalFilename, success: false, error: 'Failed to get course folder');
-      // }
 
       // Get/create collection folder inside course folder
       final collectionFolderDoc = await _safUtil.mkdirp(courseFolderDoc.uri, [collectionFolderName]);
 
-      // if (collectionFolderDoc == null) {
-      //   return FileExportResult(
-      //     originalName: originalFilename,
-      //     success: false,
-      //     error: 'Failed to get collection folder',
-      //   );
-      // }
-
-      // Write file to collection folder
-      await _safStream.writeFileBytes(
+      // Stream file without loading into memory
+      final streamInfo = await _safStream.startWriteStream(
         collectionFolderDoc.uri,
         originalFilename,
         _getMimeType(originalFilename),
-        bytes,
         overwrite: false,
       );
+
+      try {
+        // Read and write in chunks
+        final fileStream = file.openRead();
+        await for (final chunk in fileStream) {
+          await _safStream.writeChunk(streamInfo.session, Uint8List.fromList(chunk));
+        }
+      } finally {
+        await _safStream.endWriteStream(streamInfo.session);
+      }
 
       return FileExportResult(originalName: originalFilename, success: true);
     } catch (e, stackTrace) {

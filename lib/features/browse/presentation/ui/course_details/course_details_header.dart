@@ -42,7 +42,7 @@ class CourseDetailsHeader extends ConsumerWidget {
         background: DecoratedBox(
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [theme.background, theme.adjustBgAndSecondaryWithLerp],
+              colors: [theme.background, theme.secondary.withAlpha(150)],
               stops: [.8, 1],
               begin: Alignment.bottomLeft,
               end: Alignment.topRight,
@@ -50,7 +50,10 @@ class CourseDetailsHeader extends ConsumerWidget {
           ),
         ),
         titlePadding: EdgeInsets.zero,
-        title: CourseDetailsHeaderContent(courseId: courseId),
+        title: ColoredBox(
+          color: theme.background.withAlpha(200),
+          child: CourseDetailsHeaderContent(courseId: courseId),
+        ),
       ),
     );
   }

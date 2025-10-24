@@ -75,7 +75,7 @@ class _LibrarySearchViewState extends ConsumerState<LibrarySearchView> {
                 valueListenable: futureContentsNotifier,
                 builder: (context, futureContents, child) {
                   return futureContents == null
-                      ? Center(child: CustomText("Input a text to search", color: theme.onBackground))
+                      ? Center(child: CustomText("Input a title to search", color: theme.onBackground))
                       : FutureBuilder(
                           future: futureContents,
                           builder: (context, snapshot) {
@@ -94,7 +94,12 @@ class _LibrarySearchViewState extends ConsumerState<LibrarySearchView> {
                                 snapshot.connectionState == ConnectionState.active) {
                               return CircularLoadingIndicator(dimension: 30);
                             } else {
-                              return CustomText("No results found for the ${searchTextController.text}");
+                              return Center(
+                                child: CustomText(
+                                  "No results found for the ${searchTextController.text}",
+                                  color: theme.onBackground,
+                                ),
+                              );
                             }
                           },
                         );

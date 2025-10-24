@@ -1,5 +1,4 @@
 import 'package:hive/hive.dart';
-import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 
 class HiveDataIsolate {
@@ -7,11 +6,10 @@ class HiveDataIsolate {
   late Box _box;
   bool _isInitialized = false;
 
-  HiveDataIsolate({this.boxName = "customBox"});
+  HiveDataIsolate({this.boxName = "box"});
 
   Future<void> _initialize() async {
     if (!_isInitialized) {
-      // Each isolate needs its own Hive.init()
       final dir = await getApplicationDocumentsDirectory();
       Hive.init(dir.path);
       _box = await Hive.openBox(boxName);

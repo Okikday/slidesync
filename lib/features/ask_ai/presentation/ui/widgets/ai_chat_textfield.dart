@@ -1,4 +1,3 @@
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -70,7 +69,7 @@ class _AiChatTextfieldState extends ConsumerState<AiChatTextfield> with SingleTi
               padding: const EdgeInsets.only(right: 12.0),
               child: CustomElevatedButton(
                 onClick: () async {
-                  AskAiScreenProvider.state.read(ref).sendCurrContentToAi();
+                  await AskAiScreenProvider.state.read(ref).sendCurrContentToAi();
                   if (context.mounted) FocusScope.of(context).unfocus();
                 },
                 shape: CircleBorder(),

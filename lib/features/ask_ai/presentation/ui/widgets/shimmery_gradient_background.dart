@@ -18,7 +18,7 @@ class ShimmeryGradientBackground extends StatelessWidget {
               end: Alignment.bottomCenter,
               // stops: [0.2, 0.8, 1.0],
               colors: [Colors.blue.withAlpha(100), Colors.lime.withAlpha(50), Colors.purple.withAlpha(100)],
-              transform: GradientRotation(gradientAnimation.value * 0),
+              transform: GradientRotation(gradientAnimation.value),
             ),
           ),
           child: child,

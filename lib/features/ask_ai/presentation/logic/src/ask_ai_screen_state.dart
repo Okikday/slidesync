@@ -76,6 +76,7 @@ class AskAiScreenState extends LeakPrevention with ValueNotifierFactoryMixin {
 
       final aiMessage = Message.text(id: aiMessageId, authorId: 'ai', text: '');
       chatController.insertMessage(aiMessage);
+      
 
       if (aiChatHistory.where((c) => true).whereType<InlineDataPart>().isNotEmpty) {
         imageToAiNotifier.value = null;
