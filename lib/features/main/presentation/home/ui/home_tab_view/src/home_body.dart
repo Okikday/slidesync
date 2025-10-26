@@ -2,7 +2,10 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:isar/isar.dart';
+import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/main/presentation/home/logic/home_provider.dart';
@@ -35,7 +38,7 @@ class HomeBody extends ConsumerWidget {
             ),
             builder: (context, ref, child) {
               final asyncMostRecent = ref.watch(
-                HomeProvider.recentContentsTrackProvider.select((s) => s.whenData((v) => v.isEmpty ? null : v.last)),
+                HomeProvider.recentContentsTrackProvider(1).select((s) => s.whenData((v) => v.isEmpty ? null : v.last)),
               );
               return asyncMostRecent.when(
                 data: (data) {
@@ -54,7 +57,15 @@ class HomeBody extends ConsumerWidget {
                           }
                           return;
                         }
-                        if (context.mounted) context.pushNamed(Routes.contentGate.name, extra: content);
+                        if (data.progress == 1.0) {
+                          final nextContent = (await ContentTrackRepo.filter)
+                              .parentIdEqualTo(content.parentId)
+                              .progressLessThan(1.0)
+                              .findFirst();
+                          if (context.mounted) context.pushNamed(Routes.contentGate.name, extra: nextContent);
+                        } else {
+                          if (context.mounted) context.pushNamed(Routes.contentGate.name, extra: content);
+                        }
                       },
                     );
                   }

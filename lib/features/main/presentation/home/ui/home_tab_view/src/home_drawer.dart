@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:lottie/lottie.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/auth/domain/usecases/auth_uc/user_data_functions.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -37,8 +38,14 @@ class HomeDrawer extends ConsumerWidget {
                   }
                   return CircleAvatar(
                     radius: 40,
-                    backgroundColor: theme.altBackgroundPrimary,
-                    child: Icon(Iconsax.user, color: theme.supportingText),
+                    backgroundColor: theme.altBackgroundSecondary,
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: LottieBuilder.asset(
+                        "assets/icons/animated_jsons/experimental_loading.json",
+                        animate: false,
+                      ),
+                    ),
                   );
                 },
               ),
@@ -60,9 +67,9 @@ class HomeDrawer extends ConsumerWidget {
                   return Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      CustomText("Username", color: theme.onBackground),
+                      CustomText("Unknown User", color: theme.onBackground),
                       ConstantSizing.columnSpacingSmall,
-                      CustomText("Email", color: theme.onBackground),
+                      CustomText("Not Signed in", color: theme.onBackground.withAlpha(100)),
                     ],
                   );
                 },

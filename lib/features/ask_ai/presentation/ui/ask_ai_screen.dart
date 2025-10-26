@@ -56,7 +56,7 @@ class _AskAiScreenState extends ConsumerState<AskAiScreen> with SingleTickerProv
             SingleChildScrollView(
               child: SizedBox(
                 width: context.deviceWidth,
-                height: (context.deviceHeight * 0.7 + 24 - (context.viewInsets.bottom / 2)).clamp(100, double.infinity),
+                height: (context.deviceHeight * 0.8 + 24 - (context.viewInsets.bottom / 2)).clamp(100, double.infinity),
                 child: const AiInteractionView(),
               ),
             ),

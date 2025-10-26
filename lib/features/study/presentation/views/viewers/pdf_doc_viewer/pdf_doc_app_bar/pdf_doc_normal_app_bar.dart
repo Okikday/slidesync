@@ -1,26 +1,12 @@
-import 'dart:developer';
-import 'dart:io';
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
-import 'package:firebase_ai/firebase_ai.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:mime/mime.dart';
-import 'package:slidesync/core/storage/isar_data/isar_data.dart';
-import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/file_details.dart';
-import 'package:slidesync/data/models/quiz_question_model/content_questions.dart';
-import 'package:slidesync/data/models/quiz_question_model/quiz_question.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
-import 'package:slidesync/features/ask_ai/domain/services/ai_gen_client.dart';
 import 'package:slidesync/features/browse/presentation/logic/course_materials_provider.dart';
 import 'package:slidesync/features/main/presentation/library/ui/src/library_tab_view_app_bar/build_button.dart';
-import 'package:slidesync/features/quiz/domain/models/question_prompt_generator.dart';
-import 'package:slidesync/features/quiz/presentation/logic/quiz_screen_provider.dart';
-import 'package:slidesync/features/quiz/presentation/ui/quiz_screen.dart';
 import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
 import 'package:slidesync/features/study/presentation/logic/pdf_doc_viewer_provider.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
@@ -44,177 +30,168 @@ class PdfDocNormalAppBar extends ConsumerWidget {
           valueListenable: ref.watch(docViewP.select((s) => s.isSearchingNotifier)),
           builder: (context, isSearching, child) {
             return AppBarContainerChild(
-                  theme.isDarkMode,
-                  title: title,
-                  onBackButtonClicked: () async {
-                    final content = await CourseContentRepo.getByContentId(contentId);
-                    if (content != null) {
-                      (await ref.read(
-                        CourseMaterialsProvider.contentPaginationProvider(content.parentId).future,
-                      )).restartIsolate();
-                    }
-                    if (context.mounted) {
-                      context.pop();
-                    } else {
-                      GlobalNav.withContext((c) => c.pop());
-                    }
-                  },
-                  trailing: Padding(
-                    padding: const EdgeInsets.only(left: 8.0),
-                    child: Row(
-                      children: [
-                        BuildButton(
-                          iconData: Iconsax.search_normal_copy,
-                          backgroundColor: Colors.transparent,
-                          onTap: onSearch,
+              theme.isDarkMode,
+              title: title,
+              onBackButtonClicked: () async {
+                final content = await CourseContentRepo.getByContentId(contentId);
+                if (content != null) {
+                  (await ref.read(
+                    CourseMaterialsProvider.contentPaginationProvider(content.parentId).future,
+                  )).restartIsolate();
+                }
+                if (context.mounted) {
+                  context.pop();
+                } else {
+                  GlobalNav.withContext((c) => c.pop());
+                }
+              },
+              trailing: Padding(
+                padding: const EdgeInsets.only(left: 8.0),
+                child: Row(
+                  children: [
+                    BuildButton(
+                      iconData: Iconsax.search_normal_copy,
+                      backgroundColor: Colors.transparent,
+                      onTap: onSearch,
+                    ),
+                    AppPopupMenuButton(
+                      tooltip: "More options",
+                      constraints: BoxConstraints(maxWidth: 300),
+                      actions: [
+                        PopupMenuAction(
+                          title: "Go to last page",
+                          iconData: Iconsax.play,
+                          onTap: () async {
+                            final p = ref.read(PdfDocViewerProvider.state(contentId));
+                            p.controller.goToPage(pageNumber: p.initialPage ?? 1);
+                          },
                         ),
-                        AppPopupMenuButton(
-                          tooltip: "More options",
-                          constraints: BoxConstraints(maxWidth: 300),
-                          actions: [
-                            PopupMenuAction(
-                              title: "Go to last page",
-                              iconData: Iconsax.play,
-                              onTap: () async {
-                                final p = ref.read(PdfDocViewerProvider.state(contentId));
-                                p.controller.goToPage(pageNumber: p.initialPage ?? 1);
-                              },
-                            ),
-                            PopupMenuAction(
-                              title: "Share",
-                              iconData: Icons.share_rounded,
-                              onTap: () async {
-                                ShareContentActions.shareFileContent(context, contentId);
-                              },
-                            ),
-                            // PopupMenuAction(
-                            //   title: "Horizontal layout",
-                            //   iconData: Iconsax.book_1,
-                            //   onTap: () {
-                            //     UiUtils.showFlushBar(context, msg: "Coming soon!");
-                            //   },
-                            // ),
-                            () {
-                              final isDarkMode = (ref.watch(PdfDocViewerProvider.ispdfViewerInDarkMode).value ?? false);
-                              return PopupMenuAction(
-                                title: isDarkMode ? "Normal mode(Light)" : "Inverted mode(Dark)",
-                                iconData: isDarkMode ? Iconsax.sun_1 : Iconsax.moon,
-                                onTap: () {
-                                  ref.read(PdfDocViewerProvider.ispdfViewerInDarkMode.notifier).toggle();
-                                },
-                              );
-                            }(),
-
-                            // PopupMenuAction(
-                            //   title: "Add current page to references",
-                            //   iconData: Iconsax.book_1,
-                            //   onTap: () async {
-                            //     final content = await CourseContentRepo.getByContentId(contentId);
-                            //     if (content == null) return;
-                            //     final references = content.metadata['references'];
-                            //     final currentPage = ref.read(PdfDocViewerProvider.state(contentId)).currentPageNumber;
-                            //     // log("Got here");
-                            //     final reference = content.copyWith(
-                            //       contentHash: content.contentHash,
-                            //       metadataJson: {
-                            //         ...content.metadata,
-                            //         'references': references == null
-                            //             ? jsonEncode(<String>[currentPage.toString()])
-                            //             : jsonEncode(<String>[
-                            //                 ...(jsonDecode(references) as List<String>),
-                            //                 currentPage.toString(),
-                            //               ]),
-                            //       }.encodeToJson,
-                            //     );
-                            //     await CourseCollectionRepo.addContentToAppCollection(
-                            //       AppCourseCollections.references,
-                            //       content: reference,
-                            //     );
-                            //   },
-                            // ),
-                            PopupMenuAction(
-                              title: "Try Quiz",
-                              iconData: Iconsax.book_1,
-                              onTap: () async {
-                                final content = await CourseContentRepo.getByContentId(contentId);
-                                if (content == null) return;
-
-                                final fileSize = content.fileSize;
-                                // 1 MB = 1,000,000 bytes
-                                if (fileSize > 100000) {
-                                  GlobalNav.withContext(
-                                    (context) =>
-                                        UiUtils.showFlushBar(context, msg: "File is too big (must be under 100KB)"),
-                                  );
-                                  return;
-                                }
-
-                                final filePath = content.path.filePath;
-                                final file = File(filePath);
-
-                                if (!await file.exists()) {
-                                  GlobalNav.withContext(
-                                    (context) => UiUtils.showFlushBar(context, msg: "File not found"),
-                                  );
-                                  return;
-                                }
-
-                                GlobalNav.withContext(
-                                  (context) => UiUtils.showLoadingDialog(
-                                    context,
-                                    message: "Generating questions, may take a while",
-                                  ),
-                                );
-                                final bytes = await file.readAsBytes();
-                                final mimeType = lookupMimeType(filePath) ?? 'application/octet-stream';
-
-                                final quizPrompt = QuestionPromptGenerator.forMaterial(questionLimit: 100);
-                                log("Made prompt and asking ai");
-
-                                final rawQuestions = await AiGenClient.instance.chatAnon([
-                                  Content('user', [TextPart(quizPrompt), InlineDataPart(mimeType, bytes)]),
-                                ]);
-
-                                log("Received response from ai");
-
-                                final questions = QuestionParser.parse(rawQuestions);
-                                final config = QuizScreenConfig(questions: questions);
-                                GlobalNav.withContext((context) => context.pop());
-
-                                GlobalNav.withContext(
-                                  (context) => Navigator.push(
-                                    context,
-                                    PageAnimation.pageRouteBuilder(QuizScreen(config: config)),
-                                  ),
-                                );
-
-                                final toStore = ContentQuestions.create(
-                                  contentHash: content.contentHash,
-                                  contentId: "${content.contentId}${DateTime.now().toIso8601String()}",
-                                  title: content.title,
-                                  questions: [rawQuestions],
-                                );
-
-                                await IsarData.instance<ContentQuestions>().store(toStore);
-                              },
-                            ),
-                          ],
+                        PopupMenuAction(
+                          title: "Share",
+                          iconData: Icons.share_rounded,
+                          onTap: () async {
+                            ShareContentActions.shareFileContent(context, contentId);
+                          },
                         ),
+                        // PopupMenuAction(
+                        //   title: "Horizontal layout",
+                        //   iconData: Iconsax.book_1,
+                        //   onTap: () {
+                        //     UiUtils.showFlushBar(context, msg: "Coming soon!");
+                        //   },
+                        // ),
+                        () {
+                          final isDarkMode = (ref.watch(PdfDocViewerProvider.ispdfViewerInDarkMode).value ?? false);
+                          return PopupMenuAction(
+                            title: isDarkMode ? "Normal mode(Light)" : "Inverted mode(Dark)",
+                            iconData: isDarkMode ? Iconsax.sun_1 : Iconsax.moon,
+                            onTap: () {
+                              ref.read(PdfDocViewerProvider.ispdfViewerInDarkMode.notifier).toggle();
+                            },
+                          );
+                        }(),
 
-                        // Printing, Share, Save to Google drive
+                        // PopupMenuAction(
+                        //   title: "Add current page to references",
+                        //   iconData: Iconsax.book_1,
+                        //   onTap: () async {
+                        //     final content = await CourseContentRepo.getByContentId(contentId);
+                        //     if (content == null) return;
+                        //     final references = content.metadata['references'];
+                        //     final currentPage = ref.read(PdfDocViewerProvider.state(contentId)).currentPageNumber;
+                        //     // log("Got here");
+                        //     final reference = content.copyWith(
+                        //       contentHash: content.contentHash,
+                        //       metadataJson: {
+                        //         ...content.metadata,
+                        //         'references': references == null
+                        //             ? jsonEncode(<String>[currentPage.toString()])
+                        //             : jsonEncode(<String>[
+                        //                 ...(jsonDecode(references) as List<String>),
+                        //                 currentPage.toString(),
+                        //               ]),
+                        //       }.encodeToJson,
+                        //     );
+                        //     await CourseCollectionRepo.addContentToAppCollection(
+                        //       AppCourseCollections.references,
+                        //       content: reference,
+                        //     );
+                        //   },
+                        // ),
+                        // PopupMenuAction(
+                        //   title: "Try Quiz",
+                        //   iconData: Iconsax.book_1,
+                        //   onTap: () async {
+                        //     final content = await CourseContentRepo.getByContentId(contentId);
+                        //     if (content == null) return;
+
+                        //     final fileSize = content.fileSize;
+                        //     // 1 MB = 1,000,000 bytes
+                        //     if (fileSize > 100000) {
+                        //       GlobalNav.withContext(
+                        //         (context) =>
+                        //             UiUtils.showFlushBar(context, msg: "File is too big (must be under 100KB)"),
+                        //       );
+                        //       return;
+                        //     }
+
+                        //     final filePath = content.path.filePath;
+                        //     final file = File(filePath);
+
+                        //     if (!await file.exists()) {
+                        //       GlobalNav.withContext(
+                        //         (context) => UiUtils.showFlushBar(context, msg: "File not found"),
+                        //       );
+                        //       return;
+                        //     }
+
+                        //     GlobalNav.withContext(
+                        //       (context) => UiUtils.showLoadingDialog(
+                        //         context,
+                        //         message: "Generating questions, may take a while",
+                        //       ),
+                        //     );
+                        //     final bytes = await file.readAsBytes();
+                        //     final mimeType = lookupMimeType(filePath) ?? 'application/octet-stream';
+
+                        //     final quizPrompt = QuestionPromptGenerator.forMaterial(questionLimit: 100);
+                        //     log("Made prompt and asking ai");
+
+                        //     final rawQuestions = await AiGenClient.instance.chatAnon([
+                        //       Content('user', [TextPart(quizPrompt), InlineDataPart(mimeType, bytes)]),
+                        //     ]);
+
+                        //     log("Received response from ai");
+
+                        //     final questions = QuestionParser.parse(rawQuestions);
+                        //     final config = QuizScreenConfig(questions: questions);
+                        //     GlobalNav.withContext((context) => context.pop());
+
+                        //     GlobalNav.withContext(
+                        //       (context) => Navigator.push(
+                        //         context,
+                        //         PageAnimation.pageRouteBuilder(QuizScreen(config: config)),
+                        //       ),
+                        //     );
+
+                        //     final toStore = ContentQuestions.create(
+                        //       contentHash: content.contentHash,
+                        //       contentId: "${content.contentId}${DateTime.now().toIso8601String()}",
+                        //       title: content.title,
+                        //       questions: [rawQuestions],
+                        //     );
+
+                        //     await IsarData.instance<ContentQuestions>().store(toStore);
+                        //   },
+                        // ),
                       ],
                     ),
-                  ),
-                )
-                .animate(target: isSearching ? 0 : 1)
-                .scale(
-                  begin: Offset(0, 0),
-                  end: Offset(1, 1),
-                  alignment: Alignment.bottomRight,
-                  curve: CustomCurves.defaultIosSpring,
-                  duration: Durations.medium4,
-                )
-                .fadeIn();
+
+                    // Printing, Share, Save to Google drive
+                  ],
+                ),
+              ),
+            ).animate(target: isSearching ? 0 : 1).fadeIn();
           },
         );
       },

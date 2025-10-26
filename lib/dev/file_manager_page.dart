@@ -1,10 +1,9 @@
 import 'dart:developer';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:intl/intl.dart';
+import 'package:slidesync/core/utils/file_utils.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class FileManagerPage extends ConsumerStatefulWidget {
@@ -26,7 +25,7 @@ class _FileManagerPageState extends ConsumerState<FileManagerPage> {
   }
 
   Future<void> _goToAppDir() async {
-    final dir = await getApplicationDocumentsDirectory();
+    final dir = await FileUtils.getAppDocumentsDirectory();
     await _listDir(dir);
   }
 

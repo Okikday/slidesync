@@ -21,10 +21,7 @@ class EmptyContentsView extends ConsumerWidget {
           physics: const NeverScrollableScrollPhysics(),
           children: [
             ConstantSizing.columnSpacing(context.deviceHeight * 0.2),
-            SizedBox.square(
-              dimension: context.deviceWidth * 0.5,
-              child: LottieBuilder.asset(Assets.icons.roundedPlayingFace, reverse: true),
-            ),
+            SizedBox.square(dimension: 200, child: LottieBuilder.asset(Assets.icons.roundedPlayingFace, reverse: true)),
 
             ConstantSizing.columnSpacingExtraLarge,
             Center(

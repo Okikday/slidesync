@@ -9,6 +9,7 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
+import 'package:slidesync/features/manage/presentation/contents/actions/modify_content_card_actions.dart';
 import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
 import 'package:slidesync/features/study/presentation/actions/content_view_gate_actions.dart';
 import 'package:slidesync/routes/app_router.dart';
@@ -62,7 +63,7 @@ class _ContentCardState extends ConsumerState<ContentCard> {
             child: Container(
               // curve: CustomCurves.defaultIosSpring,
               // duration: Durations.extralong1,
-              constraints: BoxConstraints(maxHeight: 200, maxWidth: 400),
+              constraints: BoxConstraints(maxHeight: 400, maxWidth: 400),
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: theme.background.lightenColor(theme.isDarkMode ? 0.1 : 0.9),
@@ -214,6 +215,13 @@ class ContentCardPopUpMenuButton extends ConsumerWidget {
           },
         ),
         PopupMenuAction(
+          title: "Rename",
+          iconData: Iconsax.edit_2_copy,
+          onTap: () async {
+            ModifyContentCardActions.onRenameContent(context, content);
+          },
+        ),
+        PopupMenuAction(
           title: "Delete",
           iconData: Iconsax.trash_copy,
           onTap: () async {
@@ -267,7 +275,6 @@ class ContentCardPreviewImage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
     return ImageFiltered(
       imageFilter: ColorFilter.mode(Colors.black.withAlpha(10), BlendMode.color),
       child: BuildImagePathWidget(

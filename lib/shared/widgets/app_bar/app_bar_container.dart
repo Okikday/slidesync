@@ -1,6 +1,7 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 export 'app_bar_container_child.dart';
@@ -64,7 +65,7 @@ class _AppBarContainerWidget extends ConsumerWidget {
   EdgeInsets? _resolvePadding(double topPadding) {
     if (padding == null) {
       return EdgeInsets.only(
-        left: deviceWidth > deviceHeight ? 24 : 12,
+        left: deviceWidth > deviceHeight ? (DeviceUtils.isDesktop() ? 12 : 24) : 12,
         right: deviceWidth > deviceHeight ? 24 : 12,
         top: topPadding + 4,
         bottom: 4,
@@ -89,9 +90,9 @@ class _AppBarContainerWidget extends ConsumerWidget {
         color: scaffoldBgColor ?? context.scaffoldBackgroundColor.withValues(alpha: 0.9),
         border: Border(
           bottom: BorderSide(
-            color: (scaffoldBgColor ?? context.scaffoldBackgroundColor)
-                .lightenColor(ref.isDarkMode ? 0.15 : 0.85)
-                .withValues(alpha: 0.9),
+            color:
+                scaffoldBgColor ??
+                (context.scaffoldBackgroundColor).lightenColor(ref.isDarkMode ? 0.15 : 0.85).withValues(alpha: 0.9),
           ),
         ),
       ),

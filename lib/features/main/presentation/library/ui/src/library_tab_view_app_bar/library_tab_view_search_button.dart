@@ -117,6 +117,7 @@ class LibraryTabViewSearchButton extends ConsumerWidget {
                         child: CourseCategoriesCard(
                           isDarkMode: isDarkMode,
                           title: (value as CourseCollection).collectionTitle,
+                          contentCount: (value).contents.length,
                           onTap: () async {
                             controller.closeView("");
                             final curr = value;

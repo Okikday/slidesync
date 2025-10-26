@@ -47,27 +47,38 @@ class _LibrarySearchViewState extends ConsumerState<LibrarySearchView> {
         child: Column(
           children: [
             ConstantSizing.columnSpacing(context.topPadding + kToolbarHeight),
-            CustomTextfield(
-              controller: searchTextController,
-              autoDispose: false,
-              backgroundColor: theme.secondary.withAlpha(50),
-              inputContentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-              inputTextStyle: TextStyle(color: theme.onBackground, fontSize: 15),
-              hint: "Search materials",
-              onchanged: (text) {
-                if (text.trim().isEmpty) {
-                  if (futureContentsNotifier.value != null) futureContentsNotifier.value = CourseContentRepo.getAll();
-                } else {
-                  futureContentsNotifier.value =
-                      (filter as QueryBuilder<CourseContent, CourseContent, QFilterCondition>)
-                          .titleContains(searchTextController.text, caseSensitive: false)
-                          .findAll();
-                }
-              },
-              prefixIcon: Padding(
-                padding: const EdgeInsets.only(left: 12, right: 8),
-                child: Icon(Iconsax.search_normal_copy),
-              ),
+
+            Row(
+              spacing: 12,
+              children: [
+                Expanded(
+                  child: CustomTextfield(
+                    controller: searchTextController,
+                    autoDispose: false,
+                    backgroundColor: theme.secondary.withAlpha(50),
+                    inputContentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                    inputTextStyle: TextStyle(color: theme.onBackground, fontSize: 15),
+                    hint: "Search materials",
+                    onchanged: (text) {
+                      if (text.trim().isEmpty) {
+                        if (futureContentsNotifier.value != null) {
+                          futureContentsNotifier.value = CourseContentRepo.getAll();
+                        }
+                      } else {
+                        futureContentsNotifier.value =
+                            (filter as QueryBuilder<CourseContent, CourseContent, QFilterCondition>)
+                                .titleContains(searchTextController.text, caseSensitive: false)
+                                .findAll();
+                      }
+                    },
+                    prefixIcon: Padding(
+                      padding: const EdgeInsets.only(left: 12, right: 8),
+                      child: Icon(Iconsax.search_normal_copy),
+                    ),
+                  ),
+                ),
+                CloseButton(),
+              ],
             ),
 
             Expanded(

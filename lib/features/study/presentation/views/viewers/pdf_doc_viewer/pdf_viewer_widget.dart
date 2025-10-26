@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:screenshot/screenshot.dart';
+import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/main/presentation/main/logic/main_provider.dart';
@@ -12,6 +13,7 @@ import 'package:slidesync/features/study/presentation/logic/pdf_doc_viewer_provi
 import 'package:slidesync/features/study/presentation/logic/src/pdf_doc_viewer_state/pdf_doc_viewer_state.dart';
 import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_overlay_widgets/pdf_scrollbar_overlay.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PdfViewerWidget extends ConsumerWidget {
   const PdfViewerWidget({super.key, required this.content});
@@ -40,6 +42,7 @@ class PdfViewerWidget extends ConsumerWidget {
                     content.path.filePath,
                     initialPageNumber: pdva.initialPage ?? 1,
                     params: PdfViewerParams(
+                      panAxis: PanAxis.aligned,
                       scrollPhysics: BouncingScrollPhysics(),
                       layoutPages: (pages, params) {
                         final width = pages.fold(0.0, (w, p) => math.max(w, p.width)) + params.margin * 2;
@@ -57,6 +60,26 @@ class PdfViewerWidget extends ConsumerWidget {
                       },
                       backgroundColor: theme.background,
                       activeMatchTextColor: theme.primary.withValues(alpha: 0.5),
+                      linkHandlerParams: PdfLinkHandlerParams(
+                        // Handle internal links (goto actions)
+                        onLinkTap: (link) async {
+                          if (link.url != null) {
+                            UiUtils.showFlushBar(context, msg: "Opening link...");
+                            // External URL
+                            final uri = link.url;
+                            if (uri == null) return;
+                            await launchUrl(uri, mode: LaunchMode.platformDefault);
+                          } else if (link.dest != null) {
+                            // Internal destination - handled automatically by pdfrx
+                            debugPrint('Internal link to destination: ${link.dest?.pageNumber}');
+                          } else {
+                            _handleTap(ref);
+                          }
+                        },
+
+                        // Customize link appearance
+                        linkColor: Colors.transparent,
+                      ),
                       viewerOverlayBuilder: (context, size, handleLinkTap) => [
                         // ValueListenableBuilder(
                         //   valueListenable: pdva.isAppBarVisibleNotifier,
@@ -68,7 +91,10 @@ class PdfViewerWidget extends ConsumerWidget {
                           controller: pdva.pdfViewerController,
                           thumbSize: Size(160, 52),
                           thumbBuilder: (context, thumbSize, pageNumber, controller) {
-                            return PdfScrollbarOverlay(pageProgress: "${pageNumber ?? 0}/${controller.pageCount}");
+                            return PdfScrollbarOverlay(
+                              controller: controller,
+                              pageProgress: "${pageNumber ?? 0}/${controller.pageCount}",
+                            );
                           },
                         ),
                       ],
@@ -82,37 +108,15 @@ class PdfViewerWidget extends ConsumerWidget {
 
                           return false;
                         }
-                        if (controller.textSelectionDelegate.hasSelectedText &&
-                            details.type == PdfViewerGeneralTapType.tap) {
-                          return false;
-                        }
+                        // if (controller.textSelectionDelegate.hasSelectedText &&
+                        //     details.type == PdfViewerGeneralTapType.tap) {
+                        //   return false;
+                        // }
                         if (details.type != PdfViewerGeneralTapType.tap) return false;
                         if (controller.textSelectionDelegate.hasSelectedText) {
                           controller.textSelectionDelegate.clearTextSelection();
                         }
-                        // final currentZoom = controller.currentZoom;
-                        // final currentPosition = controller.centerPosition;
-                        final docViewP = PdfDocViewerProvider.state(content.contentId);
-                        final searchViewP = PdfDocViewerProvider.searchState(content.contentId);
-
-                        final bool isSearching = ref.read(searchViewP.select((s) => s.isSearchingNotifier)).value;
-                        if (isSearching) return false;
-                        final bool isAppBarVisible = ref.read(docViewP.select((s) => s.isAppBarVisibleNotifier)).value;
-                        if (isAppBarVisible == true) {
-                          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-                        } else {
-                          ref.read(docViewP).updateScrollOffset(0);
-                          final bool isFocusMode = ref.read(MainProvider.isFocusModeProvider) ?? false;
-                          if (isFocusMode) {
-                            SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-                          } else {
-                            SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-                          }
-                        }
-                        // log("isAppBarVisible: $isAppBarVisible");
-                        ref.read(docViewP).setAppBarVisible(!isAppBarVisible);
-
-                        return true;
+                        return _handleTap(ref);
                       },
                       pagePaintCallbacks: [
                         (canvas, pageRect, page) {
@@ -145,5 +149,29 @@ class PdfViewerWidget extends ConsumerWidget {
         ),
       ),
     );
+  }
+
+  bool _handleTap(WidgetRef ref) {
+    final docViewP = PdfDocViewerProvider.state(content.contentId);
+    final searchViewP = PdfDocViewerProvider.searchState(content.contentId);
+
+    final bool isSearching = ref.read(searchViewP.select((s) => s.isSearchingNotifier)).value;
+    if (isSearching) return false;
+    final bool isAppBarVisible = ref.read(docViewP.select((s) => s.isAppBarVisibleNotifier)).value;
+    if (isAppBarVisible) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+    } else {
+      ref.read(docViewP).updateScrollOffset(0);
+      final bool isFocusMode = ref.read(MainProvider.isFocusModeProvider) ?? false;
+      if (isFocusMode) {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+      } else {
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      }
+    }
+    // log("isAppBarVisible: $isAppBarVisible");
+    ref.read(docViewP).setAppBarVisible(!isAppBarVisible);
+
+    return true;
   }
 }

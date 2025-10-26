@@ -3,13 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/features/main/presentation/main/logic/main_provider.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class HomeAppBar extends ConsumerWidget {
-  const HomeAppBar({super.key, required this.onClickUserIcon, required this.title, required this.onClickNotification});
+  const HomeAppBar({super.key, required this.onClickHamburger, required this.title, required this.onClickNotification});
 
-  final void Function() onClickUserIcon;
+  final void Function() onClickHamburger;
 
   final String title;
   final void Function() onClickNotification;
@@ -76,7 +77,7 @@ class HomeAppBar extends ConsumerWidget {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         CustomElevatedButton(
-                          onClick: onClickUserIcon,
+                          onClick: onClickHamburger,
                           pixelHeight: 48,
                           pixelWidth: 48,
                           contentPadding: EdgeInsets.zero,
@@ -97,6 +98,8 @@ class HomeAppBar extends ConsumerWidget {
 
                         CustomElevatedButton(
                           onClick: onClickNotification,
+                          pixelWidth: DeviceUtils.isDesktop() ? 48 : null,
+                          pixelHeight: DeviceUtils.isDesktop() ? 48 : null,
                           overlayColor: ref.secondary.withAlpha(40),
                           shape: CircleBorder(
                             side: BorderSide(color: theme.altBackgroundSecondary.withValues(alpha: 0.4)),

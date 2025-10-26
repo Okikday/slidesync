@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/features/browse/presentation/logic/course_materials_provider.dart';
 import 'package:slidesync/features/browse/presentation/ui/course_materials/content_card.dart';
@@ -98,11 +99,12 @@ class PagedSliverContentView extends ConsumerWidget {
         state: state,
         fetchNextPage: fetchNextPage,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: context.deviceWidth ~/ 160,
+          crossAxisCount: DeviceUtils.isDesktop() ? ((context.deviceWidth / 3) ~/ 160) : context.deviceWidth ~/ 160,
           crossAxisSpacing: 12,
           mainAxisSpacing: 20,
         ),
         builderDelegate: PagedChildBuilderDelegate(
+          noMoreItemsIndicatorBuilder: (context) => const SizedBox(height: 56),
           itemBuilder: (context, item, index) {
             return ContentCard(content: item).animate().fadeIn().moveY(
               begin: index.isEven ? 40 : 20,
@@ -119,6 +121,7 @@ class PagedSliverContentView extends ConsumerWidget {
         itemExtent: 180,
         fetchNextPage: fetchNextPage,
         builderDelegate: PagedChildBuilderDelegate(
+          noMoreItemsIndicatorBuilder: (context) => const SizedBox(height: 56),
           itemBuilder: (context, item, index) {
             return Padding(
               padding: const EdgeInsets.only(bottom: 16),

@@ -63,7 +63,7 @@ class ExpandCardDialog extends ConsumerWidget {
                 borderRadius: 16,
                 child:
                     Container(
-                      constraints: BoxConstraints(maxHeight: kToolbarHeight * 1.5),
+                      constraints: BoxConstraints(maxHeight: kToolbarHeight * 1.5, maxWidth: 450),
                       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                         color: theme.background.lightenColor(theme.isDarkMode ? .12 : .88),
@@ -84,42 +84,46 @@ class ExpandCardDialog extends ConsumerWidget {
                       child: Row(
                         spacing: 12,
                         children: [
-                          Stack(
-                            clipBehavior: Clip.hardEdge,
-                            children: [
-                              CircleAvatar(
-                                radius: dimension / 2 - 3,
-                                backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.4),
-                                child: ClipOval(
-                                  child: CircleAvatar(
-                                    radius: dimension / 2 - 4,
-                                    backgroundColor: theme.background.lightenColor(theme.isDarkMode ? .14 : .86),
-                                    child: SizedBox.square(
-                                      dimension: dimension - 8,
-                                      child: BuildImagePathWidget(
-                                        fileDetails: course.imageLocationJson.fileDetails,
-                                        fallbackWidget: Icon(Iconsax.document_1, size: 16, color: theme.onBackground),
+                          SizedBox.square(
+                            dimension: 60,
+                            child: Stack(
+                              clipBehavior: Clip.hardEdge,
+                              fit: StackFit.expand,
+                              children: [
+                                CircleAvatar(
+                                  radius: dimension / 2 - 3,
+                                  backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.4),
+                                  child: ClipOval(
+                                    child: CircleAvatar(
+                                      radius: dimension / 2 - 4,
+                                      backgroundColor: theme.background.lightenColor(theme.isDarkMode ? .14 : .86),
+                                      child: SizedBox.square(
+                                        dimension: dimension - 8,
+                                        child: BuildImagePathWidget(
+                                          fileDetails: course.imageLocationJson.fileDetails,
+                                          fallbackWidget: Icon(Iconsax.document_1, size: 16, color: theme.onBackground),
+                                        ),
                                       ),
                                     ),
                                   ),
                                 ),
-                              ),
 
-                              Positioned(
-                                left: 0,
-                                right: 0,
-                                top: 0,
-                                bottom: 0,
-                                child: IgnorePointer(
-                                  child: CircularProgressIndicator(
-                                    value: 0.01,
-                                    strokeCap: StrokeCap.round,
-                                    color: theme.primaryColor,
-                                    backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.6),
+                                Positioned(
+                                  left: 0,
+                                  right: 0,
+                                  top: 0,
+                                  bottom: 0,
+                                  child: IgnorePointer(
+                                    child: CircularProgressIndicator(
+                                      value: 0.01,
+                                      strokeCap: StrokeCap.round,
+                                      color: theme.primaryColor,
+                                      backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.6),
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                           Expanded(
                             child: Column(
@@ -179,7 +183,14 @@ class ExpandCardDialog extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    BuildExpandCardButton(title: "Open", iconData: Iconsax.play, onTap: () {}),
+                    BuildExpandCardButton(
+                      title: "Open",
+                      iconData: Iconsax.play,
+                      onTap: () {
+                        UiUtils.hideDialog(context);
+                        context.pushNamed(Routes.courseDetails.name, extra: course.courseId);
+                      },
+                    ),
                     divider,
                     // BuildExpandCardButton(title: "Pin", iconData: Icons.pin_rounded, onTap: () {}),
                     // divider,

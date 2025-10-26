@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
@@ -94,7 +95,11 @@ class _SelectToModifyCourseOuterSectionState extends ConsumerState<SelectToModif
                       Navigator.of(context).pop();
 
                       // ref.read(CourseProviders.courseProvider.notifier).update(course);
-                      context.pushNamed(Routes.modifyCourse.name, extra: course.courseId);
+                      if(DeviceUtils.isDesktop()){
+                        context.pushNamed(Routes.modifyCourse.name, extra: course.courseId);
+                      }else{
+                        context.pushReplacementNamed(Routes.modifyCourse.name, extra: course.courseId);
+                      }
                     },
                     onSelected: () {
                       log("Selection");

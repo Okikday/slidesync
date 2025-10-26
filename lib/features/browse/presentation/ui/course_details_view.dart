@@ -4,6 +4,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/browse/presentation/logic/course_details_provider.dart';
 import 'package:slidesync/features/browse/presentation/ui/course_details/course_details_collection_section.dart';
@@ -41,7 +42,7 @@ class CourseDetailsView extends ConsumerWidget {
                 return true;
               },
               child: NestedScrollView(
-                physics: const NeverScrollableScrollPhysics(),
+                physics: DeviceUtils.isDesktop() ? null : const NeverScrollableScrollPhysics(),
                 headerSliverBuilder: (context, innerBoxIsScrolled) => [CourseDetailsHeader(courseId: courseId)],
                 body: NotificationListener(
                   onNotification: (notification) => true,

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/features/main/presentation/library/logic/library_tab_provider.dart';
 import 'package:slidesync/features/main/presentation/library/ui/src/courses_view/course_card/list_course_card.dart';
@@ -65,7 +66,9 @@ class _CoursesViewState extends ConsumerState<CoursesView> {
                   state: state,
                   fetchNextPage: fetchNextPage,
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: context.deviceWidth ~/ 160,
+                    crossAxisCount: DeviceUtils.isDesktop()
+                        ? ((context.deviceWidth / 3) ~/ 160)
+                        : context.deviceWidth ~/ 160,
                     crossAxisSpacing: 12,
                   ),
 

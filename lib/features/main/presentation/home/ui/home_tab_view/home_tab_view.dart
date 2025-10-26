@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/main/presentation/home/ui/home_tab_view/src/home_app_bar.dart';
 import 'package:slidesync/features/main/presentation/home/ui/home_tab_view/src/home_body.dart';
 import 'package:slidesync/features/main/presentation/main/logic/main_provider.dart';
+import 'package:window_manager/window_manager.dart';
 
 const double isScrolledLvl = 40.0;
 
@@ -63,7 +65,7 @@ class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAli
         return [
           HomeAppBar(
             title: 'SlideSync',
-            onClickUserIcon: () {
+            onClickHamburger: () {
               Scaffold.of(context).openDrawer();
               // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(statusBarColor: Theme.of(context).scaffoldBackgroundColor));
             },
@@ -74,6 +76,17 @@ class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAli
                 prev = cb;
                 return !cb;
               });
+              if (DeviceUtils.isDesktop()) {
+                if (prev) {
+                  windowManager.setFullScreen(false).then((_) {
+                    windowManager.maximize(vertically: true);
+                  });
+                } else {
+                  windowManager.maximize(vertically: true).then((_) {
+                    windowManager.setFullScreen(true);
+                  });
+                }
+              }
 
               UiUtils.showFlushBar(context, msg: "Focus mode ${prev ? "disabled" : "enabled"}");
             },

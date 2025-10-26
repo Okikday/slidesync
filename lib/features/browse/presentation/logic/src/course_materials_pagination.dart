@@ -333,7 +333,7 @@ Future<void> compareContentAndUpdate(CourseMaterialsPagination cmp) async {
       for (final content in contentLoadedOnPages) content.contentId: content,
     };
 
-    log("currentlyLoadedContentPages: $contentLoadedOnPages");
+    // log("currentlyLoadedContentPages: $contentLoadedOnPages");
 
     final List<CourseContent> contentLoadedOnPagesFromIsar = await (await CourseContentRepo.filter)
         .parentIdEqualTo(cmp.parentId)

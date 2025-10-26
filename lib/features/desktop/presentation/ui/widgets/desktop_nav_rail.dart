@@ -21,11 +21,11 @@
 //       onDestinationSelected: onDestinationSelected,
 //       labelType: NavigationRailLabelType.selected,
 //       backgroundColor: theme.background,
-//       indicatorColor: theme.primaryColor.withOpacity(0.1),
+//       indicatorColor: theme.primaryColor.withValues(alpha: 0.1),
 //       selectedIconTheme: IconThemeData(color: theme.primaryColor),
-//       unselectedIconTheme: IconThemeData(color: theme.onBackground.withOpacity(0.6)),
+//       unselectedIconTheme: IconThemeData(color: theme.onBackground.withValues(alpha: 0.6)),
 //       selectedLabelTextStyle: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.bold),
-//       unselectedLabelTextStyle: TextStyle(color: theme.onBackground.withOpacity(0.8)),
+//       unselectedLabelTextStyle: TextStyle(color: theme.onBackground.withValues(alpha: 0.8)),
 //       minWidth: 80,
 
 //       // The app title, similar to the mobile HomeAppBar.
@@ -66,7 +66,7 @@
 //               children: [
 //                 // Notification Button for Focus Mode
 //                 IconButton(
-//                   icon: Icon(Iconsax.notification, color: theme.onBackground.withOpacity(0.6)),
+//                   icon: Icon(Iconsax.notification, color: theme.onBackground.withValues(alpha: 0.6)),
 //                   tooltip: "Toggle Focus Mode",
 //                   onPressed: () {
 //                     final focusModeNotifier = ref.read(MainProvider.isFocusModeProvider.notifier);
@@ -78,7 +78,7 @@
 
 //                 // User Icon to open the drawer
 //                 IconButton(
-//                   icon: Icon(Iconsax.user, color: theme.onBackground.withOpacity(0.6)),
+//                   icon: Icon(Iconsax.user, color: theme.onBackground.withValues(alpha: 0.6)),
 //                   tooltip: "Profile & Settings",
 //                   onPressed: () => Scaffold.of(context).openDrawer(),
 //                 ),

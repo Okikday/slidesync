@@ -30,16 +30,16 @@ class EditCourseInputDescriptionField extends ConsumerWidget {
             width: context.deviceWidth,
             child: CustomTextfield(
               ontap: () {
-                final descriptionText = descriptionTextController.text;
-                if (descriptionTextController.selection.extentOffset == descriptionText.length) {
-                  return;
-                }
-                if (descriptionText == course.description) {
-                  descriptionTextController.selection = TextSelection(
-                    baseOffset: 0,
-                    extentOffset: descriptionText.length,
-                  );
-                }
+                // final descriptionText = descriptionTextController.text;
+                // if (descriptionTextController.selection.extentOffset == descriptionText.length) {
+                //   return;
+                // }
+                // if (descriptionText == course.description) {
+                //   descriptionTextController.selection = TextSelection(
+                //     baseOffset: 0,
+                //     extentOffset: descriptionText.length,
+                //   );
+                // }
               },
               onchanged: (text) {},
               // onTapOutside: () {},

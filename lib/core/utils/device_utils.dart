@@ -1,11 +1,20 @@
-
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../constants/src/enums.dart';
 
 class DeviceUtils {
+  static bool isDesktop() {
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.macOS:
+      case TargetPlatform.windows:
+      case TargetPlatform.linux:
+        return true;
+      default:
+        return false;
+    }
+  }
+
   /// Gets the type of Device
   static DeviceType getDeviceType(BuildContext context) {
     final platform = defaultTargetPlatform;
@@ -39,6 +48,4 @@ class DeviceUtils {
         return DeviceType.unknown;
     }
   }
-
-  
 }

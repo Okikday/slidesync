@@ -1,12 +1,11 @@
 import 'dart:developer';
-import 'dart:io';
 
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/storage/native/app_paths.dart';
+import 'package:slidesync/core/utils/file_utils.dart';
 
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/core/utils/image_utils.dart';
@@ -29,7 +28,7 @@ class CreateContentPreviewImage {
 
       if (result.isSuccess) {
         final File file = result.data!;
-        final appDocDir = await getApplicationDocumentsDirectory();
+        final appDocDir = await FileUtils.getAppDocumentsDirectory();
 
         // separate the path into directory + file name
         final dirPath = p.join(appDocDir.path, p.dirname(genToPreviewPath));
@@ -85,7 +84,7 @@ class CreateContentPreviewImage {
 
         // Create temporary file for the rendered PDF page
         final tempDir = await Directory.systemTemp.createTemp('pdf_preview_');
-        final tempFile = File('${tempDir.path}/temp_pdf_page.png');
+        final tempFile = File(p.join(tempDir.path, 'temp_pdf_page.png'));
         await tempFile.writeAsBytes(bytes);
 
         // Compress the rendered PDF image
@@ -97,7 +96,7 @@ class CreateContentPreviewImage {
 
         if (compressionResult.isSuccess) {
           final File file = compressionResult.data!;
-          final appDocDir = await getApplicationDocumentsDirectory();
+          final appDocDir = await FileUtils.getAppDocumentsDirectory();
 
           // separate the path into directory + file name
           final dirPath = p.join(appDocDir.path, p.dirname(genToPreviewPath));

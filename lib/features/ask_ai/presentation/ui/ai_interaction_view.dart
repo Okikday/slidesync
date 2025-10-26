@@ -3,6 +3,7 @@ import 'dart:collection';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_math_fork/flutter_math.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_chat_core/flutter_chat_core.dart';
 import 'package:flutter_chat_ui/flutter_chat_ui.dart';
@@ -11,6 +12,7 @@ import 'package:slidesync/features/ask_ai/presentation/ui/widgets/ai_chat_textfi
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:markdown_widget/markdown_widget.dart';
+import 'package:markdown/markdown.dart' as m;
 
 class AiInteractionView extends ConsumerStatefulWidget {
   const AiInteractionView({super.key});
@@ -57,10 +59,17 @@ class _AiInteractionViewState extends ConsumerState<AiInteractionView> {
           final userTextStyle = TextStyle(color: theme.onPrimary, fontSize: 12.5, fontWeight: FontWeight.bold);
 
           if (isSentByMe) {
-            return SelectionArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                child: CustomText(message.text, style: userTextStyle),
+            return TextSelectionTheme(
+              data: TextSelectionThemeData(
+                cursorColor: Colors.blue.withAlpha(100),
+                selectionColor: Colors.blue.withAlpha(100),
+                selectionHandleColor: theme.secondary,
+              ),
+              child: SelectionArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  child: CustomText(message.text, style: userTextStyle),
+                ),
               ),
             );
           }
@@ -76,19 +85,13 @@ class _AiInteractionViewState extends ConsumerState<AiInteractionView> {
 
           final isStreaming = isLastMessage && state.isProcessingNotifier.value;
 
-          return SelectionArea(
-            child: MarkdownWidget(
-              data: message.text,
-              shrinkWrap: true,
-              selectable: true,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              config: _buildMarkdownConfig(
-                onSurfaceColor: theme.onSurface,
-                primaryColor: theme.primary,
-                isStreaming: isStreaming,
-              ),
-            ),
+          return buildAiMessageContent(
+            text: message.text,
+            isSentByMe: isSentByMe,
+            primaryColor: theme.primary,
+            onSurfaceColor: theme.onSurface,
+            onPrimaryColor: theme.onPrimary,
+            isStreaming: isStreaming,
           );
         },
         chatMessageBuilder: (context, message, index, animation, child, {groupStatus, isRemoved, required isSentByMe}) {
@@ -179,9 +182,9 @@ Widget buildAiMessageContent({
 }) {
   if (isSentByMe) {
     // User messages - simple text
-    return SelectionArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: SelectionArea(
         child: CustomText(
           text,
           style: TextStyle(color: onPrimaryColor, fontSize: 12.5, fontWeight: FontWeight.bold),
@@ -210,6 +213,7 @@ Widget buildAiMessageContent({
         primaryColor: primaryColor,
         isStreaming: isStreaming,
       ),
+      markdownGenerator: latexMarkdownGenerator(),
     ),
   );
 }
@@ -237,7 +241,7 @@ MarkdownConfig _buildMarkdownConfig({
       // Code block config
       PreConfig(
         textStyle: textStyle.copyWith(fontFamily: 'monospace', fontSize: 12),
-        decoration: BoxDecoration(color: onSurfaceColor.withOpacity(0.1), borderRadius: BorderRadius.circular(8)),
+        decoration: BoxDecoration(color: onSurfaceColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
         padding: const EdgeInsets.all(12),
         margin: const EdgeInsets.symmetric(vertical: 8),
       ),
@@ -247,7 +251,7 @@ MarkdownConfig _buildMarkdownConfig({
         style: textStyle.copyWith(
           fontFamily: 'monospace',
           fontSize: 12,
-          backgroundColor: onSurfaceColor.withOpacity(0.1),
+          backgroundColor: onSurfaceColor.withValues(alpha: 0.1),
         ),
       ),
 
@@ -257,7 +261,7 @@ MarkdownConfig _buildMarkdownConfig({
         //   fontStyle: FontStyle.italic,
         // ),
         sideColor: primaryColor,
-        textColor: onSurfaceColor.withOpacity(0.8),
+        textColor: onSurfaceColor.withValues(alpha: 0.8),
       ),
 
       // Link config
@@ -278,12 +282,12 @@ MarkdownConfig _buildMarkdownConfig({
       TableConfig(
         bodyStyle: textStyle,
         headerStyle: textStyle.copyWith(fontWeight: FontWeight.bold),
-        border: TableBorder.all(color: onSurfaceColor.withOpacity(0.2), width: 1),
+        border: TableBorder.all(color: onSurfaceColor.withValues(alpha: 0.2), width: 1),
       ),
 
       // Horizontal rule config
       HrConfig(
-        color: onSurfaceColor.withOpacity(0.2),
+        color: onSurfaceColor.withValues(alpha: 0.2),
         height: 1,
         // margin: const EdgeInsets.symmetric(vertical: 12),
       ),
@@ -321,3 +325,114 @@ Widget textMessageBuilder(BuildContext context, message, int index, bool isSentB
     isStreaming: isStreaming,
   );
 }
+
+class InlineLatexSyntax extends m.InlineSyntax {
+  InlineLatexSyntax() : super(r'\$([^\$\n]+?)\$');
+
+  @override
+  bool onMatch(m.InlineParser parser, Match match) {
+    final latex = match.group(1)!;
+    parser.addNode(m.Element.text('latex-inline', latex));
+    return true;
+  }
+}
+
+/// Custom syntax to detect block LaTeX: $$...$$
+class BlockLatexSyntax extends m.BlockSyntax {
+  @override
+  RegExp get pattern => RegExp(r'^\$\$\s*$');
+
+  @override
+  m.Node? parse(m.BlockParser parser) {
+    parser.advance();
+    final lines = <String>[];
+
+    while (!parser.isDone) {
+      final line = parser.current;
+      if (line.content == r'$$') {
+        parser.advance();
+        break;
+      }
+      lines.add(line.content);
+      parser.advance();
+    }
+
+    final latex = lines.join('\n');
+    return m.Element('latex-block', [m.Text(latex)]);
+  }
+}
+
+/// Widget builder for inline LaTeX
+class InlineLatexNode extends SpanNode {
+  final String latex;
+  @override
+  final TextStyle? style;
+
+  InlineLatexNode(this.latex, {this.style});
+
+  @override
+  InlineSpan build() {
+    return WidgetSpan(
+      alignment: PlaceholderAlignment.middle,
+      child: Math.tex(
+        latex,
+        textStyle: style,
+        mathStyle: MathStyle.text,
+        onErrorFallback: (error) {
+          // Fallback to showing the raw LaTeX if parsing fails
+          return Text('\$$latex\$', style: style?.copyWith(color: Colors.red));
+        },
+      ),
+    );
+  }
+}
+
+/// Widget builder for block LaTeX
+class BlockLatexNode extends ElementNode {
+  final String latex;
+  final MarkdownConfig config;
+
+  BlockLatexNode(this.latex, this.config);
+}
+
+/// Generator for inline LaTeX nodes
+SpanNodeGeneratorWithTag inlineLatexGenerator = SpanNodeGeneratorWithTag(
+  tag: 'latex-inline',
+  generator: (e, config, visitor) {
+    final latex = e.textContent;
+    return InlineLatexNode(latex, style: config.p.textStyle);
+  },
+);
+
+/// Generator for block LaTeX nodes
+SpanNodeGeneratorWithTag blockLatexGenerator = SpanNodeGeneratorWithTag(
+  tag: 'latex-block',
+  generator: (e, config, visitor) {
+    final latex = e.textContent;
+    return BlockLatexNode(latex, config);
+  },
+);
+
+/// Helper function to create a MarkdownGenerator with LaTeX support
+MarkdownGenerator latexMarkdownGenerator() {
+  return MarkdownGenerator(
+    generators: [inlineLatexGenerator, blockLatexGenerator],
+    inlineSyntaxList: [InlineLatexSyntax()],
+    blockSyntaxList: [BlockLatexSyntax()],
+  );
+}
+
+// String preprocessLatex(String markdown) {
+//   final latexMap = <String, String>{};
+//   int counter = 0;
+
+//   // Replace inline LaTeX with placeholders
+//   final processed = markdown.replaceAllMapped(RegExp(r'\$([^\$\n]+?)\$'), (match) {
+//     final placeholder = '___LATEX_INLINE_${counter}___';
+//     latexMap[placeholder] = match.group(1)!;
+//     counter++;
+//     return placeholder;
+//   });
+
+//   return processed;
+// }

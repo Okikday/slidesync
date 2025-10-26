@@ -9,7 +9,7 @@ class GlobalNav {
   /// Execute a function with the root context
   /// Use this when you need context for dialogs, overlays, etc.
   static void withContext(void Function(BuildContext context) run) {
-    final context = rootNavigatorKey.currentContext;
+    final context = rootNavigatorKey.currentState?.context ?? rootNavigatorKey.currentContext;
     if (context != null && context.mounted) {
       run(context);
     }
@@ -33,7 +33,8 @@ class GlobalNav {
 
   /// Get the overlay state directly (useful for inserting OverlayEntry)
   static OverlayState? get overlay {
-    return rootNavigatorKey.currentState?.overlay;
+    return rootNavigatorKey.currentState?.overlay ??
+        Overlay.of(rootNavigatorKey.currentContext ?? rootNavigatorKey.currentState!.context);
   }
 
   static void popGlobal() => GlobalNav.withContext((c) => c.pop());

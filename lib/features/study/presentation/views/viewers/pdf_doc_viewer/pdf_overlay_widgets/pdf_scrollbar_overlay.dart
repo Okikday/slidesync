@@ -1,59 +1,114 @@
+import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:pdfrx/pdfrx.dart';
 
-class PdfScrollbarOverlay extends ConsumerWidget {
+class PdfScrollbarOverlay extends ConsumerStatefulWidget {
+  final PdfViewerController controller;
   final String pageProgress;
-  const PdfScrollbarOverlay({super.key, required this.pageProgress});
+
+  const PdfScrollbarOverlay({super.key, required this.controller, required this.pageProgress});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
-    return Transform.translate(
-      offset: Offset(16, 0),
-      child: ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: 160),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            // Page indicator container
-            Flexible(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(minWidth: 60),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), color: Colors.grey[800]),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+  ConsumerState<PdfScrollbarOverlay> createState() => _PdfScrollbarOverlayState();
+}
 
-                    child: Text(
-                      pageProgress,
-                      textAlign: TextAlign.center,
-                      overflow: TextOverflow.fade,
-                      style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+class _PdfScrollbarOverlayState extends ConsumerState<PdfScrollbarOverlay> {
+  bool _isVisible = false;
+  Timer? _hideTimer;
+  double? _lastScrollPosition;
+
+  @override
+  void initState() {
+    super.initState();
+    // Listen to scroll changes
+    widget.controller.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_onScroll);
+    _hideTimer?.cancel();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    final currentPosition = double.parse(
+      widget.controller.value.row1[3].abs().clamp(0.0, double.infinity).toStringAsFixed(2),
+    );
+
+    // Check if actually scrolling (position changed)
+    if (currentPosition != _lastScrollPosition) {
+      _lastScrollPosition = currentPosition;
+
+      // Show overlay
+      if (!_isVisible) {
+        setState(() => _isVisible = true);
+      }
+
+      // Cancel existing timer
+      _hideTimer?.cancel();
+
+      // Start new hide timer (2 seconds)
+      _hideTimer = Timer(const Duration(seconds: 2), () {
+        if (mounted) {
+          setState(() => _isVisible = false);
+        }
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return AnimatedOpacity(
+      opacity: _isVisible ? 1.0 : 0.0,
+      duration: const Duration(milliseconds: 200),
+      child: Transform.translate(
+        offset: const Offset(16, 0),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 160),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              // Page indicator container
+              Flexible(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(minWidth: 60),
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(borderRadius: BorderRadius.circular(16), color: Colors.grey[800]),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      child: Text(
+                        widget.pageProgress,
+                        textAlign: TextAlign.center,
+                        overflow: TextOverflow.fade,
+                        style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w500),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-
-            Flexible(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: theme.surface,
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(-2, 2)),
-                  ],
-                ),
-                child: SizedBox.square(
-                  dimension: kToolbarHeight,
-                  child: Center(child: Icon(Icons.drag_indicator, color: theme.onSurface, size: 24)),
+              Flexible(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.surface,
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(-2, 2)),
+                    ],
+                  ),
+                  child: SizedBox.square(
+                    dimension: kToolbarHeight,
+                    child: Center(child: Icon(Icons.drag_indicator, color: theme.colorScheme.onSurface, size: 24)),
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

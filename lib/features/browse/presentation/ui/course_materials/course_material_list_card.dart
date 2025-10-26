@@ -6,12 +6,15 @@ import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:path/path.dart' as p;
 import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
+import 'package:slidesync/features/manage/presentation/contents/actions/modify_content_card_actions.dart';
 import 'package:slidesync/features/manage/presentation/contents/actions/modify_contents_action.dart';
 import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
+import 'package:slidesync/features/study/presentation/actions/content_view_gate_actions.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/formatter.dart';
@@ -25,7 +28,6 @@ class CourseMaterialListCard extends ConsumerStatefulWidget {
   final CourseContent content;
   final void Function()? onTapCard;
   final void Function()? onLongPressed;
-  
 
   const CourseMaterialListCard({super.key, required this.content, this.onTapCard, this.onLongPressed});
 
@@ -85,6 +87,14 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
           context.pushNamed(Routes.contentGate.name, extra: content);
         },
       ),
+      CourseMaterialListCardActionModel(
+        label: "Open Outside app",
+        icon: Iconsax.send,
+        onTap: () {
+          ContentViewGateActions.redirectToViewer(ref, content, popBefore: false, openOutsideApp: true);
+        },
+      ),
+
       if (content.courseContentType == CourseContentType.link)
         CourseMaterialListCardActionModel(
           label: "Copy",
@@ -93,6 +103,13 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
             Clipboard.setData(ClipboardData(text: content.path.fileDetails.urlPath));
           },
         ),
+      CourseMaterialListCardActionModel(
+        label: "Rename",
+        icon: Iconsax.send,
+        onTap: () {
+          ModifyContentCardActions.onRenameContent(context, content);
+        },
+      ),
       CourseMaterialListCardActionModel(
         label: "Delete",
         icon: Icons.delete,
@@ -136,7 +153,7 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
         },
       ),
       CourseMaterialListCardActionModel(
-        label: "Share",
+        label: DeviceUtils.isDesktop() ? "Copy file" : "Share",
         icon: Iconsax.share_copy,
         onTap: () {
           ShareContentActions.shareContent(context, content.contentId);
@@ -170,6 +187,8 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
               // context.pushNamed(Routes.contentGate.name, extra: courseContent);
             },
             onLongPress: widget.onLongPressed,
+            onSecondaryTap: widget.onLongPressed,
+
             child: Padding(
               padding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
               child: Column(
@@ -249,6 +268,7 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
                       ),
                       ConstantSizing.rowSpacingMedium,
                       CustomElevatedButton(
+                        pixelHeight: DeviceUtils.isDesktop() ? 32 : null,
                         backgroundColor: theme.onSurface.withAlpha(10),
                         onClick: () {
                           context.pushNamed(Routes.contentGate.name, extra: content);
@@ -301,6 +321,7 @@ class _AnimatedCourseMaterialListCardMenuState extends ConsumerState<AnimatedCou
             scale: widget.expandAnim,
             child: CustomElevatedButton(
               borderRadius: 24,
+              pixelHeight: DeviceUtils.isDesktop() ? 32 : null,
               backgroundColor: theme.primaryColor.withAlpha(40),
               onClick: cam[index].onTap,
               child: Row(
@@ -319,7 +340,7 @@ class _AnimatedCourseMaterialListCardMenuState extends ConsumerState<AnimatedCou
           child: FadeTransition(
             opacity: widget.expandAnim,
             child: Padding(
-              padding: EdgeInsets.only(left: context.deviceWidth * 0.2),
+              padding: EdgeInsets.only(left: 66),
               child: Wrap(runAlignment: WrapAlignment.start, spacing: 8.0, runSpacing: 8.0, children: genCardFuncs),
             ),
           ),

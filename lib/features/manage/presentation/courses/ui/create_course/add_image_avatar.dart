@@ -50,6 +50,15 @@ class AddImageAvatar extends ConsumerWidget {
 
               if (context.mounted) UiUtils.showFlushBar(context, msg: "Selected course image!");
             },
+            onSecondaryTap: () {
+              final currentPathNotifier = ref.read(courseImagePathProvider.notifier);
+              if (courseImagePath == null) {
+                UiUtils.showFlushBar(context, msg: "No course image was selected!");
+              } else {
+                currentPathNotifier.update((cb) => null);
+                UiUtils.showFlushBar(context, msg: "Removed selected image!");
+              }
+            },
             onLongPress: () {
               final currentPathNotifier = ref.read(courseImagePathProvider.notifier);
               if (courseImagePath == null) {

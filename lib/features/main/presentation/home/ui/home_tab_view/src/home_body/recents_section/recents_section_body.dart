@@ -24,7 +24,9 @@ class RecentsSectionBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    final AsyncValue<List<ContentTrack>> asyncProgressTrackValues = ref.watch(HomeProvider.recentContentsTrackProvider);
+    final AsyncValue<List<ContentTrack>> asyncProgressTrackValues = ref.watch(
+      HomeProvider.recentContentsTrackProvider(10),
+    );
     final rda = RecentDialogActions();
     return asyncProgressTrackValues.when(
       data: (data) {
@@ -47,7 +49,10 @@ class RecentsSectionBody extends ConsumerWidget {
                   progressLevel: ProgressLevel.neutral,
                   isStarred: false,
                   progress: content.progress?.clamp(0, 1.0),
-                  onTapTile: () {
+                  onTapTile: () async {
+                    await rda.onContinueReading(context, content.contentId);
+                  },
+                  onLongTapTile: () {
                     UiUtils.showCustomDialog(
                       context,
                       canPop: true,
@@ -78,7 +83,6 @@ class RecentsSectionBody extends ConsumerWidget {
                       ),
                     );
                   },
-                  onLongTapTile: () {},
                 ),
               );
             },

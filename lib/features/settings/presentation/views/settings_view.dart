@@ -1,3 +1,4 @@
+
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -9,10 +10,6 @@ import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/file_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
-import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
-import 'package:slidesync/data/repos/course_repo/course_repo.dart';
-import 'package:slidesync/data/services/firebase_course_services.dart';
 import 'package:slidesync/features/settings/domain/models/settings_model.dart';
 import 'package:slidesync/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:slidesync/features/settings/presentation/views/sub/settings_appearance_dialog.dart';
@@ -150,7 +147,7 @@ class SettingsView extends ConsumerWidget {
                   SettingsCard(
                     title: "Clear App's cache",
                     iconData: Icons.view_agenda,
-                    content: "This can help free up phone space by clearing temporary files.",
+                    content: "This can help free up device space by clearing temporary files.",
                     trailing: CustomElevatedButton(
                       label: "Clear",
                       backgroundColor: theme.altBackgroundPrimary,
@@ -176,35 +173,35 @@ class SettingsView extends ConsumerWidget {
 
                   ConstantSizing.columnSpacingMedium,
 
-                  SettingsCard(
-                    title: "Backup contents organization",
-                    iconData: Icons.view_agenda,
-                    content: "This backs up how your files are arranged without uploading your files.",
-                    trailing: CustomElevatedButton(
-                      label: "Backup",
-                      backgroundColor: theme.altBackgroundPrimary,
-                      textColor: theme.supportingText,
-                      textSize: 14,
-                      onClick: () async {
-                        UiUtils.showLoadingDialog(context, canPop: false);
-                        await FirebaseCourseService().uploadBackup(
-                          courses: await CourseRepo.getAllCourses(),
-                          collections: await CourseCollectionRepo.getAll(),
-                          contents: await CourseContentRepo.getAll(),
-                        );
-                        GlobalNav.popGlobal();
-                      },
-                    ),
-                  ),
+                  // SettingsCard(
+                  //   title: "Backup contents organization",
+                  //   iconData: Icons.view_agenda,
+                  //   content: "This backs up how your files are arranged without uploading your files.",
+                  //   trailing: CustomElevatedButton(
+                  //     label: "Backup",
+                  //     backgroundColor: theme.altBackgroundPrimary,
+                  //     textColor: theme.supportingText,
+                  //     textSize: 14,
+                  //     onClick: () async {
+                  //       UiUtils.showLoadingDialog(context, canPop: false);
+                  //       // await FirebaseCourseService().uploadBackup(
+                  //       //   courses: await CourseRepo.getAllCourses(),
+                  //       //   collections: await CourseCollectionRepo.getAll(),
+                  //       //   contents: await CourseContentRepo.getAll(),
+                  //       // );
+                  //       GlobalNav.popGlobal();
+                  //     },
+                  //   ),
+                  // ),
 
-                  ConstantSizing.columnSpacingMedium,
-
+                  // ConstantSizing.columnSpacingMedium,
                   Center(
                     child: FutureBuilder(
                       future: AppHiveData.instance.getData(key: HiveDataPathKey.globalFileSizeSum.name),
                       builder: (context, asyncSnapshot) {
                         if (asyncSnapshot.hasData && asyncSnapshot.data != null) {
-                          final mb = Result.tryRun(() => (asyncSnapshot.data as int?) ?? 0 / (1024 * 1024)).data ?? 0.0;
+                          final mb =
+                              Result.tryRun(() => ((asyncSnapshot.data as int?) ?? 0) / (1024 * 1024)).data ?? 0.0;
                           return CustomText("Storage usage: ${mb.toStringAsFixed(2)} MB", color: theme.supportingText);
                         }
                         return CustomText("Storage usage details unavailable", color: theme.supportingText);

@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
+import 'package:slidesync/features/share/import/desktop_course_folder_import_manager.dart';
 import 'package:slidesync/features/share/import/saf_course_folder_import_manager.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
@@ -108,7 +111,11 @@ class _CreateCourseOuterSectionState extends ConsumerState<CreateCourseOuterSect
                           pixelHeight: 50,
                           label: "Import Folder",
                           onClick: () {
-                            CourseFolderImportManager.showFolderImportScreen(context);
+                            if (Platform.isAndroid) {
+                              CourseFolderImportManager.showFolderImportScreen(context);
+                            } else {
+                              CourseFolderImportManagerWindows.showFolderImportScreen(context);
+                            }
                           },
                         );
                       },

@@ -1,11 +1,11 @@
 // ignore_for_file: unintended_html_in_doc_comment
 
-import 'dart:io';
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
+import 'package:image/image.dart' as img;
 
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path/path.dart' as p;
-import 'package:path_provider/path_provider.dart';
+import 'package:slidesync/core/utils/file_utils.dart';
 
 import 'result.dart';
 
@@ -17,8 +17,8 @@ class ImageUtils {
   /// If [targetMB] is provided, we will do a second‐pass quality adjustment
   /// so the result is at or below that size (never dropping below quality=10).
   ///
-  /// Returns a new file under the app’s documents directory named
-  /// “IMG-YYYYMMDD-WA####.<ext>”.
+  /// Returns a new file under the app's documents directory named
+  /// "IMG-YYYYMMDD-WA####.<ext>".
   static Future<Result<File>> compressImage({
     required File inputFile,
     String? outputFormat,
@@ -33,7 +33,7 @@ class ImageUtils {
       }
 
       // Generate a new, unique filename for the output
-      final Directory docDir = await getApplicationDocumentsDirectory();
+      final Directory docDir = await FileUtils.getAppDocumentsDirectory();
       // Figure out which extension to write
       final String srcExt = p.extension(inputFile.path).replaceFirst('.', '').toLowerCase();
       final String ext = (outputFormat ?? srcExt).toLowerCase();
@@ -43,36 +43,55 @@ class ImageUtils {
       final dirPath = "${outPath.substring(0, lastSeparatorIndex + 1)}cache";
       outPath = "$dirPath${outPath.substring(lastSeparatorIndex)}";
 
-      // First‐pass compress
-      Uint8List? compressedBytes = await FlutterImageCompress.compressWithFile(
-        inputFile.path,
-        minWidth: maxWidth,
-        minHeight: maxHeight,
-        quality: quality,
-        format: format,
-      );
-      if (compressedBytes == null) {
-        return Result.error('Failed to compress image (first pass).');
-      }
+      Uint8List? compressedBytes;
 
-      // If we have a size target, check and do one more pass of quality‐adjustment
-      if (targetMB != null) {
-        double currentMB = compressedBytes.length / (1024 * 1024);
-        if (currentMB > targetMB) {
-          // Calculate a proportional new quality
-          int adjustedQuality = ((quality * (targetMB / currentMB)).floor()).clamp(10, quality);
+      // Check if platform supports flutter_image_compress
+      final bool useNativeCompression = Platform.isAndroid || Platform.isIOS || kIsWeb;
 
-          final Uint8List? reCompressed = await FlutterImageCompress.compressWithFile(
-            inputFile.path,
-            minWidth: maxWidth,
-            minHeight: maxHeight,
-            quality: adjustedQuality,
-            format: format,
-          );
-          if (reCompressed != null) {
-            compressedBytes = reCompressed;
+      if (useNativeCompression) {
+        // First‐pass compress using native
+        compressedBytes = await FlutterImageCompress.compressWithFile(
+          inputFile.path,
+          minWidth: maxWidth,
+          minHeight: maxHeight,
+          quality: quality,
+          format: format,
+        );
+        if (compressedBytes == null) {
+          return Result.error('Failed to compress image (first pass).');
+        }
+
+        // If we have a size target, check and do one more pass of quality‐adjustment
+        if (targetMB != null) {
+          double currentMB = compressedBytes.length / (1024 * 1024);
+          if (currentMB > targetMB) {
+            // Calculate a proportional new quality
+            int adjustedQuality = ((quality * (targetMB / currentMB)).floor()).clamp(10, quality);
+
+            final Uint8List? reCompressed = await FlutterImageCompress.compressWithFile(
+              inputFile.path,
+              minWidth: maxWidth,
+              minHeight: maxHeight,
+              quality: adjustedQuality,
+              format: format,
+            );
+            if (reCompressed != null) {
+              compressedBytes = reCompressed;
+            }
           }
-          // (If reCompressed is null, we’ll just stick with first-pass)
+        }
+      } else {
+        // Use pure Dart 'image' package for desktop platforms
+        compressedBytes = await _compressWithDartImage(
+          inputFile,
+          ext: ext,
+          quality: quality,
+          targetMB: targetMB,
+          maxWidth: maxWidth,
+          maxHeight: maxHeight,
+        );
+        if (compressedBytes == null) {
+          return Result.error('Failed to compress image using Dart image package.');
         }
       }
 
@@ -83,6 +102,66 @@ class ImageUtils {
       return Result.success(outFile);
     } catch (e, st) {
       return Result.error('Compression error: $e\n$st');
+    }
+  }
+
+  /// Compress image using pure Dart 'image' package (for desktop platforms)
+  static Future<Uint8List?> _compressWithDartImage(
+    File inputFile, {
+    required String ext,
+    required int quality,
+    required double? targetMB,
+    required int maxWidth,
+    required int maxHeight,
+  }) async {
+    final bytes = await inputFile.readAsBytes();
+    img.Image? image = img.decodeImage(bytes);
+
+    if (image == null) return null;
+
+    // Resize if image exceeds max dimensions
+    if (image.width > maxWidth || image.height > maxHeight) {
+      image = img.copyResize(
+        image,
+        width: image.width > maxWidth ? maxWidth : null,
+        height: image.height > maxHeight ? maxHeight : null,
+        interpolation: img.Interpolation.average,
+      );
+    }
+
+    // First pass compression
+    Uint8List compressedBytes = _encodeImage(image, ext, quality);
+
+    // If we have a size target, adjust quality
+    if (targetMB != null) {
+      double currentMB = compressedBytes.length / (1024 * 1024);
+      if (currentMB > targetMB) {
+        int adjustedQuality = ((quality * (targetMB / currentMB)).floor()).clamp(10, quality);
+        compressedBytes = _encodeImage(image, ext, adjustedQuality);
+      }
+    }
+
+    return compressedBytes;
+  }
+
+  /// Encode image to bytes based on format
+  static Uint8List _encodeImage(img.Image image, String ext, int quality) {
+    switch (ext) {
+      case 'jpg':
+      case 'jpeg':
+        return Uint8List.fromList(img.encodeJpg(image, quality: quality));
+      case 'png':
+        return Uint8List.fromList(img.encodePng(image, level: 9 - (quality ~/ 11)));
+      case 'webp':
+        // Note: webp encoding might not be available in all versions of image package
+        // Falls back to jpg if not available
+        try {
+          return Uint8List.fromList(img.encodeJpg(image, quality: quality));
+        } catch (_) {
+          return Uint8List.fromList(img.encodeJpg(image, quality: quality));
+        }
+      default:
+        return Uint8List.fromList(img.encodeJpg(image, quality: quality));
     }
   }
 

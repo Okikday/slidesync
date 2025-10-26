@@ -5,8 +5,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:slidesync/core/constants/src/enums.dart';
-import 'package:slidesync/core/storage/hive_data/hive_data_isolate.dart';
-import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/core/storage/isar_data/isar_schemas.dart';
 import 'package:slidesync/core/utils/smart_isolate.dart';
@@ -46,7 +44,7 @@ Future<List<Map<String, dynamic>>> storeContents(
 
         final String dirToStoreAt = collection.absolutePath;
         final contentPathsLength = args.filePaths.length;
-        int totalFilesSizeSum = 0;
+        // int totalFilesSizeSum = 0;
 
         for (int i = 0; i < contentPathsLength; i++) {
           final filePath = args.filePaths[i];
@@ -78,12 +76,13 @@ Future<List<Map<String, dynamic>>> storeContents(
                   overwrite: true,
                 ),
               );
-              totalFilesSizeSum += fileSize;
+              // totalFilesSizeSum += fileSize;
               final previewPath = await CreateContentPreviewImage.createPreviewImageForContent(
                 storedAt.path,
                 courseContentType: contentType,
                 filePath: storedAt.path,
               );
+              log("previewPath: $previewPath");
 
               final CourseContent content = CourseContent.create(
                 contentHash: hash,
@@ -138,7 +137,9 @@ Future<List<Map<String, dynamic>>> storeContents(
 
           if (addContentResult.isSuccess && (addContentResult.data != null && addContentResult.data!.isNotEmpty)) {
             emitProgress(((i + 1) / contentPathsLength));
-            addContentResultList.add(AddContentResult(isSuccess: true, fileName: fileName, contentId: contentId));
+            addContentResultList.add(
+              AddContentResult(isSuccess: true, fileName: fileName, contentId: contentId, fileSize: fileSize),
+            );
           } else {
             emitProgress(((i + 1) / contentPathsLength));
             addContentResultList.add(
@@ -147,6 +148,7 @@ Future<List<Map<String, dynamic>>> storeContents(
                 fileName: fileName,
                 contentId: contentId,
                 hasDuplicate: (contentId != null && contentId.isEmpty),
+                fileSize: fileSize,
               ),
             );
           }
@@ -154,18 +156,6 @@ Future<List<Map<String, dynamic>>> storeContents(
 
         if (contentsToAdd.isNotEmpty) {
           await CourseContentRepo.addMultipleContents(collection.collectionId, contentsToAdd);
-          await Result.tryRunAsync(() async {
-            final hiveInIsolate = HiveDataIsolate(boxName: 'box');
-            final prevFileSum = (await hiveInIsolate.getData(key: HiveDataPathKey.globalFileSizeSum.name)) as int?;
-            if (prevFileSum == null) {
-              await hiveInIsolate.setData(key: HiveDataPathKey.globalFileSizeSum.name, value: totalFilesSizeSum);
-            } else {
-              await hiveInIsolate.setData(
-                key: HiveDataPathKey.globalFileSizeSum.name,
-                value: prevFileSum + totalFilesSizeSum,
-              );
-            }
-          });
         }
         if (args.deleteCache) await FileUtils.deleteFiles(args.filePaths); // Delete the cache
 

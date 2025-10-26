@@ -16,7 +16,7 @@ class RecentDialogActions {
   Future<void> onRemoveFromRecents(BuildContext context, ContentTrack contentTrack) async {
     // final contentId = contentId;
     if (context.mounted) UiUtils.hideDialog(context);
-    final resultRemoveFromRecents = await ContentTrackRepo.add(contentTrack.copyWith(lastRead: null));
+    final resultRemoveFromRecents = await ContentTrackRepo.add(contentTrack.copyWith(lastRead: null, progress: 0.0));
     if (context.mounted) {
       if (resultRemoveFromRecents != -1) {
         await UiUtils.showFlushBar(context, msg: "Removed from recent reads!", vibe: FlushbarVibe.none);

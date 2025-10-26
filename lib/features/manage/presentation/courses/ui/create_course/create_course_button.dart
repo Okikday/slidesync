@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/result.dart';
@@ -76,7 +77,11 @@ class CreateCourseButton extends ConsumerWidget {
               if (context.mounted) {
                 Navigator.of(context).pop();
                 log("${context.mounted}");
-                context.pushNamed(Routes.modifyCourse.name, extra: value.courseId);
+                if (DeviceUtils.isDesktop()) {
+                  context.pushReplacementNamed(Routes.modifyCourse.name, extra: value.courseId);
+                } else {
+                  context.pushNamed(Routes.modifyCourse.name, extra: value.courseId);
+                }
                 await Future.delayed(Durations.short4);
                 if (rootNavigatorKey.currentContext != null && rootNavigatorKey.currentContext!.mounted) {
                   await UiUtils.showFlushBar(

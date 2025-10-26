@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/features/main/presentation/library/logic/library_tab_provider.dart';
 import 'package:slidesync/features/main/presentation/library/ui/src/library_tab_view_app_bar.dart';
 import 'package:slidesync/features/main/presentation/library/ui/library_tab_body.dart';
@@ -18,7 +19,7 @@ class _LibraryTabViewState extends ConsumerState<LibraryTabView> with AutomaticK
 
     return NestedScrollView(
       controller: ref.watch(LibraryTabProvider.state).scrollController,
-      physics: const NeverScrollableScrollPhysics(),
+      physics: DeviceUtils.isDesktop() ? null : const NeverScrollableScrollPhysics(),
       headerSliverBuilder: (context, isInnerBoxScrolled) => const [LibraryTabViewAppBar()],
 
       body: const LibraryTabBody(),

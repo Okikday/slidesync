@@ -31,6 +31,7 @@ class PdfDocViewer extends ConsumerWidget {
                 return PopScope(
                   canPop: !isSearching,
                   onPopInvokedWithResult: (didPop, result) async {
+                    
                     await PdfDocViewerActions.onPopInvoked(ref, content.contentId, content.parentId);
                   },
                   child: child!,

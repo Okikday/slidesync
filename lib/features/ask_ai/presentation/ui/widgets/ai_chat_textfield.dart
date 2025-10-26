@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/features/ask_ai/presentation/logic/ask_ai_screen_provider.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
@@ -68,6 +69,7 @@ class _AiChatTextfieldState extends ConsumerState<AiChatTextfield> with SingleTi
             suffixIcon: Padding(
               padding: const EdgeInsets.only(right: 12.0),
               child: CustomElevatedButton(
+                pixelHeight: DeviceUtils.isDesktop() ? 48 : null,
                 onClick: () async {
                   await AskAiScreenProvider.state.read(ref).sendCurrContentToAi();
                   if (context.mounted) FocusScope.of(context).unfocus();

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/features/main/presentation/library/logic/src/library_tab_state.dart';
 import 'package:slidesync/routes/routes.dart';
@@ -21,7 +22,13 @@ class CourseCardActions {
     LibraryTabState.isCourseCardAnimating = true; // Tell that a course is currently opened
     await Future.delayed(Durations.short4);
 
-    if (context.mounted) context.pushNamed(Routes.courseDetails.name, extra: course.courseId);
+    if (context.mounted) {
+      if (DeviceUtils.isDesktop()) {
+        context.goNamed(Routes.courseDetails.name, extra: course.courseId);
+      } else {
+        context.pushNamed(Routes.courseDetails.name, extra: course.courseId);
+      }
+    }
     LibraryTabState.isCourseCardAnimating = false;
   }
 

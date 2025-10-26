@@ -36,6 +36,7 @@ class EditCourseTile extends ConsumerWidget {
       borderRadius: BorderRadius.circular(12),
       onTap: onTap,
       onLongPress: onSelected,
+      
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         constraints: BoxConstraints(minHeight: 90, maxHeight: 140),

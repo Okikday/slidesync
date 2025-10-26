@@ -6,8 +6,15 @@ class AddContentResult {
   final bool isSuccess;
   final String? contentId;
   final String fileName;
+  final int? fileSize;
 
-  AddContentResult({this.hasDuplicate = false, required this.isSuccess, this.contentId, required this.fileName});
+  AddContentResult({
+    this.hasDuplicate = false,
+    required this.isSuccess,
+    this.contentId,
+    required this.fileName,
+    this.fileSize,
+  });
 
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
@@ -15,6 +22,7 @@ class AddContentResult {
       'isSuccess': isSuccess,
       'contentId': contentId,
       'fileName': fileName,
+      'fileSize': fileSize,
     };
   }
 
@@ -24,6 +32,7 @@ class AddContentResult {
       isSuccess: map['isSuccess'] as bool,
       contentId: map['contentId'] != null ? map['contentId'] as String : null,
       fileName: map['fileName'] as String,
+      fileSize: map['fileSize'] as int?,
     );
   }
 
@@ -34,6 +43,6 @@ class AddContentResult {
 
   @override
   String toString() {
-    return 'AddContentResult(hasDuplicate: $hasDuplicate, isSuccess: $isSuccess, contentId: $contentId, fileName: $fileName)';
+    return 'AddContentResult(hasDuplicate: $hasDuplicate, isSuccess: $isSuccess, contentId: $contentId, fileName: $fileName, fileSize: $fileSize)';
   }
 }

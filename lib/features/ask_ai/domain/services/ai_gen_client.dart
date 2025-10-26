@@ -1,6 +1,8 @@
 import 'dart:async';
 
-import 'package:firebase_ai/firebase_ai.dart';
+// import 'package:firebase_ai/firebase_ai.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:slidesync/features/ask_ai/domain/models/study_guide_prompt.dart';
 
 class AiGenClient {
@@ -8,9 +10,10 @@ class AiGenClient {
   AiGenClient._();
 
   static GenerativeModel _model({String? model, Content? systemInstruction, bool useGoogleSearch = false}) =>
-      FirebaseAI.googleAI().generativeModel(
+      GenerativeModel(
+        apiKey: dotenv.env['GEMINI_API_KEY'] ?? '',
         model: model ?? 'gemini-2.5-flash',
-        tools: useGoogleSearch ? [Tool.googleSearch()] : null,
+        tools: useGoogleSearch ? [Tool()] : null,
         systemInstruction: systemInstruction ?? Content.system(studyGuidePrompt),
       );
 

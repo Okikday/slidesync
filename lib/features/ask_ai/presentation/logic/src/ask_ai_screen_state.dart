@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:firebase_ai/firebase_ai.dart';
+// import 'package:firebase_ai/firebase_ai.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_chat_core/flutter_chat_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:slidesync/core/base/leak_prevention.dart';
 import 'package:slidesync/core/base/use_value_notifier.dart';
 import 'package:slidesync/core/utils/result.dart';
@@ -28,6 +29,7 @@ class AskAiScreenState extends LeakPrevention with ValueNotifierFactoryMixin {
 
   LinkedHashSet<Content> aiChatHistory = LinkedHashSet();
   StreamSubscription<StringBuffer>? aiMessageSub;
+  bool containsImage = false;
   late final InMemoryChatController chatController;
 
   ///|
@@ -65,45 +67,50 @@ class AskAiScreenState extends LeakPrevention with ValueNotifierFactoryMixin {
     await Result.tryRunAsync(() async {
       aiMessageSub?.cancel();
       final userId = await ref.read(AskAiScreenProvider.userIdProvider.future);
-      // Insert user's message
+
       final userMessage = Message.text(id: Uuid().v4(), authorId: userId, text: text);
       await chatController.insertMessage(userMessage);
 
-      // Insert a placeholder for AI response
       final aiMessageId = Uuid().v4();
+      final aiMessage = Message.text(id: aiMessageId, authorId: 'ai', text: '');
+      chatController.insertMessage(aiMessage);
 
       final image = imageToAiNotifier.value;
 
-      final aiMessage = Message.text(id: aiMessageId, authorId: 'ai', text: '');
-      chatController.insertMessage(aiMessage);
-      
-
-      if (aiChatHistory.where((c) => true).whereType<InlineDataPart>().isNotEmpty) {
-        imageToAiNotifier.value = null;
-      }
-      final newContent = Content("User", [
+      final newUserContent = Content("user", [
         TextPart(text),
-        if (imageToAiNotifier.value != null && image != null) InlineDataPart("image/png", image),
+        if (image != null && !containsImage) DataPart("image/png", image),
       ]);
-      aiChatHistory.add(newContent);
+      if (image != null) containsImage = true;
+      aiChatHistory.add(newUserContent);
+
+      // Get all messages for the request
       final allMessages = aiChatHistory.toList();
 
       final stream = AiGenClient.instance.streamChatAnon(allMessages);
       final StringBuffer buffer = StringBuffer();
+
       aiMessageSub = stream.listen(
         (response) async {
           buffer.write(response);
           await chatController.updateMessage(
             aiMessage,
-            Message.text(id: aiMessageId, authorId: 'ai', text: response.toString()),
+            Message.text(id: aiMessageId, authorId: 'ai', text: buffer.toString()),
           );
         },
         onDone: () async {
+          final aiContent = Content("model", [TextPart(buffer.toString())]);
+          aiChatHistory.add(aiContent);
+
           await aiMessageSub?.cancel();
           aiMessageSub = null;
           isProcessingNotifier.value = false;
         },
         onError: (e) async {
+          if (aiChatHistory.isNotEmpty) {
+            aiChatHistory.remove(aiChatHistory.last);
+          }
+
           await aiMessageSub?.cancel();
           aiMessageSub = null;
           isProcessingNotifier.value = false;

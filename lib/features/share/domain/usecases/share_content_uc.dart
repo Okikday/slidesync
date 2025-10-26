@@ -1,10 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:pasteboard/pasteboard.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/utils/device_utils.dart';
 // import 'package:printing/printing.dart';
 import 'package:slidesync/core/utils/file_utils.dart';
+import 'package:slidesync/core/utils/ui_utils.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 
 class ShareContentUc {
   Future<void> shareText(BuildContext context, String text, {String? title, File? previewThumbnail}) async {
@@ -27,6 +31,12 @@ class ShareContentUc {
       path = res;
     } else {
       path = file.path;
+    }
+
+    if (DeviceUtils.isDesktop()) {
+      await Pasteboard.writeFiles([path]);
+      GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "Copied file to clipboard"));
+      return;
     }
 
     final xf = XFile(path);
@@ -60,6 +70,7 @@ class ShareContentUc {
     }
 
     final List<XFile> xfiles = <XFile>[];
+    final List<String> filePaths = [];
 
     for (int i = 0; i < files.length; i++) {
       final file = files[i];
@@ -75,6 +86,13 @@ class ShareContentUc {
       }
 
       xfiles.add(XFile(path));
+      filePaths.add(path);
+    }
+
+    if (DeviceUtils.isDesktop()) {
+      await Pasteboard.writeFiles(filePaths);
+      GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "Copied file to clipboard"));
+      return;
     }
 
     await SharePlus.instance.share(
@@ -113,4 +131,17 @@ class ShareContentUc {
   Future<XFile?> _genPreview(File? previewThumbnail) async {
     return previewThumbnail != null && await previewThumbnail.exists() ? XFile(previewThumbnail.path) : null;
   }
+
+  // Future<void> copyFileToClipboard(List<String> filePaths) async {
+  //   final clipboard = SystemClipboard.instance;
+  //   if (clipboard == null) return;
+
+  //   final item = DataWriterItem();
+
+  //   for (final filePath in filePaths) {
+  //     item.add(Formats.fileUri(Uri.file(filePath)));
+  //   }
+
+  //   await clipboard.write([item]);
+  // }
 }

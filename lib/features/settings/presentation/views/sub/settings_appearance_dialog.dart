@@ -1,4 +1,3 @@
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -6,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/app.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
+import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/features/settings/domain/models/settings_model.dart';
 import 'package:slidesync/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -102,7 +102,7 @@ class _SettingsAppearanceDialogState extends ConsumerState<SettingsAppearanceDia
                       return ThemePairPicker(
                         pairs: pairs,
                         forceBrightness: data ? null : (context.mediaQuery.platformBrightness),
-                        crossAxisCount: 2,
+                        crossAxisCount: DeviceUtils.isDesktop() ? ((context.deviceWidth ~/ 200).clamp(1, 100)) : 2,
                         spacing: 12,
                         onSelected: (pair, chosen) {
                           ref
@@ -196,58 +196,61 @@ class ThemePairPicker extends ConsumerWidget {
   }
 
   Widget _buildSwatchPair(BuildContext context, ThemePair pair) {
-    return Row(
-      children: [
-        Expanded(
-          child: Container(
-            height: 72,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [pair.lightModel.primary, pair.lightModel.secondary],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: pair.lightModel.primary.withValues(alpha: 0.18),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: 200, maxWidth: 250),
+      child: Row(
+        children: [
+          Expanded(
+            child: Container(
+              height: 72,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [pair.lightModel.primary, pair.lightModel.secondary],
                 ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                'L',
-                style: TextStyle(color: pair.lightModel.onPrimary, fontWeight: FontWeight.bold, fontSize: 16),
+                boxShadow: [
+                  BoxShadow(
+                    color: pair.lightModel.primary.withValues(alpha: 0.18),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Center(
+                child: Text(
+                  'L',
+                  style: TextStyle(color: pair.lightModel.onPrimary, fontWeight: FontWeight.bold, fontSize: 16),
+                ),
               ),
             ),
           ),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Container(
-            height: 72,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [pair.darkModel.primary, pair.darkModel.secondary],
+          const SizedBox(width: 8),
+          Expanded(
+            child: Container(
+              height: 72,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [pair.darkModel.primary, pair.darkModel.secondary],
+                ),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 6)),
+                ],
               ),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withValues(alpha: 0.3), blurRadius: 8, offset: const Offset(0, 6)),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                'D',
-                style: TextStyle(color: pair.darkModel.onPrimary, fontWeight: FontWeight.bold, fontSize: 16),
+              child: Center(
+                child: Text(
+                  'D',
+                  style: TextStyle(color: pair.darkModel.onPrimary, fontWeight: FontWeight.bold, fontSize: 16),
+                ),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -269,47 +272,52 @@ class ThemePairPicker extends ConsumerWidget {
         final pair = pairs[index];
         final isSelected = currentTheme.title == pair.title;
 
-        return GestureDetector(
-          onTap: () async {
-            final chosen = _resolveBrightness(context, forceBrightness);
-            await _applyPair(context, ref, pair, chosen);
-          },
-          child: Material(
-            color: Theme.of(context).colorScheme.surface,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            elevation: isSelected ? 4 : 2,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(14),
-                border: isSelected ? Border.all(color: currentTheme.primary, width: 2.5) : null,
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(12.0),
-                child: Column(
-                  children: [
-                    Expanded(child: _buildSwatchPair(context, pair)),
-                    const SizedBox(height: 8),
-                    Text(
-                      pair.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                        color: isSelected ? currentTheme.primary : null,
+        return ConstrainedBox(
+          constraints: BoxConstraints(maxHeight: 300, maxWidth: 350),
+          child: GestureDetector(
+            onTap: () async {
+              final chosen = _resolveBrightness(context, forceBrightness);
+              await _applyPair(context, ref, pair, chosen);
+            },
+            child: Material(
+              color: Theme.of(context).colorScheme.surface,
+              clipBehavior: Clip.hardEdge,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              elevation: isSelected ? 4 : 2,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(14),
+                  border: isSelected ? Border.all(color: currentTheme.primary, width: 2.5) : null,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(12.0),
+                  child: Column(
+                    children: [
+                      Expanded(child: _buildSwatchPair(context, pair)),
+                      const SizedBox(height: 8),
+                      Text(
+                        pair.title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+                          color: isSelected ? currentTheme.primary : null,
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 6),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.circle, size: 10, color: pair.lightModel.primary),
-                        const SizedBox(width: 6),
-                        Icon(Icons.circle, size: 10, color: pair.darkModel.primary),
-                      ],
-                    ),
-                  ],
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.circle, size: 10, color: pair.lightModel.primary),
+                          const SizedBox(width: 6),
+                          Icon(Icons.circle, size: 10, color: pair.darkModel.primary),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),

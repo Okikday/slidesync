@@ -21,11 +21,14 @@ class HomeProvider {
   /// ===================================================================================================
   /// OTHERS
   /// ===================================================================================================
-  static final recentContentsTrackProvider = StreamProvider.autoDispose<List<ContentTrack>>((ref) async* {
+  static final recentContentsTrackProvider = StreamProvider.autoDispose.family<List<ContentTrack>, int>((
+    ref,
+    arg,
+  ) async* {
     yield* (await ContentTrackRepo.filter)
         .lastReadIsNotNull()
         .sortByLastReadDesc()
-        .limit(10)
+        .limit(arg)
         .watch(fireImmediately: true);
   });
 }

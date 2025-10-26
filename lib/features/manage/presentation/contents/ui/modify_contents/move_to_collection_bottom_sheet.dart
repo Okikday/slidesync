@@ -6,9 +6,10 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/browse/presentation/ui/course_details/course_categories_card.dart';
-import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
+import 'package:slidesync/features/manage/domain/usecases/contents/add_contents_uc.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
@@ -18,17 +19,40 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 
-class MoveToCollectionBottomSheet extends ConsumerStatefulWidget {
-  final List<CourseContent> contents;
-  const MoveToCollectionBottomSheet({super.key, required this.contents});
-
-  @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _MoveToCollectionBottomSheetState();
+/// Mode for the bottom sheet
+enum ContentSheetMode {
+  move, // Moving existing contents between collections
+  store, // Storing new files to a collection
 }
 
-class _MoveToCollectionBottomSheetState extends ConsumerState<MoveToCollectionBottomSheet> {
+class MoveOrStoreContentBottomSheet extends ConsumerStatefulWidget {
+  /// For moving existing contents
+  final List<CourseContent>? contentsToMove;
+
+  /// For storing new files - Map of file path to UUID
+  final List<String>? filePaths;
+
+  /// Determines the mode
+  final ContentSheetMode mode;
+
+  const MoveOrStoreContentBottomSheet.move({super.key, required List<CourseContent> contents})
+    : contentsToMove = contents,
+      filePaths = null,
+      mode = ContentSheetMode.move;
+
+  const MoveOrStoreContentBottomSheet.store({super.key, required List<String> files})
+    : filePaths = files,
+      contentsToMove = null,
+      mode = ContentSheetMode.store;
+
+  @override
+  ConsumerState<ConsumerStatefulWidget> createState() => _MoveOrStoreContentBottomSheetState();
+}
+
+class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreContentBottomSheet> {
   Stream<List<Course>>? streamedCourses;
   late final ValueNotifier<List<CourseCollection>?> collectionsNotifier;
+
   @override
   void initState() {
     super.initState();
@@ -78,6 +102,7 @@ class _MoveToCollectionBottomSheetState extends ConsumerState<MoveToCollectionBo
                 const SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
                 const MoveToCollectionSearchBar(),
 
+                // Collections list (when a course is selected)
                 ValueListenableBuilder(
                   valueListenable: collectionsNotifier,
                   builder: (context, collections, child) {
@@ -92,39 +117,8 @@ class _MoveToCollectionBottomSheetState extends ConsumerState<MoveToCollectionBo
                               isDarkMode: ref.isDarkMode,
                               title: collection.collectionTitle,
                               contentCount: collection.contents.length,
-
-                              onTap: () async {
-                                context.pop();
-                                UiUtils.showLoadingDialog(
-                                  context,
-                                  message: "Hold on for a moment while we move your materials",
-                                  canPop: false,
-                                );
-                                await CourseContentRepo.moveContents(widget.contents, collection.collectionId);
-                                GlobalNav.withContext((c) => c.pop());
-
-                                GlobalNav.withContext(
-                                  (c) => c.pushReplacementNamed(
-                                    Routes.modifyContents.name,
-                                    extra: collection.collectionId,
-                                  ),
-                                );
-                                GlobalNav.withContext(
-                                  (c) => UiUtils.showFlushBar(c, msg: "Successfully moved contents"),
-                                );
-                              },
+                              onTap: () => _handleCollectionSelection(context, collection),
                             ),
-                            // child: EditCourseTile(
-                            //   courseName: collection.collectionTitle,
-                            //   courseCode: '',
-                            //   categoriesCount: collection.contents.length,
-                            //   selectionState: (selected: false, isSelecting: false),
-                            //   syncImagePath: collection.imageLocationJson,
-                            //   onTap: () async {
-
-                            //   },
-                            //   onSelected: () {},
-                            // ),
                           );
                         },
                       );
@@ -133,11 +127,14 @@ class _MoveToCollectionBottomSheetState extends ConsumerState<MoveToCollectionBo
                   },
                 ),
 
+                // Courses list (initial view)
                 if (streamedCourses != null)
                   StreamBuilder(
                     stream: streamedCourses,
                     builder: (context, rawData) {
-                      if (!rawData.hasData || rawData.data == null) const SliverToBoxAdapter(child: LoadingLogo());
+                      if (!rawData.hasData || rawData.data == null) {
+                        return const SliverToBoxAdapter(child: LoadingLogo());
+                      }
                       final data = rawData.data ?? [];
                       if (data.isEmpty) {
                         return EmptyCoursesView();
@@ -155,26 +152,7 @@ class _MoveToCollectionBottomSheetState extends ConsumerState<MoveToCollectionBo
                               categoriesCount: course.collections.length,
                               selectionState: (selected: false, isSelecting: false),
                               syncImagePath: course.imageLocationJson,
-                              onTap: () async {
-                                final holdStreamedCourses = streamedCourses;
-                                streamedCourses = null;
-                                setState(() {
-                                  streamedCourses;
-                                });
-
-                                await course.collections.load();
-                                if (course.collections.isEmpty) {
-                                  if (context.mounted) {
-                                    UiUtils.showFlushBar(context, msg: "No collection to add to...");
-                                  }
-                                  streamedCourses = holdStreamedCourses;
-                                  setState(() {
-                                    streamedCourses;
-                                  });
-                                } else {
-                                  collectionsNotifier.value = List.from(course.collections.toList());
-                                }
-                              },
+                              onTap: () => _handleCourseSelection(context, course),
                               onSelected: () {},
                             ),
                           );
@@ -183,13 +161,70 @@ class _MoveToCollectionBottomSheetState extends ConsumerState<MoveToCollectionBo
                     },
                   ),
 
-                SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
+                const SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
               ],
             ),
           );
         },
       ),
     );
+  }
+
+  Future<void> _handleCourseSelection(BuildContext context, Course course) async {
+    final holdStreamedCourses = streamedCourses;
+    streamedCourses = null;
+    setState(() {});
+
+    await course.collections.load();
+    if (course.collections.isEmpty) {
+      if (context.mounted) {
+        UiUtils.showFlushBar(context, msg: "No collection to add to...");
+      }
+      streamedCourses = holdStreamedCourses;
+      setState(() {});
+    } else {
+      collectionsNotifier.value = List.from(course.collections.toList());
+    }
+  }
+
+  Future<void> _handleCollectionSelection(BuildContext context, CourseCollection collection) async {
+    if (widget.mode == ContentSheetMode.move) {
+      await _handleMoveContents(context, collection);
+    } else {
+      await _handleStoreFiles(context, collection);
+    }
+  }
+
+  /// Handle moving existing contents to a collection
+  Future<void> _handleMoveContents(BuildContext context, CourseCollection collection) async {
+    context.pop();
+    UiUtils.showLoadingDialog(context, message: "Hold on for a moment while we move your materials", canPop: false);
+
+    await CourseContentRepo.moveContents(widget.contentsToMove!, collection.collectionId);
+    GlobalNav.withContext((c) => c.pop());
+
+    GlobalNav.withContext((c) => c.pushReplacementNamed(Routes.modifyContents.name, extra: collection.collectionId));
+    GlobalNav.withContext((c) => UiUtils.showFlushBar(c, msg: "Successfully moved contents"));
+  }
+
+  /// Handle storing new files to a collection
+  Future<void> _handleStoreFiles(BuildContext context, CourseCollection collection) async {
+    context.pop();
+    UiUtils.showLoadingDialog(context, message: "Storing your files...", canPop: false);
+
+    await _storeContentsToCollection(collectionId: collection.collectionId, filePaths: widget.filePaths!);
+
+    GlobalNav.withContext((c) => c.pop());
+    GlobalNav.withContext((c) => c.pushReplacementNamed(Routes.modifyContents.name, extra: collection.collectionId));
+    GlobalNav.withContext((c) => UiUtils.showFlushBar(c, msg: "Successfully stored files"));
+  }
+
+  /// Your storage implementation
+  Future<void> _storeContentsToCollection({required String collectionId, required List<String> filePaths}) async {
+    final collection = await CourseCollectionRepo.getById(collectionId);
+    if (collection == null) return;
+
+    await AddContentsUc.addToCollectionNoRef(collection: collection, filePaths: filePaths);
   }
 }
 
@@ -200,16 +235,16 @@ class MoveToCollectionSearchBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
     return SliverPadding(
-      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       sliver: SliverToBoxAdapter(
         child: SearchBar(
           hintText: "Search a course",
-          leading: Padding(
-            padding: const EdgeInsets.only(left: 8, right: 4),
+          leading: const Padding(
+            padding: EdgeInsets.only(left: 8, right: 4),
             child: Icon(Iconsax.search_normal_1_copy),
           ),
           backgroundColor: WidgetStatePropertyAll(theme.surface),
-          elevation: WidgetStatePropertyAll(10),
+          elevation: const WidgetStatePropertyAll(10),
           shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
         ),
       ),

@@ -11,12 +11,13 @@ import 'package:slidesync/features/main/presentation/library/ui/src/library_tab_
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class LibraryFloatingActionButton extends ConsumerWidget {
-  const LibraryFloatingActionButton({super.key});
+  final bool isDesktop;
+  const LibraryFloatingActionButton({super.key, this.isDesktop = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isAtLibrary = ref.watch(MainProvider.tabIndexProvider.select((p) => p == 1));
-    if (!isAtLibrary) return const SizedBox();
+    if (!isAtLibrary && !isDesktop) return const SizedBox();
     final theme = ref;
 
     return ValueListenableBuilder(
@@ -46,7 +47,7 @@ class LibraryFloatingActionButton extends ConsumerWidget {
       },
 
       child: Padding(
-        padding: const EdgeInsets.only(bottom: 80),
+        padding: EdgeInsets.only(bottom: isDesktop ? 24 : 80),
         child:
             FloatingActionButton(
               onPressed: () {

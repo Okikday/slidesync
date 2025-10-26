@@ -124,6 +124,19 @@ class InnerScaleClickWrapper extends ConsumerWidget {
         },
         onTap: onTap,
         onLongPress: onLongPress,
+        onSecondaryTap: onLongPress,
+        onSecondaryTapDown: (details) {
+          updateScaleClickNotifier(true);
+          if (onTapDown != null) onTapDown!(details);
+        },
+        onSecondaryTapCancel: () {
+          updateScaleClickNotifier(false);
+        },
+        onSecondaryTapUp: (details) async {
+          await Future.delayed(delayReverseDuration ?? Durations.short1);
+          updateScaleClickNotifier(false);
+          if (onTapUp != null) onTapUp!(details);
+        },
         child: child,
       ),
     );

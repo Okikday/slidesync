@@ -9,6 +9,7 @@ import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/features/main/presentation/library/ui/src/library_tab_view_app_bar/build_button.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
@@ -76,11 +77,12 @@ class _RecentDialogState extends ConsumerState<RecentDialog> {
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                                     children: [
-                                      CustomElevatedButton(
+                                      BuildButton(
+                                        iconData: null,
                                         backgroundColor: theme.adjustBgAndSecondaryWithLerp,
                                         shape: CircleBorder(),
-                                        contentPadding: EdgeInsets.all(12),
-                                        onClick: () async {
+                                        // contentPadding: EdgeInsets.all(12),
+                                        onTap: () async {
                                           final content = await CourseContentRepo.getByContentId(
                                             widget.recentDialogModel.contentId,
                                           );
@@ -102,10 +104,11 @@ class _RecentDialogState extends ConsumerState<RecentDialog> {
                                         },
                                         child: Icon(Iconsax.star_copy, size: 26, color: theme.supportingText),
                                       ),
-                                      CustomElevatedButton(
+                                      BuildButton(
+                                        iconData: null,
                                         backgroundColor: theme.adjustBgAndSecondaryWithLerp,
-                                        shape: CircleBorder(),
-                                        contentPadding: EdgeInsets.all(12),
+                                        shape: const CircleBorder(),
+                                        onTap: () {},
                                         child: Icon(Iconsax.note_add_copy, size: 26, color: theme.supportingText),
                                       ),
                                     ],

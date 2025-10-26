@@ -39,6 +39,10 @@ class RecentListTile extends ConsumerWidget {
         onLongPress: () {
           if (dataModel.onLongTapTile != null) dataModel.onLongTapTile!();
         },
+        onSecondaryTap: () {
+          if (dataModel.onLongTapTile != null) dataModel.onLongTapTile!();
+        },
+
         child: Padding(
           padding: EdgeInsets.only(left: 16, right: 16, bottom: 16, top: 16),
           child: Row(

@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:developer';
 import 'package:isar/isar.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:slidesync/core/storage/isar_data/isar_schemas.dart';
+import 'package:slidesync/core/utils/file_utils.dart';
 
 /// Utility class for generic Isar database operations.
 /// Pass in the Isar CollectionSchema for your model to interact with the DB easily.
@@ -30,7 +30,7 @@ class IsarData<T> {
     bool inspector = true,
   }) async {
     if (_openDb == null) {
-      final dir = await getApplicationDocumentsDirectory();
+      final dir = await FileUtils.getAppDocumentsDirectory();
       _openDb = Isar.open(collectionSchemas, directory: dir.path, name: dbName, inspector: inspector);
       log("Initialized Isar");
     }

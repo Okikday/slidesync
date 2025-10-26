@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:path_provider/path_provider.dart';
+import 'package:slidesync/core/utils/file_utils.dart';
 
 class HiveDataIsolate {
   final String boxName;
@@ -10,7 +10,7 @@ class HiveDataIsolate {
 
   Future<void> _initialize() async {
     if (!_isInitialized) {
-      final dir = await getApplicationDocumentsDirectory();
+      final dir = await FileUtils.getAppDocumentsDirectory();
       Hive.init(dir.path);
       _box = await Hive.openBox(boxName);
       _isInitialized = true;

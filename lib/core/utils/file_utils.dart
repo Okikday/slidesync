@@ -10,6 +10,9 @@ import 'package:slidesync/core/storage/native/app_paths.dart';
 export 'dart:io';
 
 class FileUtils {
+  static Future<Directory> getAppDocumentsDirectory() async =>
+      await (Platform.isWindows ? getApplicationSupportDirectory() : getApplicationDocumentsDirectory());
+
   static Future<String> _storeToAppDirectory(
     File file,
     String folderPath,
@@ -29,7 +32,7 @@ class FileUtils {
         baseDir = await getTemporaryDirectory();
         break;
       case AppDirType.documents:
-        baseDir = await getApplicationDocumentsDirectory();
+        baseDir = await getAppDocumentsDirectory();
         break;
     }
 
@@ -114,7 +117,7 @@ class FileUtils {
           baseDir = await getTemporaryDirectory(); // or getCacheDirectory() on some platforms
           break;
         case AppDirType.documents:
-          baseDir = await getApplicationDocumentsDirectory();
+          baseDir = await getAppDocumentsDirectory();
           break;
       }
 
@@ -169,7 +172,7 @@ class FileUtils {
   /// defaults to the app’s application directory.
   Future<File?> searchFile(String fileName, {Directory? searchPath}) async {
     try {
-      final Directory dir = searchPath ?? await getApplicationDocumentsDirectory();
+      final Directory dir = searchPath ?? await FileUtils.getAppDocumentsDirectory();
 
       File? result;
 
@@ -223,7 +226,7 @@ class FileUtils {
     final RootIsolateToken rootIsolateToken = data['rootIsolateToken'] as RootIsolateToken;
     final String rootDirPath = data['rootDirPath'] ?? '';
     BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken);
-    final Directory baseDir = await getApplicationDocumentsDirectory();
+    final Directory baseDir = await FileUtils.getAppDocumentsDirectory();
     final empties = await findEmptyDirectories(
       rootDirPath.isEmpty ? baseDir.path : p.join(rootDirPath, AppPaths.coursesFolder),
     );
