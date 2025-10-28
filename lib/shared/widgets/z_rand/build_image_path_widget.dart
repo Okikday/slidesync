@@ -31,48 +31,48 @@ class BuildImagePathWidget extends ConsumerStatefulWidget {
 }
 
 class _BuildImagePathWidgetState extends ConsumerState<BuildImagePathWidget> {
-  Uint8List? imageBytes;
-  DateTime? _lastModified;
+  // Uint8List? imageBytes;
+  // DateTime? _lastModified;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadImageBytes();
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   _loadImageBytes();
+  // }
 
-  @override
-  void didUpdateWidget(covariant BuildImagePathWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
+  // @override
+  // void didUpdateWidget(covariant BuildImagePathWidget oldWidget) {
+  //   super.didUpdateWidget(oldWidget);
 
-    final oldPath = oldWidget.fileDetails.filePath;
-    final newPath = widget.fileDetails.filePath;
+  //   final oldPath = oldWidget.fileDetails.filePath;
+  //   final newPath = widget.fileDetails.filePath;
 
-    if (newPath.isNotEmpty) {
-      final file = File(newPath);
-      if (file.existsSync()) {
-        final newModified = file.lastModifiedSync();
-        if (oldPath != newPath || _lastModified == null || newModified != _lastModified) {
-          _loadImageBytes();
-        }
-      }
-    }
-  }
+  //   if (newPath.isNotEmpty) {
+  //     final file = File(newPath);
+  //     if (file.existsSync()) {
+  //       final newModified = file.lastModifiedSync();
+  //       if (oldPath != newPath || _lastModified == null || newModified != _lastModified) {
+  //         _loadImageBytes();
+  //       }
+  //     }
+  //   }
+  // }
 
-  void _loadImageBytes() {
-    final filePath = widget.fileDetails.filePath;
-    if (filePath.isNotEmpty && File(filePath).existsSync()) {
-      final file = File(filePath);
-      final bytes = file.readAsBytesSync();
-      final modified = file.lastModifiedSync();
+  // void _loadImageBytes() {
+  //   final filePath = widget.fileDetails.filePath;
+  //   if (filePath.isNotEmpty && File(filePath).existsSync()) {
+  //     final file = File(filePath);
+  //     final bytes = file.readAsBytesSync();
+  //     final modified = file.lastModifiedSync();
 
-      if (_lastModified != modified) {
-        setState(() {
-          imageBytes = bytes;
-          _lastModified = modified;
-        });
-      }
-    }
-  }
+  //     if (_lastModified != modified) {
+  //       setState(() {
+  //         imageBytes = bytes;
+  //         _lastModified = modified;
+  //       });
+  //     }
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -84,13 +84,15 @@ class _BuildImagePathWidgetState extends ConsumerState<BuildImagePathWidget> {
 
     if (!fileDetails.containsFilePath) return fallbackWidget;
 
-    if (fileDetails.filePath.isNotEmpty && imageBytes != null) {
-      return ImageFromMemory(
-        imageBytes: imageBytes,
+    if (fileDetails.filePath.isNotEmpty) {
+      // && imageBytes != null
+      return ImageFromFile(
+        fileDetails: fileDetails,
         fit: fit,
         width: width,
         height: height,
         fallbackWidget: fallbackWidget,
+        ref: ref,
       ).animate().fadeIn();
     } else if (fileDetails.urlPath.isNotEmpty) {
       return ImageFromNetwork(
@@ -103,6 +105,48 @@ class _BuildImagePathWidgetState extends ConsumerState<BuildImagePathWidget> {
     }
 
     return fallbackWidget;
+  }
+}
+
+class ImageFromFile extends StatelessWidget {
+  const ImageFromFile({
+    super.key,
+    required this.fileDetails,
+    required this.fit,
+    required this.width,
+    required this.height,
+    required this.fallbackWidget,
+    required this.ref,
+  });
+
+  final FileDetails fileDetails;
+  final BoxFit fit;
+  final double? width;
+  final double? height;
+  final Widget fallbackWidget;
+  final WidgetRef ref;
+
+  @override
+  Widget build(BuildContext context) {
+    return Image.file(
+      File(fileDetails.filePath),
+      fit: fit,
+      width: width,
+      height: height,
+      errorBuilder: (context, error, stackTrace) => fallbackWidget,
+      frameBuilder: (BuildContext context, Widget child, int? frame, bool wasSynchronouslyLoaded) {
+        if (wasSynchronouslyLoaded || frame != null) {
+          return child;
+        } else {
+          return SizedBox.expand(child: ColoredBox(color: ref.primaryColor.withAlpha(40)))
+              .animate(onComplete: (controller) => controller.repeat())
+              .shimmer(duration: const Duration(seconds: 1), curve: Curves.decelerate)
+              .blurXY(begin: 2, end: 0, duration: Duration(seconds: 1))
+              .animate(onComplete: (controller) => controller.repeat(reverse: true))
+              .tint(color: ref.primaryColor.withAlpha(10), duration: Duration(seconds: 1));
+        }
+      },
+    );
   }
 }
 

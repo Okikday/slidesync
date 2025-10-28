@@ -52,14 +52,17 @@ android {
     }
 
     buildTypes {
-        release {
-            getByName("release"){
-                signingConfig = signingConfigs.getByName("release")
-                isMinifyEnabled = true
-                isShrinkResources = true
-                
-            }
-        }
+            getByName("debug") {
+        // reuse release signing config so debug APK is signed with the release key
+        signingConfig = signingConfigs.getByName("release")
+        isDebuggable = true
+    }
+
+    getByName("release") {
+        signingConfig = signingConfigs.getByName("release")
+        isMinifyEnabled = true
+        isShrinkResources = true
+    }
     }
 }
 

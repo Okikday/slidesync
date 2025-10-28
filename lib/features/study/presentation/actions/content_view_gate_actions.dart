@@ -64,11 +64,13 @@ class ContentViewGateActions {
     switch (content.courseContentType) {
       case CourseContentType.document:
         if (filenameExt.toLowerCase().contains("pdf") || p.extension(urlPath).toLowerCase().contains("pdf")) {
-          final pageProvider = await ref.read(
-            CourseMaterialsProvider.contentPaginationProvider(content.parentId).future,
-          );
-          if (pageProvider.isUpdating) return;
-          pageProvider.stopIsolate();
+          Result.tryRun(() async {
+            final pageProvider = await ref.read(
+              CourseMaterialsProvider.contentPaginationProvider(content.parentId).future,
+            );
+            if (pageProvider.isUpdating) return;
+            pageProvider.stopIsolate();
+          });
           popBefore
               ? GoRouter.of(context).pushReplacementNamed(Routes.pdfDocumentViewer.name, extra: content)
               : GoRouter.of(context).pushNamed(Routes.pdfDocumentViewer.name, extra: content);

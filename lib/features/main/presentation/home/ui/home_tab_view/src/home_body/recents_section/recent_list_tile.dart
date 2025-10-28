@@ -96,6 +96,7 @@ class RecentListTile extends ConsumerWidget {
                             fontWeight: FontWeight.bold,
                             height: 1.0,
                             color: theme.onBackground,
+                            overflow: TextOverflow.fade,
                           ),
                         ),
                       ),

@@ -235,6 +235,7 @@ class SettingsCard extends ConsumerWidget {
     final theme = ref;
     return Tooltip(
       textAlign: TextAlign.left,
+      showDuration: 4.inSeconds,
       richMessage: TextSpan(
         children: [
           TextSpan(

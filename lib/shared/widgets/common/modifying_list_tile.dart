@@ -7,6 +7,8 @@ class ModifyingListTile extends ConsumerWidget {
   final Widget leading;
   final Widget? trailing;
   final String title;
+  final Widget? titleWidget;
+  final Widget? subtitleWidget;
   final String subtitle;
   final void Function()? onTapTile;
   final void Function()? onTapLeading;
@@ -18,6 +20,8 @@ class ModifyingListTile extends ConsumerWidget {
     required this.trailing,
     required this.title,
     required this.subtitle,
+    this.titleWidget,
+    this.subtitleWidget,
     this.onTapTile,
     this.onTapLeading,
     this.onLongPressTile,
@@ -63,7 +67,7 @@ class ModifyingListTile extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CustomText(
+                      titleWidget ??  CustomText(
                           title,
                           fontWeight: FontWeight.bold,
                           fontSize: 13.5,
@@ -71,7 +75,7 @@ class ModifyingListTile extends ConsumerWidget {
                           overflow: TextOverflow.fade,
                         ),
                         ConstantSizing.columnSpacing(4),
-                        CustomText(subtitle, fontSize: 12, color: ref.supportingText),
+                        subtitleWidget ?? CustomText(subtitle, fontSize: 12, color: ref.supportingText),
                       ],
                     ),
                   ),

@@ -35,15 +35,7 @@
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-            <!--TODO:
-            Add this filter, if you want support opening files into your app-->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data
-                    android:mimeType="*/*"
-                    android:scheme="content" />
-            </intent-filter>
+
 
             <!--TODO:
             Add this filter, if you want to support sharing text into your app-->

@@ -8,27 +8,26 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class EmptyCollectionsView extends ConsumerWidget {
   final void Function()? onClickAddCollection;
-  const EmptyCollectionsView({super.key, this.onClickAddCollection});
+  final bool showAddButton;
+  const EmptyCollectionsView({super.key, this.onClickAddCollection, this.showAddButton = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return SliverToBoxAdapter(
-      child: SizedBox(
-        height: 400,
-
-        child: SingleChildScrollView(
+      child: Center(
+        child: ListView(
           physics: const NeverScrollableScrollPhysics(),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ConstantSizing.columnSpacing(20),
-              SizedBox.square(
-                dimension: context.deviceWidth * 0.5,
-                child: LottieBuilder.asset(Assets.icons.roundedPlayingFace, reverse: true),
-              ),
+          shrinkWrap: true,
+          children: [
+            ConstantSizing.columnSpacing(40),
+            SizedBox.square(
+              dimension: context.deviceWidth * 0.5,
+              child: LottieBuilder.asset(Assets.icons.roundedPlayingFace, reverse: true),
+            ),
 
-              CustomText("Oops, can't find any collections", color: Colors.blueGrey),
+            Center(child: CustomText("Oops, can't find any collections", color: Colors.blueGrey)),
 
+            if (showAddButton) ...[
               ConstantSizing.columnSpacingHuge,
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -45,7 +44,7 @@ class EmptyCollectionsView extends ConsumerWidget {
                 ),
               ),
             ],
-          ),
+          ],
         ),
       ),
     );

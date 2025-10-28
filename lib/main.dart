@@ -1,4 +1,5 @@
 // import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -27,7 +28,7 @@ final obs = ActiveProvidersObserver();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await Result.tryRunAsync(() async => await _initialize());
 
   if (Platform.isWindows || Platform.isMacOS || Platform.isLinux) {
@@ -79,7 +80,9 @@ Future<void> _initialize() async {
 
 Future<void> _appLaunchRoutine() async {
   /// Clear App Cache every 23 hours
-  final lastDateHive = (await AppHiveData.instance.getData<DateTime?>(key: HiveDataPathKey.lastClearedCacheDate.name));
+  final lastDateHive = (await Result.tryRunAsync<DateTime?>(() async {
+    return (await AppHiveData.instance.getData<DateTime?>(key: HiveDataPathKey.lastClearedCacheDate.name));
+  })).data;
   if (lastDateHive == null) {
     await AppHiveData.instance.setData(
       key: HiveDataPathKey.lastClearedCacheDate.name,

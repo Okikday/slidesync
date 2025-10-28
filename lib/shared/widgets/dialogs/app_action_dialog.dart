@@ -2,7 +2,6 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 import 'app_customizable_dialog.dart';
@@ -119,7 +118,7 @@ class BuildPlainActionButton extends ConsumerWidget {
       borderRadius: 0,
       backgroundColor: backgroundColor ?? Colors.transparent,
       contentPadding: contentPadding,
-      pixelHeight: DeviceUtils.isDesktop() ? 50 : null,
+      pixelHeight: 48,
       onClick: onTap,
       child: Row(
         spacing: 12.0,

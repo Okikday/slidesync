@@ -6,7 +6,7 @@ abstract class LeakPrevention {
   );
 
   LeakPrevention() {
-    _finalizer.attach(this, hashCode.toString(), detach: this);
+    _finalizer.attach(this, super.toString(), detach: this);
   }
 
   void dispose() {

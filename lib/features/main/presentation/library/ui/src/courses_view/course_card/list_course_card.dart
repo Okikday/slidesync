@@ -129,12 +129,16 @@ class ListCourseCardIcon extends ConsumerWidget {
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: theme.background.lightenColor(context.isDarkMode ? 0.1 : 0.8).withValues(alpha: 0.8),
-          border: courseCode.isEmpty ? null : Border.all(color: theme.altBackgroundPrimary),
+          // color: theme.background.lightenColor(context.isDarkMode ? 0.1 : 0.8).withValues(alpha: 0.8),
+          color: theme.altBackgroundPrimary,
+          // border: courseCode.isEmpty ? null : Border.all(color: theme.altBackgroundPrimary),
+          border: theme.isDarkMode
+              ? Border.fromBorderSide(BorderSide(color: ref.primary.withAlpha(40), width: 1.0))
+              : Border.all(color: theme.altBackgroundPrimary),
           // borderRadius: BorderRadius.circular(12),
         ),
         child: Opacity(
-          opacity: 0.6,
+          opacity: 0.8,
           child: ClipOval(
             child: BuildImagePathWidget(
               height: 64,
@@ -271,7 +275,7 @@ class _ListCourseCardProgressIndicatorState extends ConsumerState<ListCourseCard
                   pixelHeight: 46,
                   contentPadding: EdgeInsets.zero,
                   shape: CircleBorder(),
-                  backgroundColor: theme.background,
+                  backgroundColor: theme.altBackgroundPrimary,
                   overlayColor: theme.altBackgroundSecondary,
                   onClick: () {},
                   child: progress == null || (progress <= 0.0)
@@ -289,7 +293,7 @@ class _ListCourseCardProgressIndicatorState extends ConsumerState<ListCourseCard
                       value: progress?.clamp(0.01, 1.0) ?? 0.01,
                       strokeCap: StrokeCap.round,
                       color: theme.primaryColor,
-                      backgroundColor: theme.altBackgroundPrimary.withValues(alpha: 0.4),
+                      backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.4),
                     ),
                   ),
                 ),

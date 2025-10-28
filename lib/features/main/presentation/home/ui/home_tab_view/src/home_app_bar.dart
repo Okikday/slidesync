@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/features/main/presentation/main/logic/main_provider.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
@@ -98,9 +97,10 @@ class HomeAppBar extends ConsumerWidget {
 
                         CustomElevatedButton(
                           onClick: onClickNotification,
-                          pixelWidth: DeviceUtils.isDesktop() ? 48 : null,
-                          pixelHeight: DeviceUtils.isDesktop() ? 48 : null,
+                          pixelWidth: 44,
+                          pixelHeight: 44,
                           overlayColor: ref.secondary.withAlpha(40),
+                          contentPadding: EdgeInsets.zero,
                           shape: CircleBorder(
                             side: BorderSide(color: theme.altBackgroundSecondary.withValues(alpha: 0.4)),
                           ),

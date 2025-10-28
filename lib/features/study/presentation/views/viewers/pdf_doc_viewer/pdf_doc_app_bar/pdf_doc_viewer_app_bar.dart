@@ -1,5 +1,5 @@
-import 'dart:developer';
 
+import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/study/presentation/actions/pdf_doc_viewer_actions.dart';
@@ -7,6 +7,7 @@ import 'package:slidesync/features/study/presentation/logic/pdf_doc_viewer_provi
 import 'package:slidesync/features/study/presentation/logic/src/pdf_doc_viewer_state/pdf_doc_viewer_state.dart';
 import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_doc_app_bar/pdf_doc_normal_app_bar.dart';
 import 'package:slidesync/features/study/presentation/views/viewers/pdf_doc_viewer/pdf_doc_app_bar/pdf_doc_search_app_bar.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 
 class PdfDocViewerAppBar extends ConsumerStatefulWidget {
@@ -19,19 +20,6 @@ class PdfDocViewerAppBar extends ConsumerStatefulWidget {
 }
 
 class _PdfDocViewerAppBarState extends ConsumerState<PdfDocViewerAppBar> {
-  late final FocusNode focusNode;
-  @override
-  void initState() {
-    super.initState();
-    focusNode = FocusNode();
-  }
-
-  @override
-  void dispose() {
-    focusNode.dispose();
-    super.dispose();
-  }
-
   @override
   Widget build(BuildContext context) {
     final docViewP = PdfDocViewerProvider.state(widget.contentId);
@@ -48,21 +36,22 @@ class _PdfDocViewerAppBarState extends ConsumerState<PdfDocViewerAppBar> {
             return ValueListenableBuilder<double>(
               valueListenable: scrollOffsetNotifier,
               builder: (context, offset, child) {
-                log("offset: $offset");
-                return Transform.translate(
-                  offset: Offset(0, (-offset)),
-                  child: AppBarContainer(appBarHeight: isAppBarVisible ? null : 0, child: child!),
+                return AppBarTranslateTweenBuilder(
+                  isAppBarVisible: isAppBarVisible,
+                  child: Transform.translate(
+                    offset: Offset(0, (-offset)),
+                    child: AppBarContainer(child: child!),
+                  ),
                 );
               },
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  PdfDocSearchAppBar(focusNode: focusNode, contentId: widget.contentId),
+                  PdfDocSearchAppBar(contentId: widget.contentId),
                   PdfDocNormalAppBar(
                     contentId: widget.contentId,
                     title: widget.title,
                     onSearch: () {
-                      focusNode.requestFocus();
                       ref.read(PdfDocViewerProvider.searchState(widget.contentId)).setSearching(true);
                     },
                   ),
@@ -72,6 +61,28 @@ class _PdfDocViewerAppBarState extends ConsumerState<PdfDocViewerAppBar> {
           },
         );
       },
+    );
+  }
+}
+
+class AppBarTranslateTweenBuilder extends ConsumerWidget {
+  final bool isAppBarVisible;
+  final Widget child;
+  const AppBarTranslateTweenBuilder({super.key, required this.isAppBarVisible, required this.child});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return TweenAnimationBuilder(
+      duration: 500.inMs,
+      curve: CustomCurves.decelerate,
+      tween: Tween<double>(
+        begin: isAppBarVisible ? (context.topPadding + kToolbarHeight + 8.0) : 0.0,
+        end: isAppBarVisible ? 0.0 : (context.topPadding + kToolbarHeight + 8.0),
+      ),
+      builder: (context, value, child) {
+        return Transform.translate(offset: Offset(0, -value), child: child!);
+      },
+      child: child,
     );
   }
 }

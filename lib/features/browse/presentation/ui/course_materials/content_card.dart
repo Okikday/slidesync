@@ -9,6 +9,7 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
+import 'package:slidesync/features/manage/domain/usecases/contents/retrieve_content_uc.dart';
 import 'package:slidesync/features/manage/presentation/contents/actions/modify_content_card_actions.dart';
 import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
 import 'package:slidesync/features/study/presentation/actions/content_view_gate_actions.dart';
@@ -24,7 +25,9 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/widget_helper.dart';
 
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
+import 'package:slidesync/shared/widgets/dialogs/app_customizable_dialog.dart';
 import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
+import 'package:slidesync/shared/widgets/progress_indicator/circular_loading_indicator.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 class ContentCard extends ConsumerStatefulWidget {
@@ -37,14 +40,34 @@ class ContentCard extends ConsumerStatefulWidget {
 }
 
 class _ContentCardState extends ConsumerState<ContentCard> {
-  late final Stream<double> progressStream;
+  late Stream<double> progressStream;
+  Future<PreviewLinkDetails?>? previewDetailsFuture;
 
   @override
   void initState() {
     super.initState();
+    _initializeData();
+  }
+
+  void _initializeData() {
     progressStream = ContentTrackRepo.watchByContentId(
       widget.content.contentId,
     ).map((c) => c?.progress ?? 0.0).asBroadcastStream();
+
+    if (widget.content.courseContentType == CourseContentType.link) {
+      previewDetailsFuture = RetriveContentUc.getLinkPreviewData(widget.content.path.urlPath);
+    } else {
+      previewDetailsFuture = null;
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant ContentCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.content != widget.content) {
+      _initializeData();
+      setState(() {});
+    }
   }
 
   @override
@@ -83,7 +106,13 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                               topLeft: Radius.circular(15),
                               topRight: Radius.circular(15),
                             ),
-                            child: Opacity(opacity: 0.6, child: ContentCardPreviewImage(content: content)),
+                            child: Opacity(
+                              opacity: 0.6,
+                              child: ContentCardPreviewImage(
+                                content: content,
+                                previewDetailsFuture: previewDetailsFuture,
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -118,23 +147,9 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                                 spacing: 2.5,
                                 children: [
                                   Flexible(
-                                    child: Tooltip(
-                                      message: content.title.toLowerCase() == "unknown"
-                                          ? content.courseContentType == CourseContentType.link
-                                                ? content.path.urlPath
-                                                : content.title
-                                          : content.title,
-                                      triggerMode: TooltipTriggerMode.tap,
-                                      child: CustomText(
-                                        content.title.toLowerCase() == "unknown"
-                                            ? content.courseContentType == CourseContentType.link
-                                                  ? content.path.urlPath
-                                                  : content.title
-                                            : content.title,
-                                        color: theme.onBackground,
-                                        fontWeight: FontWeight.w600,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
+                                    child: ContentCardTitle(
+                                      content: content,
+                                      previewDetailsFuture: previewDetailsFuture,
                                     ),
                                   ),
                                   StreamBuilder(
@@ -148,6 +163,8 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                                             ? "Start reading!"
                                             : progress == 1.0
                                             ? "Completed!"
+                                            : (progress != null && progress > .95)
+                                            ? "Almost done!"
                                             : "${((progress?.clamp(0, 100) ?? 0.0) * 100.0).toInt()}% read",
                                         fontSize: 10,
                                         color: progress == 1.0 ? theme.primary : theme.supportingText,
@@ -158,7 +175,7 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                               ),
                             ),
 
-                            ContentCardPopUpMenuButton(content: content),
+                            ContentCardPopUpMenuButton(content: content, previewDetailsFuture: previewDetailsFuture),
                           ],
                         ),
                       ),
@@ -175,10 +192,48 @@ class _ContentCardState extends ConsumerState<ContentCard> {
   }
 }
 
-class ContentCardPopUpMenuButton extends ConsumerWidget {
-  const ContentCardPopUpMenuButton({super.key, required this.content});
+class ContentCardTitle extends ConsumerWidget {
+  const ContentCardTitle({super.key, required this.content, required this.previewDetailsFuture});
 
   final CourseContent content;
+  final Future<PreviewLinkDetails?>? previewDetailsFuture;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref;
+    return FutureBuilder(
+      future: previewDetailsFuture,
+      builder: (context, asyncSnapshot) {
+        final resolveUrl =
+            content.courseContentType == CourseContentType.link && content.title.toLowerCase() == "unknown"
+            ? content.path.urlPath
+            : content.title;
+        final resolveTitle = previewDetailsFuture == null
+            ? content.title
+            : (asyncSnapshot.hasData && asyncSnapshot.data != null
+                  ? (asyncSnapshot.data?.title ?? resolveUrl)
+                  : resolveUrl);
+        return Tooltip(
+          showDuration: 4.inSeconds,
+          message: resolveTitle,
+          triggerMode: TooltipTriggerMode.tap,
+          child: CustomText(
+            resolveTitle,
+            color: theme.onBackground,
+            fontWeight: FontWeight.w600,
+            overflow: TextOverflow.ellipsis,
+          ),
+        );
+      },
+    );
+  }
+}
+
+class ContentCardPopUpMenuButton extends ConsumerWidget {
+  const ContentCardPopUpMenuButton({super.key, required this.content, required this.previewDetailsFuture});
+
+  final CourseContent content;
+  final Future<PreviewLinkDetails?>? previewDetailsFuture;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -186,23 +241,36 @@ class ContentCardPopUpMenuButton extends ConsumerWidget {
       iconSize: 16,
       actions: [
         PopupMenuAction(
-          title: "Open in App",
+          title: content.courseContentType == CourseContentType.link ? "Open link" : "Open",
           iconData: Iconsax.play,
           onTap: () {
             context.pushNamed(Routes.contentGate.name, extra: content);
           },
         ),
-        PopupMenuAction(
-          title: "Open Outside App",
-          iconData: Iconsax.send,
-          onTap: () {
-            ContentViewGateActions.redirectToViewer(ref, content, popBefore: false, openOutsideApp: true);
-          },
-        ),
+        if (content.courseContentType != CourseContentType.link)
+          PopupMenuAction(
+            title: "Open Outside App",
+            iconData: Iconsax.send,
+            onTap: () {
+              ContentViewGateActions.redirectToViewer(ref, content, popBefore: false, openOutsideApp: true);
+            },
+          ),
+        if (content.courseContentType == CourseContentType.link)
+          PopupMenuAction(
+            title: "View link",
+            iconData: Icons.remove_red_eye_outlined,
+            onTap: () {
+              UiUtils.showCustomDialog(
+                context,
+                child: PreviewLinkTypeDialog(previewDetailsFuture: previewDetailsFuture, content: content),
+              );
+            },
+          ),
+
         if (content.courseContentType == CourseContentType.link)
           PopupMenuAction(
             title: "Copy",
-            iconData: Icons.copy,
+            iconData: Iconsax.copy_copy,
             onTap: () {
               Clipboard.setData(ClipboardData(text: content.path.fileDetails.urlPath));
             },
@@ -222,7 +290,7 @@ class ContentCardPopUpMenuButton extends ConsumerWidget {
           },
         ),
         PopupMenuAction(
-          title: "Delete",
+          title: content.courseContentType == CourseContentType.link ? "Remove" : "Delete",
           iconData: Iconsax.trash_copy,
           onTap: () async {
             UiUtils.showCustomDialog(
@@ -268,22 +336,182 @@ class ContentCardPopUpMenuButton extends ConsumerWidget {
   }
 }
 
-class ContentCardPreviewImage extends StatelessWidget {
-  const ContentCardPreviewImage({super.key, required this.content});
+class PreviewLinkTypeDialog extends ConsumerWidget {
+  const PreviewLinkTypeDialog({super.key, required this.previewDetailsFuture, required this.content});
 
+  final Future<PreviewLinkDetails?>? previewDetailsFuture;
   final CourseContent content;
 
   @override
-  Widget build(BuildContext context) {
-    return ImageFiltered(
-      imageFilter: ColorFilter.mode(Colors.black.withAlpha(10), BlendMode.color),
-      child: BuildImagePathWidget(
-        fileDetails: content.courseContentType == CourseContentType.link
-            ? FileDetails(urlPath: content.previewPath ?? '')
-            : FileDetails(filePath: content.previewPath ?? ''),
-        fit: BoxFit.cover,
-        fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, false), size: 36),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref;
+    return AppCustomizableDialog(
+      size: Size(400, 500),
+      leading: Padding(
+        padding: const EdgeInsets.only(left: 20, right: 16, bottom: 12),
+        child: CustomText(content.title, fontSize: 16, fontWeight: FontWeight.bold, color: theme.onBackground),
       ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Divider(color: theme.onBackground.withAlpha(10), height: 0),
+
+          ConstantSizing.columnSpacingMedium,
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Row(
+              spacing: 12,
+              children: [
+                DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: theme.altBackgroundPrimary,
+                    borderRadius: BorderRadius.circular(15),
+                    border: Border.fromBorderSide(BorderSide(color: theme.onBackground.withAlpha(60))),
+                  ),
+                  child: SizedBox.square(
+                    dimension: 60,
+                    child: SizedBox.expand(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(15),
+                        child: Opacity(
+                          opacity: 0.6,
+                          child: ContentCardPreviewImage(content: content, previewDetailsFuture: previewDetailsFuture),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                Expanded(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(maxHeight: 80),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      spacing: 4,
+                      children: [
+                        CustomText(content.path.urlPath, fontWeight: FontWeight.bold, color: theme.secondary),
+                        Flexible(
+                          child: Tooltip(
+                            message: content.description.trim().isEmpty ? "No description" : content.description,
+                            triggerMode: TooltipTriggerMode.tap,
+                            showDuration: 4.inSeconds,
+                            child: CustomText(
+                              content.description.trim().isEmpty ? "No description" : content.description,
+                              color: theme.onBackground.withValues(alpha: .5),
+                              overflow: TextOverflow.fade,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          ConstantSizing.columnSpacingLarge,
+
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Row(
+              spacing: 16,
+              children: [
+                Flexible(
+                  child: CustomElevatedButton(
+                    onClick: () async {
+                      await Clipboard.setData(ClipboardData(text: content.path.fileDetails.urlPath));
+                    },
+                    pixelHeight: 44,
+                    borderRadius: 44,
+
+                    backgroundColor: theme.secondary.withValues(alpha: 0.2),
+
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      spacing: 6.0,
+                      children: [
+                        Icon(Iconsax.link, color: theme.secondary, size: 20),
+                        Flexible(child: CustomText("Copy link", color: theme.secondary)),
+                      ],
+                    ),
+                  ),
+                ),
+                Flexible(
+                  child: CustomElevatedButton(
+                    onClick: () {
+                      context.pop();
+                      ShareContentActions.shareContent(context, content.contentId);
+                    },
+                    pixelHeight: 44,
+                    borderRadius: 44,
+
+                    backgroundColor: theme.primary.withValues(alpha: 0.2),
+
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      spacing: 6.0,
+                      children: [
+                        Icon(Icons.share_outlined, color: theme.primary, size: 20),
+                        Flexible(child: CustomText("Share", color: theme.primary)),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ConstantSizing.columnSpacingSmall,
+        ],
+      ),
+    );
+  }
+}
+
+class ContentCardPreviewImage extends StatelessWidget {
+  const ContentCardPreviewImage({super.key, required this.content, this.previewDetailsFuture});
+
+  final CourseContent content;
+  final Future<PreviewLinkDetails?>? previewDetailsFuture;
+
+  @override
+  Widget build(BuildContext context) {
+    if (previewDetailsFuture == null) {
+      return ImageFiltered(
+        imageFilter: ColorFilter.mode(Colors.black.withAlpha(10), BlendMode.color),
+        child: BuildImagePathWidget(
+          fileDetails: content.courseContentType == CourseContentType.link
+              ? FileDetails(urlPath: content.previewPath ?? '')
+              : FileDetails(filePath: content.previewPath ?? ''),
+          fit: BoxFit.cover,
+          fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, false), size: 36),
+        ),
+      );
+    }
+    return FutureBuilder(
+      future: previewDetailsFuture,
+      builder: (context, dataSnapshot) {
+        if (dataSnapshot.data != null && dataSnapshot.hasData) {
+          final previewUrl = dataSnapshot.data!.previewUrl;
+          return ImageFiltered(
+            imageFilter: ColorFilter.mode(Colors.black.withAlpha(10), BlendMode.color),
+            child: BuildImagePathWidget(
+              fileDetails: previewUrl != null ? FileDetails(urlPath: previewUrl) : FileDetails(),
+              fit: BoxFit.cover,
+              fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, false), size: 36),
+            ),
+          );
+        } else if (dataSnapshot.hasError) {
+          return BuildImagePathWidget(
+            fileDetails: FileDetails(),
+            fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, false), size: 36),
+          );
+        } else {
+          return const CircularLoadingIndicator();
+        }
+      },
     );
   }
 }

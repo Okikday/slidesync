@@ -14,12 +14,14 @@ class HomeDashboard extends ConsumerWidget {
     this.onReadingBtnTapped,
     this.onShareTapped,
     this.isFirst,
+    this.buttonText,
   });
 
   final String courseName;
   final String detail;
   final double progressValue;
   final bool? completed;
+  final String? buttonText;
   final void Function()? onReadingBtnTapped;
   final void Function()? onShareTapped;
 
@@ -58,6 +60,7 @@ class HomeDashboard extends ConsumerWidget {
                 child: Tooltip(
                   message: courseName,
                   triggerMode: TooltipTriggerMode.tap,
+                  showDuration: 4.inSeconds,
                   child: CustomText(
                     courseName,
                     fontSize: 16,
@@ -70,7 +73,7 @@ class HomeDashboard extends ConsumerWidget {
             ),
           ),
           if (detail.isNotEmpty) ConstantSizing.columnSpacingSmall,
-          if (detail.isNotEmpty) CustomText(detail, fontSize: 13, color: theme.supportingText.withValues(alpha: 0.9)),
+          if (detail.isNotEmpty) CustomText(detail, fontSize: 12, color: theme.supportingText.withValues(alpha: 0.5)),
           ConstantSizing.columnSpacingSmall,
 
           // Row(
@@ -107,7 +110,10 @@ class HomeDashboard extends ConsumerWidget {
                     overlayColor: ref.onPrimary.withAlpha(20),
                     backgroundColor: theme.primaryColor,
                     child: CustomText(
-                      completed != null ? (completed! ? "Read next slide" : "Continue reading...") : "Start Reading",
+                      buttonText ??
+                          (completed != null
+                              ? (completed! ? "Read next slide" : "Continue reading...")
+                              : "Start Reading"),
                       fontSize: 15,
                       color: theme.onPrimary,
                     ),

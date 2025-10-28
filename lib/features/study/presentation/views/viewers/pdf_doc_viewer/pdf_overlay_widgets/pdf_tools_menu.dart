@@ -42,7 +42,7 @@ class PdfToolsMenu extends ConsumerWidget {
           gradient: RadialGradient(colors: [theme.background, theme.primary]),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: const EdgeInsets.all(16.0),
           child: Icon(Iconsax.magic_star, size: 20, color: theme.onBackground),
         ),
       ),

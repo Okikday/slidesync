@@ -115,258 +115,208 @@ class _PdfScrollbarOverlayState extends ConsumerState<PdfScrollbarOverlay> {
   }
 }
 
-// /// Scroll thumb for [PdfViewer].
-// ///
-// /// Use with [PdfViewerParams.viewerOverlayBuilder] to add scroll thumbs to the viewer.
-// class PdfViewerScrollThumb extends StatefulWidget {
-//   const PdfViewerScrollThumb({
-//     required this.controller,
-//     this.orientation = ScrollbarOrientation.right,
-//     this.thumbSize,
-//     this.margin = 2,
-//     this.thumbBuilder,
-//     this.topPadding = 0.0,
-//     super.key,
-//   });
+/// Custom scroll thumb for [PdfViewer] with top padding support.
+class CustomPdfScrollThumb extends StatefulWidget {
+  const CustomPdfScrollThumb({
+    required this.controller,
+    this.orientation = ScrollbarOrientation.right,
+    this.thumbSize,
+    this.margin = 2,
+    this.topPadding = 0,
+    this.bottomPadding = 0,
+    this.thumbBuilder,
+    super.key,
+  });
 
-//   /// [PdfViewerController] attached to the [PdfViewer].
-//   final PdfViewerController controller;
+  final PdfViewerController controller;
+  final ScrollbarOrientation orientation;
+  final Size? thumbSize;
+  final double margin;
+  final double topPadding;
+  final double bottomPadding;
+  final Widget? Function(BuildContext context, Size thumbSize, int? pageNumber, PdfViewerController controller)?
+  thumbBuilder;
 
-//   /// Position/Orientation of the scroll thumb.
-//   final ScrollbarOrientation orientation;
+  bool get isVertical => orientation == ScrollbarOrientation.left || orientation == ScrollbarOrientation.right;
 
-//   /// Size of the scroll thumb.
-//   final Size? thumbSize;
+  @override
+  State<CustomPdfScrollThumb> createState() => _CustomPdfScrollThumbState();
+}
 
-//   /// Margin from the viewer's edge.
-//   final double margin;
+class _CustomPdfScrollThumbState extends State<CustomPdfScrollThumb> {
+  double _panStartOffset = 0;
 
-//   /// Function to customize the thumb widget.
-//   final Widget? Function(BuildContext context, Size thumbSize, int? pageNumber, PdfViewerController controller)?
-//   thumbBuilder;
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.controller.isReady) {
+      return const SizedBox();
+    }
+    return widget.isVertical ? _buildVertical(context) : _buildHorizontal(context);
+  }
 
-//   /// Determine whether the orientation is vertical or not.
-//   bool get isVertical => orientation == ScrollbarOrientation.left || orientation == ScrollbarOrientation.right;
+  /// Calculate the correct page number based on visible viewport
+  int _getCorrectPageNumber() {
+    if (!widget.controller.isReady) return 1;
 
-//   //Top padding for app bar
-//   final double topPadding;
+    final pages = widget.controller.pages;
+    final pageCount = widget.controller.pageCount;
+    if (pages.isEmpty || pageCount == 0) return 1;
 
-//   @override
-//   State<PdfViewerScrollThumb> createState() => _PdfViewerScrollThumbState();
-// }
+    final visibleRect = widget.controller.visibleRect;
+    final documentSize = widget.controller.documentSize;
 
-// class _PdfViewerScrollThumbState extends State<PdfViewerScrollThumb> {
-//   double _panStartOffset = 0;
-//   Timer? _hideTimer;
-//   bool _visible = false;
-//   bool _isDraggingThumb = false;
-//   VoidCallback? _controllerListener;
+    // Calculate cumulative page positions
+    double cumulativeHeight = 0;
+    final boundaryMargin = widget.controller.params.boundaryMargin;
+    final pageSpacing = widget.controller.params.margin;
 
-//   static const Duration _fadeDuration = Duration(milliseconds: 200);
-//   static const Duration _visibleDuration = Duration(seconds: 3);
+    for (int i = 0; i < pages.length; i++) {
+      final page = pages[i];
+      // if (page == null) continue;
 
-//   @override
-//   void initState() {
-//     super.initState();
-//     _attachControllerListener();
-//   }
+      final pageHeight = page.height;
+      final pageTop = cumulativeHeight;
+      final pageBottom = cumulativeHeight + pageHeight;
 
-//   @override
-//   void didUpdateWidget(covariant PdfViewerScrollThumb oldWidget) {
-//     super.didUpdateWidget(oldWidget);
-//     if (oldWidget.controller != widget.controller) {
-//       _detachControllerListener(oldWidget.controller);
-//       _attachControllerListener();
-//     }
-//   }
+      // Check if visible rect intersects with this page
+      if (visibleRect.bottom > pageTop && visibleRect.top < pageBottom) {
+        // Calculate how much of this page is visible
+        final visibleTop = visibleRect.top > pageTop ? visibleRect.top : pageTop;
+        final visibleBottom = visibleRect.bottom < pageBottom ? visibleRect.bottom : pageBottom;
+        final visibleHeight = visibleBottom - visibleTop;
 
-//   @override
-//   void dispose() {
-//     _hideTimer?.cancel();
-//     _detachControllerListener(widget.controller);
-//     super.dispose();
-//   }
+        // If more than 50% of viewport shows this page, or if it's the most visible
+        if (visibleHeight > visibleRect.height * 0.3) {
+          return page.pageNumber;
+        }
+      }
 
-//   void _attachControllerListener() {
-//     // assume controller is a ChangeNotifier or has addListener()
-//     // make a local callback so we can remove it later
-//     _controllerListener = () {
-//       _onControllerChange();
-//     };
-//     try {
-//       widget.controller.addListener(_controllerListener!);
-//     } catch (e) {
-//       // If controller doesn't support addListener, silently ignore.
-//       // If you want to support another API, tell me the controller's API.
-//     }
-//   }
+      cumulativeHeight += pageHeight + pageSpacing;
+    }
 
-//   void _detachControllerListener(PdfViewerController controller) {
-//     if (_controllerListener == null) return;
-//     try {
-//       controller.removeListener(_controllerListener!);
-//     } catch (e) {
-//       // ignore
-//     }
-//     _controllerListener = null;
-//   }
+    // Fallback: use viewport center position
+    final viewportCenterY = visibleRect.center.dy;
+    final avgPageHeight = documentSize.height / pageCount;
+    final estimatedPage = (viewportCenterY / avgPageHeight).floor() + 1;
 
-//   void _onControllerChange() {
-//     // called frequently as the view scrolls/zooms; keep work minimal
-//     if (_isDraggingThumb) return; // while dragging, keep visible
-//     _showTemporarily();
-//   }
+    return estimatedPage.clamp(1, pageCount);
+  }
 
-//   void _showTemporarily() {
-//     // only call setState when visibility actually changes
-//     if (!_visible) {
-//       setState(() => _visible = true);
-//     }
-//     // restart hide timer
-//     _hideTimer?.cancel();
-//     _hideTimer = Timer(_visibleDuration, () {
-//       if (mounted && !_isDraggingThumb) {
-//         setState(() => _visible = false);
-//       }
-//     });
-//   }
+  Widget _buildVertical(BuildContext context) {
+    final thumbSize = widget.thumbSize ?? const Size(25, 40);
+    final view = widget.controller.visibleRect;
+    final all = widget.controller.documentSize;
+    final boundaryMargin = widget.controller.params.boundaryMargin;
 
-//   void _cancelHideTimer() {
-//     _hideTimer?.cancel();
-//     _hideTimer = null;
-//   }
+    final effectiveDocHeight = boundaryMargin == null || boundaryMargin.vertical.isInfinite
+        ? all.height
+        : all.height + boundaryMargin.vertical;
 
-//   @override
-//   Widget build(BuildContext context) {
-//     if (!widget.controller.isReady) {
-//       return const SizedBox();
-//     }
-//     return widget.isVertical ? _buildVertical(context) : _buildHorizontal(context);
-//   }
+    if (effectiveDocHeight <= view.height) return const SizedBox();
 
-//   Widget _wrapWithVisibility({required Widget child}) {
-//     // AnimatedOpacity for fade, IgnorePointer so invisible thumb doesn't block touches
-//     return AnimatedOpacity(
-//       duration: _fadeDuration,
-//       opacity: _visible ? 1.0 : 0.0,
-//       child: IgnorePointer(ignoring: !_visible, child: child),
-//     );
-//   }
+    final scrollRange = effectiveDocHeight - view.height;
+    final minScrollY = boundaryMargin == null || boundaryMargin.vertical.isInfinite ? 0.0 : -boundaryMargin.top;
 
-//   Widget _buildVertical(BuildContext context) {
-//     final thumbSize = widget.thumbSize ?? const Size(25, 40);
-//     final view = widget.controller.visibleRect;
-//     final all = widget.controller.documentSize;
-//     if (all.height <= view.height) return const SizedBox();
+    final y = (-widget.controller.value.y - minScrollY) / scrollRange;
 
-//     final y = -widget.controller.value.y / (all.height - view.height);
-//     final vh = view.height * widget.controller.currentZoom - thumbSize.height - widget.topPadding;
-//     final top = y * vh;
+    // Adjust available height for thumb movement (accounting for both paddings)
+    final availableHeight =
+        view.height * widget.controller.currentZoom - thumbSize.height - widget.topPadding - widget.bottomPadding;
+    final top = y * availableHeight + widget.topPadding;
 
-//     return Positioned(
-//       left: widget.orientation == ScrollbarOrientation.left ? widget.margin : null,
-//       right: widget.orientation == ScrollbarOrientation.right ? widget.margin : null,
-//       top: top + widget.topPadding,
-//       width: thumbSize.width,
-//       height: thumbSize.height,
-//       child: _wrapWithVisibility(
-//         child: GestureDetector(
-//           behavior: HitTestBehavior.translucent,
-//           onPanStart: (details) {
-//             _isDraggingThumb = true;
-//             _cancelHideTimer();
-//             _panStartOffset = top - details.localPosition.dy;
-//             // ensure visible when user starts dragging
-//             if (!_visible) setState(() => _visible = true);
-//           },
-//           onPanUpdate: (details) {
-//             final y = (_panStartOffset + details.localPosition.dy) / (vh);
-//             final m = widget.controller.value.clone();
-//             m.y = -y * (all.height - view.height);
-//             widget.controller.value = m;
-//           },
-//           onPanEnd: (details) {
-//             _isDraggingThumb = false;
-//             // restart timer to hide after inactivity
-//             _showTemporarily();
-//           },
-//           child:
-//               widget.thumbBuilder?.call(context, thumbSize, widget.controller.pageNumber, widget.controller) ??
-//               Container(
-//                 decoration: BoxDecoration(
-//                   color: Colors.white,
-//                   borderRadius: BorderRadius.circular(5),
-//                   boxShadow: [
-//                     BoxShadow(
-//                       color: Colors.black.withAlpha(127),
-//                       spreadRadius: 1,
-//                       blurRadius: 1,
-//                       offset: const Offset(1, 1),
-//                     ),
-//                   ],
-//                 ),
-//                 child: Center(child: Text(widget.controller.pageNumber.toString())),
-//               ),
-//         ),
-//       ),
-//     );
-//   }
+    // Calculate correct page number based on visible area center
+    final pageNumber = _getCorrectPageNumber();
 
-//   Widget _buildHorizontal(BuildContext context) {
-//     final thumbSize = widget.thumbSize ?? const Size(40, 25);
-//     final view = widget.controller.visibleRect;
-//     final all = widget.controller.documentSize;
-//     if (all.width <= view.width) return const SizedBox();
+    return Positioned(
+      left: widget.orientation == ScrollbarOrientation.left ? widget.margin : null,
+      right: widget.orientation == ScrollbarOrientation.right ? widget.margin : null,
+      top: top,
+      width: thumbSize.width,
+      height: thumbSize.height,
+      child: GestureDetector(
+        child:
+            widget.thumbBuilder?.call(context, thumbSize, pageNumber, widget.controller) ??
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(5),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(127),
+                    spreadRadius: 1,
+                    blurRadius: 1,
+                    offset: const Offset(1, 1),
+                  ),
+                ],
+              ),
+              child: Center(child: Text(pageNumber.toString())),
+            ),
+        onPanStart: (details) {
+          _panStartOffset = top - details.localPosition.dy;
+        },
+        onPanUpdate: (details) {
+          final adjustedY = (_panStartOffset + details.localPosition.dy - widget.topPadding) / availableHeight;
+          final m = widget.controller.value.clone();
+          m.y = -(adjustedY * scrollRange + minScrollY);
+          widget.controller.value = m;
+        },
+      ),
+    );
+  }
 
-//     final x = -widget.controller.value.x / (all.width - view.width);
-//     final vw = view.width * widget.controller.currentZoom - thumbSize.width;
-//     final left = x * vw;
+  Widget _buildHorizontal(BuildContext context) {
+    final thumbSize = widget.thumbSize ?? const Size(40, 25);
+    final view = widget.controller.visibleRect;
+    final all = widget.controller.documentSize;
+    final boundaryMargin = widget.controller.params.boundaryMargin;
 
-//     return Positioned(
-//       top: widget.orientation == ScrollbarOrientation.top ? widget.margin : null,
-//       bottom: widget.orientation == ScrollbarOrientation.bottom ? widget.margin : null,
-//       left: left,
-//       width: thumbSize.width,
-//       height: thumbSize.height,
-//       child: _wrapWithVisibility(
-//         child: GestureDetector(
-//           behavior: HitTestBehavior.translucent,
-//           onPanStart: (details) {
-//             _isDraggingThumb = true;
-//             _cancelHideTimer();
-//             _panStartOffset = left - details.localPosition.dx;
-//             if (!_visible) setState(() => _visible = true);
-//           },
-//           onPanUpdate: (details) {
-//             final x = (_panStartOffset + details.localPosition.dx) / vw;
-//             final m = widget.controller.value.clone();
-//             m.x = -x * (all.width - view.width);
+    final effectiveDocWidth = boundaryMargin == null || boundaryMargin.horizontal.isInfinite
+        ? all.width
+        : all.width + boundaryMargin.horizontal;
 
-//             widget.controller.value = m;
-//           },
-//           onPanEnd: (details) {
-//             _isDraggingThumb = false;
-//             _showTemporarily();
-//           },
-//           child:
-//               widget.thumbBuilder?.call(context, thumbSize, widget.controller.pageNumber, widget.controller) ??
-//               Container(
-//                 decoration: BoxDecoration(
-//                   color: Colors.white,
-//                   borderRadius: BorderRadius.circular(5),
-//                   boxShadow: [
-//                     BoxShadow(
-//                       color: Colors.black.withAlpha(127),
-//                       spreadRadius: 1,
-//                       blurRadius: 1,
-//                       offset: const Offset(1, 1),
-//                     ),
-//                   ],
-//                 ),
-//                 child: Center(child: Text(widget.controller.pageNumber.toString())),
-//               ),
-//         ),
-//       ),
-//     );
-//   }
-// }
+    if (effectiveDocWidth <= view.width) return const SizedBox();
+
+    final scrollRange = effectiveDocWidth - view.width;
+    final minScrollX = boundaryMargin == null || boundaryMargin.horizontal.isInfinite ? 0.0 : -boundaryMargin.left;
+
+    final x = (-widget.controller.value.x - minScrollX) / scrollRange;
+    final vw = view.width * widget.controller.currentZoom - thumbSize.width;
+    final left = x * vw;
+
+    return Positioned(
+      top: widget.orientation == ScrollbarOrientation.top ? widget.margin : null,
+      bottom: widget.orientation == ScrollbarOrientation.bottom ? widget.margin : null,
+      left: left,
+      width: thumbSize.width,
+      height: thumbSize.height,
+      child: GestureDetector(
+        child:
+            widget.thumbBuilder?.call(context, thumbSize, widget.controller.pageNumber, widget.controller) ??
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(5),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(127),
+                    spreadRadius: 1,
+                    blurRadius: 1,
+                    offset: const Offset(1, 1),
+                  ),
+                ],
+              ),
+              child: Center(child: Text(widget.controller.pageNumber.toString())),
+            ),
+        onPanStart: (details) {
+          _panStartOffset = left - details.localPosition.dx;
+        },
+        onPanUpdate: (details) {
+          final x = (_panStartOffset + details.localPosition.dx) / vw;
+          final m = widget.controller.value.clone();
+          m.x = -(x * scrollRange + minScrollX);
+          widget.controller.value = m;
+        },
+      ),
+    );
+  }
+}

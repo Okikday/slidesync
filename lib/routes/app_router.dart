@@ -9,6 +9,7 @@ import 'package:slidesync/routes/src/content_viewer_route.dart';
 import 'package:slidesync/routes/src/course_mgmt_routes.dart';
 import 'package:slidesync/routes/src/course_nav_routes.dart';
 import 'package:slidesync/routes/src/main_route.dart';
+import 'package:slidesync/routes/src/onboarding_route.dart';
 import 'package:slidesync/routes/src/settings_route.dart';
 import 'package:slidesync/splash_view.dart';
 
@@ -25,6 +26,7 @@ class AppRouter {
     routes: [
       splashRoute,
       authRoute,
+      onboardingRoute,
 
       // Home, Library, Explore tabs
       mainRoute,
@@ -50,7 +52,7 @@ final splashRoute = GoRoute(
   redirect: (context, state) async {
     final isUserSignedIn = await UserDataFunctions().isUserSignedIn();
     final hasOnboarded = await AppHiveData.instance.getData(key: HiveDataPathKey.hasOnboarded.name) as bool?;
-    if (hasOnboarded == false) return Routes.welcome.path;
+    if (hasOnboarded == null && !isUserSignedIn) return Routes.welcome.path;
     if (isUserSignedIn) return Routes.home.path;
     return Routes.auth.path;
   },

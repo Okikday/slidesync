@@ -58,6 +58,7 @@ class InputCourseTitleField extends ConsumerWidget {
         child: Tooltip(
           message: "Add Optional Course code",
           triggerMode: TooltipTriggerMode.longPress,
+          showDuration: 4.inSeconds,
           child: Icon(
             ref.watch(isCourseCodeFieldVisible) ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
             size: 30,

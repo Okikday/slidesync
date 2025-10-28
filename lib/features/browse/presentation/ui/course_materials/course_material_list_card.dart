@@ -11,6 +11,8 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
+import 'package:slidesync/features/browse/presentation/ui/course_materials/content_card.dart';
+import 'package:slidesync/features/manage/domain/usecases/contents/retrieve_content_uc.dart';
 import 'package:slidesync/features/manage/presentation/contents/actions/modify_content_card_actions.dart';
 import 'package:slidesync/features/manage/presentation/contents/actions/modify_contents_action.dart';
 import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
@@ -87,13 +89,27 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
           context.pushNamed(Routes.contentGate.name, extra: content);
         },
       ),
-      CourseMaterialListCardActionModel(
-        label: "Open Outside app",
-        icon: Iconsax.send,
-        onTap: () {
-          ContentViewGateActions.redirectToViewer(ref, content, popBefore: false, openOutsideApp: true);
-        },
-      ),
+      if (content.courseContentType != CourseContentType.link)
+        CourseMaterialListCardActionModel(
+          label: "Open Outside app",
+          icon: Iconsax.send,
+          onTap: () {
+            ContentViewGateActions.redirectToViewer(ref, content, popBefore: false, openOutsideApp: true);
+          },
+        ),
+      if (content.courseContentType == CourseContentType.link)
+        CourseMaterialListCardActionModel(
+          label: "View link",
+          icon: Icons.remove_red_eye_outlined,
+          onTap: () {
+            final previewDetailsFuture = widget.content.courseContentType == CourseContentType.link ? RetriveContentUc.getLinkPreviewData(widget.content.path.urlPath) : null;
+           
+            UiUtils.showCustomDialog(
+              context,
+              child: PreviewLinkTypeDialog(previewDetailsFuture: previewDetailsFuture, content: content),
+            );
+          },
+        ),
 
       if (content.courseContentType == CourseContentType.link)
         CourseMaterialListCardActionModel(
@@ -174,6 +190,7 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
         type: MaterialType.transparency,
         child: Tooltip(
           message: content.title,
+          showDuration: 4.inSeconds,
           triggerMode: TooltipTriggerMode.longPress,
           child: InkWell(
             borderRadius: BorderRadius.circular(10),

@@ -31,6 +31,7 @@ class CourseDetailsCollectionSection extends ConsumerWidget {
         final collections = data;
         if (collections.isEmpty) {
           return EmptyCollectionsView(
+            showAddButton: true,
             onClickAddCollection: () async {
               // AppRouteNavigator.to(context).modifyCollectionsRoute(course);
               // await Future.delayed(Durations.short1);

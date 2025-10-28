@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -8,7 +9,10 @@ import 'package:slidesync/core/constants/src/enums.dart';
 /// Use this class to pick various content types and copy them into the app's cache directory.
 class SelectContentsUc {
   /// Picks files based on the [type] and returns a list of cached [File]s.
-  Future<List<File>?> referToAddContents(CourseContentType type) async {
+  Future<List<File>?> referToAddContents(CourseContentType type, {bool selectByFolder = false}) async {
+    if (selectByFolder) {
+      return await _selectFolder();
+    }
     switch (type) {
       case CourseContentType.unknown:
         return await _selectFiles();
@@ -29,8 +33,41 @@ class SelectContentsUc {
         return null;
     }
   }
+}
 
-  
+Future<List<File>?> _selectFolder() async {
+  final result = await FilePicker.platform.getDirectoryPath();
+  if (result == null) return null;
+  log('Selected directory: $result');
+
+  try {
+    final dir = Directory(result);
+
+    // Check if directory exists and is accessible
+    if (!await dir.exists()) {
+      log('Directory does not exist');
+      return null;
+    }
+
+    // List files synchronously but handle permission errors
+    final List<FileSystemEntity> entities = [];
+    try {
+      entities.addAll(dir.listSync(recursive: true, followLinks: false));
+    } catch (e) {
+      log('Permission error: $e');
+      return null;
+    }
+
+    final files = entities.whereType<File>().map((f) => f.path).toList();
+    log("Found ${files.length} files: ${files.take(5)}..."); // Log first 5
+
+    if (files.isEmpty) return null;
+
+    return await _copyToCache(files);
+  } catch (e) {
+    log('Error reading folder: $e');
+    return null;
+  }
 }
 
 /// Helper to copy picked files into cache and return them.
@@ -56,20 +93,6 @@ Future<List<File>?> _selectImages() async {
   if (images.isEmpty) return null;
   return _copyToCache(images.map((x) => x.path));
 }
-
-// Future<List<File>?> _selectVideos() async {
-//   final picker = ImagePicker();
-//   final mediaList = await picker.pickMultipleMedia();
-//   if (mediaList.isEmpty) return null;
-//   // Filter videos if needed, here assuming all mediaList
-//   return _copyToCache(mediaList.map((x) => x.path));
-// }
-
-// Future<List<File>?> _selectAudios() async {
-//   final result = await FilePicker.platform.pickFiles(type: FileType.audio);
-//   if (result == null) return null;
-//   return _copyToCache(result.paths.whereType<String>());
-// }
 
 /// Copies each source file at [paths] into the app cache directory, returns new File list.
 Future<List<File>> _copyToCache(Iterable<String> paths) async {

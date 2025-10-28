@@ -108,6 +108,7 @@ dependencies:
   receive_sharing_intent: ^1.8.1
   flutter_math_fork: ^0.7.4
   google_generative_ai: ^0.4.7
+  smooth_list_view: ^2.0.2
   
   # web_smooth_scroll: ^2.0.0
 

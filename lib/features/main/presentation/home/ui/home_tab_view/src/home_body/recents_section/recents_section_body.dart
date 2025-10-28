@@ -4,6 +4,8 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:lottie/lottie.dart';
+import 'package:slidesync/core/assets/assets.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/main/presentation/home/actions/recent_dialog_actions.dart';
@@ -69,7 +71,7 @@ class RecentsSectionBody extends ConsumerWidget {
                           ),
                           isStarred: false,
                           title: content.title ?? "No title",
-                          description: content.description ?? "",
+                          description: content.description ?? "No description",
                           onContinueReading: () async {
                             await rda.onContinueReading(context, content.contentId);
                           },
@@ -156,8 +158,23 @@ class _RecommendedSectionState extends ConsumerState<RecommendedSection> {
             padding: const EdgeInsets.only(left: 16, right: 16),
             child: CustomText("Recommended", fontWeight: FontWeight.bold, fontSize: 16, color: theme.onBackground),
           ),
+          Center(
+            child: SizedBox.square(
+              dimension: 100,
+              child: LottieBuilder.asset(Assets.icons.roundedPlayingFace, reverse: true),
+            ),
+          ),
+
           Expanded(
-            child: Center(child: CustomText("No Recommendations", color: theme.onBackground.withValues(alpha: 0.5))),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Center(
+                child: CustomText(
+                  "No Recommendations.\nTry reading something from library ↷",
+                  color: theme.onBackground.withValues(alpha: 0.5),
+                ),
+              ),
+            ),
           ),
           // Expanded(
           //   child: ListView.builder(

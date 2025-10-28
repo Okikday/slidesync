@@ -46,7 +46,7 @@ class AppHiveData {
   Future<T?> getData<T>({required String key}) async =>
       (await Result.tryRunAsync(() async => await _box.get(key))).data as T?;
 
-  Future<void> setData({required String key, required dynamic value}) async =>
+  Future<void> setData<T>({required String key, required T? value}) async =>
       await Result.tryRunAsync(() async => await _box.put(key, value));
 
   Future<void> deleteData({required String key}) async => await Result.tryRunAsync(() async => await _box.delete(key));

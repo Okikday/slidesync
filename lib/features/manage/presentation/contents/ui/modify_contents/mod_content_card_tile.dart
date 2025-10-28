@@ -1,19 +1,22 @@
+import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
-import 'package:slidesync/features/browse/presentation/actions/content_card_actions.dart';
+import 'package:slidesync/features/manage/domain/usecases/contents/create_content_preview_image.dart';
+import 'package:slidesync/features/manage/domain/usecases/contents/retrieve_content_uc.dart';
 import 'package:slidesync/features/manage/presentation/contents/actions/modify_content_card_actions.dart';
 import 'package:slidesync/shared/helpers/widget_helper.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 import 'package:slidesync/shared/widgets/common/modifying_list_tile.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/progress_indicator/circular_loading_indicator.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
-import 'package:slidesync/shared/widgets/progress_indicator/loading_view.dart';
 
 class ModContentCardTile extends ConsumerStatefulWidget {
   final CourseContent content;
@@ -29,15 +32,17 @@ class ModContentCardTile extends ConsumerStatefulWidget {
 }
 
 class _ModContentCardTileState extends ConsumerState<ModContentCardTile> {
-  late final Future<FileDetails> previewDetailsFuture;
+  Future<PreviewLinkDetails?>? previewDetailsFuture;
   late final StreamProvider contentProvider;
   @override
   void initState() {
     super.initState();
-    previewDetailsFuture = ContentCardActions.resolvePreviewPath(widget.content);
     contentProvider = StreamProvider.autoDispose((ref) async* {
       yield* CourseContentRepo.watchByDbId(widget.content.id);
     });
+    if (widget.content.courseContentType == CourseContentType.link) {
+      previewDetailsFuture = RetriveContentUc.getLinkPreviewData(widget.content.path.urlPath);
+    }
   }
 
   @override
@@ -48,23 +53,39 @@ class _ModContentCardTileState extends ConsumerState<ModContentCardTile> {
       padding: EdgeInsets.only(bottom: 16),
       child: ModifyingListTile(
         onTapTile: widget.onTap,
-        leading:
-        FutureBuilder(future: previewDetailsFuture, builder: (context, dataSnapshot){
-          if(dataSnapshot.data != null && dataSnapshot.hasData){
-            return  BuildImagePathWidget(
-            fileDetails: dataSnapshot.data!,
-            fit: BoxFit.cover,
-            fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, false), size: 36),
-          );
-          }else if(dataSnapshot.hasError){
-            return BuildImagePathWidget(
-            fileDetails: FileDetails(),
-            fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, false), size: 36),
-          );
-          }else{
-return LoadingView(msg: '');
-          }
-        }),
+        leading: widget.content.courseContentType == CourseContentType.link
+            ? FutureBuilder(
+                future: previewDetailsFuture,
+                builder: (context, dataSnapshot) {
+                  if (dataSnapshot.data != null && dataSnapshot.hasData) {
+                    final previewUrl = dataSnapshot.data!.previewUrl;
+                    return BuildImagePathWidget(
+                      fileDetails: previewUrl != null ? FileDetails(urlPath: previewUrl) : FileDetails(),
+                      fit: BoxFit.cover,
+                      fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, false), size: 36),
+                    );
+                  } else if (dataSnapshot.hasError) {
+                    return BuildImagePathWidget(
+                      fileDetails: FileDetails(),
+                      fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, false), size: 36),
+                    );
+                  } else {
+                    return const CircularLoadingIndicator();
+                  }
+                },
+              )
+            : BuildImagePathWidget(
+                fileDetails:
+                    Result.tryRun(() {
+                      return FileDetails(
+                        filePath: content.previewPath != null
+                            ? content.previewPath as String
+                            : CreateContentPreviewImage.genRelativePreviewPath(filePath: content.path.filePath) ?? '',
+                      );
+                    }).data ??
+                    FileDetails(),
+                fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, false), size: 36),
+              ),
         trailing: widget.isSelected == null
             ? AppPopupMenuButton(
                 actions: [
@@ -99,6 +120,28 @@ return LoadingView(msg: '');
                   ? Icon(Icons.check_circle_rounded, size: 32, color: ref.primary)
                   : Icon(Icons.circle, size: 32, color: ref.onSurface.withAlpha(150))),
         title: content.title,
+        titleWidget: FutureBuilder(
+          future: previewDetailsFuture,
+          builder: (context, asyncSnapshot) {
+            if (asyncSnapshot.hasData && asyncSnapshot.data != null) {
+              final previewTitle = asyncSnapshot.data!.title;
+              return CustomText(
+                previewTitle ?? content.title,
+                fontWeight: FontWeight.bold,
+                fontSize: 13.5,
+                color: ref.onBackground,
+                overflow: TextOverflow.fade,
+              );
+            }
+            return CustomText(
+              content.title,
+              fontWeight: FontWeight.bold,
+              fontSize: 13.5,
+              color: ref.onBackground,
+              overflow: TextOverflow.fade,
+            );
+          },
+        ),
         subtitle:
             widget.content.courseContentType.name.substring(0, 1).toUpperCase() +
             widget.content.courseContentType.name.substring(1),

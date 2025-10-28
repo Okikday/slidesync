@@ -44,7 +44,7 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
   int? lastUpdatedPage;
 
   // Read validity duration constant
-  static const Duration readValidityDuration = Duration(seconds: 10);
+  static const Duration readValidityDuration = Duration(seconds: 13);
 
   PdfDocViewerState(this.ref, this.contentId) {
     controller = PdfViewerController();
@@ -198,7 +198,7 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
           return;
         }
 
-        if (lastUpdatedPage == null) return;
+        if (lastUpdatedPage == pageNumber) return;
 
         isUpdatingProgressTrack = true;
 

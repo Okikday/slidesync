@@ -134,7 +134,17 @@ class _RecentDialogState extends ConsumerState<RecentDialog> {
                                     color: theme.onBackground,
                                   ),
                                   ConstantSizing.columnSpacingSmall,
-                                  CustomText("Short detail", fontSize: 12.0, color: theme.supportingText),
+                                  SizedBox(
+                                    height: 16,
+                                    child: CustomText(
+                                      widget.recentDialogModel.description.isEmpty
+                                          ? "No description"
+                                          : widget.recentDialogModel.description,
+                                      overflow: TextOverflow.ellipsis,
+                                      fontSize: 12.0,
+                                      color: theme.supportingText,
+                                    ),
+                                  ),
                                 ],
                               ),
                             ),

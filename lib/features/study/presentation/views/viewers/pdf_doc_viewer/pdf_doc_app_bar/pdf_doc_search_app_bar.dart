@@ -6,15 +6,31 @@ import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class PdfDocSearchAppBar extends ConsumerStatefulWidget {
-  const PdfDocSearchAppBar({super.key, required this.contentId, required this.focusNode});
+  const PdfDocSearchAppBar({super.key, required this.contentId});
   final String contentId;
-  final FocusNode focusNode;
 
   @override
   ConsumerState<PdfDocSearchAppBar> createState() => _PdfDocSearchAppBarState();
 }
 
 class _PdfDocSearchAppBarState extends ConsumerState<PdfDocSearchAppBar> {
+  late final FocusNode focusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    focusNode = FocusNode();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      focusNode.requestFocus();
+    });
+  }
+
+  @override
+  void dispose() {
+    focusNode.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = ref.theme;
@@ -34,7 +50,7 @@ class _PdfDocSearchAppBarState extends ConsumerState<PdfDocSearchAppBar> {
             child: AppBackButton(
               onPressed: () {
                 final pdsa = ref.read(pdsaP);
-                widget.focusNode.unfocus();
+                focusNode.unfocus();
                 pdsa.setSearching(false);
               },
             ),
@@ -48,7 +64,7 @@ class _PdfDocSearchAppBarState extends ConsumerState<PdfDocSearchAppBar> {
                     child: CustomTextfield(
                       autoDispose: false,
                       controller: pdsa.searchController,
-                      focusNode: widget.focusNode,
+                      focusNode: focusNode,
                       hint: "Search in document...",
                       textInputAction: pdsa.textSearcher == null ? TextInputAction.search : TextInputAction.next,
                       onTapOutside: () {},

@@ -308,6 +308,7 @@ class _CourseDetailsHeaderTitleState extends ConsumerState<CourseDetailsHeaderTi
     final textWidget = Tooltip(
       message: widget.courseName,
       triggerMode: TooltipTriggerMode.tap,
+      showDuration: 4.inSeconds,
       child: CustomText(
         widget.courseName,
         fontSize: 16,

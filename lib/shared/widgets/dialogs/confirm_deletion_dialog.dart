@@ -29,7 +29,7 @@ class ConfirmDeletionDialog extends ConsumerWidget {
     return AppAlertDialog(
       title: title,
       content: content,
-
+      onCancel: null,
       backgroundColor: theme.background.withValues(alpha: 0.9),
       onPop: onPop,
       actions: [

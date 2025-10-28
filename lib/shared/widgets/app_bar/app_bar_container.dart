@@ -87,12 +87,10 @@ class _AppBarContainerWidget extends ConsumerWidget {
       clipBehavior: Clip.hardEdge,
       height: (appBarHeight ?? (kToolbarHeight + 8 + topPadding)),
       decoration: BoxDecoration(
-        color: scaffoldBgColor ?? context.scaffoldBackgroundColor.withValues(alpha: 0.9),
+        color: scaffoldBgColor ?? context.scaffoldBackgroundColor,
         border: Border(
           bottom: BorderSide(
-            color:
-                scaffoldBgColor ??
-                (context.scaffoldBackgroundColor).lightenColor(ref.isDarkMode ? 0.15 : 0.85).withValues(alpha: 0.9),
+            color: scaffoldBgColor ?? (context.scaffoldBackgroundColor).lightenColor(ref.isDarkMode ? 0.15 : 0.85),
           ),
         ),
       ),

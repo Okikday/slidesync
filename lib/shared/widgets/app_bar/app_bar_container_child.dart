@@ -34,6 +34,7 @@ class AppBarContainerChild extends ConsumerWidget {
     return Tooltip(
       triggerMode: TooltipTriggerMode.tap,
       message: tooltipMessage ?? title,
+      showDuration: 4.inSeconds,
       child: Row(
         children: [
           AppBackButton(onPressed: onBackButtonClicked),

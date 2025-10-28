@@ -13,13 +13,14 @@ class AppAlertDialog extends ConsumerWidget {
   final void Function()? onConfirm;
   final void Function()? onPop;
   final Color? backgroundColor;
+
   const AppAlertDialog({
     super.key,
     required this.title,
     required this.content,
     this.onPop,
     this.actions = const [],
-    this.onCancel,
+    required this.onCancel,
     this.onConfirm,
     this.backgroundColor,
   });
@@ -55,17 +56,18 @@ class AppAlertDialog extends ConsumerWidget {
                 ...actions.map((e) => Flexible(child: e)),
                 if (actions.isEmpty)
                   ...[
-                    CustomElevatedButton(
-                      label: "Cancel",
-                      textSize: 14,
-                      pixelHeight: 44,
-                      textColor: Colors.red,
-                      backgroundColor: Colors.red.withAlpha(40),
-                      borderRadius: ConstantSizing.borderRadiusCircle,
-                      onClick: () {
-                        if (onCancel != null) onCancel!();
-                      },
-                    ),
+                    if (onCancel != null)
+                      CustomElevatedButton(
+                        label: "Cancel",
+                        textSize: 14,
+                        pixelHeight: 44,
+                        textColor: Colors.red,
+                        backgroundColor: Colors.red.withAlpha(40),
+                        borderRadius: ConstantSizing.borderRadiusCircle,
+                        onClick: () {
+                          if (onCancel != null) onCancel!();
+                        },
+                      ),
                     CustomElevatedButton(
                       label: "Confirm",
                       textSize: 14,

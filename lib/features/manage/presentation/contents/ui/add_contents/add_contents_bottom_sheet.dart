@@ -56,15 +56,18 @@ class _AddContentsBottomSheetState extends ConsumerState<AddContentsBottomSheet>
               alignment: Alignment.bottomCenter,
               child:
                   AddContentCardSection(
-                    fixedExtentScrollController: fixedExtentScrollController,
-                    collection: widget.collection,
-                  ).animate().scale(
-                    alignment: Alignment.bottomRight,
-                    begin: Offset(0.9, 0.6),
-                    end: Offset(1, 1),
-                    duration: Durations.extralong1,
-                    curve: CustomCurves.bouncySpring,
-                  ),
+                        fixedExtentScrollController: fixedExtentScrollController,
+                        collection: widget.collection,
+                      )
+                      .animate()
+                      .scale(
+                        alignment: Alignment.bottomRight,
+                        begin: Offset(0.6, 0.6),
+                        end: Offset(1, 1),
+                        duration: Durations.extralong1,
+                        curve: CustomCurves.bouncySpring,
+                      )
+                      .fadeIn(),
               // .scaleY(begin: canPop ? 0.8 : 1, end: canPop ? 1 : 0.8),
             ),
           ),
@@ -167,7 +170,14 @@ class AddContentCardSection extends ConsumerWidget {
                     children: [
                       Flexible(
                         child: CustomElevatedButton(
-                          onClick: () async {},
+                          onClick: () async {
+                            AddContentsActions.onClickToAddContent(
+                              context,
+                              collection: collection,
+                              type: typeMap[0]!,
+                              selectByFolder: true,
+                            );
+                          },
                           backgroundColor: theme.altBackgroundSecondary,
                           pixelHeight: 40,
                           borderRadius: 16,

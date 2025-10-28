@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:slidesync/core/base/use_value_notifier.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
@@ -153,18 +154,15 @@ class PdfDocSearchState with ValueNotifierFactoryMixin {
         builder: (context) => AppAlertDialog(
           title: 'Search Result',
           content: 'No more occurrences found. Would you like to continue searching from the beginning?',
-          actions: [
-            TextButton(
-              onPressed: () async {
-                Navigator.of(context).pop();
-                if (textSearcher == null) return;
-                await textSearcher!.goToMatchOfIndex(0);
-                _incrementTick();
-              },
-              child: const Text('YES'),
-            ),
-            TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('NO')),
-          ],
+          onCancel: () {
+            context.pop();
+          },
+          onConfirm: () async {
+            Navigator.of(context).pop();
+            if (textSearcher == null) return;
+            await textSearcher!.goToMatchOfIndex(0);
+            _incrementTick();
+          },
         ),
       ),
     );

@@ -3,7 +3,6 @@ import 'dart:collection';
 import 'dart:developer';
 import 'dart:math' as math;
 
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:isar/isar.dart';
@@ -14,6 +13,7 @@ import 'package:slidesync/core/base/leak_prevention.dart';
 import 'package:slidesync/core/utils/smart_isolate.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 const int limit = 20;
 
@@ -36,6 +36,7 @@ class CourseMaterialsPagination extends LeakPrevention {
   bool _isStopping = false;
 
   CourseMaterialsPagination._(this.parentId, {required this.sortOption}) {
+    log("Initialized course materials pagination");
     pagingController = PagingController(
       getNextPageKey: getNextPageKey,
       fetchPage: (pageKey) => fetchPage(pageKey, limit),
@@ -90,15 +91,22 @@ class CourseMaterialsPagination extends LeakPrevention {
   }
 
   Future<List<CourseContent>> fetchPage(int pageKey, int limit) async {
+    if (isFirstTime || _isolate == null) {
+      if (isFirstTime) {
+        log("isFirstTime");
+        await Future.delayed(450.inMs);
+        log("Done waiting");
+        isFirstTime = false;
+      }
+      await init();
+    }
     if (_isStopping) return [];
     if (count <= 0) count = await (await CourseContentRepo.filter).parentIdEqualTo(parentId).count();
+
     if (isFirstTime || _isolate == null) await init();
     if (_isStopping || _isolate == null) return [];
     log(("isIsolate value : $_isolate"));
-    if (isFirstTime && pageKey == 0) {
-      await Future.delayed(Durations.extralong1);
-      isFirstTime = false;
-    }
+
     if (isFirstTime) isFirstTime = false;
     if (_fetching) {
       final completer = Completer<List<CourseContent>>();

@@ -190,6 +190,7 @@ class _ModifyCourseHeaderTitle extends ConsumerWidget {
           child: Tooltip(
             message: title,
             triggerMode: TooltipTriggerMode.tap,
+            showDuration: 4.inSeconds,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: CustomText(title, fontSize: 20, fontWeight: FontWeight.bold, color: theme.onBackground),

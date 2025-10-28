@@ -33,7 +33,6 @@ class HomeDrawer extends ConsumerWidget {
                       radius: 40,
                       backgroundColor: theme.altBackgroundPrimary,
                       backgroundImage: CachedNetworkImageProvider(asyncSnapshot.data!.data!.photoURL!),
-                      child: Icon(Iconsax.user, color: theme.supportingText),
                     );
                   }
                   return CircleAvatar(

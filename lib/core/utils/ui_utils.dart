@@ -2,8 +2,11 @@ import 'package:another_flushbar/flushbar.dart';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/dialogs/app_customizable_dialog.dart';
+import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 
 export 'package:another_flushbar/flushbar.dart';
 
@@ -36,16 +39,54 @@ class UiUtils {
     Color? backgroundColor,
     Color? barrierColor,
     Offset? blurSigma,
+    void Function()? onClickOutside,
   }) async {
-    final normalColor = context.theme.colorScheme.onSurface;
-    final bgColor = context.scaffoldBackgroundColor.withValues(alpha: 0.9);
-    await CustomDialog.showLoadingDialog(
+    final theme = context.theme;
+    final normalColor = theme.colorScheme.onSurface;
+    final bgColor = theme.scaffoldBackgroundColor.withValues(alpha: 0.8);
+    await CustomDialog.show(
       context,
       canPop: canPop,
-      msg: message,
-      msgTextColor: normalColor,
-      progressIndicatorColor: context.theme.colorScheme.primary,
-      backgroundColor: backgroundColor ?? bgColor,
+      child:
+          AppCustomizableDialog(
+                onPop: onClickOutside ?? (canPop ? null : () {}),
+                backgroundColor: bgColor,
+                size: Size(300, 300),
+                leading: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: LoadingLogo(size: 50, color: theme.colorScheme.secondary),
+                  ),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ConstantSizing.columnSpacing(4),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                            child: CustomText(message, color: normalColor),
+                          ),
+                        ),
+                      ],
+                    ),
+                    ConstantSizing.columnSpacing(12),
+                  ],
+                ),
+              )
+              .animate()
+              .fadeIn()
+              .scaleXY(
+                begin: 0.4,
+                end: 1,
+                alignment: Alignment.bottomCenter,
+                duration: Duration(milliseconds: 500),
+                curve: CustomCurves.defaultIosSpring,
+              )
+              .moveX(begin: 40, end: 0),
       barrierColor: barrierColor ?? Colors.black.withAlpha(140),
       transitionDuration: Durations.medium2,
       blurSigma: blurSigma,
@@ -104,6 +145,8 @@ class UiUtils {
       borderRadius: BorderRadius.circular(ConstantSizing.borderRadiusCircle),
       borderColor: colors[0].withValues(alpha: 0.2),
       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      maxWidth: 500,
+
       margin:
           margin ??
           (flushbarPosition == FlushbarPosition.TOP

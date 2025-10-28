@@ -1,5 +1,8 @@
 import 'dart:convert';
+import 'dart:math' as math;
 
+import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/core/utils/file_utils.dart';
@@ -11,9 +14,20 @@ import 'package:slidesync/features/main/presentation/home/actions/recent_dialog_
 class ModifyContentUc {
   Future<String?> deleteContent(CourseContent content) async {
     final bool dupHashExists = await CourseContentRepo.doesDuplicateHashExists(content.contentHash);
+    final fileSize = content.fileSize;
     await CourseContentRepo.deleteContent(content);
     await RecentDialogActions.removeIdFromRecents(content.contentId);
     await ContentTrackRepo.deleteByContentId(content.contentId);
+    if (!dupHashExists) {
+      await Result.tryRunAsync(() async {
+        final prevFileSum = await AppHiveData.instance.getData<int?>(key: HiveDataPathKey.globalFileSizeSum.name);
+        if (prevFileSum == null) return;
+        await AppHiveData.instance.setData<int>(
+          key: HiveDataPathKey.globalFileSizeSum.name,
+          value: math.max((prevFileSum - fileSize), 0),
+        );
+      });
+    }
 
     if (!dupHashExists) {
       await FileUtils.deleteFileAtPath(content.path.filePath);

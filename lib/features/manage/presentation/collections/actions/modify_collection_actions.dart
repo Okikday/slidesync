@@ -20,6 +20,10 @@ class ModifyCollectionActions {
     if (course == null) {
       return "Couldn't find course!";
     }
+    await course.collections.load();
+    if (course.collections.length >= 30) {
+      return "Collections under a course must be under 30";
+    }
     final newCollection = CourseCollection.create(parentId: course.courseId, collectionTitle: title);
     final String? result = await CourseCollectionRepo.addCollectionNoDuplicateTitle(newCollection);
     return result;

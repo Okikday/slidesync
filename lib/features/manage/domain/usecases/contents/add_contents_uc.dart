@@ -68,6 +68,7 @@ class AddContentsUc {
     required CourseCollection collection,
     required CourseContentType type,
     ValueNotifier<String>? valueNotifier,
+    bool selectByFolder = false,
   }) async {
     log("Consulting add to collections...");
     final Result<dynamic> outcome = await Result.tryRunAsync(() async {
@@ -77,7 +78,7 @@ class AddContentsUc {
       }
       UiUtils.showLoadingDialog(rootNavigatorKey.currentContext!, message: "Consulting system selection");
 
-      final selectedContents = await SelectContentsUc().referToAddContents(type);
+      final selectedContents = await SelectContentsUc().referToAddContents(type, selectByFolder: selectByFolder);
       valueNotifier?.value = "Scanning contents";
       if (rootNavigatorKey.currentContext!.mounted) {
         Navigator.pop(rootNavigatorKey.currentContext!);

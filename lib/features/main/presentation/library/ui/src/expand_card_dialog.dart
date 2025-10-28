@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/features/manage/presentation/courses/actions/modify_course_actions.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/routes/routes.dart';
@@ -85,13 +86,13 @@ class ExpandCardDialog extends ConsumerWidget {
                         spacing: 12,
                         children: [
                           SizedBox.square(
-                            dimension: 60,
+                            dimension: DeviceUtils.isDesktop() ? 60 : 50,
                             child: Stack(
                               clipBehavior: Clip.hardEdge,
                               fit: StackFit.expand,
                               children: [
                                 CircleAvatar(
-                                  radius: dimension / 2 - 3,
+                                  radius: 60,
                                   backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.4),
                                   child: ClipOval(
                                     child: CircleAvatar(
@@ -118,7 +119,7 @@ class ExpandCardDialog extends ConsumerWidget {
                                       value: 0.01,
                                       strokeCap: StrokeCap.round,
                                       color: theme.primaryColor,
-                                      backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.6),
+                                      // backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.6),
                                     ),
                                   ),
                                 ),

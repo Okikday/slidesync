@@ -14,7 +14,10 @@ class ModifyContentsAction {
     final content = await CourseContentRepo.getByContentId(contentId);
     if (content == null) return "Couldn't find content";
     final Result<String?> delOutcome = await Result.tryRunAsync(
-      () async => await ModifyContentUc().deleteContent(content),
+      () async {
+        return await ModifyContentUc().deleteContent(content);
+        
+      },
     );
     Navigator.pop(rootNavigatorKey.currentContext!);
 
