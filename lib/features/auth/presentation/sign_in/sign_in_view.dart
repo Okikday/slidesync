@@ -4,6 +4,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:slidesync/features/ask_ai/presentation/ui/widgets/shimmery_gradient_background.dart';
 
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/file_utils.dart';
@@ -80,34 +81,7 @@ class SignInView extends ConsumerWidget {
                         canPop: false,
                         blurSigma: Offset(2, 2),
                         transitionType: TransitionType.fade,
-                        child: Stack(
-                          fit: StackFit.expand,
-                          alignment: Alignment.center,
-                          children: [
-                            Positioned.fill(
-                              child: OrganicBackgroundEffect(
-                                gradientColors: [theme.primaryColor, Color(0xFF008080)],
-                                gradientOpacity: 0.1,
-                              ),
-                            ),
-                            Positioned.fill(
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                mainAxisSize: MainAxisSize.min,
-                                spacing: 12,
-                                children: [
-                                  LoadingLogo(color: theme.primary, size: 120, rotate: false),
-                                  CustomText(
-                                    "Signing you in...Just a moment",
-                                    color: theme.onPrimary,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
+                        child: const SigningInDialog(),
                       );
                       final auth = FirebaseGoogleAuth();
                       final result = await auth.signInWithGoogle();
@@ -135,6 +109,44 @@ class SignInView extends ConsumerWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class SigningInDialog extends ConsumerStatefulWidget {
+  const SigningInDialog({super.key});
+
+  @override
+  ConsumerState<SigningInDialog> createState() => _SigningInDialogState();
+}
+
+class _SigningInDialogState extends ConsumerState<SigningInDialog> with SingleTickerProviderStateMixin {
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref;
+    return Stack(
+      fit: StackFit.expand,
+      alignment: Alignment.center,
+      children: [
+        Positioned.fill(child: ShimmeryGradientBackground()),
+        Positioned.fill(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            spacing: 12,
+            children: [
+              LoadingLogo(color: theme.primary, size: 120, rotate: false),
+              CustomText(
+                "Signing you in...Just a moment",
+                color: theme.onPrimary,
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io' show Platform;
 
+import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -55,7 +56,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
 
   @override
   void didChangePlatformBrightness() async {
-    log("Brightness changed");
+    _enforceImmersiveMode();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final isAdaptiveBrightness = (await ref.readSettings).useSystemBrightness;
       if (isAdaptiveBrightness) {
@@ -65,27 +66,23 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     super.didChangePlatformBrightness();
   }
 
-  @override
-  Future<bool> didPopRoute() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final isFocusMode = ref.read(MainProvider.isFocusModeProvider);
-      if (isFocusMode) {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-      }
-    });
-
-    return super.didPopRoute();
+  void _enforceImmersiveMode() {
+    final isFocusMode = ref.read(MainProvider.isFocusModeProvider);
+    if (isFocusMode) {
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+    }
   }
 
   @override
-  void didChangeDependencies() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final isFocusMode = ref.read(MainProvider.isFocusModeProvider);
-      if (isFocusMode) {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-      }
-    });
-    super.didChangeDependencies();
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _enforceImmersiveMode();
+    }
+  }
+
+  @override
+  void didChangeMetrics() {
+    _enforceImmersiveMode();
   }
 
   @override
@@ -168,21 +165,17 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
 
   Future<void> _showSavingBottomSheet(List<String> files) async {
     UiUtils.showFlushBar(context, msg: "Received contents!");
-    GlobalNav.withContextAsync(
-      (context) async => await showModalBottomSheet(
-        context: context,
-        showDragHandle: true,
-        isScrollControlled: true,
-        backgroundColor: ref.background,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.only(topLeft: Radius.circular(40), topRight: Radius.circular(40)),
+    GlobalNav.withContextAsync<bool>((context) async {
+      final pushRes = await Navigator.of(context).push(
+        PageAnimation.pageRouteBuilder(
+          MoveOrStoreContentBottomSheet.store(files: files),
+          type: TransitionType.rightToLeftWithFade,
         ),
-        builder: (context) {
-          return MoveOrStoreContentBottomSheet.store(files: files);
-        },
-      ),
-    ).then((_) {
-      GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "Saving contents"));
+      );
+      if (pushRes is bool) return pushRes;
+      return false;
+    }).then((res) {
+      if (res == true) GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "Saved contents"));
     });
   }
 }

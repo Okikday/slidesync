@@ -4,12 +4,15 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/main/presentation/library/ui/src/library_tab_view_app_bar/build_button.dart';
+import 'package:slidesync/features/study/presentation/actions/content_view_gate_actions.dart';
+import 'package:slidesync/routes/routes.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
@@ -205,7 +208,7 @@ class _RecentDialogState extends ConsumerState<RecentDialog> {
   }
 }
 
-class RecentDialogSelectionOptions extends StatelessWidget {
+class RecentDialogSelectionOptions extends ConsumerWidget {
   const RecentDialogSelectionOptions({super.key, required this.divider, required this.theme, required this.widget});
 
   final Divider divider;
@@ -213,7 +216,7 @@ class RecentDialogSelectionOptions extends StatelessWidget {
   final RecentDialog widget;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -233,11 +236,41 @@ class RecentDialogSelectionOptions extends StatelessWidget {
         divider,
 
         BuildPlainActionButton(
+          title: "Open Outside App",
+          icon: Icon(Icons.send_to_mobile_outlined, size: 24, color: theme.supportingText),
+          textStyle: TextStyle(fontSize: 16, color: theme.onBackground),
+          onTap: () async {
+            final content = await CourseContentRepo.getByContentId(widget.recentDialogModel.contentId);
+            if (content == null) return;
+            ContentViewGateActions.redirectToViewer(ref, content, popBefore: true, openOutsideApp: true);
+          },
+        ),
+
+        divider,
+
+        BuildPlainActionButton(
           title: "Share",
           icon: Icon(Icons.share_outlined, size: 24, color: theme.supportingText),
           textStyle: TextStyle(fontSize: 15, color: theme.onBackground),
           onTap: () {
             if (widget.recentDialogModel.onShare != null) widget.recentDialogModel.onShare!();
+          },
+        ),
+
+        divider,
+
+        BuildPlainActionButton(
+          title: "Go to collection",
+          icon: Icon(Iconsax.star, size: 24, color: theme.supportingText),
+          textStyle: TextStyle(fontSize: 16, color: theme.onBackground),
+          onTap: () async {
+            final content = await CourseContentRepo.getByContentId(widget.recentDialogModel.contentId);
+            if (content == null) return;
+            final collection = await CourseCollectionRepo.getById(content.parentId);
+            if (collection == null) return;
+            GlobalNav.withContext((c) {
+              (context.mounted ? context : c).pushReplacementNamed(Routes.courseMaterials.name, extra: collection);
+            });
           },
         ),
 

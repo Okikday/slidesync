@@ -56,7 +56,7 @@ class AddContentsUc {
     log("Done");
     final resultList = result.map((e) => AddContentResult.fromMap(e)).toList();
 
-    await AppHiveData.instance.setData(
+    await AppHiveData.instance.setData<int>(
       key: HiveDataPathKey.globalFileSizeSum.name,
       value: resultList.fold<int>(0, (prev, next) => prev + (next.fileSize ?? 0)),
     );

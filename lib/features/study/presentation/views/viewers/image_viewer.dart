@@ -54,6 +54,7 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
                         ref.read(imageViewerStateProvider).toggleAppBarVisible();
                       },
                       controller: ref.watch(imageViewerStateProvider.select((s) => s.controller)),
+                      filterQuality: FilterQuality.high,
                       imageProvider: widget.content.path.fileDetails.containsFilePath
                           ? FileImage(File(widget.content.path.filePath))
                           : NetworkImage(widget.content.path.urlPath),
@@ -84,13 +85,13 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
                             },
                           ),
 
-                           PopupMenuAction(
-                              title: "Share",
-                              iconData: Icons.share_rounded,
-                              onTap: () async {
-                                ShareContentActions.shareFileContent(context, widget.content.contentId);
-                              },
-                            ),
+                          PopupMenuAction(
+                            title: "Share",
+                            iconData: Icons.share_rounded,
+                            onTap: () async {
+                              ShareContentActions.shareFileContent(context, widget.content.contentId);
+                            },
+                          ),
 
                           PopupMenuAction(
                             title: "Invoke Study AI",

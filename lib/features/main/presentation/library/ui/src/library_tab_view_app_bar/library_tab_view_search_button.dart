@@ -108,7 +108,7 @@ class LibraryTabViewSearchButton extends ConsumerWidget {
                         value as Course,
                         false,
                         onTap: (course) {
-                          controller.closeView("");
+                          // controller.closeView("");
                           CourseCardActions.of(ref).onTapCourseCard(course);
                         },
                       ),
@@ -119,7 +119,7 @@ class LibraryTabViewSearchButton extends ConsumerWidget {
                           title: (value as CourseCollection).collectionTitle,
                           contentCount: (value).contents.length,
                           onTap: () async {
-                            controller.closeView("");
+                            // controller.closeView("");
                             final curr = value;
                             final parent = await CourseRepo.getCourseById(curr.parentId);
                             if (parent == null) return;
@@ -127,7 +127,7 @@ class LibraryTabViewSearchButton extends ConsumerWidget {
                           },
                         ),
                       ),
-                      2 => CourseMaterialListCard(content: value as CourseContent),
+                      2 => CourseMaterialListCard(content: value as CourseContent, showGoToCollection: true),
                       _ => const SizedBox(),
                     };
                   },

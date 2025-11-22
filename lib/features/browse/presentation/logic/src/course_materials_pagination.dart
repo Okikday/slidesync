@@ -94,7 +94,7 @@ class CourseMaterialsPagination extends LeakPrevention {
     if (isFirstTime || _isolate == null) {
       if (isFirstTime) {
         log("isFirstTime");
-        await Future.delayed(450.inMs);
+        await Future.delayed(350.inMs);
         log("Done waiting");
         isFirstTime = false;
       }

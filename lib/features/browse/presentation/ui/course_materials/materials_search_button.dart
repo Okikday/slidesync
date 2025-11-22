@@ -54,6 +54,7 @@ class MaterialsSearchButton extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: CourseMaterialListCard(
                 content: searchResults[i],
+                showGoToCollection: true,
                 onTapCard: () {
                   context.pop();
                   context.pushNamed(Routes.contentGate.name, extra: searchResults[i]);

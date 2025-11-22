@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:developer';
 
@@ -114,6 +115,8 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
     } else {
       return await _updateProgressTrack(
         ptm.copyWith(
+          title: content.title,
+          description: content.description,
           lastRead: DateTime.now(),
           pages: ptm.pages.isEmpty ? const ["1"] : ptm.pages,
           metadataJson: jsonEncode(<String, dynamic>{
@@ -209,7 +212,11 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
           return;
         }
 
-        final newPages = <String>{...progressTrack!.pages, prevPageNumber.toString()}.toList();
+        final newPages =
+            (LinkedHashSet<String>.from(progressTrack!.pages)
+                  ..remove(prevPageNumber.toString())
+                  ..add(prevPageNumber.toString()))
+                .toList();
         final totalPageCount = controller.pageCount;
 
         await _updateProgressTrack(
@@ -237,12 +244,13 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
           return;
         }
         log("Updating page: $pageNumber");
+        final LinkedHashSet<String> pagesToAdd = LinkedHashSet<String>.from(currentProgressTrack.pages)
+          ..remove(pageNumber.toString())
+          ..add(pageNumber.toString());
         await _updateProgressTrack(
           currentProgressTrack.copyWith(
             lastRead: DateTime.now(),
-            pages: currentProgressTrack.pages.isEmpty
-                ? const ["1"]
-                : [...currentProgressTrack.pages, if (pageNumber != null) pageNumber.toString()],
+            pages: currentProgressTrack.pages.isEmpty ? const ["1"] : pagesToAdd.toList(),
           ),
         );
 

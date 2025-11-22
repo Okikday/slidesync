@@ -97,7 +97,7 @@ class _LibrarySearchViewState extends ConsumerState<LibrarySearchView> {
                                 itemBuilder: (context, index) {
                                   return Padding(
                                     padding: const EdgeInsets.only(bottom: 8.0),
-                                    child: CourseMaterialListCard(content: contents[index]),
+                                    child: CourseMaterialListCard(content: contents[index], showGoToCollection: true,),
                                   );
                                 },
                               );

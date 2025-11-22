@@ -10,6 +10,7 @@ import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/features/browse/presentation/ui/course_materials/content_card.dart';
 import 'package:slidesync/features/manage/domain/usecases/contents/retrieve_content_uc.dart';
@@ -30,8 +31,15 @@ class CourseMaterialListCard extends ConsumerStatefulWidget {
   final CourseContent content;
   final void Function()? onTapCard;
   final void Function()? onLongPressed;
+  final bool showGoToCollection;
 
-  const CourseMaterialListCard({super.key, required this.content, this.onTapCard, this.onLongPressed});
+  const CourseMaterialListCard({
+    super.key,
+    required this.content,
+    this.onTapCard,
+    this.onLongPressed,
+    this.showGoToCollection = false,
+  });
 
   @override
   ConsumerState<CourseMaterialListCard> createState() => _CourseMaterialListCardState();
@@ -92,7 +100,7 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
       if (content.courseContentType != CourseContentType.link)
         CourseMaterialListCardActionModel(
           label: "Open Outside app",
-          icon: Iconsax.send,
+          icon: Icons.send_to_mobile_outlined,
           onTap: () {
             ContentViewGateActions.redirectToViewer(ref, content, popBefore: false, openOutsideApp: true);
           },
@@ -102,8 +110,10 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
           label: "View link",
           icon: Icons.remove_red_eye_outlined,
           onTap: () {
-            final previewDetailsFuture = widget.content.courseContentType == CourseContentType.link ? RetriveContentUc.getLinkPreviewData(widget.content.path.urlPath) : null;
-           
+            final previewDetailsFuture = widget.content.courseContentType == CourseContentType.link
+                ? RetriveContentUc.getLinkPreviewData(widget.content.path.urlPath)
+                : null;
+
             UiUtils.showCustomDialog(
               context,
               child: PreviewLinkTypeDialog(previewDetailsFuture: previewDetailsFuture, content: content),
@@ -119,9 +129,23 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
             Clipboard.setData(ClipboardData(text: content.path.fileDetails.urlPath));
           },
         ),
+
+      if (widget.showGoToCollection)
+        CourseMaterialListCardActionModel(
+          label: "Go to Collection",
+          icon: Iconsax.star,
+          onTap: () async {
+            final content = widget.content;
+            final collection = await CourseCollectionRepo.getById(content.parentId);
+            if (collection == null) return;
+            GlobalNav.withContext((c) {
+              (context.mounted ? context : c).pushReplacementNamed(Routes.courseMaterials.name, extra: collection);
+            });
+          },
+        ),
       CourseMaterialListCardActionModel(
         label: "Rename",
-        icon: Iconsax.send,
+        icon: Icons.drive_file_rename_outline_rounded,
         onTap: () {
           ModifyContentCardActions.onRenameContent(context, content);
         },

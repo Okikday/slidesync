@@ -38,7 +38,7 @@ class ImageViewerState with ValueNotifierFactoryMixin {
   ContentTrack? progressTrack;
 
   // Read validity duration constant
-  static const Duration readValidityDuration = Duration(seconds: 10);
+  static const Duration readValidityDuration = Duration(seconds: 40);
 
   ImageViewerState(this.ref, this.contentId) {
     isAppBarVisibleNotifier = useValueNotifier(true);

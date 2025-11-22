@@ -1,4 +1,3 @@
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -73,7 +72,7 @@ class AppBarTranslateTweenBuilder extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return TweenAnimationBuilder(
-      duration: 500.inMs,
+      duration: 350.inMs,
       curve: CustomCurves.decelerate,
       tween: Tween<double>(
         begin: isAppBarVisible ? (context.topPadding + kToolbarHeight + 8.0) : 0.0,

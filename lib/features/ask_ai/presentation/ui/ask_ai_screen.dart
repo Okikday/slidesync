@@ -16,15 +16,15 @@ class AskAiScreen extends ConsumerStatefulWidget {
 }
 
 class _AskAiScreenState extends ConsumerState<AskAiScreen> with SingleTickerProviderStateMixin {
-  late final AnimationController animationController;
-  late final Animation<double> gradientAnimation;
+  // late final AnimationController animationController;
+  // late final Animation<double> gradientAnimation;
 
   @override
   void initState() {
     super.initState();
-    animationController = AnimationController(vsync: this, duration: const Duration(seconds: 2));
-    gradientAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(animationController);
-    animationController.loop(reverse: true);
+    // animationController = AnimationController(vsync: this, duration: const Duration(seconds: 2));
+    // // gradientAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(animationController);
+    // animationController.loop(reverse: true);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
       // Future.microtask(
@@ -36,7 +36,7 @@ class _AskAiScreenState extends ConsumerState<AskAiScreen> with SingleTickerProv
   @override
   void dispose() {
     WidgetsBinding.instance.addPostFrameCallback((_) => SystemChrome.setPreferredOrientations([]));
-    animationController.dispose();
+    // animationController.dispose();
     super.dispose();
   }
 
@@ -50,7 +50,7 @@ class _AskAiScreenState extends ConsumerState<AskAiScreen> with SingleTickerProv
         child: Stack(
           alignment: Alignment.bottomCenter,
           children: [
-            ShimmeryGradientBackground(gradientAnimation: gradientAnimation),
+            const ShimmeryGradientBackground(),
             Positioned(top: 24, right: 12, child: CloseButton()),
             Positioned(top: (context.topPadding + 12) * 2, child: const AiScreenCaptureButton()),
             SingleChildScrollView(

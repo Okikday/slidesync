@@ -1,11 +1,15 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
+import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/features/browse/presentation/logic/course_materials_provider.dart';
 import 'package:slidesync/features/browse/presentation/ui/course_materials/materials_search_button.dart';
+import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_customizable_dialog.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/circular_loading_indicator.dart';
@@ -108,6 +112,21 @@ class CourseMaterialsViewAppBar extends ConsumerWidget {
                     ),
                   ),
                 );
+              },
+            ),
+
+            PopupMenuAction(
+              title: "Go back to Course Details",
+              iconData: Icons.arrow_back,
+              onTap: () async {
+                final collection = await CourseCollectionRepo.getById(collectionId);
+                if (collection == null) return;
+                GlobalNav.withContext((c) {
+                  (context.mounted ? context : c).pushReplacementNamed(
+                    Routes.courseDetails.name,
+                    extra: collection.parentId,
+                  );
+                });
               },
             ),
           ],

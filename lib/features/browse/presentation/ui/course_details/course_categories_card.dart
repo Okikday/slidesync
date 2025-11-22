@@ -77,7 +77,13 @@ class _CourseCategoriesCardState extends ConsumerState<CourseCategoriesCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   spacing: 4.0,
                   children: [
-                    CustomText(widget.title, fontSize: 15, color: theme.onBackground),
+                    CustomText(
+                      widget.title,
+                      fontSize: 15,
+                      color: theme.onBackground,
+                      fontWeight: FontWeight.w600,
+                      maxLines: 2,
+                    ),
                     CustomText(
                       "${widget.contentCount == 0 ? "No" : "${widget.contentCount}"} ${widget.contentCount == 1 ? "item" : "items"}",
                       fontSize: 12,
