@@ -89,7 +89,7 @@ class _ContentCardState extends ConsumerState<ContentCard> {
             child: Container(
               // curve: CustomCurves.defaultIosSpring,
               // duration: Durations.extralong1,
-              constraints: BoxConstraints(maxHeight: 400, maxWidth: 500),
+              constraints: BoxConstraints(maxHeight: 400, maxWidth: 700),
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: theme.background.lightenColor(theme.isDarkMode ? 0.1 : 0.9),

@@ -152,7 +152,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
       routerConfig: AppRouter.mainRouter,
       debugShowCheckedModeBanner: false,
       theme: resolveThemeData(theme),
-      scrollBehavior: WindowsScrollBehavior(),
+      // scrollBehavior: WindowsScrollBehavior(),
       // builder: (context, child) {
       //   return child ?? const SizedBox.shrink();
       // },

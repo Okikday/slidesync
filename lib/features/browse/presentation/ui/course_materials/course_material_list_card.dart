@@ -139,6 +139,7 @@ class _CourseMaterialListCardState extends ConsumerState<CourseMaterialListCard>
             final collection = await CourseCollectionRepo.getById(content.parentId);
             if (collection == null) return;
             GlobalNav.withContext((c) {
+              if ((DeviceUtils.isDesktop())) c.pop();
               (context.mounted ? context : c).pushReplacementNamed(Routes.courseMaterials.name, extra: collection);
             });
           },

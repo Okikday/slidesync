@@ -1053,14 +1053,7 @@ class SmoothCustomScrollView extends StatelessWidget {
   bool _shouldApplySmoothScroll() {
     if (mode == SmoothScrollMode.disabled) return false;
 
-    // Auto mode: only enable on desktop
-    final isDesktop =
-        defaultTargetPlatform == TargetPlatform.macOS ||
-        defaultTargetPlatform == TargetPlatform.windows ||
-        defaultTargetPlatform == TargetPlatform.linux ||
-        defaultTargetPlatform == TargetPlatform.fuchsia;
-
-    return isDesktop;
+    return defaultTargetPlatform == TargetPlatform.windows;
   }
 }
 

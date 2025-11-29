@@ -67,7 +67,7 @@ class _CoursesViewState extends ConsumerState<CoursesView> {
                   fetchNextPage: fetchNextPage,
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: DeviceUtils.isDesktop()
-                        ? ((context.deviceWidth / 3) ~/ 160)
+                        ? ((context.deviceWidth / 3) ~/ 140)
                         : context.deviceWidth ~/ 160,
                     crossAxisSpacing: 12,
                   ),

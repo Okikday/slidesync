@@ -3,6 +3,7 @@
 // import 'package:slidesync/routes/routes.dart';
 // import 'package:slidesync/features/auth/presentation/onboarding/onboarding_1.dart';
 // import 'package:slidesync/features/auth/presentation/welcome/welcome_view.dart';
+// import 'package:slidesync/routes/transition.dart';
 
 // final onboardingRoute = GoRoute(
 //   name: Routes.welcome.name,

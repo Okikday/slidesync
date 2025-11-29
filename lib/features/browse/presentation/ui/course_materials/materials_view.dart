@@ -120,7 +120,7 @@ class PagedSliverContentView extends ConsumerWidget {
     } else {
       return PagedSliverList<int, CourseContent>(
         state: state,
-        itemExtent: isFullScreen ? 300 : 200,
+        itemExtent: isFullScreen ? 400 : 200,
         fetchNextPage: fetchNextPage,
         builderDelegate: PagedChildBuilderDelegate(
           itemBuilder: (context, item, index) {
