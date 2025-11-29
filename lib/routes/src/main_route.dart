@@ -7,6 +7,7 @@ import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/features/main/presentation/main/ui/main_view.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/main/presentation/home/ui/home_tab_view/src/home_body/recents_view.dart';
+import 'package:slidesync/routes/transition.dart';
 
 final mainRoute = GoRoute(
   path: '/',

@@ -17,6 +17,7 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/theme/src/app_theme.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 
 /// Export progress state
 class ExportProgress {
@@ -73,9 +74,7 @@ class CourseFolderExportManagerWindows {
   /// Pick a folder for export using file_picker
   static Future<String?> pickExportFolder() async {
     try {
-      final String? selectedPath = await FilePicker.platform.getDirectoryPath(
-        dialogTitle: 'Select Export Folder',
-      );
+      final String? selectedPath = await FilePicker.platform.getDirectoryPath(dialogTitle: 'Select Export Folder');
 
       if (selectedPath != null) {
         log('📂 Selected export folder path: $selectedPath');
@@ -123,12 +122,9 @@ class CourseFolderExportManagerWindows {
     log('✅ Course loaded with ${course.collections.length} collections. Opening export screen...');
 
     if (context.mounted) {
-      await Navigator.of(context).push(
-        PageAnimation.pageRouteBuilder(
-          _ExportScreen(course: course),
-          type: TransitionType.rightToLeft,
-        ),
-      );
+      await Navigator.of(
+        context,
+      ).push(PageAnimation.pageRouteBuilder(_ExportScreen(course: course), type: TransitionType.rightToLeft));
     }
   }
 
@@ -244,10 +240,7 @@ class CourseFolderExportManagerWindows {
     });
   }
 
-  static Future<FileExportResult> _exportFile(
-    CourseContent content,
-    String destinationFolderPath,
-  ) async {
+  static Future<FileExportResult> _exportFile(CourseContent content, String destinationFolderPath) async {
     try {
       // Get original filename
       final metadata = content.metadata;
@@ -271,37 +264,25 @@ class CourseFolderExportManagerWindows {
       // Get file path
       final pathDetails = content.path;
       if (pathDetails.isEmpty) {
-        return FileExportResult(
-          originalName: originalFilename,
-          success: false,
-          error: 'No file path found',
-        );
+        return FileExportResult(originalName: originalFilename, success: false, error: 'No file path found');
       }
 
       final filePathJson = jsonDecode(pathDetails);
       final storedFilePath = filePathJson['filePath'] as String?;
 
       if (storedFilePath == null || storedFilePath.isEmpty) {
-        return FileExportResult(
-          originalName: originalFilename,
-          success: false,
-          error: 'Invalid file path',
-        );
+        return FileExportResult(originalName: originalFilename, success: false, error: 'Invalid file path');
       }
 
       final sourceFile = File(storedFilePath);
 
       if (!await sourceFile.exists()) {
-        return FileExportResult(
-          originalName: originalFilename,
-          success: false,
-          error: 'File does not exist',
-        );
+        return FileExportResult(originalName: originalFilename, success: false, error: 'File does not exist');
       }
 
       // Destination file path
       final destinationPath = p.join(destinationFolderPath, originalFilename);
-      
+
       // Handle duplicate filenames by appending a number
       String finalPath = destinationPath;
       int counter = 1;
@@ -319,30 +300,20 @@ class CourseFolderExportManagerWindows {
       return FileExportResult(originalName: originalFilename, success: true);
     } catch (e, stackTrace) {
       log('❌ Error exporting file: $e\n$stackTrace');
-      return FileExportResult(
-        originalName: content.title,
-        success: false,
-        error: e.toString(),
-      );
+      return FileExportResult(originalName: content.title, success: false, error: e.toString());
     }
   }
 
   /// Sanitize folder name (remove invalid characters)
   static String _sanitizeFolderName(String name) {
     // Remove invalid characters for folder names
-    return name
-        .replaceAll(RegExp(r'[<>:"/\\|?*]'), '_')
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
+    return name.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_').replaceAll(RegExp(r'\s+'), ' ').trim();
   }
 
   /// Sanitize file name (remove invalid characters)
   static String _sanitizeFileName(String name) {
     // Remove invalid characters for file names
-    return name
-        .replaceAll(RegExp(r'[<>:"/\\|?*]'), '_')
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
+    return name.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_').replaceAll(RegExp(r'\s+'), ' ').trim();
   }
 }
 
@@ -391,16 +362,12 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
     return Scaffold(
       backgroundColor: theme.background,
       appBar: AppBarContainer(
-        child: AppBarContainerChild(
-          isDarkMode,
-          title: "Export Course",
-          subtitle: widget.course.courseTitle,
-        ),
+        child: AppBarContainerChild(isDarkMode, title: "Export Course", subtitle: widget.course.courseTitle),
       ),
       body: Stack(
         fit: StackFit.expand,
         children: [
-          CustomScrollView(
+          SmoothCustomScrollView(
             slivers: [
               SliverToBoxAdapter(child: const SizedBox(height: 12)),
               // Summary Card
@@ -410,10 +377,7 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
                   margin: EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        theme.primary.withValues(alpha: 0.1),
-                        theme.secondary.withValues(alpha: 0.1),
-                      ],
+                      colors: [theme.primary.withValues(alpha: 0.1), theme.secondary.withValues(alpha: 0.1)],
                     ),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: theme.primary.withValues(alpha: 0.3)),
@@ -451,12 +415,7 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
                       const SizedBox(height: 16),
                       Row(
                         children: [
-                          _buildStatChip(
-                            theme,
-                            Icons.folder,
-                            '${widget.course.collections.length}',
-                            'Collections',
-                          ),
+                          _buildStatChip(theme, Icons.folder, '${widget.course.collections.length}', 'Collections'),
                           const SizedBox(width: 12),
                           _buildStatChip(theme, Icons.insert_drive_file, '$totalFiles', 'Files'),
                         ],
@@ -592,12 +551,7 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CustomText(
-                  value,
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16,
-                  color: theme.onSurface,
-                ),
+                CustomText(value, fontWeight: FontWeight.bold, fontSize: 16, color: theme.onSurface),
                 CustomText(label, fontSize: 11, color: theme.supportingText),
               ],
             ),
@@ -618,9 +572,7 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
       return;
     }
 
-    final progressNotifier = ValueNotifier<ExportProgress>(
-      ExportProgress(message: 'Starting export...'),
-    );
+    final progressNotifier = ValueNotifier<ExportProgress>(ExportProgress(message: 'Starting export...'));
 
     // Show progress dialog
     if (!mounted) return;
@@ -649,9 +601,7 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
       progressNotifier.dispose();
     }
 
-    log(result.isSuccess
-        ? '✅ Export completed successfully'
-        : '❌ Export failed: ${result.message}');
+    log(result.isSuccess ? '✅ Export completed successfully' : '❌ Export failed: ${result.message}');
   }
 }
 
@@ -678,12 +628,7 @@ class _ExportProgressDialog extends ConsumerWidget {
               children: [
                 Icon(Icons.download, color: theme.primary, size: 48),
                 const SizedBox(height: 20),
-                CustomText(
-                  'Exporting Course',
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: theme.onSurface,
-                ),
+                CustomText('Exporting Course', fontSize: 20, fontWeight: FontWeight.bold, color: theme.onSurface),
                 const SizedBox(height: 24),
                 CircularProgressIndicator(color: theme.primary),
                 const SizedBox(height: 24),
@@ -691,17 +636,13 @@ class _ExportProgressDialog extends ConsumerWidget {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        theme.primary.withValues(alpha: 0.1),
-                        theme.secondary.withValues(alpha: 0.1),
-                      ],
+                      colors: [theme.primary.withValues(alpha: 0.1), theme.secondary.withValues(alpha: 0.1)],
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
                     children: [
-                      if (progress.currentCollection != null &&
-                          progress.totalCollections != null) ...[
+                      if (progress.currentCollection != null && progress.totalCollections != null) ...[
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -741,20 +682,12 @@ class _ExportProgressDialog extends ConsumerWidget {
                           children: [
                             Icon(Icons.check_circle, color: Colors.green, size: 16),
                             const SizedBox(width: 4),
-                            CustomText(
-                              '${progress.successCount} succeeded',
-                              fontSize: 12,
-                              color: theme.supportingText,
-                            ),
+                            CustomText('${progress.successCount} succeeded', fontSize: 12, color: theme.supportingText),
                             if (progress.failCount != null && progress.failCount! > 0) ...[
                               const SizedBox(width: 12),
                               Icon(Icons.error, color: Colors.red, size: 16),
                               const SizedBox(width: 4),
-                              CustomText(
-                                '${progress.failCount} failed',
-                                fontSize: 12,
-                                color: theme.supportingText,
-                              ),
+                              CustomText('${progress.failCount} failed', fontSize: 12, color: theme.supportingText),
                             ],
                           ],
                         ),

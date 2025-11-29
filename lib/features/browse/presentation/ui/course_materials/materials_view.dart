@@ -9,13 +9,14 @@ import 'package:slidesync/features/browse/presentation/logic/course_materials_pr
 import 'package:slidesync/features/browse/presentation/ui/course_materials/content_card.dart';
 import 'package:slidesync/features/browse/presentation/ui/course_materials/course_material_list_card.dart';
 import 'package:slidesync/features/manage/presentation/contents/ui/modify_contents/empty_contents_view.dart';
+import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class MaterialsView extends ConsumerWidget {
   final String collectionId;
-
-  const MaterialsView({super.key, required this.collectionId});
+  final bool isFullScreen;
+  const MaterialsView({super.key, required this.collectionId, required this.isFullScreen});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -27,17 +28,13 @@ class MaterialsView extends ConsumerWidget {
     );
 
     return SliverPadding(
-      padding: EdgeInsetsGeometry.fromLTRB(16, 12, 16, 64 + context.bottomPadding + context.viewInsets.bottom),
+      padding: EdgeInsetsGeometry.fromLTRB(16, 12, 16, 0),
       sliver: pagingControllerProvider.when(
         data: (data) {
           return Consumer(
             builder: (context, ref, child) {
               final int cardViewType = ref.watch(CourseMaterialsProvider.cardViewType).value ?? 0;
-              final isGrid = cardViewType == 0
-                  ? true
-                  : cardViewType == 1
-                  ? false
-                  : null;
+              final isGrid = cardViewType == 0 ? true : (cardViewType == 1 ? false : null);
               return PagingListener(
                 controller: data,
                 builder: (context, state, fetchNextPage) {
@@ -48,6 +45,7 @@ class MaterialsView extends ConsumerWidget {
                     fetchNextPage: fetchNextPage,
                     collectionId: collectionId,
                     isGrid: isGrid,
+                    isFullScreen: isFullScreen,
                   );
                 },
               );
@@ -67,6 +65,7 @@ class PagedSliverContentView extends ConsumerWidget {
   final PagingController pagingController;
   final String collectionId;
   final bool? isGrid;
+  final bool isFullScreen;
   const PagedSliverContentView({
     super.key,
     required this.state,
@@ -74,6 +73,7 @@ class PagedSliverContentView extends ConsumerWidget {
     required this.fetchNextPage,
     required this.collectionId,
     required this.isGrid,
+    required this.isFullScreen,
   });
 
   @override
@@ -99,12 +99,14 @@ class PagedSliverContentView extends ConsumerWidget {
         state: state,
         fetchNextPage: fetchNextPage,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: DeviceUtils.isDesktop() ? ((context.deviceWidth / 3) ~/ 160) : context.deviceWidth ~/ 160,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 20,
+          crossAxisCount: isFullScreen
+              ? context.deviceWidth ~/ 200
+              : (DeviceUtils.isDesktop() ? ((context.deviceWidth / 3) ~/ 160) : context.deviceWidth ~/ 160),
+          crossAxisSpacing: isFullScreen ? 30 : 12,
+          mainAxisSpacing: isFullScreen ? 40 : 20,
         ),
         builderDelegate: PagedChildBuilderDelegate(
-          noMoreItemsIndicatorBuilder: (context) => const SizedBox(height: 56),
+          // noMoreItemsIndicatorBuilder: (context) => const SizedBox(height: 56),
           itemBuilder: (context, item, index) {
             return ContentCard(content: item).animate().fadeIn().moveY(
               begin: index.isEven ? 40 : 20,
@@ -118,13 +120,12 @@ class PagedSliverContentView extends ConsumerWidget {
     } else {
       return PagedSliverList<int, CourseContent>(
         state: state,
-        itemExtent: 180,
+        itemExtent: isFullScreen ? 300 : 200,
         fetchNextPage: fetchNextPage,
         builderDelegate: PagedChildBuilderDelegate(
-          noMoreItemsIndicatorBuilder: (context) => const SizedBox(height: 56),
           itemBuilder: (context, item, index) {
             return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
+              padding: isFullScreen ? const EdgeInsets.only(bottom: 24) : const EdgeInsets.only(bottom: 16),
               child: ContentCard(content: item).animate().fadeIn().moveY(
                 begin: index.isEven ? 40 : 20,
                 end: 0,

@@ -61,6 +61,7 @@ class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAli
     ref.listen<bool>(MainProvider.isFocusModeProvider, focusModeListener);
     return NestedScrollView(
       controller: scrollController,
+      physics: DeviceUtils.isDesktop() ? const NeverScrollableScrollPhysics() : null,
       headerSliverBuilder: (context, isInnerBoxScrolled) {
         return [
           HomeAppBar(

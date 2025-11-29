@@ -21,6 +21,7 @@ import 'package:slidesync/features/manage/domain/usecases/types/store_content_ar
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/theme/src/app_theme.dart';
+import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 import 'package:uuid/uuid.dart';
 
 class FolderNode {
@@ -38,13 +39,7 @@ class FolderNode {
     this.isSelected = false,
   });
 
-  FolderNode copyWith({
-    String? name,
-    String? path,
-    List<FolderNode>? subfolders,
-    List<File>? files,
-    bool? isSelected,
-  }) {
+  FolderNode copyWith({String? name, String? path, List<FolderNode>? subfolders, List<File>? files, bool? isSelected}) {
     return FolderNode(
       name: name ?? this.name,
       path: path ?? this.path,
@@ -62,12 +57,7 @@ class FileTypeFilter {
   final IconData icon;
   bool isEnabled;
 
-  FileTypeFilter({
-    required this.extension,
-    required this.displayName,
-    required this.icon,
-    this.isEnabled = false,
-  });
+  FileTypeFilter({required this.extension, required this.displayName, required this.icon, this.isEnabled = false});
 }
 
 /// Configuration for folder import
@@ -121,133 +111,36 @@ class CourseFolderImportManagerWindows {
   static List<FileTypeFilter> getDefaultFileFilters() {
     return [
       // Documents
-      FileTypeFilter(
-        extension: '.pdf',
-        displayName: 'PDF Documents',
-        icon: Icons.picture_as_pdf,
-        isEnabled: true,
-      ),
-      FileTypeFilter(
-        extension: '.docx',
-        displayName: 'Word Documents',
-        icon: Icons.description,
-        isEnabled: false,
-      ),
-      FileTypeFilter(
-        extension: '.doc',
-        displayName: 'Word Documents (Old)',
-        icon: Icons.description,
-        isEnabled: false,
-      ),
-      FileTypeFilter(
-        extension: '.pptx',
-        displayName: 'PowerPoint',
-        icon: Icons.slideshow,
-        isEnabled: false,
-      ),
-      FileTypeFilter(
-        extension: '.ppt',
-        displayName: 'PowerPoint (Old)',
-        icon: Icons.slideshow,
-        isEnabled: false,
-      ),
-      FileTypeFilter(
-        extension: '.xlsx',
-        displayName: 'Excel Spreadsheets',
-        icon: Icons.table_chart,
-        isEnabled: false,
-      ),
-      FileTypeFilter(
-        extension: '.xls',
-        displayName: 'Excel (Old)',
-        icon: Icons.table_chart,
-        isEnabled: false,
-      ),
-      FileTypeFilter(
-        extension: '.txt',
-        displayName: 'Text Files',
-        icon: Icons.text_snippet,
-        isEnabled: false,
-      ),
-      FileTypeFilter(
-        extension: '.rtf',
-        displayName: 'Rich Text Format',
-        icon: Icons.text_fields,
-        isEnabled: false,
-      ),
-      FileTypeFilter(
-        extension: '.odt',
-        displayName: 'OpenDocument Text',
-        icon: Icons.article,
-        isEnabled: false,
-      ),
+      FileTypeFilter(extension: '.pdf', displayName: 'PDF Documents', icon: Icons.picture_as_pdf, isEnabled: true),
+      FileTypeFilter(extension: '.docx', displayName: 'Word Documents', icon: Icons.description, isEnabled: false),
+      FileTypeFilter(extension: '.doc', displayName: 'Word Documents (Old)', icon: Icons.description, isEnabled: false),
+      FileTypeFilter(extension: '.pptx', displayName: 'PowerPoint', icon: Icons.slideshow, isEnabled: false),
+      FileTypeFilter(extension: '.ppt', displayName: 'PowerPoint (Old)', icon: Icons.slideshow, isEnabled: false),
+      FileTypeFilter(extension: '.xlsx', displayName: 'Excel Spreadsheets', icon: Icons.table_chart, isEnabled: false),
+      FileTypeFilter(extension: '.xls', displayName: 'Excel (Old)', icon: Icons.table_chart, isEnabled: false),
+      FileTypeFilter(extension: '.txt', displayName: 'Text Files', icon: Icons.text_snippet, isEnabled: false),
+      FileTypeFilter(extension: '.rtf', displayName: 'Rich Text Format', icon: Icons.text_fields, isEnabled: false),
+      FileTypeFilter(extension: '.odt', displayName: 'OpenDocument Text', icon: Icons.article, isEnabled: false),
 
       // Images
-      FileTypeFilter(
-        extension: '.jpg',
-        displayName: 'JPEG Images',
-        icon: Icons.image,
-        isEnabled: true,
-      ),
-      FileTypeFilter(
-        extension: '.jpeg',
-        displayName: 'JPEG Images',
-        icon: Icons.image,
-        isEnabled: true,
-      ),
-      FileTypeFilter(
-        extension: '.png',
-        displayName: 'PNG Images',
-        icon: Icons.image,
-        isEnabled: true,
-      ),
-      FileTypeFilter(
-        extension: '.gif',
-        displayName: 'GIF Images',
-        icon: Icons.gif,
-        isEnabled: true,
-      ),
-      FileTypeFilter(
-        extension: '.webp',
-        displayName: 'WebP Images',
-        icon: Icons.image,
-        isEnabled: true,
-      ),
-      FileTypeFilter(
-        extension: '.bmp',
-        displayName: 'Bitmap Images',
-        icon: Icons.image,
-        isEnabled: false,
-      ),
-      FileTypeFilter(
-        extension: '.svg',
-        displayName: 'SVG Graphics',
-        icon: Icons.brush,
-        isEnabled: false,
-      ),
+      FileTypeFilter(extension: '.jpg', displayName: 'JPEG Images', icon: Icons.image, isEnabled: true),
+      FileTypeFilter(extension: '.jpeg', displayName: 'JPEG Images', icon: Icons.image, isEnabled: true),
+      FileTypeFilter(extension: '.png', displayName: 'PNG Images', icon: Icons.image, isEnabled: true),
+      FileTypeFilter(extension: '.gif', displayName: 'GIF Images', icon: Icons.gif, isEnabled: true),
+      FileTypeFilter(extension: '.webp', displayName: 'WebP Images', icon: Icons.image, isEnabled: true),
+      FileTypeFilter(extension: '.bmp', displayName: 'Bitmap Images', icon: Icons.image, isEnabled: false),
+      FileTypeFilter(extension: '.svg', displayName: 'SVG Graphics', icon: Icons.brush, isEnabled: false),
 
       // Archives
-      FileTypeFilter(
-        extension: '.zip',
-        displayName: 'ZIP Archives',
-        icon: Icons.folder_zip,
-        isEnabled: false,
-      ),
-      FileTypeFilter(
-        extension: '.rar',
-        displayName: 'RAR Archives',
-        icon: Icons.folder_zip,
-        isEnabled: false,
-      ),
+      FileTypeFilter(extension: '.zip', displayName: 'ZIP Archives', icon: Icons.folder_zip, isEnabled: false),
+      FileTypeFilter(extension: '.rar', displayName: 'RAR Archives', icon: Icons.folder_zip, isEnabled: false),
     ];
   }
 
   /// Pick a folder using file_picker
   static Future<String?> pickFolder() async {
     try {
-      final String? selectedPath = await FilePicker.platform.getDirectoryPath(
-        dialogTitle: 'Select Course Folder',
-      );
+      final String? selectedPath = await FilePicker.platform.getDirectoryPath(dialogTitle: 'Select Course Folder');
 
       if (selectedPath != null) {
         log('📂 Selected folder path: $selectedPath');
@@ -286,7 +179,7 @@ class CourseFolderImportManagerWindows {
             if (item is Directory) {
               final dirName = p.basename(item.path);
               log('   └─ Is Directory: $dirName');
-              
+
               // Recursively scan subfolder
               final subfolder = await scanFolder(item.path);
               if (subfolder.isSuccess && subfolder.data != null) {
@@ -305,12 +198,7 @@ class CourseFolderImportManagerWindows {
 
         // Extract folder name from path
         final folderName = p.basename(folderPath);
-        final node = FolderNode(
-          name: folderName,
-          path: folderPath,
-          subfolders: subfolders,
-          files: files,
-        );
+        final node = FolderNode(name: folderName, path: folderPath, subfolders: subfolders, files: files);
 
         log('✅ Scanned $folderName: ${files.length} files, ${subfolders.length} subfolders');
         return node;
@@ -323,16 +211,9 @@ class CourseFolderImportManagerWindows {
   }
 
   /// Get all files from a folder node based on filters
-  static List<File> getFilteredFiles(
-    FolderNode node,
-    List<FileTypeFilter> filters,
-    bool includeSubfolders,
-  ) {
+  static List<File> getFilteredFiles(FolderNode node, List<FileTypeFilter> filters, bool includeSubfolders) {
     final List<File> allFiles = [];
-    final enabledExtensions = filters
-        .where((f) => f.isEnabled)
-        .map((f) => f.extension.toLowerCase())
-        .toSet();
+    final enabledExtensions = filters.where((f) => f.isEnabled).map((f) => f.extension.toLowerCase()).toSet();
 
     log('🔍 Getting filtered files from ${node.name}. Enabled extensions: $enabledExtensions');
 
@@ -386,10 +267,7 @@ class CourseFolderImportManagerWindows {
       // Add root files as "Base" collection if they exist
       final rootFiles = targetFolder.files.where((file) {
         final ext = p.extension(file.path).toLowerCase();
-        final enabledExtensions = filters
-            .where((f) => f.isEnabled)
-            .map((f) => f.extension.toLowerCase())
-            .toSet();
+        final enabledExtensions = filters.where((f) => f.isEnabled).map((f) => f.extension.toLowerCase()).toSet();
         return enabledExtensions.contains(ext);
       }).toList();
 
@@ -435,11 +313,7 @@ class CourseFolderImportManagerWindows {
     if (!scanResult.isSuccess || scanResult.data == null) {
       log('❌ Scan failed: ${scanResult.message}');
       if (context.mounted) {
-        UiUtils.showFlushBar(
-          context,
-          msg: 'Error scanning folder: ${scanResult.message}',
-          vibe: FlushbarVibe.error,
-        );
+        UiUtils.showFlushBar(context, msg: 'Error scanning folder: ${scanResult.message}', vibe: FlushbarVibe.error);
       }
       return;
     }
@@ -449,10 +323,7 @@ class CourseFolderImportManagerWindows {
 
     if (context.mounted) {
       await Navigator.of(context).push(
-        PageAnimation.pageRouteBuilder(
-          _FolderImportScreen(folderNode: folderNode),
-          type: TransitionType.rightToLeft,
-        ),
+        PageAnimation.pageRouteBuilder(_FolderImportScreen(folderNode: folderNode), type: TransitionType.rightToLeft),
       );
     }
   }
@@ -769,9 +640,7 @@ class CourseFolderImportManagerWindows {
       await storeContents(args, contentProgressNotifier);
 
       await Result.tryRunAsync(() async {
-        await AppHiveData.instance.deleteData(
-          key: HiveDataPathKey.contentsAddingProgressList.name,
-        );
+        await AppHiveData.instance.deleteData(key: HiveDataPathKey.contentsAddingProgressList.name);
       });
 
       contentProgressNotifier.dispose();
@@ -825,22 +694,14 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            CustomText(
-              'Import Course from Folder',
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: theme.onSurface,
-            ),
+            CustomText('Import Course from Folder', fontSize: 18, fontWeight: FontWeight.bold, color: theme.onSurface),
             CustomText('Step ${_currentStep + 1} of 3', fontSize: 12, color: theme.supportingText),
           ],
         ),
       ),
       body: Theme(
         data: Theme.of(context).copyWith(
-          colorScheme: ColorScheme.fromSeed(
-            seedColor: theme.primary,
-            brightness: theme.brightness,
-          ),
+          colorScheme: ColorScheme.fromSeed(seedColor: theme.primary, brightness: theme.brightness),
         ),
         child: Stepper(
           currentStep: _currentStep,
@@ -886,8 +747,8 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
               state: _currentStep > 1
                   ? StepState.complete
                   : _currentStep == 1
-                      ? StepState.indexed
-                      : StepState.disabled,
+                  ? StepState.indexed
+                  : StepState.disabled,
             ),
             Step(
               title: Text('Review & Import', style: TextStyle(color: theme.onSurface)),
@@ -911,10 +772,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [
-                theme.primary.withValues(alpha: 0.15),
-                theme.secondary.withValues(alpha: 0.15),
-              ],
+              colors: [theme.primary.withValues(alpha: 0.15), theme.secondary.withValues(alpha: 0.15)],
             ),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: theme.primary.withValues(alpha: 0.3)),
@@ -973,7 +831,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
               borderRadius: BorderRadius.circular(12),
               border: Border.all(color: theme.supportingText.withValues(alpha: 0.2)),
             ),
-            child: ListView.separated(
+            child: SmoothListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: widget.folderNode.subfolders.length,
@@ -1092,7 +950,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: theme.supportingText.withValues(alpha: 0.2)),
           ),
-          child: ListView.separated(
+          child: SmoothListView.separated(
             shrinkWrap: true,
             padding: EdgeInsets.zero,
             itemCount: fileFilters.length,
@@ -1236,7 +1094,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: theme.supportingText.withValues(alpha: 0.2)),
           ),
-          child: ListView.separated(
+          child: SmoothListView.separated(
             shrinkWrap: true,
             padding: EdgeInsets.zero,
             itemCount: importStructure.length,

@@ -19,6 +19,7 @@ import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/theme/src/app_theme.dart';
 import 'package:saf_stream/saf_stream.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 
 /// Export progress state
 class ExportProgress {
@@ -420,7 +421,7 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          CustomScrollView(
+          SmoothCustomScrollView(
             slivers: [
               SliverToBoxAdapter(child: const SizedBox(height: 12)),
               // Summary Card

@@ -19,14 +19,16 @@ import 'package:slidesync/features/main/presentation/home/ui/home_tab_view/src/h
 import 'package:slidesync/features/main/presentation/home/ui/home_tab_view/src/home_body/recents_section/recents_section_header.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
+import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 
 class HomeBody extends ConsumerWidget {
   const HomeBody({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return CustomScrollView(
-      physics: const BouncingScrollPhysics(),
+    return SmoothCustomScrollView(
+      // physics: const BouncingScrollPhysics(),
+      intensity: ScrollIntensity.slow,
       slivers: [
         const SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
 

@@ -9,6 +9,7 @@ import 'package:slidesync/features/manage/presentation/courses/ui/create_course/
 import 'package:slidesync/features/manage/presentation/courses/ui/create_course/input_course_title_field.dart';
 import 'package:slidesync/features/manage/presentation/courses/ui/modify_course/edit_course_bottom_sheet/edit_course_input_description_field.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 
 class EditCourseBottomSheet extends ConsumerStatefulWidget {
   final bool isEditingDescription;
@@ -90,7 +91,7 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
                   children: [
                     Padding(
                       padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 24),
-                      child: CustomScrollView(
+                      child: SmoothCustomScrollView(
                         slivers: [
                           PinnedHeaderSliver(
                             child: ColoredBox(

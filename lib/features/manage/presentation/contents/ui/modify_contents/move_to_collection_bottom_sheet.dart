@@ -24,6 +24,7 @@ import 'package:slidesync/features/manage/presentation/courses/ui/select_to_modi
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 
 /// Mode for the bottom sheet
@@ -101,7 +102,7 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
         body: AnimatedPadding(
           duration: Durations.medium1,
           padding: EdgeInsets.only(bottom: context.viewInsets.bottom),
-          child: CustomScrollView(
+          child: SmoothCustomScrollView(
             slivers: [
               PinnedHeaderSliver(
                 child: ColoredBox(
@@ -346,48 +347,46 @@ class MoveToCollectionSearchBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    return SliverPadding(
+    return Padding(
       padding: EdgeInsets.only(top: 12, bottom: 12, right: 12, left: onBackButtonPressed == null ? 12 : 0),
-      sliver: SliverToBoxAdapter(
-        child: Row(
-          children: [
-            if (onBackButtonPressed != null) BackButton(onPressed: onBackButtonPressed),
-            Expanded(
-              child: SearchBar(
-                hintText: "Search a course",
-                onChanged: onSearchChanged,
-                leading: const Padding(
-                  padding: EdgeInsets.only(left: 8, right: 4),
-                  child: Icon(Iconsax.search_normal_1_copy),
-                ),
-                backgroundColor: WidgetStatePropertyAll(theme.surface),
-                elevation: const WidgetStatePropertyAll(0),
-                shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+      child: Row(
+        children: [
+          if (onBackButtonPressed != null) BackButton(onPressed: onBackButtonPressed),
+          Expanded(
+            child: SearchBar(
+              hintText: "Search a course",
+              onChanged: onSearchChanged,
+              leading: const Padding(
+                padding: EdgeInsets.only(left: 8, right: 4),
+                child: Icon(Iconsax.search_normal_1_copy),
+              ),
+              backgroundColor: WidgetStatePropertyAll(theme.surface),
+              elevation: const WidgetStatePropertyAll(0),
+              shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+            ),
+          ),
+          if (courseId != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 12),
+              child: CustomElevatedButton(
+                pixelHeight: 48,
+                pixelWidth: 48,
+                backgroundColor: ref.secondary.withAlpha(50),
+                shape: CircleBorder(side: BorderSide(color: ref.onBackground.withAlpha(10))),
+                onClick: () {
+                  if (context.mounted) {
+                    CustomDialog.show(
+                      context,
+                      canPop: true,
+                      barrierColor: Colors.black.withAlpha(150),
+                      child: CreateCollectionBottomSheet(courseId: courseId!, title: "Create collection"),
+                    );
+                  }
+                },
+                child: Icon(Iconsax.add_circle, color: ref.secondary),
               ),
             ),
-            if (courseId != null)
-              Padding(
-                padding: const EdgeInsets.only(left: 12),
-                child: CustomElevatedButton(
-                  pixelHeight: 48,
-                  pixelWidth: 48,
-                  backgroundColor: ref.secondary.withAlpha(50),
-                  shape: CircleBorder(side: BorderSide(color: ref.onBackground.withAlpha(10))),
-                  onClick: () {
-                    if (context.mounted) {
-                      CustomDialog.show(
-                        context,
-                        canPop: true,
-                        barrierColor: Colors.black.withAlpha(150),
-                        child: CreateCollectionBottomSheet(courseId: courseId!, title: "Create collection"),
-                      );
-                    }
-                  },
-                  child: Icon(Iconsax.add_circle, color: ref.secondary),
-                ),
-              ),
-          ],
-        ),
+        ],
       ),
     );
   }

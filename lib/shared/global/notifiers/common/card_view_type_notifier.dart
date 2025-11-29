@@ -10,7 +10,7 @@ class CardViewTypeNotifier extends AsyncIntNotifier {
   @override
   Future<int> build() async {
     final value = await AppHiveData.instance.getData(key: _key);
-    return value is int ? value : 1;
+    return value is int ? value : 0;
   }
 
   Future<void> toggle() async {

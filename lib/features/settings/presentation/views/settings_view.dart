@@ -1,3 +1,4 @@
+import 'dart:developer';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/foundation.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
+import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/file_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
@@ -16,6 +18,7 @@ import 'package:slidesync/features/settings/presentation/views/sub/settings_appe
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 
 class SettingsView extends ConsumerWidget {
   const SettingsView({super.key});
@@ -38,7 +41,7 @@ class SettingsView extends ConsumerWidget {
 
             return Padding(
               padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
-              child: ListView(
+              child: SmoothListView(
                 children: [
                   CustomText("Appearance", color: theme.supportingText),
 
@@ -116,18 +119,39 @@ class SettingsView extends ConsumerWidget {
                     content:
                         "When enabled, materials will open using the app’s built-in viewer instead of an external app.\nDoesn't apply for unsupported files.\nProgress won't be tracked if disabled*",
                     trailing: Switch(
-                      value: settingsModel.useBuiltInViewer,
+                      value: settingsModel.useBuiltInViewer ?? !DeviceUtils.isDesktop(),
                       onChanged: (p) async {
-                        ref
-                            .read(SettingsController.settingsProvider.notifier)
-                            .set(
-                              SettingsModel.fromMap(
-                                (await ref.read(SettingsController.settingsProvider.future)),
-                              ).copyWith(useBuiltInViewer: p).toMap(),
-                            );
+                        log("p: $p");
+                        final newValue = SettingsModel.fromMap(
+                          (await ref.read(SettingsController.settingsProvider.future)),
+                        ).copyWith(useBuiltInViewer: p).toMap();
+                        log("prev:${settingsModel.useBuiltInViewer}");
+                        log("next: ${newValue['useBuiltInViewer']}");
+                        ref.read(SettingsController.settingsProvider.notifier).set(newValue);
                       },
                     ),
                   ),
+
+                  ConstantSizing.columnSpacingMedium,
+
+                  if (DeviceUtils.isDesktop())
+                    SettingsCard(
+                      title: "Show materials in full view always",
+                      iconData: Iconsax.sun,
+                      content: "Whether to always open a collection of materials in full screen or not",
+                      trailing: Switch(
+                        value: settingsModel.showMaterialsInFullScreen,
+                        onChanged: (p) async {
+                          ref
+                              .read(SettingsController.settingsProvider.notifier)
+                              .set(
+                                SettingsModel.fromMap(
+                                  (await ref.read(SettingsController.settingsProvider.future)),
+                                ).copyWith(showMaterialsInFullScreen: p).toMap(),
+                              );
+                        },
+                      ),
+                    ),
 
                   ConstantSizing.columnSpacingMedium,
 

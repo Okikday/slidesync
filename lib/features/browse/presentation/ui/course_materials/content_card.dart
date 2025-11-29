@@ -7,10 +7,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/features/manage/domain/usecases/contents/retrieve_content_uc.dart';
 import 'package:slidesync/features/manage/presentation/contents/actions/modify_content_card_actions.dart';
+import 'package:slidesync/features/settings/domain/models/settings_model.dart';
+import 'package:slidesync/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
 import 'package:slidesync/features/study/presentation/actions/content_view_gate_actions.dart';
 import 'package:slidesync/routes/app_router.dart';
@@ -86,7 +89,7 @@ class _ContentCardState extends ConsumerState<ContentCard> {
             child: Container(
               // curve: CustomCurves.defaultIosSpring,
               // duration: Durations.extralong1,
-              constraints: BoxConstraints(maxHeight: 400, maxWidth: 400),
+              constraints: BoxConstraints(maxHeight: 400, maxWidth: 500),
               clipBehavior: Clip.antiAlias,
               decoration: BoxDecoration(
                 color: theme.background.lightenColor(theme.isDarkMode ? 0.1 : 0.9),
@@ -248,13 +251,31 @@ class ContentCardPopUpMenuButton extends ConsumerWidget {
           },
         ),
         if (content.courseContentType != CourseContentType.link)
-          PopupMenuAction(
-            title: "Open Outside App",
-            iconData: Iconsax.send,
-            onTap: () {
-              ContentViewGateActions.redirectToViewer(ref, content, popBefore: false, openOutsideApp: true);
-            },
-          ),
+          ...(() {
+            final settingsModelProvider = ref.watch(SettingsController.settingsProvider);
+            final settingsModel = settingsModelProvider.value == null
+                ? SettingsModel()
+                : SettingsModel.fromMap(settingsModelProvider.value!);
+            return [
+              if (settingsModel.useBuiltInViewer ?? !DeviceUtils.isDesktop())
+                PopupMenuAction(
+                  title: "Open Outside App",
+                  iconData: Iconsax.send,
+                  onTap: () {
+                    ContentViewGateActions.redirectToViewer(ref, content, popBefore: false, openOutsideApp: true);
+                  },
+                )
+              else
+                PopupMenuAction(
+                  title: "Open Inside App",
+                  iconData: Iconsax.received,
+                  onTap: () {
+                    ContentViewGateActions.redirectToViewer(ref, content, popBefore: false, openOutsideApp: false);
+                  },
+                ),
+            ];
+          }()),
+
         if (content.courseContentType == CourseContentType.link)
           PopupMenuAction(
             title: "View link",

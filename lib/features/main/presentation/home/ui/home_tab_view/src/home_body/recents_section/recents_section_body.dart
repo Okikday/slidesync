@@ -52,7 +52,7 @@ class RecentsSectionBody extends ConsumerWidget {
                   isStarred: false,
                   progress: content.progress?.clamp(0, 1.0),
                   onTapTile: () async {
-                    await rda.onContinueReading(context, content.contentId);
+                    await rda.onContinueReading(ref, content.contentId);
                   },
                   onLongTapTile: () {
                     UiUtils.showCustomDialog(
@@ -73,7 +73,7 @@ class RecentsSectionBody extends ConsumerWidget {
                           title: content.title ?? "No title",
                           description: content.description ?? "No description",
                           onContinueReading: () async {
-                            await rda.onContinueReading(context, content.contentId);
+                            await rda.onContinueReading(ref, content.contentId);
                           },
                           onShare: () async {
                             ShareContentActions.shareFileContent(context, content.contentId);

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/main/presentation/library/logic/library_tab_provider.dart';
 import 'package:slidesync/features/main/presentation/library/ui/src/library_tab_view_app_bar/library_tab_view_filter_button.dart';
@@ -9,7 +10,7 @@ import 'package:slidesync/features/main/presentation/library/ui/src/library_tab_
 import 'package:slidesync/core/assets/assets.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
-const double libraryAppBarMaxHeight = 220;
+final double libraryAppBarMaxHeight = DeviceUtils.isDesktop() ? 160 : 220;
 const double libraryAppBarMinHeight = kToolbarHeight;
 
 class LibraryTabViewAppBar extends ConsumerWidget {

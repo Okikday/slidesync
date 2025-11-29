@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as p;
 import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/features/browse/presentation/logic/course_materials_provider.dart';
 import 'package:slidesync/features/settings/presentation/controllers/settings_controller.dart';
@@ -32,10 +33,10 @@ class ContentViewGateActions {
     WidgetRef ref,
     CourseContent content, {
     bool popBefore = true,
-    bool openOutsideApp = false,
+    bool? openOutsideApp,
   }) async {
     final context = ref.context;
-    if (openOutsideApp) {
+    if (openOutsideApp == true) {
       if (content.courseContentType == CourseContentType.link) {
         await launchUrl(Uri.parse(content.path.urlPath));
         if (popBefore) context.pop();
@@ -49,7 +50,10 @@ class ContentViewGateActions {
       }
     }
 
-    final isBuiltInViewer = (await ref.readSettings).useBuiltInViewer;
+    final isBuiltInViewer =
+        !(openOutsideApp ??
+            !((await ref.readSettings).useBuiltInViewer ??
+                !(content.courseContentType == CourseContentType.image ? true : DeviceUtils.isDesktop())));
     if (!isBuiltInViewer && content.courseContentType != CourseContentType.link) {
       await OpenFilex.open(content.path.filePath);
       if (popBefore) context.pop();

@@ -14,7 +14,7 @@ final contentViewerRoute = GoRoute(
   path: Routes.contentGate.path,
   pageBuilder: (context, state) => PageAnimation.buildCustomTransitionPage(
     state.pageKey,
-    type: TransitionType.rightToLeftWithFade,
+    type: TransitionType.cupertinoDialog,
     duration: Durations.extralong1,
     reverseDuration: Durations.medium1,
     curve: CustomCurves.defaultIosSpring,

@@ -5,6 +5,7 @@ import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/features/browse/presentation/ui/course_details_view.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/browse/presentation/ui/course_materials_view.dart';
+import 'package:slidesync/routes/transition.dart';
 
 final courseNavRoute = GoRoute(
   name: Routes.courseDetails.name,
@@ -22,8 +23,10 @@ final courseNavRoute = GoRoute(
     GoRoute(
       name: Routes.courseMaterials.name,
       path: Routes.courseMaterials.subPath,
-      pageBuilder: (context, state) =>
-          defaultTransition(state.pageKey, child: CourseMaterialsView(collection: state.extra as CourseCollection)),
+      pageBuilder: (context, state) => defaultTransition(
+        state.pageKey,
+        child: CourseMaterialsView(collection: state.extra as CourseCollection, isFullScreen: false),
+      ),
     ),
   ],
 );

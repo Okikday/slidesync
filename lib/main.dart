@@ -1,4 +1,4 @@
-import 'package:firebase_core/firebase_core.dart';
+// import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,7 +19,7 @@ import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'dev/provider_observer.dart';
-import 'firebase_options.dart';
+// import 'firebase_options.dart';
 
 part 'main_.dart';
 
@@ -28,7 +28,7 @@ final obs = ActiveProvidersObserver();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await Result.tryRunAsync(() async => await _initialize());
 
   runApp(

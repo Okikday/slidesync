@@ -5,7 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:skeletonizer/skeletonizer.dart';
+import 'package:slidesync/core/utils/device_utils.dart';
+import 'package:slidesync/core/utils/result.dart';
+import 'package:slidesync/core/utils/ui_utils.dart';
+import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/features/manage/presentation/collections/actions/modify_collection_actions.dart';
+import 'package:slidesync/features/manage/presentation/collections/ui/modify_collections/edit_collection_title_bottom_sheet.dart';
+import 'package:slidesync/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/browse/presentation/logic/course_details_provider.dart';
@@ -79,11 +85,34 @@ class CourseDetailsCollectionSection extends ConsumerWidget {
                                       await ShareContentActions.shareCollection(context, list[index].collectionId);
                                     },
                                   ),
+                                  PopupMenuAction(
+                                    title: "Rename",
+                                    iconData: Iconsax.edit,
+                                    onTap: () async {
+                                      CustomDialog.hide(context);
+                                      final collection = await CourseCollectionRepo.getById(list[index].collectionId);
+                                      if (collection == null) return;
+                                      GlobalNav.withContext(
+                                        (c) => UiUtils.showCustomDialog(
+                                          context.mounted ? context : c,
+                                          child: EditCollectionTitleBottomSheet(collection: collection),
+                                        ),
+                                      );
+                                    },
+                                  ),
                                 ],
                               ),
 
-                              onTap: () {
-                                context.pushNamed(Routes.courseMaterials.name, extra: list[index]);
+                              onTap: () async {
+                                bool isFullScreen = DeviceUtils.isDesktop()
+                                    ? (await ref.readSettings).showMaterialsInFullScreen
+                                    : false;
+                                Result.tryRun(
+                                  () => context.pushNamed(
+                                    "${Routes.courseMaterials.name}${isFullScreen ? "full" : ''}",
+                                    extra: list[index],
+                                  ),
+                                );
                               },
                             ).animate().fadeIn().slideY(
                               begin: (index / collections.length + 1) * 0.4,
@@ -112,6 +141,21 @@ class CourseDetailsCollectionSection extends ConsumerWidget {
                               iconData: Iconsax.send_2,
                               onTap: () async {
                                 await ShareContentActions.shareCollection(context, list[index].collectionId);
+                              },
+                            ),
+                            PopupMenuAction(
+                              title: "Rename",
+                              iconData: Iconsax.edit,
+                              onTap: () async {
+                                CustomDialog.hide(context);
+                                final collection = await CourseCollectionRepo.getById(list[index].collectionId);
+                                if (collection == null) return;
+                                GlobalNav.withContext(
+                                  (c) => UiUtils.showCustomDialog(
+                                    context.mounted ? context : c,
+                                    child: EditCollectionTitleBottomSheet(collection: collection),
+                                  ),
+                                );
                               },
                             ),
 
@@ -149,8 +193,16 @@ class CourseDetailsCollectionSection extends ConsumerWidget {
                             ),
                           ],
                         ),
-                        onTap: () {
-                          context.pushNamed(Routes.courseMaterials.name, extra: list[index]);
+                        onTap: () async {
+                          bool isFullScreen = DeviceUtils.isDesktop()
+                              ? (await ref.readSettings).showMaterialsInFullScreen
+                              : false;
+                          Result.tryRun(
+                            () => context.pushNamed(
+                              "${Routes.courseMaterials.name}${isFullScreen ? "full" : ''}",
+                              extra: list[index],
+                            ),
+                          );
                         },
                       ),
                     );

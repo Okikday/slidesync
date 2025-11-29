@@ -8,6 +8,7 @@ import 'package:slidesync/features/manage/presentation/courses/ui/create_course_
 import 'package:slidesync/features/manage/presentation/courses/ui/modify_course_view.dart';
 import 'package:slidesync/features/manage/presentation/courses/ui/select_to_modify_course_view.dart';
 import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/routes/transition.dart';
 
 final courseMgmtRoutes = [
   //CREATE COURSE VIEW NAVIGATION

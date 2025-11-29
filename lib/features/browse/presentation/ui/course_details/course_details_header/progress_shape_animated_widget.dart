@@ -14,10 +14,12 @@ class ProgressShapeAnimatedWidget extends ConsumerStatefulWidget {
     required this.shapeSize,
     required this.progress,
     required this.fileDetails,
+    this.onClick,
   });
   final double progress;
   final double shapeSize;
   final FileDetails fileDetails;
+  final void Function()? onClick;
 
   @override
   ConsumerState<ProgressShapeAnimatedWidget> createState() => _ProgressShapeAnimatedWidgetState();
@@ -50,6 +52,9 @@ class _ProgressShapeAnimatedWidgetState extends ConsumerState<ProgressShapeAnima
           onTapUp: (details) async {
             await Future.delayed(Durations.short2);
             updateScaleClickProvider(false);
+            if (widget.onClick != null) {
+              widget.onClick!();
+            }
           },
           child: AnimatedScale(
             scale: ref.watch(scaleClickProvider) ? 1.1 : 1.0,

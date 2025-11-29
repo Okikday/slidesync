@@ -2,6 +2,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class CollectionsViewSearchBar extends ConsumerStatefulWidget {
@@ -38,11 +39,14 @@ class _CollectionsViewSearchBarState extends ConsumerState<CollectionsViewSearch
   @override
   Widget build(BuildContext context) {
     final theme = ref;
+    final isDesktop = DeviceUtils.isDesktop();
     return ClipRRect(
       child: ColoredBox(
-        color: theme.background.withAlpha(200),
+        color: isDesktop ? ref.background : ref.background.withAlpha(200),
         child: Padding(
-          padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 24.0, top: 12.0),
+          padding: isDesktop
+              ? const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0, top: 4.0)
+              : const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 24.0, top: 12.0),
           child: Row(
             spacing: 12.0,
             children: [

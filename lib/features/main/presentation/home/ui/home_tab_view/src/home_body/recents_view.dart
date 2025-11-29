@@ -15,6 +15,7 @@ import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 
 class RecentsView extends ConsumerWidget {
   const RecentsView({super.key});
@@ -22,7 +23,9 @@ class RecentsView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    final AsyncValue<List<ContentTrack>> asyncProgressTrackValues = ref.watch(HomeProvider.recentContentsTrackProvider(100));
+    final AsyncValue<List<ContentTrack>> asyncProgressTrackValues = ref.watch(
+      HomeProvider.recentContentsTrackProvider(100),
+    );
     return AnnotatedRegion(
       value: UiUtils.getSystemUiOverlayStyle(theme.scaffoldBackgroundColor, theme.isDarkMode),
       child: Scaffold(
@@ -32,7 +35,7 @@ class RecentsView extends ConsumerWidget {
             if (data.isEmpty) {
               return Center(child: CustomText("No recent reads", color: ref.onBackground));
             }
-            return ListView.builder(
+            return SmoothListView.builder(
               itemCount: data.length,
               padding: EdgeInsets.only(bottom: kBottomNavigationBarHeight + context.bottomPadding / 2),
               itemBuilder: (context, index) {
@@ -51,7 +54,7 @@ class RecentsView extends ConsumerWidget {
                     progress: content.progress?.clamp(0, 1.0),
                     onTapTile: () async {
                       final toPushContent = await CourseContentRepo.getByContentId(content.contentId);
-                      if (toPushContent != null) return;
+                      if (toPushContent == null) return;
                       GlobalNav.withContext(
                         (context) => context.pushNamed(Routes.contentGate.name, extra: toPushContent),
                       );

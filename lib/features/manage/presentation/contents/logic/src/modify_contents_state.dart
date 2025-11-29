@@ -27,7 +27,7 @@ class ModifyContentsState extends LeakPrevention with ValueNotifierFactoryMixin 
 
   bool selectAllContent(List<CourseContent> contents) {
     final set = selectedContentsNotifier.value;
-    // final added = set.addAll(contents);
+    set.addAll(contents);
     selectedContentsNotifier.value = LinkedHashSet.from(set);
     return true;
   }

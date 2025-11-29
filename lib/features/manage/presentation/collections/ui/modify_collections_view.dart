@@ -10,6 +10,7 @@ import 'package:slidesync/features/manage/presentation/collections/ui/modify_col
 import 'package:slidesync/features/manage/presentation/collections/ui/modify_collections/collections_view_search_bar.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 
 import '../../../../../core/utils/ui_utils.dart';
@@ -76,7 +77,7 @@ class _ModifyCollectionsViewState extends ConsumerState<ModifyCollectionsView> {
           },
         ),
 
-        body: CustomScrollView(
+        body: SmoothCustomScrollView(
           controller: state.scrollController,
           slivers: [
             Consumer(

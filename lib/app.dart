@@ -16,9 +16,11 @@ import 'package:slidesync/features/main/presentation/main/logic/main_provider.da
 import 'package:slidesync/features/manage/presentation/contents/ui/modify_contents/move_to_collection_bottom_sheet.dart';
 import 'package:slidesync/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:slidesync/routes/app_router.dart';
+import 'package:slidesync/routes/multi_router.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/theme/theme.dart';
+import 'package:slidesync/shared/widgets/layout/window_scroll_behavior.dart';
 
 final NotifierProvider<AppThemeProvider, AppTheme> appThemeProvider = NotifierProvider(AppThemeProvider.new);
 
@@ -150,6 +152,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
       routerConfig: AppRouter.mainRouter,
       debugShowCheckedModeBanner: false,
       theme: resolveThemeData(theme),
+      scrollBehavior: WindowsScrollBehavior(),
       // builder: (context, child) {
       //   return child ?? const SizedBox.shrink();
       // },

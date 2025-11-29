@@ -12,6 +12,7 @@ import 'package:slidesync/features/manage/presentation/contents/ui/modify_conten
 import 'package:slidesync/shared/global/providers/collections_providers.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 
 class ModifyContentsView extends ConsumerStatefulWidget {
@@ -119,7 +120,7 @@ class ModifyContentsOuterSection extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    return CustomScrollView(
+    return SmoothCustomScrollView(
       slivers: [
         //collectionLength: record.collection.contents.length
         Consumer(

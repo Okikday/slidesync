@@ -11,6 +11,7 @@ import 'package:slidesync/features/manage/presentation/courses/ui/modify_course/
 import 'package:slidesync/features/manage/presentation/courses/ui/modify_course/modify_course_header.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 
 /// VIEW
 class ModifyCourseView extends ConsumerStatefulWidget {
@@ -63,7 +64,7 @@ class ModifyCourseViewOuterSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return CustomScrollView(
+    return SmoothCustomScrollView(
       slivers: [
         // HEADER
         Consumer(

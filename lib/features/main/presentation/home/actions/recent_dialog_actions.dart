@@ -2,7 +2,7 @@ import 'dart:collection';
 
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
-
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/result.dart';
@@ -46,7 +46,8 @@ class RecentDialogActions {
         false;
   }
 
-  Future<void> onContinueReading(BuildContext context, String contentId) async {
+  Future<void> onContinueReading(WidgetRef ref, String contentId) async {
+    final context = ref.context;
     final newContent = await CourseContentRepo.getByContentId(contentId);
     if (context.mounted) UiUtils.hideDialog(context);
     if (newContent == null) {

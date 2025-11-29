@@ -16,8 +16,10 @@ class AddContentFAB extends ConsumerWidget {
     // final isScrolled = scrollOffsetProvider == null ? false : ref.watch(scrollOffsetProvider!) < 100.0;
 
     return FloatingActionButton(
-      backgroundColor: theme.primaryColor,
+      backgroundColor: theme.secondary,
       shape: CircleBorder(),
+      tooltip: "Add Materials",
+      mini: true,
       onPressed: () {
         CustomDialog.show(
           context,
@@ -29,7 +31,7 @@ class AddContentFAB extends ConsumerWidget {
           child: AddContentsBottomSheet(collection: collection),
         );
       },
-      child: Icon(Iconsax.add_copy, color: theme.onPrimary),
+      child: Icon(Iconsax.add_copy, color: theme.onSecondary),
     );
   }
 }

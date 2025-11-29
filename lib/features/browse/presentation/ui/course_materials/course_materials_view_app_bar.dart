@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/utils/device_utils.dart';
+import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/features/browse/presentation/logic/course_materials_provider.dart';
@@ -12,12 +14,14 @@ import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_customizable_dialog.dart';
+import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/circular_loading_indicator.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class CourseMaterialsViewAppBar extends ConsumerWidget {
   final String collectionId;
-  const CourseMaterialsViewAppBar({super.key, required this.collectionId});
+  final bool isFullScreen;
+  const CourseMaterialsViewAppBar({super.key, required this.collectionId, required this.isFullScreen});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -25,6 +29,23 @@ class CourseMaterialsViewAppBar extends ConsumerWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
+        if (DeviceUtils.isDesktop() && !isFullScreen) ...[
+          CustomElevatedButton(
+            onClick: () async {
+              context.pop();
+              final collection = await CourseCollectionRepo.getById(collectionId);
+              Result.tryRun(() => context.pushNamed("${Routes.courseMaterials.name}full", extra: collection));
+            },
+            pixelWidth: 30,
+            pixelHeight: 30,
+            overlayColor: ref.secondary.withAlpha(40),
+            contentPadding: EdgeInsets.zero,
+            shape: CircleBorder(side: BorderSide(color: theme.altBackgroundSecondary.withValues(alpha: 0.4))),
+            backgroundColor: Colors.transparent,
+            child: Icon(Iconsax.crop, color: theme.supportingText, size: 14),
+          ),
+          ConstantSizing.rowSpacingSmall,
+        ],
         MaterialsSearchButton(collectionId: collectionId, backgroundColor: theme.secondary.withAlpha(50)),
         AppPopupMenuButton(
           menuPadding: EdgeInsets.only(right: 16),
@@ -69,7 +90,7 @@ class CourseMaterialsViewAppBar extends ConsumerWidget {
                                 final sortOptionAsync = ref.watch(CourseMaterialsProvider.contentSortOptionProvider);
                                 return sortOptionAsync.when(
                                   data: (data) {
-                                    return ListView.builder(
+                                    return SmoothListView.builder(
                                       itemCount: CourseSortOption.values.length,
                                       itemBuilder: (context, index) {
                                         return CustomElevatedButton(
@@ -115,20 +136,21 @@ class CourseMaterialsViewAppBar extends ConsumerWidget {
               },
             ),
 
-            PopupMenuAction(
-              title: "Go back to Course Details",
-              iconData: Icons.arrow_back,
-              onTap: () async {
-                final collection = await CourseCollectionRepo.getById(collectionId);
-                if (collection == null) return;
-                GlobalNav.withContext((c) {
-                  (context.mounted ? context : c).pushReplacementNamed(
-                    Routes.courseDetails.name,
-                    extra: collection.parentId,
-                  );
-                });
-              },
-            ),
+            if (!DeviceUtils.isDesktop())
+              PopupMenuAction(
+                title: "Go back to Course Details",
+                iconData: Icons.arrow_back,
+                onTap: () async {
+                  final collection = await CourseCollectionRepo.getById(collectionId);
+                  if (collection == null) return;
+                  GlobalNav.withContext((c) {
+                    (context.mounted ? context : c).pushReplacementNamed(
+                      Routes.courseDetails.name,
+                      extra: collection.parentId,
+                    );
+                  });
+                },
+              ),
           ],
         ),
       ],

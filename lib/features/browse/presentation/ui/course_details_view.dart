@@ -13,6 +13,7 @@ import 'package:slidesync/features/browse/presentation/ui/course_details/positio
 import 'package:slidesync/features/manage/presentation/collections/ui/modify_collections/collections_view_search_bar.dart';
 import 'package:slidesync/features/manage/presentation/collections/ui/modify_collections/create_collection_bottom_sheet.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 
 const double courseDetailsAppBarHeight = 180;
 
@@ -42,24 +43,26 @@ class CourseDetailsView extends ConsumerWidget {
                 return true;
               },
               child: NestedScrollView(
-                physics: DeviceUtils.isDesktop() ? null : const NeverScrollableScrollPhysics(),
+                physics: const NeverScrollableScrollPhysics(),
                 headerSliverBuilder: (context, innerBoxIsScrolled) => [CourseDetailsHeader(courseId: courseId)],
                 body: NotificationListener(
                   onNotification: (notification) => true,
-                  child: CustomScrollView(
+                  child: SmoothCustomScrollView(
                     slivers: [
-                      const PinnedHeaderSliver(child: AdjustSpacing()),
+                      if (!DeviceUtils.isDesktop()) const PinnedHeaderSliver(child: AdjustSpacing()),
                       PinnedHeaderSliver(
                         child: CollectionsViewSearchBar(
                           searchCollectionTextNotifier: ref
                               .watch(CourseDetailsProvider.state)
                               .searchCollectionTextNotifier,
                           onTap: () {
-                            PrimaryScrollController.of(context).animateTo(
-                              (courseDetailsAppBarHeight + 8),
-                              duration: Durations.medium4,
-                              curve: CustomCurves.defaultIosSpring,
-                            );
+                            if (!DeviceUtils.isDesktop()) {
+                              PrimaryScrollController.of(context).animateTo(
+                                (courseDetailsAppBarHeight + 8),
+                                duration: Durations.medium4,
+                                curve: CustomCurves.defaultIosSpring,
+                              );
+                            }
                           },
                           trailing: CustomElevatedButton(
                             pixelHeight: 48,

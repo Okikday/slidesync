@@ -16,6 +16,7 @@ import 'package:slidesync/features/main/presentation/library/ui/src/library_tab_
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 
 final _searchTypeProvider = NotifierProvider.autoDispose(IntNotifier.new);
 const strCategories = ['Courses', 'Collections', 'Materials'];
@@ -93,7 +94,7 @@ class LibraryTabViewSearchButton extends ConsumerWidget {
         };
 
         return [
-          ListView.builder(
+          SmoothListView.builder(
             shrinkWrap: true,
             itemCount: searchResults.length,
             padding: EdgeInsets.only(top: 12, bottom: bottomPadding + bottomInsets + 12),

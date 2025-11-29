@@ -10,10 +10,13 @@ import 'package:slidesync/features/browse/presentation/ui/course_materials/mater
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/layout/app_padding.dart';
+import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 
 class CourseMaterialsView extends ConsumerStatefulWidget {
   final CourseCollection collection;
-  const CourseMaterialsView({super.key, required this.collection});
+  final bool isFullScreen;
+  const CourseMaterialsView({super.key, required this.collection, required this.isFullScreen});
 
   @override
   ConsumerState<CourseMaterialsView> createState() => _CourseMaterialsViewState();
@@ -62,7 +65,7 @@ class _CourseMaterialsViewState extends ConsumerState<CourseMaterialsView> {
           child: AppBarContainerChild(
             context.isDarkMode,
             title: widget.collection.collectionTitle,
-            trailing: CourseMaterialsViewAppBar(collectionId: widget.collection.collectionId),
+            trailing: CourseMaterialsViewAppBar(collectionId: widget.collection.collectionId, isFullScreen: widget.isFullScreen,),
           ),
         ),
 
@@ -77,10 +80,13 @@ class _CourseMaterialsViewState extends ConsumerState<CourseMaterialsView> {
               CourseMaterialsProvider.contentPaginationProvider(widget.collection.collectionId).future,
             )).pagingController.refresh();
           },
-          child: CustomScrollView(
+          child: SmoothCustomScrollView(
             controller: scrollController,
             physics: const BouncingScrollPhysics(),
-            slivers: [MaterialsView(collectionId: widget.collection.collectionId)],
+            slivers: [
+              MaterialsView(collectionId: widget.collection.collectionId, isFullScreen: widget.isFullScreen),
+              SliverToBoxAdapter(child: BottomPadding(withHeight: 64)),
+            ],
           ),
         ),
       ),
