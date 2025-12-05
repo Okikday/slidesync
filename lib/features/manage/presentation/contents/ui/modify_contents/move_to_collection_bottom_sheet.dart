@@ -14,7 +14,7 @@ import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/browse/presentation/ui/course_details/course_categories_card.dart';
 import 'package:slidesync/features/manage/domain/usecases/contents/add_contents_uc.dart';
-import 'package:slidesync/features/manage/presentation/collections/ui/modify_collections/create_collection_bottom_sheet.dart';
+import 'package:slidesync/features/browse/presentation/ui/course_details/modify/create_collection_bottom_sheet.dart';
 import 'package:slidesync/features/manage/presentation/contents/logic/modify_content_provider.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/data/models/course_model/course.dart';

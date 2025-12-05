@@ -4,10 +4,10 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/shared/global/providers/course_providers.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
-import 'package:slidesync/features/manage/presentation/courses/actions/edit_course_actions.dart';
+import 'package:slidesync/features/browse/presentation/actions/edit_course_actions.dart';
 import 'package:slidesync/features/manage/presentation/courses/ui/create_course/input_course_code_field.dart';
 import 'package:slidesync/features/manage/presentation/courses/ui/create_course/input_course_title_field.dart';
-import 'package:slidesync/features/manage/presentation/courses/ui/modify_course/edit_course_bottom_sheet/edit_course_input_description_field.dart';
+import 'package:slidesync/features/browse/presentation/ui/course_details/modify/edit_course_bottom_sheet/edit_course_input_description_field.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 

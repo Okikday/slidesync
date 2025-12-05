@@ -6,13 +6,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
+import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/browse/presentation/logic/course_details_provider.dart';
 import 'package:slidesync/features/browse/presentation/ui/course_details/course_details_collection_section.dart';
 import 'package:slidesync/features/browse/presentation/ui/course_details/course_details_header.dart';
+import 'package:slidesync/features/browse/presentation/ui/course_details/more_options_dialog.dart';
 import 'package:slidesync/features/browse/presentation/ui/course_details/positioned_course_options.dart';
 import 'package:slidesync/features/manage/presentation/collections/ui/modify_collections/collections_view_search_bar.dart';
-import 'package:slidesync/features/manage/presentation/collections/ui/modify_collections/create_collection_bottom_sheet.dart';
+import 'package:slidesync/features/browse/presentation/ui/course_details/modify/create_collection_bottom_sheet.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 
 const double courseDetailsAppBarHeight = 180;
@@ -69,17 +72,19 @@ class CourseDetailsView extends ConsumerWidget {
                             pixelWidth: 48,
                             backgroundColor: ref.secondary.withAlpha(50),
                             shape: CircleBorder(side: BorderSide(color: ref.onBackground.withAlpha(10))),
-                            onClick: () {
-                              if (context.mounted) {
-                                CustomDialog.show(
-                                  context,
+                            onClick: () async {
+                              final course = await CourseRepo.getCourseById(courseId);
+                              if (course == null) return;
+                              GlobalNav.withContext(
+                                (c) => CustomDialog.show(
+                                  (context.mounted ? context : c),
                                   canPop: true,
                                   barrierColor: Colors.black.withAlpha(150),
-                                  child: CreateCollectionBottomSheet(courseId: courseId, title: "Create collection"),
-                                );
-                              }
+                                  child: MoreOptionsDialog(course: course),
+                                ),
+                              );
                             },
-                            child: Icon(Iconsax.add_circle, color: ref.secondary),
+                            child: Icon(Iconsax.more_copy, size: 24, color: ref.secondary),
                           ),
                         ),
                       ),

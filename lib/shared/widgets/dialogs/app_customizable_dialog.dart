@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class AppCustomizableDialog extends ConsumerWidget {
@@ -41,7 +42,7 @@ class AppCustomizableDialog extends ConsumerWidget {
               if (onPop != null) {
                 onPop!();
               } else {
-                CustomDialog.hide(context);
+                context.pop();
               }
             },
           ),

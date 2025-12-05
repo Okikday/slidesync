@@ -1,9 +1,6 @@
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class ShimmeryGradientBackground extends ConsumerStatefulWidget {
   const ShimmeryGradientBackground({super.key});

@@ -13,7 +13,7 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/browse/presentation/ui/course_details/course_details_collection_section.dart';
 import 'package:slidesync/features/manage/presentation/collections/ui/modify_collections/collections_list_view/mod_collection_card_tile.dart';
 import 'package:slidesync/features/manage/presentation/collections/ui/modify_collections/collections_list_view/mod_collection_dialog.dart';
-import 'package:slidesync/features/manage/presentation/collections/ui/modify_collections/create_collection_bottom_sheet.dart';
+import 'package:slidesync/features/browse/presentation/ui/course_details/modify/create_collection_bottom_sheet.dart';
 import 'package:slidesync/features/manage/presentation/collections/ui/modify_collections/empty_collections_view.dart';
 
 class CollectionsListView extends ConsumerWidget {

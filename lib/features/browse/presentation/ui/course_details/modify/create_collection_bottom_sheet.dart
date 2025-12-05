@@ -1,6 +1,7 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/manage/presentation/collections/actions/modify_collection_actions.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -36,7 +37,7 @@ class _CreateCollectionBottomSheetState extends ConsumerState<CreateCollectionBo
 
     return Stack(
       children: [
-        Positioned.fill(child: GestureDetector(onTap: () => CustomDialog.hide(context))),
+        Positioned.fill(child: GestureDetector(onTap: () => context.pop())),
         Align(
           alignment: Alignment.bottomCenter,
           child: Container(
@@ -68,7 +69,7 @@ class _CreateCollectionBottomSheetState extends ConsumerState<CreateCollectionBo
 
                     // Handle outcome
                     if (outcome == null) {
-                      if (context.mounted) CustomDialog.hide(context);
+                      if (context.mounted) context.pop();
                       if (context.mounted) {
                         await UiUtils.showFlushBar(
                           context,

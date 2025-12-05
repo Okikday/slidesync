@@ -8,7 +8,7 @@ import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/features/browse/presentation/logic/course_details_provider.dart';
 import 'package:slidesync/features/browse/presentation/ui/course_details/course_details_header/progress_shape_animated_widget.dart';
 import 'package:slidesync/features/browse/presentation/ui/course_details_view.dart';
-import 'package:slidesync/features/manage/presentation/courses/actions/modify_course_actions.dart';
+import 'package:slidesync/features/browse/presentation/actions/modify_course_actions.dart';
 import 'package:slidesync/features/manage/presentation/courses/ui/modify_course/course_description_dialog.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/shared/global/providers/course_providers.dart';

@@ -4,7 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
-import 'package:slidesync/features/manage/presentation/collections/ui/modify_collections/create_collection_bottom_sheet.dart';
+import 'package:slidesync/features/browse/presentation/ui/course_details/modify/create_collection_bottom_sheet.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';

@@ -16,7 +16,7 @@ import 'package:slidesync/features/share/presentation/actions/share_content_acti
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/browse/presentation/logic/course_details_provider.dart';
 import 'package:slidesync/features/browse/presentation/ui/course_details/course_categories_card.dart';
-import 'package:slidesync/features/manage/presentation/collections/ui/modify_collections/create_collection_bottom_sheet.dart';
+import 'package:slidesync/features/browse/presentation/ui/course_details/modify/create_collection_bottom_sheet.dart';
 import 'package:slidesync/features/manage/presentation/collections/ui/modify_collections/empty_collections_view.dart';
 import 'package:slidesync/shared/global/providers/collections_providers.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
