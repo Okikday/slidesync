@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/data/models/file_details.dart';
-import 'package:slidesync/features/browse/course/ui/widgets/course_details_header/animated_shape.dart';
-import 'package:slidesync/features/browse/course/ui/widgets/course_details_header/custom_wave_widget.dart';
+import 'package:slidesync/features/browse/course/ui/widgets/course_details_view/course_details_header/animated_shape.dart';
+import 'package:slidesync/features/browse/course/ui/widgets/course_details_view/course_details_header/custom_wave_widget.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
-class ProgressShapeAnimatedWidget extends ConsumerStatefulWidget {
-  const ProgressShapeAnimatedWidget({
+class AnimatedShapeProgressWidget extends ConsumerStatefulWidget {
+  const AnimatedShapeProgressWidget({
     super.key,
     required this.shapeSize,
     required this.progress,
@@ -22,10 +22,10 @@ class ProgressShapeAnimatedWidget extends ConsumerStatefulWidget {
   final void Function()? onClick;
 
   @override
-  ConsumerState<ProgressShapeAnimatedWidget> createState() => _ProgressShapeAnimatedWidgetState();
+  ConsumerState<AnimatedShapeProgressWidget> createState() => _ProgressShapeAnimatedWidgetState();
 }
 
-class _ProgressShapeAnimatedWidgetState extends ConsumerState<ProgressShapeAnimatedWidget> {
+class _ProgressShapeAnimatedWidgetState extends ConsumerState<AnimatedShapeProgressWidget> {
   late final NotifierProvider<BoolNotifier, bool> scaleClickProvider;
   final List<RoundedPolygon> shapes = List.from(materialShapes.map((e) => e.shape));
   late final RoundedPolygon shape;

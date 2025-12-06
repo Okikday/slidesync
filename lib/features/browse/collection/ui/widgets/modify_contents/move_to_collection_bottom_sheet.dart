@@ -14,9 +14,9 @@ import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/modify_contents/edit_course_tile.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/modify_contents/empty_courses_view.dart';
-import 'package:slidesync/features/browse/course/ui/components/course_categories_card.dart';
+import 'package:slidesync/features/browse/course/ui/components/collection_card.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/add_contents_uc.dart';
-import 'package:slidesync/features/browse/course/ui/widgets/modify/create_collection_bottom_sheet.dart';
+import 'package:slidesync/features/browse/course/ui/widgets/shared/create_collection_bottom_sheet.dart';
 import 'package:slidesync/features/browse/collection/providers/modify_content_provider.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
@@ -191,10 +191,8 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
                             return Padding(
                               padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
                               child:
-                                  CourseCategoriesCard(
-                                        isDarkMode: ref.isDarkMode,
-                                        title: collection.collectionTitle,
-                                        contentCount: collection.contents.length,
+                                  CollectionCard(
+                                        collection: collection,
                                         onTap: () => _handleCollectionSelection(context, collection),
                                       )
                                       .animate()
@@ -308,7 +306,7 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
     await CourseContentRepo.moveContents(widget.contentsToMove!, collection.collectionId);
     GlobalNav.withContext((c) => c.pop());
 
-    GlobalNav.withContext((c) => c.pushReplacementNamed(Routes.modifyContents.name, extra: collection.collectionId));
+    GlobalNav.withContext((c) => c.pushReplacementNamed(Routes.courseMaterials.name, extra: collection));
     GlobalNav.withContext((c) => UiUtils.showFlushBar(c, msg: "Successfully moved contents"));
   }
 
@@ -320,7 +318,7 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
     await _storeContentsToCollection(collectionId: collection.collectionId, filePaths: widget.filePaths!);
 
     // GlobalNav.withContext((c) => c.pop());
-    GlobalNav.withContext((c) => c.pushNamed(Routes.modifyContents.name, extra: collection.collectionId));
+    GlobalNav.withContext((c) => c.pushNamed(Routes.courseMaterials.name, extra: collection));
     GlobalNav.withContext((c) => UiUtils.showFlushBar(c, msg: "Successfully stored files"));
   }
 

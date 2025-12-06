@@ -185,7 +185,7 @@ class _CheckCourseDashboardState extends State<_CheckCourseDashboard> {
             return;
           } else {
             GlobalNav.withContext(
-              (context) => context.pushNamed(Routes.modifyCourse.name, extra: anotherCourse.courseId),
+              (context) => context.pushNamed(Routes.courseDetails.name, extra: anotherCourse.courseId),
             );
             await Future.delayed(1.inSeconds);
             GlobalNav.withContext(

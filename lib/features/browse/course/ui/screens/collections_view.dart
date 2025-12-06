@@ -7,7 +7,7 @@ import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart'
 import 'package:slidesync/shared/global/providers/course_providers.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/add_collection_action_button.dart';
-import '../../../collection/ui/widgets/modify_collections/collections_list_view.dart';
+import '../widgets/collections_view/list_collections_section.dart';
 import '../../../collection/ui/widgets/collections_search_bar.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
@@ -16,16 +16,16 @@ import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 
 import '../../../../../core/utils/ui_utils.dart';
 
-class ListCollectionsView extends ConsumerStatefulWidget {
+class CollectionsView extends ConsumerStatefulWidget {
   final String courseId;
 
-  const ListCollectionsView({super.key, required this.courseId});
+  const CollectionsView({super.key, required this.courseId});
 
   @override
   ConsumerState createState() => _ModifyCollectionsViewState();
 }
 
-class _ModifyCollectionsViewState extends ConsumerState<ListCollectionsView> {
+class _ModifyCollectionsViewState extends ConsumerState<CollectionsView> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(ModifyCollectionProvider.state);
@@ -87,7 +87,7 @@ class _ModifyCollectionsViewState extends ConsumerState<ListCollectionsView> {
                 return dataN.when(
                   data: (data) {
                     if (data.isEmpty) return const SliverToBoxAdapter();
-                    return PinnedHeaderSliver(
+                    return SliverFloatingHeader(
                       child: CollectionsViewSearchBar(courseId: widget.courseId, showTrailing: false, onTap: () {}),
                     );
                   },
@@ -97,15 +97,13 @@ class _ModifyCollectionsViewState extends ConsumerState<ListCollectionsView> {
               },
             ),
 
-            CollectionsListView(
+            ListCollectionsSection(
               courseId: widget.courseId,
               searchCollectionTextNotifier: ref.read(
                 CourseDetailsProvider.state.select((s) => s.searchCollectionTextNotifier),
               ),
             ),
             SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
-
-            // ),
           ],
         ),
       ),

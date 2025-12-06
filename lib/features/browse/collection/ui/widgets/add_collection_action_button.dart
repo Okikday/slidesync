@@ -2,7 +2,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/features/browse/course/ui/widgets/modify/create_collection_bottom_sheet.dart';
+import 'package:slidesync/features/browse/course/ui/widgets/shared/create_collection_bottom_sheet.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class AddCollectionActionButton extends ConsumerWidget {

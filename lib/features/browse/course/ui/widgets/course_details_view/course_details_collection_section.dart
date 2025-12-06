@@ -10,14 +10,14 @@ import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/features/browse/course/ui/actions/modify_collection_actions.dart';
-import 'package:slidesync/features/browse/course/ui/widgets/collection/edit_collection_title_bottom_sheet.dart';
+import 'package:slidesync/features/browse/course/ui/widgets/shared/edit_collection_title_bottom_sheet.dart';
 import 'package:slidesync/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/browse/course/providers/course_details_provider.dart';
-import 'package:slidesync/features/browse/course/ui/components/course_categories_card.dart';
-import 'package:slidesync/features/browse/course/ui/widgets/modify/create_collection_bottom_sheet.dart';
-import 'package:slidesync/features/browse/course/ui/widgets/collection/empty_collections_view.dart';
+import 'package:slidesync/features/browse/course/ui/components/collection_card.dart';
+import 'package:slidesync/features/browse/course/ui/widgets/shared/create_collection_bottom_sheet.dart';
+import 'package:slidesync/features/browse/course/ui/widgets/collections_view/empty_collections_view.dart';
 import 'package:slidesync/shared/global/providers/collections_providers.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
@@ -72,37 +72,8 @@ class CourseDetailsCollectionSection extends ConsumerWidget {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 16.0, left: 16.0, right: 16.0),
                         child:
-                            CourseCategoriesCard(
-                              isDarkMode: context.isDarkMode,
-                              title: list[index].collectionTitle,
-                              contentCount: list[index].contents.length,
-                              trailing: AppPopupMenuButton(
-                                actions: [
-                                  PopupMenuAction(
-                                    title: "Share",
-                                    iconData: Iconsax.send,
-                                    onTap: () async {
-                                      await ShareContentActions.shareCollection(context, list[index].collectionId);
-                                    },
-                                  ),
-                                  PopupMenuAction(
-                                    title: "Rename",
-                                    iconData: Iconsax.edit,
-                                    onTap: () async {
-                                      CustomDialog.hide(context);
-                                      final collection = await CourseCollectionRepo.getById(list[index].collectionId);
-                                      if (collection == null) return;
-                                      GlobalNav.withContext(
-                                        (c) => UiUtils.showCustomDialog(
-                                          context.mounted ? context : c,
-                                          child: EditCollectionTitleBottomSheet(collection: collection),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
-
+                            CollectionCard(
+                              collection: list[index],
                               onTap: () async {
                                 bool isFullScreen = DeviceUtils.isDesktop()
                                     ? (await ref.readSettings).showMaterialsInFullScreen
@@ -130,69 +101,8 @@ class CourseDetailsCollectionSection extends ConsumerWidget {
                     final list = collections.toList();
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 16.0, left: 16.0, right: 16.0),
-                      child: CourseCategoriesCard(
-                        isDarkMode: context.isDarkMode,
-                        title: list[index].collectionTitle,
-                        contentCount: list[index].contents.length,
-                        trailing: AppPopupMenuButton(
-                          actions: [
-                            PopupMenuAction(
-                              title: "Share",
-                              iconData: Iconsax.send_2,
-                              onTap: () async {
-                                await ShareContentActions.shareCollection(context, list[index].collectionId);
-                              },
-                            ),
-                            PopupMenuAction(
-                              title: "Rename",
-                              iconData: Iconsax.edit,
-                              onTap: () async {
-                                CustomDialog.hide(context);
-                                final collection = await CourseCollectionRepo.getById(list[index].collectionId);
-                                if (collection == null) return;
-                                GlobalNav.withContext(
-                                  (c) => UiUtils.showCustomDialog(
-                                    context.mounted ? context : c,
-                                    child: EditCollectionTitleBottomSheet(collection: collection),
-                                  ),
-                                );
-                              },
-                            ),
-
-                            PopupMenuAction(
-                              title: "Remove",
-                              iconData: Iconsax.trash,
-                              onTap: () async {
-                                if (context.mounted) {
-                                  CustomDialog.show(
-                                    context,
-                                    canPop: true,
-                                    barrierColor: Colors.black.withValues(alpha: 0.6),
-                                    transitionType: TransitionType.cupertinoDialog,
-                                    transitionDuration: Durations.medium2,
-                                    child: ConfirmDeletionDialog(
-                                      content:
-                                          "This will delete \"${list[index].collectionTitle}\"."
-                                          "\n\nAre you sure you want to delete this collection?",
-                                      onPop: () {
-                                        GlobalNav.popGlobal();
-                                      },
-                                      onCancel: () {
-                                        GlobalNav.popGlobal();
-                                      },
-                                      onDelete: () async {
-                                        await ModifyCollectionActions().onDeleteCollection(
-                                          context,
-                                          collection: list[index],
-                                        );
-                                      },
-                                    ),
-                                  );
-                                }
-                              },
-                            ),
-                          ],
-                        ),
+                      child: CollectionCard(
+                        collection: list[index],
                         onTap: () async {
                           bool isFullScreen = DeviceUtils.isDesktop()
                               ? (await ref.readSettings).showMaterialsInFullScreen
@@ -242,7 +152,7 @@ class LoadingShimmerListView extends ConsumerWidget {
       itemBuilder: (context, index) => Skeletonizer(
         child: Padding(
           padding: const EdgeInsets.only(bottom: 8.0),
-          child: CourseCategoriesCard(isDarkMode: ref.isDarkMode, title: "_", onTap: () {}),
+          child: CollectionCard(collection: defaultCollection, onTap: () {}),
         ),
       ),
     );

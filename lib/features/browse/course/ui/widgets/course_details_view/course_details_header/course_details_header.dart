@@ -5,12 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
+import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/browse/course/providers/course_details_provider.dart';
-import 'package:slidesync/features/browse/course/ui/widgets/course_details_header/progress_shape_animated_widget.dart';
+import 'package:slidesync/features/browse/course/ui/widgets/course_details_view/course_details_header/progress_shape_animated_widget.dart';
 import 'package:slidesync/features/browse/course/ui/screens/course_details_view.dart';
 import 'package:slidesync/features/browse/course/ui/actions/modify_course_actions.dart';
-import 'package:slidesync/features/browse/course/ui/widgets/course_description_dialog.dart';
-import 'package:slidesync/routes/app_router.dart';
+import 'package:slidesync/features/browse/course/ui/widgets/shared/course_description_dialog.dart';
 import 'package:slidesync/shared/global/providers/course_providers.dart';
 import 'package:slidesync/shared/global/providers/course_track_providers.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
@@ -177,17 +177,16 @@ class CourseDetailsHeaderContentChild extends ConsumerWidget {
 
                     return progressN.when(
                       data: (data) {
-                        return ProgressShapeAnimatedWidget(
+                        return AnimatedShapeProgressWidget(
                               progress: data,
                               shapeSize: shapeSize,
                               fileDetails: imageLocationJson.fileDetails,
                               onClick: () async {
                                 await Future.delayed(Durations.short4);
+                                final course = await CourseRepo.getCourseById(courseId);
+                                if (course == null) return;
                                 if (context.mounted) {
-                                  ModifyCourseActions().previewImageActionRoute(
-                                    context,
-                                    courseImagePath: imageLocationJson,
-                                  );
+                                  ModifyCourseActions().onClickCourseImage(ref, course: course);
                                 }
                               },
                             )
@@ -245,11 +244,7 @@ class CourseDetailsHeaderContentChild extends ConsumerWidget {
                             reverseTransitionDuration: Durations.short4,
                             curve: CustomCurves.defaultIosSpring,
                             barrierColor: Colors.black.withAlpha(100),
-                            child: CourseDescriptionDialog(description: description).animate().scale(
-                              begin: Offset(0.5, 0.5),
-                              duration: Durations.extralong1,
-                              curve: CustomCurves.bouncySpring,
-                            ),
+                            child: CourseDescriptionDialog(description: description),
                           ),
                         );
                       }

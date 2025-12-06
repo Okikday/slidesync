@@ -7,7 +7,7 @@ import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/browse/collection/ui/screens/collection_materials_view.dart';
 import 'package:slidesync/routes/transition.dart';
 
-final courseNavRoute = GoRoute(
+final courseNavRoute = [GoRoute(
   name: Routes.courseDetails.name,
   path: Routes.courseDetails.path,
 
@@ -29,4 +29,9 @@ final courseNavRoute = GoRoute(
       ),
     ),
   ],
-);
+),  GoRoute(
+    name: Routes.collectionsView.name,
+    path: Routes.collectionsView.path,
+    pageBuilder: (context, state) =>
+        defaultTransition(state.pageKey, child: CollectionsView(courseId: (state.extra as String))),
+  ),];

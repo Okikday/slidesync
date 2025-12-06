@@ -8,7 +8,7 @@ import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
-import 'package:slidesync/features/browse/course/ui/components/course_categories_card.dart';
+import 'package:slidesync/features/browse/course/ui/components/collection_card.dart';
 import 'package:slidesync/features/browse/collection/ui/components/material_list_card.dart';
 import 'package:slidesync/features/main/presentation/library/actions/course_card_actions.dart';
 import 'package:slidesync/features/main/presentation/library/ui/src/courses_view/course_card.dart';
@@ -28,7 +28,7 @@ class LibraryTabViewSearchButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    final isDarkMode = ref.isDarkMode;
+    // final isDarkMode = ref.isDarkMode;
     final bottomPadding = context.bottomPadding;
     final bottomInsets = context.viewInsets.bottom;
 
@@ -115,10 +115,8 @@ class LibraryTabViewSearchButton extends ConsumerWidget {
                       ),
                       1 => Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: CourseCategoriesCard(
-                          isDarkMode: isDarkMode,
-                          title: (value as CourseCollection).collectionTitle,
-                          contentCount: (value).contents.length,
+                        child: CollectionCard(
+                          collection: (value as CourseCollection),
                           onTap: () async {
                             // controller.closeView("");
                             final curr = value;

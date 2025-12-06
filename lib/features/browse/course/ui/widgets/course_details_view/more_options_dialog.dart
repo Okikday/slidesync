@@ -9,18 +9,12 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/features/browse/course/ui/actions/course_details_actions.dart';
 import 'package:slidesync/features/browse/course/ui/actions/modify_course_actions.dart';
-import 'package:slidesync/features/browse/course/ui/widgets/modify/edit_course_bottom_sheet.dart';
+import 'package:slidesync/features/browse/course/ui/widgets/shared/edit_course_bottom_sheet.dart';
 import 'package:slidesync/features/share/export/course_export_manager.dart';
-import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
 import 'package:slidesync/routes/routes.dart';
-import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_model/course_collection.dart';
-import 'package:slidesync/features/browse/course/ui/widgets/course_details_header/animated_shape.dart';
-import 'package:slidesync/features/browse/course/ui/widgets/collection/edit_collection_title_bottom_sheet.dart';
+import 'package:slidesync/features/browse/course/ui/widgets/course_details_view/course_details_header/animated_shape.dart';
 import 'package:slidesync/features/browse/course/ui/actions/modify_collection_actions.dart';
-import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
-import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class MoreOptionsDialog extends ConsumerStatefulWidget {
@@ -121,7 +115,7 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
           icon: Icon(Iconsax.magic_star, size: 24, color: theme.supportingText),
           onTap: () {
             context.pop();
-            context.pushNamed(Routes.modifyCollections.name, extra: course.courseId);
+            context.pushNamed(Routes.collectionsView.name, extra: course.courseId);
           },
         ),
 
@@ -148,8 +142,8 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
       begin: 0.6,
       end: 1,
       alignment: Alignment.topRight,
-      duration: Durations.extralong2,
-      curve: CustomCurves.bouncySpring,
+      duration: Durations.medium1,
+      curve: CustomCurves.easeInOutSine,
     );
   }
 }

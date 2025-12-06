@@ -195,15 +195,17 @@ class ExpandCardDialog extends ConsumerWidget {
                     divider,
                     // BuildExpandCardButton(title: "Pin", iconData: Icons.pin_rounded, onTap: () {}),
                     // divider,
-                    BuildExpandCardButton(
-                      title: "Edit course",
-                      iconData: Iconsax.grid_edit,
-                      onTap: () {
-                        UiUtils.hideDialog(context);
-                        context.pushNamed(Routes.modifyCourse.name, extra: course.courseId);
-                      },
-                    ),
-                    divider,
+
+                    // BuildExpandCardButton(
+                    //   title: "Edit course",
+                    //   iconData: Iconsax.grid_edit,
+                    //   onTap: () {
+                    //     UiUtils.hideDialog(context);
+                    //     context.pushNamed(Routes.courseDetails.name, extra: course.courseId);
+                    //   },
+                    // ),
+                    // divider,
+
                     // BuildExpandCardButton(title: "Share", iconData: Icons.share_outlined, onTap: () {}),
                     // divider,
                     BuildExpandCardButton(

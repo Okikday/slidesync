@@ -7,17 +7,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
+import 'package:slidesync/features/browse/course/ui/components/collection_card.dart';
 import 'package:slidesync/shared/global/providers/collections_providers.dart';
 import 'package:slidesync/routes/routes.dart';
-import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/features/browse/course/ui/widgets/course_details_collection_section.dart';
-import 'collections_list_view/mod_collection_card_tile.dart';
-import 'package:slidesync/features/browse/course/ui/widgets/collection/mod_collection_dialog.dart';
-import 'package:slidesync/features/browse/course/ui/widgets/modify/create_collection_bottom_sheet.dart';
-import 'package:slidesync/features/browse/course/ui/widgets/collection/empty_collections_view.dart';
+import 'package:slidesync/features/browse/course/ui/widgets/course_details_view/course_details_collection_section.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/features/browse/course/ui/widgets/shared/create_collection_bottom_sheet.dart';
+import 'package:slidesync/features/browse/course/ui/widgets/collections_view/empty_collections_view.dart';
 
-class CollectionsListView extends ConsumerWidget {
-  const CollectionsListView({super.key, required this.courseId, required this.searchCollectionTextNotifier});
+class ListCollectionsSection extends ConsumerWidget {
+  const ListCollectionsSection({super.key, required this.courseId, required this.searchCollectionTextNotifier});
   final String courseId;
   final ValueNotifier<String> searchCollectionTextNotifier;
 
@@ -25,6 +24,7 @@ class CollectionsListView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final collectionsProvider = CollectionsProviders.collectionsProvider(courseId);
     final collectionsN = ref.watch(collectionsProvider);
+    final isDarkMode = context.isDarkMode;
 
     return ValueListenableBuilder(
       valueListenable: searchCollectionTextNotifier,
@@ -48,6 +48,7 @@ class CollectionsListView extends ConsumerWidget {
                 },
               );
             }
+            
             final searchText = searchCollectionTextNotifier.value;
             final collections =
                 (searchText.trim().isEmpty
@@ -60,22 +61,15 @@ class CollectionsListView extends ConsumerWidget {
                     .toList();
 
             return SliverPadding(
-              padding: EdgeInsets.symmetric(horizontal: 14.0, vertical: 12),
-              sliver: SliverList.builder(
+              padding: EdgeInsets.fromLTRB(14, 0, 14, 64),
+              sliver: SliverList.separated(
                 itemCount: collections.length,
                 itemBuilder: (context, index) {
                   final CourseCollection collection = collections[index];
-                  return ModCollectionCardTile(
-                    title: collection.collectionTitle,
-                    contentCount: collection.contents.length,
-                    onSelected: () {
-                      UiUtils.showCustomDialog(
-                        context,
-                        child: ModCollectionDialog(courseId: courseId, collection: collection),
-                      );
-                    },
+                  return CollectionCard(
+                    collection: collection,
                     onTap: () {
-                      context.pushNamed(Routes.courseMaterials.name, extra: collection.collectionId);
+                      context.pushNamed(Routes.courseMaterials.name, extra: collection);
                     },
                   ).animate().fadeIn().slideY(
                     begin: (index / collections.length + 1) * 0.4,
@@ -84,6 +78,7 @@ class CollectionsListView extends ConsumerWidget {
                     duration: Durations.extralong2,
                   );
                 },
+                separatorBuilder: (BuildContext context, int index) => ConstantSizing.columnSpacingMedium,
               ),
             );
           },

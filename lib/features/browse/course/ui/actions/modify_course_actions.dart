@@ -15,9 +15,9 @@ import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/browse/shared/usecases/collections/modify_collection_uc.dart';
 import 'package:slidesync/features/browse/shared/usecases/courses/create_course_uc.dart';
-import 'package:slidesync/features/browse/course/ui/widgets/course_description_dialog.dart';
-import 'package:slidesync/features/browse/course/ui/widgets/modify/edit_course_bottom_sheet.dart';
-import 'package:slidesync/features/browse/course/ui/widgets/preview_modify_course_image_dialog.dart';
+import 'package:slidesync/features/browse/course/ui/widgets/shared/course_description_dialog.dart';
+import 'package:slidesync/features/browse/course/ui/widgets/shared/edit_course_bottom_sheet.dart';
+import 'package:slidesync/features/browse/course/ui/widgets/shared/preview_modify_course_image_dialog.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -83,7 +83,7 @@ class ModifyCourseActions {
         context,
         canPop: true,
         reverseTransitionDuration: Durations.short4,
-        transitionType: TransitionType.cupertinoDialog,
+        transitionType: TransitionType.fade,
         curve: CustomCurves.defaultIosSpring,
         barrierColor: Colors.black54,
         child: CourseDescriptionDialog(
@@ -151,36 +151,52 @@ class ModifyCourseActions {
   void onClickCourseImage(WidgetRef ref, {required Course course}) {
     final context = ref.context;
     final iconColor = ref.supportingText;
+    final hasImage = course.imageLocation.containsFilePath;
     final List<AppActionDialogModel> dialogModels = [
-      AppActionDialogModel(
-        title: "View image",
-        icon: Icon(Iconsax.crop, size: 28, color: iconColor),
-        onTap: () async {
-          CustomDialog.hide(context);
-          await Future.delayed(Durations.short2);
-          if (context.mounted) previewImageActionRoute(context, courseImagePath: course.imageLocationJson);
-        },
-      ),
-      AppActionDialogModel(
-        title: "Change image",
-        icon: Icon(Iconsax.edit, size: 28, color: iconColor),
-        onTap: () async {
-          CustomDialog.hide(context);
-          await Future.delayed(Durations.short2);
-          if (context.mounted) await pickImageActionRoute(context, courseDbId: course.id);
-        },
-      ),
-      AppActionDialogModel(
-        title: "Remove image",
-        icon: Icon(Iconsax.trash, size: 28, color: iconColor),
-        onTap: () async {
-          CustomDialog.hide(context);
-          await Future.delayed(Durations.short2);
-          if (context.mounted) CustomDialog.showLoadingDialog(context, msg: "Removing image");
-          await deleteCourseImageAction(courseDbId: course.id);
-          if (context.mounted) CustomDialog.hide(context);
-        },
-      ),
+      if (hasImage)
+        AppActionDialogModel(
+          title: "View",
+          icon: Icon(Iconsax.crop, size: 28, color: iconColor),
+          onTap: () async {
+            CustomDialog.hide(context);
+            await Future.delayed(Durations.short2);
+            if (context.mounted) previewImageActionRoute(context, courseImagePath: course.imageLocationJson);
+          },
+        )
+      else
+        AppActionDialogModel(
+          title: "Set image",
+          icon: Icon(Iconsax.crop, size: 28, color: iconColor),
+          onTap: () async {
+            CustomDialog.hide(context);
+            await Future.delayed(Durations.short2);
+            if (context.mounted) pickImageActionRoute(context, courseDbId: course.id);
+          },
+        ),
+
+      if (hasImage)
+        AppActionDialogModel(
+          title: "Change",
+          icon: Icon(Iconsax.edit, size: 28, color: iconColor),
+          onTap: () async {
+            CustomDialog.hide(context);
+            await Future.delayed(Durations.short2);
+            if (context.mounted) await pickImageActionRoute(context, courseDbId: course.id);
+          },
+        ),
+
+      if (hasImage)
+        AppActionDialogModel(
+          title: "Remove",
+          icon: Icon(Iconsax.trash, size: 28, color: iconColor),
+          onTap: () async {
+            CustomDialog.hide(context);
+            await Future.delayed(Durations.short2);
+            if (context.mounted) CustomDialog.showLoadingDialog(context, msg: "Removing image");
+            await deleteCourseImageAction(courseDbId: course.id);
+            if (context.mounted) CustomDialog.hide(context);
+          },
+        ),
     ];
     CustomDialog.show(
       context,
@@ -193,7 +209,12 @@ class ModifyCourseActions {
           AppActionDialog(
             leading: Padding(
               padding: const EdgeInsets.only(left: 12, bottom: 16),
-              child: CustomText("Adjust image", fontSize: 16, fontWeight: FontWeight.bold),
+              child: CustomText(
+                hasImage ? "Adjust image" : "No Image",
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: ref.onBackground,
+              ),
             ),
             actions: dialogModels,
           ).animate().fadeIn().scaleXY(

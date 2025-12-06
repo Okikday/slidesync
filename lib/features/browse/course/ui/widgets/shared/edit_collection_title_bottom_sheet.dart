@@ -70,7 +70,7 @@ class _EditCollectionTitleBottomSheetState extends ConsumerState<EditCollectionT
                   // onTapOutside: () {},
                   onSubmitted: (text) async {
                     final collectionTitle = collection.collectionTitle;
-                    final isValid = await EditCollectionActions().validateCollectionTitle(
+                    final isValid = await ModifyCollectionActions().validateCollectionTitle(
                       context,
                       text: text,
                       collectionTitle: collectionTitle,

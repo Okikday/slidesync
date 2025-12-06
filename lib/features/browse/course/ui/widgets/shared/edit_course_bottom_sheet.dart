@@ -7,7 +7,7 @@ import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/features/browse/course/ui/actions/edit_course_actions.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/create_course/input_course_code_field.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/create_course/input_course_title_field.dart';
-import 'package:slidesync/features/browse/course/ui/widgets/modify/edit_course_bottom_sheet/edit_course_input_description_field.dart';
+import 'package:slidesync/features/browse/course/ui/widgets/shared/edit_course_bottom_sheet/edit_course_input_description_field.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 
