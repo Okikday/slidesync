@@ -5,7 +5,7 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:isar/isar.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
-import 'package:slidesync/features/browse/presentation/ui/course_materials/course_material_list_card.dart';
+import 'package:slidesync/features/browse/collection/ui/components/material_list_card.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/circular_loading_indicator.dart';
@@ -98,7 +98,7 @@ class _LibrarySearchViewState extends ConsumerState<LibrarySearchView> {
                                 itemBuilder: (context, index) {
                                   return Padding(
                                     padding: const EdgeInsets.only(bottom: 8.0),
-                                    child: CourseMaterialListCard(content: contents[index], showGoToCollection: true,),
+                                    child: MaterialListCard(content: contents[index], showGoToCollection: true),
                                   );
                                 },
                               );

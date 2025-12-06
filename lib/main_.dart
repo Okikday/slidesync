@@ -5,9 +5,12 @@ part of 'main.dart';
 
 Future<void> _appLaunchRoutine() async {
   /// Clear App Cache every 23 hours
-  final lastDateHive = (await Result.tryRunAsync<DateTime?>(() async {
-    return (await AppHiveData.instance.getData<DateTime?>(key: HiveDataPathKey.lastClearedCacheDate.name));
-  })).data;
+  final lastDateHive = DateTime.tryParse(
+    (await Result.tryRunAsync<String>(() async {
+          return (await AppHiveData.instance.getData<String?>(key: HiveDataPathKey.lastClearedCacheDate.name));
+        })).data ??
+        '',
+  );
   if (lastDateHive == null) {
     await AppHiveData.instance.setData(
       key: HiveDataPathKey.lastClearedCacheDate.name,

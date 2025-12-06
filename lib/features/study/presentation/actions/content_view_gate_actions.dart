@@ -11,7 +11,7 @@ import 'package:path/path.dart' as p;
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
-import 'package:slidesync/features/browse/presentation/logic/course_materials_provider.dart';
+import 'package:slidesync/features/browse/collection/providers/collection_materials_provider.dart';
 import 'package:slidesync/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/routes/routes.dart';
@@ -21,8 +21,8 @@ import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
 
 import 'package:slidesync/features/study/domain/services/drive_browser.dart';
-import 'package:slidesync/features/manage/presentation/contents/actions/add_contents_actions.dart';
-import 'package:slidesync/features/manage/domain/usecases/contents/handle_archive_uc.dart';
+import 'package:slidesync/features/browse/collection/ui/actions/add_contents_actions.dart';
+import 'package:slidesync/features/browse/shared/usecases/contents/handle_archive_uc.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_alert_dialog.dart';
 
@@ -70,7 +70,7 @@ class ContentViewGateActions {
         if (filenameExt.toLowerCase().contains("pdf") || p.extension(urlPath).toLowerCase().contains("pdf")) {
           Result.tryRun(() async {
             final pageProvider = await ref.read(
-              CourseMaterialsProvider.contentPaginationProvider(content.parentId).future,
+              CollectionMaterialsProvider.contentPaginationProvider(content.parentId).future,
             );
             if (pageProvider.isUpdating) return;
             pageProvider.stopIsolate();

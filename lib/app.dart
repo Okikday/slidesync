@@ -13,7 +13,7 @@ import 'package:slidesync/core/utils/file_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/main/presentation/main/logic/main_provider.dart';
-import 'package:slidesync/features/manage/presentation/contents/ui/modify_contents/move_to_collection_bottom_sheet.dart';
+import 'package:slidesync/features/browse/collection/ui/widgets/modify_contents/move_to_collection_bottom_sheet.dart';
 import 'package:slidesync/features/settings/presentation/controllers/settings_controller.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';

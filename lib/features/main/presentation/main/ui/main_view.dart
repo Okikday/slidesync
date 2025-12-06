@@ -42,7 +42,6 @@ class _MainViewState extends ConsumerState<MainView> {
   Widget build(BuildContext context) {
     // super.build(context);
 
-    log("Main View build...");
 
     return PopScope(
       canPop: false,

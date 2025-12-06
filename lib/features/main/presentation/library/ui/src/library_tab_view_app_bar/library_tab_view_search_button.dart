@@ -8,8 +8,8 @@ import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
-import 'package:slidesync/features/browse/presentation/ui/course_details/course_categories_card.dart';
-import 'package:slidesync/features/browse/presentation/ui/course_materials/course_material_list_card.dart';
+import 'package:slidesync/features/browse/course/ui/components/course_categories_card.dart';
+import 'package:slidesync/features/browse/collection/ui/components/material_list_card.dart';
 import 'package:slidesync/features/main/presentation/library/actions/course_card_actions.dart';
 import 'package:slidesync/features/main/presentation/library/ui/src/courses_view/course_card.dart';
 import 'package:slidesync/features/main/presentation/library/ui/src/library_tab_view_app_bar/build_button.dart';
@@ -128,7 +128,7 @@ class LibraryTabViewSearchButton extends ConsumerWidget {
                           },
                         ),
                       ),
-                      2 => CourseMaterialListCard(content: value as CourseContent, showGoToCollection: true),
+                      2 => MaterialListCard(content: value as CourseContent, showGoToCollection: true),
                       _ => const SizedBox(),
                     };
                   },

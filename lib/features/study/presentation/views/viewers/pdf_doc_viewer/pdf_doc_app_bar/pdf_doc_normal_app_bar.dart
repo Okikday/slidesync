@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
-import 'package:slidesync/features/browse/presentation/logic/course_materials_provider.dart';
+import 'package:slidesync/features/browse/collection/providers/collection_materials_provider.dart';
 import 'package:slidesync/features/main/presentation/library/ui/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
 import 'package:slidesync/features/study/presentation/logic/pdf_doc_viewer_provider.dart';
@@ -38,7 +38,7 @@ class PdfDocNormalAppBar extends ConsumerWidget {
                     if (content != null) {
                       await Result.tryRunAsync(() async {
                         (await ref.read(
-                          CourseMaterialsProvider.contentPaginationProvider(content.parentId).future,
+                          CollectionMaterialsProvider.contentPaginationProvider(content.parentId).future,
                         )).restartIsolate();
                       });
                     }

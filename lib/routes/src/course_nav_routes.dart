@@ -2,9 +2,9 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/routes/app_router.dart';
-import 'package:slidesync/features/browse/presentation/ui/course_details_view.dart';
+import 'package:slidesync/features/browse/course/ui/screens/course_details_view.dart';
 import 'package:slidesync/routes/routes.dart';
-import 'package:slidesync/features/browse/presentation/ui/course_materials_view.dart';
+import 'package:slidesync/features/browse/collection/ui/screens/collection_materials_view.dart';
 import 'package:slidesync/routes/transition.dart';
 
 final courseNavRoute = GoRoute(
@@ -25,7 +25,7 @@ final courseNavRoute = GoRoute(
       path: Routes.courseMaterials.subPath,
       pageBuilder: (context, state) => defaultTransition(
         state.pageKey,
-        child: CourseMaterialsView(collection: state.extra as CourseCollection, isFullScreen: false),
+        child: CollectionMaterialsView(collection: state.extra as CourseCollection, isFullScreen: false),
       ),
     ),
   ],

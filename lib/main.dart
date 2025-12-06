@@ -1,7 +1,10 @@
 // import 'package:firebase_core/firebase_core.dart';
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+// import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -10,9 +13,9 @@ import 'package:slidesync/core/constants/constants.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
-import 'package:slidesync/core/utils/file_utils.dart';
 
 import 'package:slidesync/app.dart';
+import 'package:slidesync/core/utils/file_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
