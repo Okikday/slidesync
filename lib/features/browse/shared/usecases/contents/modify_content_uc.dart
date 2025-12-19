@@ -9,7 +9,7 @@ import 'package:slidesync/core/utils/file_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
-import 'package:slidesync/features/main/presentation/home/actions/recent_dialog_actions.dart';
+import 'package:slidesync/features/main/ui/actions/recent_dialog_actions.dart';
 
 class ModifyContentUc {
   Future<String?> deleteContent(CourseContent content) async {

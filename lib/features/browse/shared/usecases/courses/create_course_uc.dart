@@ -7,7 +7,7 @@ import 'package:slidesync/core/utils/image_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
-import 'package:slidesync/features/auth/domain/usecases/auth_uc/user_data_functions.dart';
+import 'package:slidesync/features/auth/logic/usecases/auth_uc/user_data_functions.dart';
 import 'package:slidesync/shared/helpers/formatter.dart';
 
 class CreateCourseUc {

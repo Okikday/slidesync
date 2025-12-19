@@ -1,0 +1,181 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'dart:developer';
+import 'dart:io';
+
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:open_filex/open_filex.dart';
+import 'package:path/path.dart' as p;
+import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/utils/device_utils.dart';
+import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/features/browse/collection/providers/collection_materials_provider.dart';
+import 'package:slidesync/features/settings/providers/settings_controller.dart';
+import 'package:slidesync/routes/app_router.dart';
+import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/core/utils/result.dart';
+import 'package:slidesync/core/utils/ui_utils.dart';
+import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/file_details.dart';
+
+import 'package:slidesync/features/study/logic/services/drive_browser.dart';
+import 'package:slidesync/features/browse/collection/ui/actions/add_contents_actions.dart';
+import 'package:slidesync/features/browse/shared/usecases/contents/handle_archive_uc.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/dialogs/app_alert_dialog.dart';
+
+import 'package:url_launcher/url_launcher.dart';
+
+class ContentViewGateActions {
+  static Future<void> redirectToViewer(
+    WidgetRef ref,
+    CourseContent content, {
+    bool popBefore = true,
+    bool? openOutsideApp,
+  }) async {
+    final context = ref.context;
+    if (openOutsideApp == true) {
+      if (content.courseContentType == CourseContentType.link) {
+        await launchUrl(Uri.parse(content.path.urlPath));
+        if (popBefore) context.pop();
+        UiUtils.showFlushBar(context, msg: "Opening link outside app");
+        return;
+      } else {
+        await OpenFilex.open(content.path.filePath);
+        if (popBefore) context.pop();
+        UiUtils.showFlushBar(context, msg: "Opening with external application...");
+        return;
+      }
+    }
+
+    final isBuiltInViewer =
+        !(openOutsideApp ??
+            !((await ref.readSettings).useBuiltInViewer ??
+                !(content.courseContentType == CourseContentType.image ? true : DeviceUtils.isDesktop())));
+    if (!isBuiltInViewer && content.courseContentType != CourseContentType.link) {
+      await OpenFilex.open(content.path.filePath);
+      if (popBefore) context.pop();
+      UiUtils.showFlushBar(context, msg: "Opening with external application...");
+      return;
+    }
+    await Future.delayed(Durations.medium2);
+    if (!context.mounted) return;
+    final filePath = content.path.filePath;
+    final urlPath = content.path.urlPath;
+    final filenameExt = p.extension(filePath);
+    switch (content.courseContentType) {
+      case CourseContentType.document:
+        if (filenameExt.toLowerCase().contains("pdf") || p.extension(urlPath).toLowerCase().contains("pdf")) {
+          Result.tryRun(() async {
+            final pageProvider = await ref.read(
+              CollectionMaterialsProvider.contentPaginationProvider(content.parentId).future,
+            );
+            if (pageProvider.isUpdating) return;
+            pageProvider.stopIsolate();
+          });
+          popBefore
+              ? GoRouter.of(context).pushReplacementNamed(Routes.pdfDocumentViewer.name, extra: content)
+              : GoRouter.of(context).pushNamed(Routes.pdfDocumentViewer.name, extra: content);
+
+          return;
+        }
+        if (popBefore) context.pop();
+        await OpenFilex.open(content.path.filePath);
+
+        UiUtils.showFlushBar(context, msg: "Opening with external application...");
+      case CourseContentType.image:
+        popBefore
+            ? context.pushReplacementNamed(Routes.imageViewer.name, extra: content)
+            : context.pushNamed(Routes.imageViewer.name, extra: content);
+        return;
+
+      case CourseContentType.link:
+        final urlPath = content.path.urlPath;
+
+        if (!(content.metadataJson.decodeJson['resolved'] == true) && DriveBrowser.isGoogleDriveLink(urlPath)) {
+          popBefore
+              ? context.pushReplacementNamed(Routes.driveLinkViewer.name, extra: content)
+              : context.pushNamed(Routes.driveLinkViewer.name, extra: content);
+          return;
+        }
+        if (popBefore) context.pop();
+        final bool launchResult =
+            (await Result.tryRunAsync(() async => await launchUrl(Uri.parse(urlPath)))).data ?? false;
+
+        if (!launchResult) {
+          if (context.mounted) {
+            UiUtils.showFlushBar(context, msg: "Unable to open link. Invalid link or try connecting to the internet");
+          }
+        }
+        return;
+
+      default:
+        if (context.mounted && popBefore) context.pop();
+
+        if (await HandleArchiveUc().isSupportedByArchive(File(filePath))) {
+          await Result.tryRunAsync(() async {
+            if (rootNavigatorKey.currentContext!.mounted) {
+              await UiUtils.showCustomDialog(
+                rootNavigatorKey.currentContext!,
+                child: AppAlertDialog(
+                  title: "Unknown archive file",
+                  content: "We detected this to be an archive file, Would you want to extract it?",
+                  onCancel: () {
+                    rootNavigatorKey.currentContext!.pop();
+                  },
+                  onConfirm: () async {
+                    rootNavigatorKey.currentState!.pop();
+                    UiUtils.showLoadingDialog(
+                      rootNavigatorKey.currentState!.context,
+                      message: "Processing archive",
+                      canPop: false,
+                    );
+                    final file = File(filePath);
+                    if (await file.length() > 1024 * 1000 * 200) {
+                      rootNavigatorKey.currentState!.pop();
+                      UiUtils.showFlushBar(
+                        rootNavigatorKey.currentState!.context,
+                        msg: "Archive size is too large, couldn't extract.",
+                      );
+                      return;
+                    }
+                    final collection = await CourseCollectionRepo.getById(content.parentId);
+                    if (collection == null) {
+                      rootNavigatorKey.currentState!.pop();
+                      UiUtils.showFlushBar(
+                        rootNavigatorKey.currentState!.context,
+                        msg: "Couldn't get parent collection",
+                      );
+                      return;
+                    }
+                    rootNavigatorKey.currentState!.pop();
+
+                    UiUtils.showLoadingDialog(
+                      rootNavigatorKey.currentState!.context,
+                      message: "Unpacking archive",
+                      canPop: false,
+                    );
+
+                    final contentsToAdd = await HandleArchiveUc().extractArchiveToCache(File(filePath));
+                    rootNavigatorKey.currentState!.pop();
+                    log("${rootNavigatorKey.currentWidget}");
+                    AddContentsActions.onClickToAddContentNoRef(collection: collection, filePaths: contentsToAdd);
+                  },
+                ),
+              );
+              return;
+            }
+          });
+        }
+
+        await OpenFilex.open(content.path.filePath);
+
+        UiUtils.showFlushBar(context, msg: "Opening with external application...");
+        // if (context.mounted) UiUtils.showFlushBar(context, msg: "This content is not supported right now!");
+
+        return;
+    }
+  }
+}

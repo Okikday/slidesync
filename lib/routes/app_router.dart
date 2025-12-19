@@ -33,7 +33,7 @@ class AppRouter {
       ...courseMgmtRoutes,
       contentViewerRoute,
 
-      courseNavRoute,
+      ...courseNavRoutes,
 
       settingsRoute,
     ],

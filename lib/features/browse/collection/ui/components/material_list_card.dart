@@ -16,8 +16,8 @@ import 'package:slidesync/features/browse/collection/ui/components/content_card.
 import 'package:slidesync/features/browse/shared/usecases/contents/retrieve_content_uc.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/modify_content_card_actions.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/modify_contents_action.dart';
-import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
-import 'package:slidesync/features/study/presentation/actions/content_view_gate_actions.dart';
+import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
+import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/formatter.dart';

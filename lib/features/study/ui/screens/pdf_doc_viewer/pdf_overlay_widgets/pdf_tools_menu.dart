@@ -1,0 +1,51 @@
+import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:slidesync/features/ask_ai/ui/screens/ask_ai_screen.dart';
+import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+
+class PdfToolsMenu extends ConsumerWidget {
+  final bool isVisible;
+  final String contentId;
+  const PdfToolsMenu({super.key, required this.isVisible, required this.contentId});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref;
+    return ScaleClickWrapper(
+      borderRadius: 100,
+      onTap: () {
+        Navigator.push(
+          context,
+          PageAnimation.pageRouteBuilder(
+            AskAiScreen(contentId: contentId),
+            type: TransitionType.none,
+            reverseDuration: Durations.short1,
+            opaque: false,
+            barrierColor: theme.background.withAlpha(180),
+          ),
+        );
+      },
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              offset: Offset(-3, -3),
+              color: theme.onPrimary.withValues(alpha: 0.7),
+              blurStyle: BlurStyle.normal,
+              blurRadius: 50,
+            ),
+          ],
+          gradient: RadialGradient(colors: [theme.background, theme.primary]),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Icon(Iconsax.magic_star, size: 20, color: theme.onBackground),
+        ),
+      ),
+    );
+  }
+}

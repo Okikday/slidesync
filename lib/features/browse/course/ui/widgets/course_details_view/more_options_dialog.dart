@@ -10,7 +10,7 @@ import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/features/browse/course/ui/actions/course_details_actions.dart';
 import 'package:slidesync/features/browse/course/ui/actions/modify_course_actions.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/shared/edit_course_bottom_sheet.dart';
-import 'package:slidesync/features/share/export/course_export_manager.dart';
+import 'package:slidesync/features/share/ui/screens/export/course_export_manager.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/course_details_view/course_details_header/animated_shape.dart';
 import 'package:slidesync/features/browse/course/ui/actions/modify_collection_actions.dart';

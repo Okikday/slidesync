@@ -12,10 +12,10 @@ import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/retrieve_content_uc.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/modify_content_card_actions.dart';
-import 'package:slidesync/features/settings/domain/models/settings_model.dart';
-import 'package:slidesync/features/settings/presentation/controllers/settings_controller.dart';
-import 'package:slidesync/features/share/presentation/actions/share_content_actions.dart';
-import 'package:slidesync/features/study/presentation/actions/content_view_gate_actions.dart';
+import 'package:slidesync/features/settings/logic/models/settings_model.dart';
+import 'package:slidesync/features/settings/providers/settings_controller.dart';
+import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
+import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
 import 'package:slidesync/routes/app_router.dart';
 
 import 'package:slidesync/routes/routes.dart';
