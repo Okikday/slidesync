@@ -168,29 +168,29 @@ class AddContentCardSection extends ConsumerWidget {
                     spacing: 8.0,
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Flexible(
-                        child: CustomElevatedButton(
-                          onClick: () async {
-                            AddContentsActions.onClickToAddContent(
-                              context,
-                              collection: collection,
-                              type: typeMap[0]!,
-                              selectByFolder: true,
-                            );
-                          },
-                          backgroundColor: theme.altBackgroundSecondary,
-                          pixelHeight: 40,
-                          borderRadius: 16,
-                          child: Row(
-                            spacing: 8.0,
-                            children: [
-                              Icon(Iconsax.note_add, color: theme.supportingText),
-                              CustomText("Select folder", color: theme.onBackground),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Flexible(
+                      // Expanded(
+                      //   child: CustomElevatedButton(
+                      //     onClick: () async {
+                      //       AddContentsActions.onClickToAddContent(
+                      //         context,
+                      //         collection: collection,
+                      //         type: typeMap[0]!,
+                      //         selectByFolder: true,
+                      //       );
+                      //     },
+                      //     backgroundColor: theme.altBackgroundSecondary,
+                      //     pixelHeight: 40,
+                      //     borderRadius: 16,
+                      //     child: Row(
+                      //       spacing: 8.0,
+                      //       children: [
+                      //         Icon(Iconsax.note_add, color: theme.supportingText),
+                      //         CustomText("Select folder", color: theme.onBackground),
+                      //       ],
+                      //     ),
+                      //   ),
+                      // ),
+                      Expanded(
                         child: CustomElevatedButton(
                           onClick: () {
                             UiUtils.hideDialog(context);
@@ -200,7 +200,7 @@ class AddContentCardSection extends ConsumerWidget {
                               child: AddLinkBottomSheet(collection: collection),
                             );
                           },
-                          backgroundColor: theme.altBackgroundPrimary,
+                          backgroundColor: theme.altBackgroundSecondary,
                           pixelHeight: 44,
                           borderRadius: 16,
                           child: Padding(

@@ -70,7 +70,7 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
                 child: Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: CustomText(
-                    course.courseTitle,
+                    course.courseName,
                     decorationColor: theme.secondary,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,

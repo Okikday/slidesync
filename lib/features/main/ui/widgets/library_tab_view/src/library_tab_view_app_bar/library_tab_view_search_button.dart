@@ -14,6 +14,7 @@ import 'package:slidesync/features/main/ui/actions/course_card_actions.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/course_card.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
+import 'package:slidesync/shared/global/providers/course_providers.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
@@ -115,14 +116,21 @@ class LibraryTabViewSearchButton extends ConsumerWidget {
                       ),
                       1 => Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: CollectionCard(
-                          collection: (value as CourseCollection),
-                          onTap: () async {
-                            // controller.closeView("");
-                            final curr = value;
-                            final parent = await CourseRepo.getCourseById(curr.parentId);
-                            if (parent == null) return;
-                            CourseCardActions.of(ref).onTapCourseCard(parent);
+                        child: FutureBuilder(
+                          future: CourseRepo.getCourseById((value as CourseCollection).parentId),
+                          builder: (context, courseSnapshot) {
+                            return CollectionCard(
+                              collection: (value),
+                              subtitleText:
+                                  "${value.contents.length} items -> ${courseSnapshot.data?.courseTitle ?? ""}",
+                              onTap: () async {
+                                // controller.closeView("");
+                                final curr = value;
+                                final parent = await CourseRepo.getCourseById(curr.parentId);
+                                if (parent == null) return;
+                                CourseCardActions.of(ref).onTapCourseCard(parent);
+                              },
+                            );
                           },
                         ),
                       ),

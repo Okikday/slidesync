@@ -8,6 +8,6 @@ class AppPaths {
   //// All relative paths
   static final coursesFolder = _appFolderName + Platform.pathSeparator + _coursesFolderName;
   static final previewsFolder = _appFolderName + Platform.pathSeparator + _previews;
-  
-}
 
+  static final operationsCacheFolder = "$_appFolderName${Platform.pathSeparator}operations_cache";
+}

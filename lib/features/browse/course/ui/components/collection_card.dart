@@ -22,12 +22,14 @@ class CollectionCard extends ConsumerStatefulWidget {
   final void Function() onTap;
   final ({bool? selected, void Function() onSelected})? select;
   final bool showSelectOption;
+  final String? subtitleText;
   const CollectionCard({
     super.key,
     required this.collection,
     required this.onTap,
     this.select,
     this.showSelectOption = false,
+    this.subtitleText,
   });
 
   @override
@@ -35,14 +37,14 @@ class CollectionCard extends ConsumerStatefulWidget {
 }
 
 class _CollectionCardState extends ConsumerState<CollectionCard> {
-  final List<RoundedPolygon> shapes = List.from(materialShapes.map((e) => e.shape));
-  late final RoundedPolygon shape;
-  @override
-  void initState() {
-    super.initState();
-    final randomIndex = math.Random().nextInt(shapes.length);
-    shape = shapes[randomIndex];
-  }
+  // final List<RoundedPolygon> shapes = List.from(materialShapes.map((e) => e.shape));
+  // late final RoundedPolygon shape;
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   final randomIndex = math.Random().nextInt(shapes.length);
+  //   shape = shapes[randomIndex];
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -72,12 +74,19 @@ class _CollectionCardState extends ConsumerState<CollectionCard> {
                   shape: BoxShape.circle,
                   border: Border.fromBorderSide(BorderSide(color: ref.primary.withAlpha(40), width: 1.0)),
                 ),
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: ClipPath(
-                    clipper: MorphClipper(path: shape.toPath(), size: Size(20, 20)),
-                    child: ColoredBox(color: theme.primaryColor),
-                  ),
+                // child: Padding(
+                //   padding: const EdgeInsets.all(8.0),
+                //   child: ClipPath(
+                //     clipper: MorphClipper(path: shape.toPath(), size: Size(20, 20)),
+                //     child: ColoredBox(color: theme.primaryColor),
+                //   ),
+                // ),
+                alignment: Alignment.center,
+                child: CustomText(
+                  collection.collectionTitle.substring(0, 1).toUpperCase(),
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                  color: theme.primaryColor,
                 ),
               ),
               ConstantSizing.rowSpacingMedium,
@@ -95,7 +104,8 @@ class _CollectionCardState extends ConsumerState<CollectionCard> {
                       maxLines: 2,
                     ),
                     CustomText(
-                      "${collection.contents.isEmpty ? "No" : "${collection.contents.length}"} ${collection.contents.length == 1 ? "item" : "items"}",
+                      widget.subtitleText ??
+                          "${collection.contents.isEmpty ? "No" : "${collection.contents.length}"} ${collection.contents.length == 1 ? "item" : "items"}",
                       fontSize: 12,
                       color: theme.supportingText,
                     ),

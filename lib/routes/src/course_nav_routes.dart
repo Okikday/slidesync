@@ -26,6 +26,7 @@ final courseNavRoutes = [
         path: Routes.courseMaterials.subPath,
         pageBuilder: (context, state) => defaultTransition(
           state.pageKey,
+          outgoing: TransitionType.fade,
           child: CollectionMaterialsView(collection: state.extra as CourseCollection, isFullScreen: false),
         ),
       ),

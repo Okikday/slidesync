@@ -11,7 +11,7 @@ import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/main/ui/actions/recent_dialog_actions.dart';
 import 'package:slidesync/features/main/providers/home_provider.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
-import 'package:slidesync/features/main/ui/widgets/home_tab_view/src/home_body/recents_section/recent_dialog.dart';
+import 'package:slidesync/features/main/ui/components/recent_dialog.dart';
 import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
@@ -45,7 +45,7 @@ class RecentsSectionBody extends ConsumerWidget {
               return RecentListTile(
                 dataModel: RecentListTileModel(
                   title: content.title ?? "No title",
-                  subtitle: content.pages.isEmpty ? "Unknown" : "Page ${content.pages.last}",
+                  subtitle: content.pages.isEmpty ? "" : "Page ${content.pages.last}",
                   // extraContent: DummySlides.dummySlides[index]['extraContent'] as String? ?? "",
                   previewPath: previewPath,
                   progressLevel: ProgressLevel.neutral,

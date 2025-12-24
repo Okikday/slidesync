@@ -34,12 +34,12 @@ dependencies:
   path_provider: ^2.1.5
 
 
-  # google_sign_in: ^7.2.0
-  # cloud_firestore: ^6.0.0
-  # firebase_auth: ^6.0.1
-  # firebase_core: ^4.1.0
-  # firebase_database: ^12.0.0
-  # firebase_storage: ^13.0.0
+  google_sign_in: ^7.2.0
+  cloud_firestore: ^6.0.0
+  firebase_auth: ^6.0.1
+  firebase_core: ^4.1.0
+  firebase_database: ^12.0.0
+  firebase_storage: ^13.0.0
   
 
   open_filex: ^4.7.0
@@ -97,6 +97,7 @@ dependencies:
   
   web_smooth_scroll: ^2.0.0
   gradient_glow_border: ^1.0.3
+  es_compression: ^2.0.15
 
 flutter_native_splash:
   android: true

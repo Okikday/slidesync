@@ -60,7 +60,7 @@ class ContentViewGateActions {
       UiUtils.showFlushBar(context, msg: "Opening with external application...");
       return;
     }
-    await Future.delayed(Durations.medium2);
+    // await Future.delayed(Durations.medium2);
     if (!context.mounted) return;
     final filePath = content.path.filePath;
     final urlPath = content.path.urlPath;

@@ -19,7 +19,6 @@ class AddContentFAB extends ConsumerWidget {
       backgroundColor: theme.secondary,
       shape: CircleBorder(),
       tooltip: "Add Materials",
-      mini: true,
       onPressed: () {
         CustomDialog.show(
           context,

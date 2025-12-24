@@ -33,7 +33,7 @@ class ListCourseCard extends ConsumerWidget {
       height: 100,
       constraints: BoxConstraints(maxWidth: 500),
       decoration: BoxDecoration(
-        color: theme.adjustBgAndPrimaryWithLerpExtra,
+        color: theme.cardColor,
         borderRadius: BorderRadius.circular(14),
         border: Border.fromBorderSide(BorderSide(color: theme.onBackground.withAlpha(10))),
         boxShadow: context.isDarkMode
@@ -90,7 +90,7 @@ class ListCourseCard extends ConsumerWidget {
         ),
         child: Row(
           children: [
-            ListCourseCardIcon(onTapIcon: onTapIcon, fileDetails: course.imageLocation, courseCode: course.courseCode),
+            ListCourseCardIcon(course: course, onTapIcon: onTapIcon),
 
             Expanded(
               child: ListCourseCardTitleColumn(
@@ -101,7 +101,8 @@ class ListCourseCard extends ConsumerWidget {
               ),
             ),
 
-            ListCourseCardProgressIndicator(courseId: course.courseId),
+            // ListCourseCardProgressIndicator(courseId: course.courseId),
+            Icon(Iconsax.arrow_right_1, size: 30, color: theme.supportingText.withAlpha(100)),
           ],
         ),
       ),
@@ -109,59 +110,125 @@ class ListCourseCard extends ConsumerWidget {
   }
 }
 
-class ListCourseCardIcon extends ConsumerWidget {
-  const ListCourseCardIcon({super.key, required this.fileDetails, this.courseCode = '', required this.onTapIcon});
-
-  final FileDetails fileDetails;
-  final String courseCode;
+class ListCourseCardIcon extends ConsumerStatefulWidget {
+  const ListCourseCardIcon({super.key, required this.course, required this.onTapIcon});
+  final Course course;
   final void Function() onTapIcon;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ListCourseCardIcon> createState() => _ListCourseCardIconState();
+}
+
+class _ListCourseCardIconState extends ConsumerState<ListCourseCardIcon> {
+  late Stream<CourseTrack?> _courseTrackStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _courseTrackStream = CourseTrackRepo.watchByCourseId(widget.course.courseId);
+  }
+
+  @override
+  void didUpdateWidget(covariant ListCourseCardIcon oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.course.courseId != widget.course.courseId) {
+      setState(() {
+        _courseTrackStream = CourseTrackRepo.watchByCourseId(widget.course.courseId);
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = ref;
-    return InkWell(
-      customBorder: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      onTap: onTapIcon,
-      child: Container(
-        height: 64,
-        width: 64,
-        padding: EdgeInsets.all(2),
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          // color: theme.background.lightenColor(context.isDarkMode ? 0.1 : 0.8).withValues(alpha: 0.8),
-          color: theme.altBackgroundPrimary,
-          // border: courseCode.isEmpty ? null : Border.all(color: theme.altBackgroundPrimary),
-          border: theme.isDarkMode
-              ? Border.fromBorderSide(BorderSide(color: ref.primary.withAlpha(40), width: 1.0))
-              : Border.all(color: theme.altBackgroundPrimary),
-          // borderRadius: BorderRadius.circular(12),
-        ),
-        child: Opacity(
-          opacity: 0.8,
-          child: ClipOval(
-            child: BuildImagePathWidget(
-              height: 64,
-              width: 64,
-              fileDetails: fileDetails,
-              fallbackWidget: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: courseCode.isEmpty
-                    ? Icon(Iconsax.document_1, color: theme.onBackground.withValues(alpha: 0.4))
-                    : Center(
-                        child: CustomText(
-                          courseCode.substring(0, courseCode.length.clamp(0, 8)),
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          textAlign: TextAlign.center,
-                          color: theme.onBackground.withValues(alpha: 0.5),
-                        ),
-                      ),
+    return Stack(
+      children: [
+        InkWell(
+          // customBorder: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          onTap: widget.onTapIcon,
+          child: Container(
+            // height: 64,
+            // width: 64,
+            height: 56,
+            width: 56,
+            padding: EdgeInsets.all(2),
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              // color: theme.background.lightenColor(context.isDarkMode ? 0.1 : 0.8).withValues(alpha: 0.8),
+              color: theme.altBackgroundPrimary,
+              // border: courseCode.isEmpty ? null : Border.all(color: theme.altBackgroundPrimary),
+              border: theme.isDarkMode
+                  ? Border.fromBorderSide(BorderSide(color: ref.primary.withAlpha(40), width: 1.0))
+                  : Border.all(color: theme.altBackgroundPrimary),
+              // borderRadius: BorderRadius.circular(12),
+            ),
+            child: Opacity(
+              opacity: 0.8,
+              child: ClipOval(
+                child: BuildImagePathWidget(
+                  height: 64,
+                  width: 64,
+                  fileDetails: widget.course.imageLocation,
+                  fallbackWidget: Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: widget.course.courseCode.isEmpty
+                        ? const SizedBox.shrink()
+                        : Center(
+                            child: CustomText(
+                              widget.course.courseCode.substring(0, widget.course.courseCode.length.clamp(0, 8)),
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              textAlign: TextAlign.center,
+                              color: theme.onBackground.withValues(alpha: 0.5),
+                            ),
+                          ),
+                  ),
+                ),
               ),
             ),
           ),
         ),
-      ),
+
+        Positioned.fill(
+          child: IgnorePointer(
+            child: StreamBuilder(
+              stream: _courseTrackStream,
+              builder: (context, asyncSnapshot) {
+                final progress = asyncSnapshot.data?.progress;
+
+                return Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    CircularProgressIndicator(
+                      value: asyncSnapshot.connectionState == ConnectionState.active
+                          ? progress?.clamp(0.01, 1.0) ?? 0.01
+                          : progress,
+                      strokeCap: StrokeCap.round,
+                      color: theme.primaryColor,
+                      backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.4),
+                    ),
+
+                    if (progress != null &&
+                        widget.course.courseCode.isEmpty &&
+                        !widget.course.imageLocation.containsFilePath)
+                      Positioned.fill(
+                        child: Center(
+                          child: CustomText(
+                            "${((progress.clamp(0, 1.0)) * 100.0).toInt()}%",
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: theme.supportingText.withValues(alpha: 0.5),
+                          ),
+                        ),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -189,7 +256,7 @@ class ListCourseCardTitleColumn extends ConsumerWidget {
       children: [
         if (courseCode.isNotEmpty && hasImage)
           Padding(
-            padding: const EdgeInsets.only(left: 4.0),
+            padding: const EdgeInsets.only(left: 8.0),
             child: CustomTextButton(
               backgroundColor: theme.altBackgroundSecondary,
               pixelHeight: 24,
@@ -203,7 +270,7 @@ class ListCourseCardTitleColumn extends ConsumerWidget {
 
         Flexible(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12.0),
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: CustomText(
               courseName,
               fontSize: 14,
@@ -217,7 +284,7 @@ class ListCourseCardTitleColumn extends ConsumerWidget {
         ConstantSizing.columnSpacing(4.0),
 
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 12.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: CustomText(
             "${categoriesCount < 1 ? "No" : categoriesCount} ${categoriesCount == 1 ? "category" : "categories"}",
             fontSize: 10,

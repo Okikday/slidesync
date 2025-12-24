@@ -95,6 +95,35 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                 color: theme.background.lightenColor(theme.isDarkMode ? 0.1 : 0.9),
                 borderRadius: BorderRadius.circular(16),
                 border: Border.fromBorderSide(BorderSide(color: theme.onBackground.withAlpha(40))),
+                boxShadow: context.isDarkMode
+                    ? [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.08),
+                          offset: Offset(0, 1),
+                          blurRadius: 3,
+                          spreadRadius: 0,
+                        ),
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.06),
+                          offset: Offset(0, 4),
+                          blurRadius: 6,
+                          spreadRadius: 0,
+                        ),
+                      ]
+                    : [
+                        BoxShadow(
+                          color: Colors.white.withValues(alpha: 0.05),
+                          offset: Offset(0, 1),
+                          blurRadius: 2,
+                          spreadRadius: 0,
+                        ),
+                        BoxShadow(
+                          color: Colors.white.withValues(alpha: 0.04),
+                          offset: Offset(0, 6),
+                          blurRadius: 12,
+                          spreadRadius: -2,
+                        ),
+                      ],
               ),
               child: Stack(
                 // clipBehavior: Clip.antiAlias,
@@ -133,7 +162,7 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                       ),
 
                       Container(
-                        padding: EdgeInsets.fromLTRB(12, 8, 4, 8),
+                        padding: EdgeInsets.fromLTRB(8, 8, 4, 8),
                         decoration: BoxDecoration(
                           color: theme.background.lightenColor(theme.isDarkMode ? 0.15 : 0.85).withAlpha(200),
                           borderRadius: BorderRadius.only(
@@ -240,119 +269,125 @@ class ContentCardPopUpMenuButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return AppPopupMenuButton(
-      iconSize: 16,
-      actions: [
-        PopupMenuAction(
-          title: content.courseContentType == CourseContentType.link ? "Open link" : "Open",
-          iconData: Iconsax.play,
-          onTap: () {
-            context.pushNamed(Routes.contentGate.name, extra: content);
-          },
-        ),
-        if (content.courseContentType != CourseContentType.link)
-          ...(() {
-            final settingsModelProvider = ref.watch(SettingsController.settingsProvider);
-            final settingsModel = settingsModelProvider.value == null
-                ? SettingsModel()
-                : SettingsModel.fromMap(settingsModelProvider.value!);
-            return [
-              if (settingsModel.useBuiltInViewer ?? !DeviceUtils.isDesktop())
-                PopupMenuAction(
-                  title: "Open Outside App",
-                  iconData: Iconsax.send,
-                  onTap: () {
-                    ContentViewGateActions.redirectToViewer(ref, content, popBefore: false, openOutsideApp: true);
-                  },
-                )
-              else
-                PopupMenuAction(
-                  title: "Open Inside App",
-                  iconData: Iconsax.received,
-                  onTap: () {
-                    ContentViewGateActions.redirectToViewer(ref, content, popBefore: false, openOutsideApp: false);
-                  },
-                ),
-            ];
-          }()),
-
-        if (content.courseContentType == CourseContentType.link)
+    return SizedBox(
+      width: 26,
+      height: 26,
+      child: AppPopupMenuButton(
+        iconSize: 22,
+        padding: EdgeInsets.zero,
+        icon: Iconsax.more_copy,
+        actions: [
           PopupMenuAction(
-            title: "View link",
-            iconData: Icons.remove_red_eye_outlined,
+            title: content.courseContentType == CourseContentType.link ? "Open link" : "Open",
+            iconData: Iconsax.play,
             onTap: () {
+              context.pushNamed(Routes.contentGate.name, extra: content);
+            },
+          ),
+          if (content.courseContentType != CourseContentType.link)
+            ...(() {
+              final settingsModelProvider = ref.watch(SettingsController.settingsProvider);
+              final settingsModel = settingsModelProvider.value == null
+                  ? SettingsModel()
+                  : SettingsModel.fromMap(settingsModelProvider.value!);
+              return [
+                if (settingsModel.useBuiltInViewer ?? !DeviceUtils.isDesktop())
+                  PopupMenuAction(
+                    title: "Open Outside App",
+                    iconData: Iconsax.send,
+                    onTap: () {
+                      ContentViewGateActions.redirectToViewer(ref, content, popBefore: false, openOutsideApp: true);
+                    },
+                  )
+                else
+                  PopupMenuAction(
+                    title: "Open Inside App",
+                    iconData: Iconsax.received,
+                    onTap: () {
+                      ContentViewGateActions.redirectToViewer(ref, content, popBefore: false, openOutsideApp: false);
+                    },
+                  ),
+              ];
+            }()),
+
+          if (content.courseContentType == CourseContentType.link)
+            PopupMenuAction(
+              title: "View link",
+              iconData: Icons.remove_red_eye_outlined,
+              onTap: () {
+                UiUtils.showCustomDialog(
+                  context,
+                  child: PreviewLinkTypeDialog(previewDetailsFuture: previewDetailsFuture, content: content),
+                );
+              },
+            ),
+
+          if (content.courseContentType == CourseContentType.link)
+            PopupMenuAction(
+              title: "Copy",
+              iconData: Iconsax.copy_copy,
+              onTap: () {
+                Clipboard.setData(ClipboardData(text: content.path.fileDetails.urlPath));
+              },
+            ),
+          PopupMenuAction(
+            title: "Share",
+            iconData: Iconsax.send_1_copy,
+            onTap: () async {
+              ShareContentActions.shareContent(context, content.contentId);
+            },
+          ),
+          PopupMenuAction(
+            title: "Rename",
+            iconData: Iconsax.edit_2_copy,
+            onTap: () async {
+              ModifyContentCardActions.onRenameContent(context, content);
+            },
+          ),
+          PopupMenuAction(
+            title: content.courseContentType == CourseContentType.link ? "Remove" : "Delete",
+            iconData: Iconsax.trash_copy,
+            onTap: () async {
               UiUtils.showCustomDialog(
                 context,
-                child: PreviewLinkTypeDialog(previewDetailsFuture: previewDetailsFuture, content: content),
+                child: ConfirmDeletionDialog(
+                  content: "Are you sure you want to delete this item?",
+                  onPop: () {
+                    if (context.mounted) {
+                      UiUtils.hideDialog(context);
+                    } else {
+                      rootNavigatorKey.currentContext?.pop();
+                    }
+                  },
+                  onCancel: () {
+                    rootNavigatorKey.currentContext?.pop();
+                  },
+                  onDelete: () async {
+                    UiUtils.hideDialog(context);
+
+                    if (context.mounted) {
+                      UiUtils.showLoadingDialog(rootNavigatorKey.currentContext!, message: "Removing content");
+                    }
+                    final outcome = await ModifyContentsAction().onDeleteContent(content.contentId);
+
+                    rootNavigatorKey.currentContext?.pop();
+
+                    if (context.mounted) {
+                      if (outcome == null) {
+                        UiUtils.showFlushBar(context, msg: "Deleted content!", vibe: FlushbarVibe.success);
+                      } else if (outcome.toLowerCase().contains("error")) {
+                        UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.error);
+                      } else {
+                        UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.warning);
+                      }
+                    }
+                  },
+                ),
               );
             },
           ),
-
-        if (content.courseContentType == CourseContentType.link)
-          PopupMenuAction(
-            title: "Copy",
-            iconData: Iconsax.copy_copy,
-            onTap: () {
-              Clipboard.setData(ClipboardData(text: content.path.fileDetails.urlPath));
-            },
-          ),
-        PopupMenuAction(
-          title: "Share",
-          iconData: Iconsax.send_1_copy,
-          onTap: () async {
-            ShareContentActions.shareContent(context, content.contentId);
-          },
-        ),
-        PopupMenuAction(
-          title: "Rename",
-          iconData: Iconsax.edit_2_copy,
-          onTap: () async {
-            ModifyContentCardActions.onRenameContent(context, content);
-          },
-        ),
-        PopupMenuAction(
-          title: content.courseContentType == CourseContentType.link ? "Remove" : "Delete",
-          iconData: Iconsax.trash_copy,
-          onTap: () async {
-            UiUtils.showCustomDialog(
-              context,
-              child: ConfirmDeletionDialog(
-                content: "Are you sure you want to delete this item?",
-                onPop: () {
-                  if (context.mounted) {
-                    UiUtils.hideDialog(context);
-                  } else {
-                    rootNavigatorKey.currentContext?.pop();
-                  }
-                },
-                onCancel: () {
-                  rootNavigatorKey.currentContext?.pop();
-                },
-                onDelete: () async {
-                  UiUtils.hideDialog(context);
-
-                  if (context.mounted) {
-                    UiUtils.showLoadingDialog(rootNavigatorKey.currentContext!, message: "Removing content");
-                  }
-                  final outcome = await ModifyContentsAction().onDeleteContent(content.contentId);
-
-                  rootNavigatorKey.currentContext?.pop();
-
-                  if (context.mounted) {
-                    if (outcome == null) {
-                      UiUtils.showFlushBar(context, msg: "Deleted content!", vibe: FlushbarVibe.success);
-                    } else if (outcome.toLowerCase().contains("error")) {
-                      UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.error);
-                    } else {
-                      UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.warning);
-                    }
-                  }
-                },
-              ),
-            );
-          },
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

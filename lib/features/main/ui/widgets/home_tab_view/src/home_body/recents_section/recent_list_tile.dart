@@ -27,7 +27,7 @@ class RecentListTile extends ConsumerWidget {
     final theme = ref;
     return DecoratedBox(
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: theme.onBackground.withAlpha(10))),
+        border: Border(bottom: BorderSide(color: theme.onBackground.withAlpha(20))),
       ),
 
       child: InkWell(
@@ -47,33 +47,74 @@ class RecentListTile extends ConsumerWidget {
           padding: EdgeInsets.only(left: 16, right: 16, bottom: 16, top: 16),
           child: Row(
             children: [
-              Badge(
-                backgroundColor: Colors.transparent,
-                isLabelVisible: dataModel.isStarred,
-                label: CircleAvatar(
-                  radius: 10.5,
-                  backgroundColor: Color(0xff0e1d27),
-                  child: Icon(Iconsax.star_1, size: 16, color: theme.primaryColor),
-                ),
-                offset: Offset(0, -2),
-                child: ClipOval(
-                  child: CustomElevatedButton(
-                    onClick: () {
-                      if (dataModel.onLongTapTile != null) dataModel.onLongTapTile!();
-                    },
-                    pixelHeight: 48,
-                    pixelWidth: 48,
-                    shape: CircleBorder(),
-                    contentPadding: EdgeInsets.zero,
-                    backgroundColor: theme.altBackgroundPrimary.withValues(alpha: 1),
-                    child: BuildImagePathWidget(
-                      width: 48,
-                      height: 48,
-                      fileDetails: FileDetails(filePath: dataModel.previewPath ?? ''),
-                      fallbackWidget: Icon(Iconsax.document_1, size: 26, color: ref.primary),
+              Stack(
+                children: [
+                  Badge(
+                    backgroundColor: Colors.transparent,
+                    isLabelVisible: dataModel.isStarred,
+                    label: CircleAvatar(
+                      radius: 10.5,
+                      backgroundColor: Color(0xff0e1d27),
+                      child: Icon(Iconsax.star_1, size: 16, color: theme.primaryColor),
+                    ),
+                    offset: Offset(0, -2),
+                    child: Padding(
+                      padding: const EdgeInsets.all(2.5),
+                      child: ClipOval(
+                        child: CustomElevatedButton(
+                          onClick: () {
+                            if (dataModel.onLongTapTile != null) dataModel.onLongTapTile!();
+                          },
+                          pixelHeight: 48,
+                          pixelWidth: 48,
+                          shape: CircleBorder(),
+                          contentPadding: EdgeInsets.zero,
+                          backgroundColor: theme.altBackgroundPrimary.withValues(alpha: 1),
+                          child: ColorFiltered(
+                            colorFilter: ColorFilter.mode(theme.background.withAlpha(40), BlendMode.color),
+                            child: BuildImagePathWidget(
+                              width: 48,
+                              height: 48,
+                              fileDetails: FileDetails(filePath: dataModel.previewPath ?? ''),
+                              fallbackWidget: Icon(Iconsax.document_1, size: 26, color: ref.primary),
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ),
-                ),
+
+                  // CustomElevatedButton(
+                  //   pixelWidth: 40,
+                  //   pixelHeight: 40,
+                  //   contentPadding: EdgeInsets.zero,
+                  //   shape: CircleBorder(),
+                  //   backgroundColor: ref.surface,
+                  //   overlayColor: ref.secondary.withAlpha(50),
+                  //   child: CustomText(
+                  //     "${((dataModel.progress ?? 0.0) * 100).truncate()}%",
+                  //     fontSize: 11,
+                  //     fontWeight: FontWeight.bold,
+                  //     color: theme.supportingText.withValues(alpha: 0.5),
+                  //   ),
+                  // ),
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: IgnorePointer(
+                      child: CircularProgressIndicator(
+                        // value: dataModel.progress?.clamp(.0, 1.0) ?? .01,
+                        value: 0.8,
+                        strokeCap: StrokeCap.round,
+                        color: _resolveLevelColor(ref, dataModel.progressLevel),
+                        backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.4),
+                        strokeWidth: 4,
+                      ),
+                    ),
+                  ),
+                ],
               ),
 
               ConstantSizing.rowSpacingMedium,
@@ -100,13 +141,14 @@ class RecentListTile extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      Flexible(
-                        child: CustomText(
-                          dataModel.subtitle,
-                          fontSize: 12,
-                          color: theme.supportingText.withValues(alpha: 0.8),
+                      if (dataModel.subtitle.isNotEmpty)
+                        Flexible(
+                          child: CustomText(
+                            dataModel.subtitle,
+                            fontSize: 12,
+                            color: theme.supportingText.withValues(alpha: 0.8),
+                          ),
                         ),
-                      ),
                       if (dataModel.extraContent.isNotEmpty)
                         Flexible(child: CustomText(dataModel.extraContent, fontSize: 13)),
                     ],
@@ -116,38 +158,11 @@ class RecentListTile extends ConsumerWidget {
 
               ConstantSizing.rowSpacingMedium,
 
-              Stack(
-                children: [
-                  CustomElevatedButton(
-                    pixelWidth: 40,
-                    pixelHeight: 40,
-                    contentPadding: EdgeInsets.zero,
-                    shape: CircleBorder(),
-                    backgroundColor: ref.surface,
-                    overlayColor: ref.secondary.withAlpha(50),
-                    child: CustomText(
-                      "${((dataModel.progress ?? 0.0) * 100).truncate()}%",
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      color: theme.supportingText.withValues(alpha: 0.5),
-                    ),
-                  ),
-
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    top: 0,
-                    bottom: 0,
-                    child: IgnorePointer(
-                      child: CircularProgressIndicator(
-                        value: dataModel.progress?.clamp(.0, 1.0) ?? .01,
-                        strokeCap: StrokeCap.round,
-                        color: _resolveLevelColor(ref, dataModel.progressLevel),
-                        backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.4),
-                      ),
-                    ),
-                  ),
-                ],
+              Icon(
+                Iconsax.arrow_right_3_copy,
+                size: 24,
+                fontWeight: FontWeight.bold,
+                color: theme.supportingText.withValues(alpha: 0.6),
               ),
             ],
           ),
