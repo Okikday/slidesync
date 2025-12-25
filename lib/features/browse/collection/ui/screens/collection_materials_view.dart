@@ -1,12 +1,15 @@
+import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_model/course_collection.dart';
 import 'package:slidesync/features/browse/collection/providers/collection_materials_provider.dart';
+import 'package:slidesync/features/browse/collection/ui/components/mod_contents_options.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/collection_materials_app_bar.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/add_contents/add_content_fab.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/materials_view.dart';
+import 'package:slidesync/features/browse/collection/ui/widgets/modify_contents/move_to_collection_bottom_sheet.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -19,10 +22,10 @@ class CollectionMaterialsView extends ConsumerStatefulWidget {
   const CollectionMaterialsView({super.key, required this.collection, required this.isFullScreen});
 
   @override
-  ConsumerState<CollectionMaterialsView> createState() => _CourseMaterialsViewState();
+  ConsumerState<CollectionMaterialsView> createState() => _CollectionMaterialsViewState();
 }
 
-class _CourseMaterialsViewState extends ConsumerState<CollectionMaterialsView> {
+class _CollectionMaterialsViewState extends ConsumerState<CollectionMaterialsView> {
   late final ScrollController scrollController;
   @override
   void initState() {
@@ -87,6 +90,18 @@ class _CourseMaterialsViewState extends ConsumerState<CollectionMaterialsView> {
             controller: scrollController,
             physics: const BouncingScrollPhysics(),
             slivers: [
+              ModContentsOptions(
+                collectionTitle: widget.collection.collectionTitle,
+                collectionLength: 5,
+                onMoveContents: (contents) async {
+                  await Navigator.of(context).push(
+                    PageAnimation.pageRouteBuilder(
+                      MoveOrStoreContentBottomSheet.move(contents: contents),
+                      type: TransitionType.rightToLeftWithFade,
+                    ),
+                  );
+                },
+              ),
               MaterialsView(collectionId: widget.collection.collectionId, isFullScreen: widget.isFullScreen),
               SliverToBoxAdapter(child: BottomPadding(withHeight: 64)),
             ],

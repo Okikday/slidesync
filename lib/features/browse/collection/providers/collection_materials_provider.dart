@@ -2,6 +2,7 @@ import 'package:isar/isar.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/features/browse/collection/providers/src/mod_contents_state.dart';
 import 'package:slidesync/shared/global/notifiers/common/course_sort_notifier.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
@@ -44,6 +45,16 @@ class CollectionMaterialsProvider {
   static final contentSortOptionProvider = AsyncNotifierProvider.autoDispose<CourseSortNotifier, CourseSortOption>(
     () => CourseSortNotifier(HiveDataPathKey.courseMaterialsSortOption.name),
   );
+
+  /// ===================================================================================================
+  /// MODIFY CONTENTS STATE
+  /// ===================================================================================================
+
+  static final modState = Provider<ModContentsState>((ref) {
+    final mcs = ModContentsState();
+    ref.onDispose(mcs.dispose);
+    return mcs;
+  });
 
   ///|
   ///|

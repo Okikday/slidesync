@@ -11,7 +11,7 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/features/browse/course/ui/actions/modify_collection_actions.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/shared/edit_collection_title_bottom_sheet.dart';
-import 'package:slidesync/features/settings/providers/settings_controller.dart';
+import 'package:slidesync/features/settings/providers/settings_provider.dart';
 import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/browse/course/providers/course_details_provider.dart';

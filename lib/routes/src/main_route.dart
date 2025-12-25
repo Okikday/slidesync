@@ -2,10 +2,10 @@ import 'dart:io';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/features/main/ui/widgets/desktop_home_view.dart';
+import 'package:slidesync/features/main/ui/screens/desktop_home_view.dart';
 import 'package:slidesync/features/main/ui/screens/main_view.dart';
 import 'package:slidesync/routes/routes.dart';
-import 'package:slidesync/features/main/ui/widgets/home_tab_view/src/home_body/recents_view.dart';
+import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_view.dart';
 import 'package:slidesync/routes/transition.dart';
 
 final mainRoute = GoRoute(

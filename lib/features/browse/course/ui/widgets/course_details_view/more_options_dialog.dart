@@ -50,7 +50,7 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
   Widget build(BuildContext context) {
     final theme = ref;
     final course = widget.course;
-    final mca = ModifyCollectionActions();
+    // final mca = ModifyCollectionActions();
     return AppActionDialog(
       blurSigma: Offset(4, 4),
       backgroundColor: theme.surface.withAlpha(200),
@@ -87,7 +87,7 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
       ),
       actions: [
         AppActionDialogModel(
-          title: "New collection",
+          title: "Create a new collection",
           icon: Icon(Iconsax.add_circle, size: 24, color: theme.secondary),
           onTap: () {
             context.pop();
@@ -142,8 +142,8 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
       begin: 0.6,
       end: 1,
       alignment: Alignment.topRight,
-      duration: Durations.medium1,
-      curve: CustomCurves.easeInOutSine,
+      duration: Durations.extralong1,
+      curve: CustomCurves.defaultIosSpring,
     );
   }
 }

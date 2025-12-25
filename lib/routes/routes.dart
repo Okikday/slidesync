@@ -31,6 +31,11 @@ enum Routes {
   imageViewer,
   driveLinkViewer,
   settings,
+
+  /// Sync screens
+  sync,
+  downloads,
+  uploads,
 }
 
 extension RoutesExtension on Routes {

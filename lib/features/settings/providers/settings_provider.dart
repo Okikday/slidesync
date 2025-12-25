@@ -1,5 +1,6 @@
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/features/settings/logic/models/settings_model.dart';
+import 'package:slidesync/features/settings/providers/settings_state.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 
 final _settingsProvider =
@@ -16,9 +17,15 @@ final _settingsProvider =
       ),
     );
 
-class SettingsController {
+class SettingsProvider {
   static AsyncNotifierProvider<AsyncImpliedNotifier<Map<String, dynamic>>, Map<String, dynamic>> get settingsProvider =>
       _settingsProvider;
+
+  static final state = Provider.autoDispose((ref) {
+    final state = SettingsState();
+    ref.onDispose(() => state.dispose());
+    return state;
+  });
 }
 
 extension SettingsModelExtension on WidgetRef {

@@ -8,21 +8,24 @@ dynamic defaultTransition(
   required Widget child,
   TransitionType defaultIncoming = TransitionType.rightToLeft,
   TransitionType? outgoing,
+  Duration incomingDuration = const Duration(milliseconds: 400),
+  Duration outgoingDuration = const Duration(milliseconds: 300),
 }) {
   return PageAnimation.buildCustomTransitionPage(
     pageKey,
     type: TransitionType.paired(
       incoming: defaultIncoming,
       outgoing: outgoing ?? TransitionType.slide(begin: const Offset(0, 0), end: const Offset(-0.4, 0)),
-      outgoingDuration: Durations.medium4,
-      reverseDuration: Durations.medium2,
+      outgoingDuration: incomingDuration,
+      reverseDuration: outgoingDuration,
       // curve: CustomCurves.defaultIosSpring,
       // reverseCurve: CustomCurves.defaultIosSpring,
       curve: defaultCurve,
       reverseCurve: defaultCurve,
     ),
-    duration: Durations.extralong2,
-    reverseDuration: Durations.medium2,
+    // duration: Durations.extralong2,
+    duration: incomingDuration,
+    reverseDuration: outgoingDuration,
 
     child: child,
   );

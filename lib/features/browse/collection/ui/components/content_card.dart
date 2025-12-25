@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
@@ -10,10 +11,11 @@ import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/data/models/course_model/course_content.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
+import 'package:slidesync/features/browse/collection/ui/components/content_card_context_menu.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/retrieve_content_uc.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/modify_content_card_actions.dart';
 import 'package:slidesync/features/settings/logic/models/settings_model.dart';
-import 'package:slidesync/features/settings/providers/settings_controller.dart';
+import 'package:slidesync/features/settings/providers/settings_provider.dart';
 import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
 import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
 import 'package:slidesync/routes/app_router.dart';
@@ -34,9 +36,10 @@ import 'package:slidesync/shared/widgets/progress_indicator/circular_loading_ind
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 class ContentCard extends ConsumerStatefulWidget {
-  const ContentCard({super.key, required this.content});
+  const ContentCard({super.key, required this.content, this.select});
 
   final CourseContent content;
+  final ({bool isSelected, void Function(CourseContent content) onSelect})? select;
 
   @override
   ConsumerState<ContentCard> createState() => _ContentCardState();
@@ -73,6 +76,10 @@ class _ContentCardState extends ConsumerState<ContentCard> {
     }
   }
 
+  // void updateTapDownDetailsProvider(WidgetRef ref, Offset det) {
+  //   CollectionMaterialsState.cardTapPositionDetails = det;
+  // }
+
   @override
   Widget build(BuildContext context) {
     final theme = ref;
@@ -83,9 +90,13 @@ class _ContentCardState extends ConsumerState<ContentCard> {
         Flexible(
           child: InkWell(
             borderRadius: BorderRadius.circular(14),
-            onTap: () {
-              context.pushNamed(Routes.contentGate.name, extra: content);
-            },
+            onTap: widget.select == null
+                ? () {
+                    context.pushNamed(Routes.contentGate.name, extra: content);
+                  }
+                : () {
+                    widget.select?.onSelect(content);
+                  },
             child: Container(
               // curve: CustomCurves.defaultIosSpring,
               // duration: Durations.extralong1,
@@ -94,7 +105,13 @@ class _ContentCardState extends ConsumerState<ContentCard> {
               decoration: BoxDecoration(
                 color: theme.background.lightenColor(theme.isDarkMode ? 0.1 : 0.9),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.fromBorderSide(BorderSide(color: theme.onBackground.withAlpha(40))),
+                border: Border.fromBorderSide(
+                  BorderSide(
+                    color: widget.select?.isSelected == true
+                        ? theme.altBackgroundPrimary
+                        : theme.onBackground.withAlpha(40),
+                  ),
+                ),
                 boxShadow: context.isDarkMode
                     ? [
                         BoxShadow(
@@ -138,13 +155,12 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                               topLeft: Radius.circular(15),
                               topRight: Radius.circular(15),
                             ),
-                            child: Opacity(
-                              opacity: 0.6,
-                              child: ContentCardPreviewImage(
-                                content: content,
-                                previewDetailsFuture: previewDetailsFuture,
-                              ),
-                            ),
+                            child: ContentCardPreviewImage(content: content, previewDetailsFuture: previewDetailsFuture)
+                                .animate(
+                                  key: ValueKey(content.contentId),
+                                  target: widget.select?.isSelected == true ? 0 : 1,
+                                )
+                                .fade(begin: 0.4, end: 0.6),
                           ),
                         ),
                       ),
@@ -207,7 +223,27 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                               ),
                             ),
 
-                            ContentCardPopUpMenuButton(content: content, previewDetailsFuture: previewDetailsFuture),
+                            // ContentCardPopUpMenuButton(content: content, previewDetailsFuture: previewDetailsFuture),
+                            if (widget.select?.isSelected == null)
+                              InkWell(
+                                customBorder: const CircleBorder(),
+
+                                overlayColor: WidgetStatePropertyAll(theme.onSurface),
+                                onTap: () {
+                                  UiUtils.showCustomDialog(context, child: ContentCardContextMenu(content: content));
+                                },
+                                child: SizedBox.square(dimension: 36, child: Icon(Iconsax.more_copy)),
+                              )
+                            else
+                              () {
+                                return Icon(
+                                  widget.select?.isSelected == true ? Iconsax.tick_circle : Icons.circle,
+                                  color: widget.select?.isSelected == true
+                                      ? theme.primary
+                                      : theme.onPrimary.withAlpha(100),
+                                  size: 24,
+                                );
+                              }(),
                           ],
                         ),
                       ),
@@ -286,7 +322,7 @@ class ContentCardPopUpMenuButton extends ConsumerWidget {
           ),
           if (content.courseContentType != CourseContentType.link)
             ...(() {
-              final settingsModelProvider = ref.watch(SettingsController.settingsProvider);
+              final settingsModelProvider = ref.watch(SettingsProvider.settingsProvider);
               final settingsModel = settingsModelProvider.value == null
                   ? SettingsModel()
                   : SettingsModel.fromMap(settingsModelProvider.value!);

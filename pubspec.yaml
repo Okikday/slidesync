@@ -98,6 +98,8 @@ dependencies:
   web_smooth_scroll: ^2.0.0
   gradient_glow_border: ^1.0.3
   es_compression: ^2.0.15
+  heroine: ^0.7.0
+  phosphor_flutter: ^2.1.0
 
 flutter_native_splash:
   android: true

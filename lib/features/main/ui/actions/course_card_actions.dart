@@ -7,7 +7,7 @@ import 'package:slidesync/features/main/providers/library/src/library_tab_state.
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 
-import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/expand_card_dialog.dart';
+import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/course_card_context_menu.dart';
 
 class CourseCardActions {
   final WidgetRef ref;
@@ -39,7 +39,7 @@ class CourseCardActions {
       context,
       blurSigma: Offset(2, 2),
       barrierColor: Colors.black26,
-      child: ExpandCardDialog(
+      child: CourseCardContextMenu(
         tapPosition: tapPosition,
         course: course,
         onOpen: () {

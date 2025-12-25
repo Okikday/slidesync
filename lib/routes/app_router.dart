@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:heroine/heroine.dart';
 import 'package:slidesync/routes/src/content_viewer_route.dart';
 import 'package:slidesync/routes/src/course_mgmt_routes.dart';
 import 'package:slidesync/routes/src/course_nav_routes.dart';
 import 'package:slidesync/routes/src/main_route.dart';
 import 'package:slidesync/routes/src/settings_route.dart';
+import 'package:slidesync/routes/src/sync_route.dart';
 import 'package:slidesync/splash_view.dart';
 
 import 'routes.dart';
@@ -17,6 +19,7 @@ class AppRouter {
   static final GoRouter _router = GoRouter(
     initialLocation: Routes.splash.path,
     navigatorKey: rootNavigatorKey,
+    observers: [HeroineController()],
     routes: [
       splashRoute,
       // authRoute,
@@ -36,6 +39,7 @@ class AppRouter {
       ...courseNavRoutes,
 
       settingsRoute,
+      syncRoute,
     ],
   );
 }

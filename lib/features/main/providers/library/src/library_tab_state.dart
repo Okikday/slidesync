@@ -23,8 +23,8 @@ class LibraryTabState extends LeakPrevention with ValueNotifierFactoryMixin {
   /// ===================================================================================================
 
   late final Ref ref;
-  late final ScrollController scrollController;
-  late final ValueNotifier<double> scrollOffsetNotifier;
+  late final ScrollController scrollController = ScrollController();
+  late final ValueNotifier<double> scrollOffsetNotifier = useValueNotifier(0.0);
 
   ///|
   ///|
@@ -32,9 +32,7 @@ class LibraryTabState extends LeakPrevention with ValueNotifierFactoryMixin {
   /// INIT
   /// ===================================================================================================
   LibraryTabState._(this.ref) {
-    scrollController = ScrollController();
     scrollController.addListener(scrollListener);
-    scrollOffsetNotifier = useValueNotifier(0.0);
   }
   static LibraryTabState of(Ref ref) => LibraryTabState._(ref);
 

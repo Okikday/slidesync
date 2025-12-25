@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/features/main/providers/main_provider.dart';
+import 'package:slidesync/features/main/providers/main/main_provider.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class BottomNavBar extends ConsumerWidget {
@@ -41,11 +41,11 @@ class BottomNavBar extends ConsumerWidget {
                   label: "Library",
                   tooltip: "Library holding all your courses",
                 ),
-                // BottomNavigationBarItem(
-                //   icon: Icon(Icons.explore_rounded),
-                //   label: "Explore",
-                //   tooltip: "Explore courses",
-                // ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.explore_rounded),
+                  label: "Explore",
+                  tooltip: "Explore courses",
+                ),
               ],
             );
           },

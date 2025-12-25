@@ -13,6 +13,7 @@ class BuildButton extends ConsumerWidget {
     this.child,
     this.shape,
     this.size,
+    this.iconColor,
   });
 
   final void Function() onTap;
@@ -21,8 +22,9 @@ class BuildButton extends ConsumerWidget {
   final Color? backgroundColor;
   final OutlinedBorder? shape;
   final Size? size;
+  final Color? iconColor;
 
-  @override 
+  @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
     return CustomElevatedButton(
@@ -32,7 +34,7 @@ class BuildButton extends ConsumerWidget {
       backgroundColor: backgroundColor ?? theme.altBackgroundPrimary,
       shape: shape ?? const CircleBorder(),
       onClick: onTap,
-      child: child ?? Icon(iconData, size: 20, color: theme.supportingText),
+      child: child ?? Icon(iconData, size: 20, color: iconColor ?? theme.supportingText),
     );
   }
 }

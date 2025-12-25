@@ -7,7 +7,7 @@ import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/features/settings/logic/models/settings_model.dart';
-import 'package:slidesync/features/settings/providers/settings_controller.dart';
+import 'package:slidesync/features/settings/providers/settings_provider.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/theme/src/app_theme.dart';
 import 'package:slidesync/shared/theme/src/built_in_themes.dart';
@@ -56,7 +56,7 @@ class _SettingsAppearanceDialogState extends ConsumerState<SettingsAppearanceDia
                   Consumer(
                     builder: (context, ref, child) {
                       final AsyncValue<bool> usbp = ref.watch(
-                        SettingsController.settingsProvider.select(
+                        SettingsProvider.settingsProvider.select(
                           (s) => s.whenData((cb) => SettingsModel.fromMap(cb).useSystemBrightness),
                         ),
                       );
@@ -93,7 +93,7 @@ class _SettingsAppearanceDialogState extends ConsumerState<SettingsAppearanceDia
               Consumer(
                 builder: (context, ref, child) {
                   final AsyncValue<bool> usbp = ref.watch(
-                    SettingsController.settingsProvider.select(
+                    SettingsProvider.settingsProvider.select(
                       (s) => s.whenData((cb) => SettingsModel.fromMap(cb).useSystemBrightness),
                     ),
                   );

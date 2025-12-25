@@ -12,7 +12,7 @@ import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/features/browse/collection/providers/collection_materials_provider.dart';
-import 'package:slidesync/features/settings/providers/settings_controller.dart';
+import 'package:slidesync/features/settings/providers/settings_provider.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/result.dart';

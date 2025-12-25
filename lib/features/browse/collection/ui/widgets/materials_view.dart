@@ -107,11 +107,35 @@ class PagedSliverContentView extends ConsumerWidget {
         builderDelegate: PagedChildBuilderDelegate(
           // noMoreItemsIndicatorBuilder: (context) => const SizedBox(height: 56),
           itemBuilder: (context, item, index) {
-            return ContentCard(content: item).animate().fadeIn().moveY(
-              begin: index.isEven ? 40 : 20,
-              end: 0,
-              curve: Curves.fastEaseInToSlowEaseOut,
-              duration: Durations.medium3,
+            return Builder(
+              builder: (context) {
+                final modState = CollectionMaterialsProvider.modState.read(ref);
+                return ValueListenableBuilder(
+                  valueListenable: modState.selectSignal,
+                  builder: (context, _, child) {
+                    return ContentCard(
+                      content: item,
+                      select: modState.isEmpty
+                          ? null
+                          : (
+                              isSelected: modState.lookup(item),
+                              onSelect: (content) {
+                                if (modState.lookup(content)) {
+                                  modState.removeContent(content);
+                                } else {
+                                  modState.selectContent(content);
+                                }
+                              },
+                            ),
+                    ).animate().fadeIn().moveY(
+                      begin: index.isEven ? 40 : 20,
+                      end: 0,
+                      curve: Curves.fastEaseInToSlowEaseOut,
+                      duration: Durations.medium3,
+                    );
+                  },
+                );
+              },
             );
           },
         ),

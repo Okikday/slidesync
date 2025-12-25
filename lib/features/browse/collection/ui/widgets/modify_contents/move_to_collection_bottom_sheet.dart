@@ -17,7 +17,6 @@ import 'package:slidesync/features/browse/collection/ui/widgets/modify_contents/
 import 'package:slidesync/features/browse/course/ui/components/collection_card.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/add_contents_uc.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/shared/create_collection_bottom_sheet.dart';
-import 'package:slidesync/features/browse/collection/providers/modify_content_provider.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/data/models/course_model/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
@@ -295,8 +294,7 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
 
   /// Handle moving existing contents to a collection
   Future<void> _handleMoveContents(BuildContext context, CourseCollection collection) async {
-    context.pop(true);
-    ref.read(ModifyContentsProvider.state).clearContents();
+    // context.pop(true);
     if (widget.contentsToMove!.isNotEmpty && collection.collectionId == widget.contentsToMove!.first.parentId) {
       return;
     }

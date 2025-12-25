@@ -88,11 +88,11 @@ class _AppBarContainerWidget extends ConsumerWidget {
       height: (appBarHeight ?? (kToolbarHeight + 8 + topPadding)),
       decoration: BoxDecoration(
         color: scaffoldBgColor ?? context.scaffoldBackgroundColor,
-        border: Border(
-          bottom: BorderSide(
-            color: scaffoldBgColor ?? (context.scaffoldBackgroundColor).lightenColor(ref.isDarkMode ? 0.15 : 0.85),
-          ),
-        ),
+        // border: Border(
+        //   bottom: BorderSide(
+        //     color: scaffoldBgColor ?? (context.scaffoldBackgroundColor).lightenColor(ref.isDarkMode ? 0.15 : 0.85),
+        //   ),
+        // ),
       ),
       padding: _resolvePadding(topPadding),
       child: child,

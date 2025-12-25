@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_tab_view.dart';
-import 'package:slidesync/features/main/ui/widgets/home_tab_view/src/home_drawer.dart';
+import 'package:slidesync/features/main/ui/screens/home_tab_view.dart';
+import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_drawer.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/library_floating_action_button.dart';
-import 'package:slidesync/features/main/ui/widgets/library_tab_view/library_tab_view.dart';
+import 'package:slidesync/features/main/ui/screens/library_tab_view.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class DesktopShellView extends ConsumerWidget {

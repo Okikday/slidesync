@@ -18,12 +18,12 @@ import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
-class ExpandCardDialog extends ConsumerWidget {
+class CourseCardContextMenu extends ConsumerWidget {
   final Offset tapPosition;
   final Course course;
   final void Function() onOpen;
 
-  const ExpandCardDialog({super.key, required this.tapPosition, required this.course, required this.onOpen});
+  const CourseCardContextMenu({super.key, required this.tapPosition, required this.course, required this.onOpen});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

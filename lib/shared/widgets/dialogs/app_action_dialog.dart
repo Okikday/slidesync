@@ -115,7 +115,7 @@ class BuildPlainActionButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return CustomElevatedButton(
-      borderRadius: 0,
+      borderRadius: 12,
       backgroundColor: backgroundColor ?? Colors.transparent,
       contentPadding: contentPadding,
       pixelHeight: 48,

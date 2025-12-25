@@ -8,8 +8,8 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/main/providers/home_provider.dart';
-import 'package:slidesync/features/main/ui/widgets/home_tab_view/src/home_body/recents_section/recent_list_tile.dart';
-import 'package:slidesync/features/main/ui/widgets/home_tab_view/src/home_body/recents_section/recents_section_body.dart';
+import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recent_list_tile.dart';
+import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recents_section_body.dart';
 import 'package:slidesync/routes/routes.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';

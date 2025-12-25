@@ -3,9 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/features/main/ui/widgets/home_tab_view/src/home_app_bar.dart';
-import 'package:slidesync/features/main/ui/widgets/home_tab_view/src/home_body.dart';
-import 'package:slidesync/features/main/providers/main_provider.dart';
+import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_app_bar.dart';
+import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body.dart';
+import 'package:slidesync/features/main/providers/main/main_provider.dart';
 import 'package:window_manager/window_manager.dart';
 
 const double isScrolledLvl = 40.0;

@@ -105,8 +105,7 @@ class RecentListTile extends ConsumerWidget {
                     bottom: 0,
                     child: IgnorePointer(
                       child: CircularProgressIndicator(
-                        // value: dataModel.progress?.clamp(.0, 1.0) ?? .01,
-                        value: 0.8,
+                        value: dataModel.progress?.clamp(.0, 1.0) ?? .01,
                         strokeCap: StrokeCap.round,
                         color: _resolveLevelColor(ref, dataModel.progressLevel),
                         backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.4),

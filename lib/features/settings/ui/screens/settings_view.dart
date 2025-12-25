@@ -12,8 +12,9 @@ import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/file_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
+import 'package:slidesync/dev/file_manager_page.dart';
 import 'package:slidesync/features/settings/logic/models/settings_model.dart';
-import 'package:slidesync/features/settings/providers/settings_controller.dart';
+import 'package:slidesync/features/settings/providers/settings_provider.dart';
 import 'package:slidesync/features/settings/ui/components/settings_appearance_dialog.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
@@ -26,6 +27,7 @@ class SettingsView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
+    final state = SettingsProvider.state.read(ref);
 
     return AnnotatedRegion(
       value: UiUtils.getSystemUiOverlayStyle(Colors.transparent, context.isDarkMode),
@@ -34,7 +36,7 @@ class SettingsView extends ConsumerWidget {
 
         body: Consumer(
           builder: (context, ref, child) {
-            final settingsModelProvider = ref.watch(SettingsController.settingsProvider);
+            final settingsModelProvider = ref.watch(SettingsProvider.settingsProvider);
             final settingsModel = settingsModelProvider.value == null
                 ? SettingsModel()
                 : SettingsModel.fromMap(settingsModelProvider.value!);
@@ -77,10 +79,10 @@ class SettingsView extends ConsumerWidget {
                       value: settingsModel.useSystemBrightness,
                       onChanged: (p) async {
                         ref
-                            .read(SettingsController.settingsProvider.notifier)
+                            .read(SettingsProvider.settingsProvider.notifier)
                             .set(
                               SettingsModel.fromMap(
-                                (await ref.read(SettingsController.settingsProvider.future)),
+                                (await ref.read(SettingsProvider.settingsProvider.future)),
                               ).copyWith(useSystemBrightness: p).toMap(),
                             );
                       },
@@ -123,11 +125,11 @@ class SettingsView extends ConsumerWidget {
                       onChanged: (p) async {
                         log("p: $p");
                         final newValue = SettingsModel.fromMap(
-                          (await ref.read(SettingsController.settingsProvider.future)),
+                          (await ref.read(SettingsProvider.settingsProvider.future)),
                         ).copyWith(useBuiltInViewer: p).toMap();
                         log("prev:${settingsModel.useBuiltInViewer}");
                         log("next: ${newValue['useBuiltInViewer']}");
-                        ref.read(SettingsController.settingsProvider.notifier).set(newValue);
+                        ref.read(SettingsProvider.settingsProvider.notifier).set(newValue);
                       },
                     ),
                   ),
@@ -143,10 +145,10 @@ class SettingsView extends ConsumerWidget {
                         value: settingsModel.showMaterialsInFullScreen,
                         onChanged: (p) async {
                           ref
-                              .read(SettingsController.settingsProvider.notifier)
+                              .read(SettingsProvider.settingsProvider.notifier)
                               .set(
                                 SettingsModel.fromMap(
-                                  (await ref.read(SettingsController.settingsProvider.future)),
+                                  (await ref.read(SettingsProvider.settingsProvider.future)),
                                 ).copyWith(showMaterialsInFullScreen: p).toMap(),
                               );
                         },
@@ -219,17 +221,25 @@ class SettingsView extends ConsumerWidget {
                   // ),
 
                   // ConstantSizing.columnSpacingMedium,
-                  Center(
-                    child: FutureBuilder(
-                      future: AppHiveData.instance.getData(key: HiveDataPathKey.globalFileSizeSum.name),
-                      builder: (context, asyncSnapshot) {
-                        if (asyncSnapshot.hasData && asyncSnapshot.data != null) {
-                          final mb =
-                              Result.tryRun(() => ((asyncSnapshot.data as int?) ?? 0) / (1024 * 1024)).data ?? 0.0;
-                          return CustomText("Storage usage: ${mb.toStringAsFixed(2)} MB", color: theme.supportingText);
-                        }
-                        return CustomText("Storage usage details unavailable", color: theme.supportingText);
-                      },
+                  GestureDetector(
+                    onTap: () {
+                      state.onRevealFileManager(context);
+                    },
+                    child: Center(
+                      child: FutureBuilder(
+                        future: AppHiveData.instance.getData(key: HiveDataPathKey.globalFileSizeSum.name),
+                        builder: (context, asyncSnapshot) {
+                          if (asyncSnapshot.hasData && asyncSnapshot.data != null) {
+                            final mb =
+                                Result.tryRun(() => ((asyncSnapshot.data as int?) ?? 0) / (1024 * 1024)).data ?? 0.0;
+                            return CustomText(
+                              "Storage usage: ${mb.toStringAsFixed(2)} MB",
+                              color: theme.supportingText,
+                            );
+                          }
+                          return CustomText("Storage usage details unavailable", color: theme.supportingText);
+                        },
+                      ),
                     ),
                   ),
 
