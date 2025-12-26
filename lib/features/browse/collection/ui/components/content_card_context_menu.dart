@@ -11,11 +11,14 @@ import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/browse/collection/providers/collection_materials_provider.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/content_card_actions.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/modify_content_card_actions.dart';
+import 'package:slidesync/features/browse/collection/ui/actions/modify_contents_action.dart';
 import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
 import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
+import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 class ContentCardContextMenu extends ConsumerStatefulWidget {
@@ -173,7 +176,9 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                                     if (context.mounted) {
                                       UiUtils.showLoadingDialog(context, message: "Removing content");
                                     }
-                                    final outcome = await ModifyContentsAction().onDeleteContent(content.contentId);
+                                    final outcome = await ModifyContentsAction().onDeleteContent(
+                                      widget.content.contentId,
+                                    );
 
                                     GlobalNav.popGlobal();
 
