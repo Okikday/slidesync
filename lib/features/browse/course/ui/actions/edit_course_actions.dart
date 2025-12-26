@@ -5,11 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/shared/global/providers/course_providers.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_model/course.dart';
+import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/shared/helpers/formatter.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_alert_dialog.dart';
-
 
 class EditCourseActions {
   final WidgetRef ref;

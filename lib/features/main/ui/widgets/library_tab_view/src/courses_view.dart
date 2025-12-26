@@ -6,7 +6,7 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
-import 'package:slidesync/data/models/course_model/course.dart';
+import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/features/main/providers/library/library_tab_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/course_card/list_course_card.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/empty_library_view.dart';

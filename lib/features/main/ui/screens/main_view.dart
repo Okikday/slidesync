@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/main/ui/screens/explore_tab_view.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/library_floating_action_button.dart';
-import 'package:slidesync/features/main/providers/main/main_provider.dart';
+import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_drawer.dart';
 import 'package:slidesync/features/main/ui/screens/library_tab_view.dart';
 

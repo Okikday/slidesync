@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_model/course_collection.dart';
+import 'package:slidesync/data/models/course_collection/course_collection.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/features/browse/course/ui/actions/modify_collection_actions.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/course_details_view/course_details_header/animated_shape.dart';

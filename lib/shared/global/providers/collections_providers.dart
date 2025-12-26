@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar/isar.dart';
-import 'package:slidesync/data/models/course_model/course_collection.dart';
+import 'package:slidesync/data/models/course_collection/course_collection.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 
 final defaultCollection = CourseCollection.create(parentId: '_', collectionTitle: "_");

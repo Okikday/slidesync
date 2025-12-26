@@ -8,7 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_model/course_collection.dart';
+import 'package:slidesync/data/models/course_collection/course_collection.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/add_contents/add_link_bottom_sheet.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/add_contents_actions.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';

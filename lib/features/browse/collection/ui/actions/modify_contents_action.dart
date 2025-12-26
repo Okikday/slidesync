@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/modify_content_uc.dart';
 import 'package:slidesync/routes/app_router.dart';
@@ -13,12 +13,9 @@ class ModifyContentsAction {
     }
     final content = await CourseContentRepo.getByContentId(contentId);
     if (content == null) return "Couldn't find content";
-    final Result<String?> delOutcome = await Result.tryRunAsync(
-      () async {
-        return await ModifyContentUc().deleteContent(content);
-        
-      },
-    );
+    final Result<String?> delOutcome = await Result.tryRunAsync(() async {
+      return await ModifyContentUc().deleteContent(content);
+    });
     Navigator.pop(rootNavigatorKey.currentContext!);
 
     if (delOutcome.isSuccess) {

@@ -8,7 +8,7 @@ import 'package:path/path.dart' as p;
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
@@ -249,7 +249,7 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
                           // boxShadow: [BoxShadow(color: theme.primaryColor.withAlpha(80), blurRadius: 2, spreadRadius: 2)],
                         ),
                         child: BuildImagePathWidget(
-                          fileDetails: FileDetails(filePath: content.previewPath ?? ''),
+                          fileDetails: content.thumbnailDetails,
                           fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, true), size: 20),
                         ),
                       ),

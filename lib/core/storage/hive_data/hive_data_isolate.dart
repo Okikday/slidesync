@@ -1,5 +1,5 @@
 import 'package:hive/hive.dart';
-import 'package:slidesync/core/utils/file_utils.dart';
+import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 
 class HiveDataIsolate {
   final String boxName;

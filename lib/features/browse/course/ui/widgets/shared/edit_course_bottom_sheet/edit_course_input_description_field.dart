@@ -1,7 +1,7 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/data/models/course_model/course.dart';
+import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class EditCourseInputDescriptionField extends ConsumerWidget {

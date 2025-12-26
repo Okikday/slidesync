@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_model/course_collection.dart';
+import 'package:slidesync/data/models/course_collection/course_collection.dart';
 import 'package:slidesync/features/browse/collection/providers/collection_materials_provider.dart';
 import 'package:slidesync/features/browse/collection/ui/components/mod_contents_options.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/collection_materials_app_bar.dart';

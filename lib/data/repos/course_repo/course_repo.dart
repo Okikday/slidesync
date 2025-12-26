@@ -1,6 +1,6 @@
 import 'package:isar/isar.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
-import 'package:slidesync/data/models/course_model/course.dart';
+import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/models/progress_track_models/course_track.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 

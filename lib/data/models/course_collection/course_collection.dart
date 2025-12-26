@@ -2,15 +2,11 @@
 import 'dart:convert';
 
 import 'package:isar/isar.dart';
-import 'package:path/path.dart' as p;
-import 'package:slidesync/core/storage/native/app_paths.dart';
-import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/data/models/file_details.dart';
-import 'package:slidesync/shared/helpers/extensions/extensions.dart';
-import 'package:slidesync/shared/helpers/extensions/src/extension_on_map.dart';
+// import 'package:path/path.dart' as p;
+// import 'package:slidesync/core/storage/native/app_paths.dart';
 import 'package:uuid/uuid.dart';
 
-import 'course_content.dart';
+import '../course_content/course_content.dart';
 
 part 'course_collection.g.dart';
 
@@ -119,10 +115,10 @@ class CourseCollection {
 }
 
 extension CourseCollectionExtension on CourseCollection {
-  String get absolutePath => p.join(AppPaths.coursesFolder, parentId, collectionId);
+  // String get absolutePath => p.join(AppPaths.materialsFolder, parentId, collectionId);
   String get courseId => parentId;
 
-  String joinAbsWithChild(String childId) => p.join(absolutePath, childId);
+  // String joinAbsWithChild(String childId) => p.join(absolutePath, childId);
 
   CourseCollection copyWith({
     String? collectionId,
@@ -142,10 +138,4 @@ extension CourseCollectionExtension on CourseCollection {
       // ..imageLocationJson = imageLocationJson ?? this.imageLocationJson
       ..metadataJson = metadataJson ?? this.metadataJson;
   }
-
-  Map<String, dynamic> get metadata =>
-      Result.tryRun(() => Map<String, dynamic>.from(jsonDecode(metadataJson))).data ?? <String, dynamic>{};
-  String get imageLocationJson => metadataJson.decodeJson['imageLocationJson'];
-  CourseCollection setImageLocation(FileDetails imageDetails) =>
-      copyWith(metadataJson: {...metadataJson.decodeJson, 'imageLocationJson': imageDetails.toJson()}.encodeToJson);
 }

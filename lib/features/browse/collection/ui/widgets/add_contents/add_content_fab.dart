@@ -2,7 +2,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
-import 'package:slidesync/data/models/course_model/course_collection.dart';
+import 'package:slidesync/data/models/course_collection/course_collection.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/add_contents/add_contents_bottom_sheet.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 

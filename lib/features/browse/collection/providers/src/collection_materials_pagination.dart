@@ -11,7 +11,7 @@ import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/core/storage/isar_data/isar_schemas.dart';
 import 'package:slidesync/core/base/leak_prevention.dart';
 import 'package:slidesync/core/utils/smart_isolate.dart';
-import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 

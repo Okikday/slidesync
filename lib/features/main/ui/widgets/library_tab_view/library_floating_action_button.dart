@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/main/providers/library/library_tab_provider.dart';
-import 'package:slidesync/features/main/providers/main/main_provider.dart';
+import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 

@@ -2,7 +2,7 @@ import 'dart:collection';
 import 'dart:developer';
 import 'package:slidesync/core/base/leak_prevention.dart';
 import 'package:slidesync/core/base/use_value_notifier.dart';
-import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/course_content/course_content.dart';
 
 class ModContentsState extends LeakPrevention with ValueNotifierFactoryMixin {
   late final selectSignal = useValueNotifier<bool>(false);

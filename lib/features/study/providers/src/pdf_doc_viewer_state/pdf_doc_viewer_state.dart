@@ -8,7 +8,7 @@ import 'package:pdfrx/pdfrx.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:slidesync/core/base/use_value_notifier.dart';
 import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/data/models/progress_track_models/course_track.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
@@ -121,7 +121,7 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
           pages: ptm.pages.isEmpty ? const ["1"] : ptm.pages,
           metadataJson: jsonEncode(<String, dynamic>{
             ...ptm.metadataJson.decodeJson,
-            'previewPath': jsonDecode(content.metadataJson)['previewPath'] ?? content.previewPath,
+            'previewPath': content.thumbnailPath,
           }),
         ),
       );
@@ -146,7 +146,7 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
         progress: 0.0,
         pages: const ["1"],
         lastRead: DateTime.now(),
-        metadataJson: jsonEncode({'previewPath': content.previewPath}),
+        metadataJson: jsonEncode({'previewPath': content.thumbnailPath}),
       );
 
       return await ContentTrackRepo.isarData.getById(await ContentTrackRepo.isarData.store(newPtm));

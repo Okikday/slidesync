@@ -1,8 +1,10 @@
+import 'dart:developer';
+
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/data/models/course_model/course.dart';
+import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/models/progress_track_models/course_track.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
@@ -97,7 +99,7 @@ class ListCourseCard extends ConsumerWidget {
                 courseCode: course.courseCode,
                 courseName: course.courseName,
                 categoriesCount: course.collections.length,
-                hasImage: course.imageLocation.containsFilePath,
+                hasImage: course.metadata.thumbnailsDetails.containsFilePath,
               ),
             ),
 
@@ -169,7 +171,7 @@ class _ListCourseCardIconState extends ConsumerState<ListCourseCardIcon> {
                 child: BuildImagePathWidget(
                   height: 64,
                   width: 64,
-                  fileDetails: widget.course.imageLocation,
+                  fileDetails: FileDetails(filePath: widget.course.thumbnailPath),
                   fallbackWidget: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: widget.course.courseCode.isEmpty
@@ -211,7 +213,7 @@ class _ListCourseCardIconState extends ConsumerState<ListCourseCardIcon> {
 
                     if (progress != null &&
                         widget.course.courseCode.isEmpty &&
-                        !widget.course.imageLocation.containsFilePath)
+                        !widget.course.metadata.thumbnailsDetails.containsFilePath)
                       Positioned.fill(
                         child: Center(
                           child: CustomText(

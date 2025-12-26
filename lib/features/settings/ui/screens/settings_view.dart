@@ -9,7 +9,7 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
-import 'package:slidesync/core/utils/file_utils.dart';
+import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/dev/file_manager_page.dart';
@@ -180,19 +180,19 @@ class SettingsView extends ConsumerWidget {
                       textColor: theme.supportingText,
                       textSize: 14,
                       onClick: () async {
-                        final token = RootIsolateToken.instance;
-                        if (token != null) {
-                          await compute(FileUtils.deleteEmptyCoursesDirsInIsolate, {'rootIsolateToken': token});
-                          await FileUtils().clearCacheOrTemp();
-                          await AppHiveData.instance.setData(
-                            key: HiveDataPathKey.lastClearedCacheDate.name,
-                            value: DateTime.now(),
-                          );
-                          GlobalNav.withContext(
-                            (context) =>
-                                UiUtils.showFlushBar(context, msg: "Successfully cleared up temporary files.."),
-                          );
-                        }
+                        // final token = RootIsolateToken.instance;
+                        // if (token != null) {
+                        //   await compute(FileUtils.deleteEmptyCoursesDirsInIsolate, {'rootIsolateToken': token});
+                        //   await FileUtils().clearCacheOrTemp();
+                        //   await AppHiveData.instance.setData(
+                        //     key: HiveDataPathKey.lastClearedCacheDate.name,
+                        //     value: DateTime.now(),
+                        //   );
+                        //   GlobalNav.withContext(
+                        //     (context) =>
+                        //         UiUtils.showFlushBar(context, msg: "Successfully cleared up temporary files.."),
+                        //   );
+                        // }
                       },
                     ),
                   ),

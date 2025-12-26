@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/ask_ai/ui/screens/ask_ai_screen.dart';

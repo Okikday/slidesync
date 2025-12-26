@@ -2,12 +2,18 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/browse/collection/providers/collection_materials_provider.dart';
+import 'package:slidesync/features/browse/collection/ui/actions/content_card_actions.dart';
+import 'package:slidesync/features/browse/collection/ui/actions/modify_content_card_actions.dart';
+import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
+import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
+import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
@@ -69,9 +75,7 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                               color: theme.onSurface.withAlpha(20),
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: BuildImagePathWidget(
-                              fileDetails: FileDetails(filePath: widget.content.previewPath ?? ""),
-                            ),
+                            child: BuildImagePathWidget(fileDetails: widget.content.thumbnailDetails),
                           ),
                           Expanded(
                             child: CustomText(widget.content.title, fontSize: 14, color: theme.onSurface, maxLines: 2),
@@ -87,12 +91,35 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          _buildLeadingMenuOption("Open", iconData: PhosphorIcons.playCircle(PhosphorIconsStyle.bold)),
+                          _buildLeadingMenuOption(
+                            "Open",
+                            iconData: PhosphorIcons.playCircle(PhosphorIconsStyle.bold),
+                            onTap: () {
+                              UiUtils.hideDialog(context);
+                              context.pushNamed(Routes.contentGate.name, extra: widget.content);
+                            },
+                          ),
                           _buildLeadingMenuOption(
                             "Launch",
                             iconData: PhosphorIcons.fileArrowUp(PhosphorIconsStyle.bold),
+                            onTap: () {
+                              UiUtils.hideDialog(context);
+                              ContentViewGateActions.redirectToViewer(
+                                ref,
+                                widget.content,
+                                popBefore: false,
+                                openOutsideApp: true,
+                              );
+                            },
                           ),
-                          _buildLeadingMenuOption("Share", iconData: PhosphorIcons.share(PhosphorIconsStyle.bold)),
+                          _buildLeadingMenuOption(
+                            "Share",
+                            iconData: PhosphorIcons.share(PhosphorIconsStyle.bold),
+                            onTap: () {
+                              UiUtils.hideDialog(context);
+                              ShareContentActions.shareContent(context, widget.content.contentId);
+                            },
+                          ),
                         ],
                       ),
                     ),
@@ -114,12 +141,59 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                           BuildPlainActionButton(
                             title: "Rename",
                             icon: Icon(PhosphorIcons.cursorText(PhosphorIconsStyle.bold), color: theme.onSurface),
+                            onTap: () {
+                              UiUtils.hideDialog(context);
+                              ModifyContentCardActions.onRenameContent(context, widget.content);
+                            },
                           ),
                           divider,
                           BuildPlainActionButton(
                             title: "Delete",
                             textStyle: TextStyle(fontSize: 14, color: Colors.red),
                             icon: Icon(Iconsax.trash, color: Colors.red.withAlpha(200)),
+                            onTap: () {
+                              UiUtils.hideDialog(context);
+                              UiUtils.showCustomDialog(
+                                context,
+                                child: ConfirmDeletionDialog(
+                                  content: "Are you sure you want to delete this item?",
+                                  onPop: () {
+                                    if (context.mounted) {
+                                      UiUtils.hideDialog(context);
+                                    } else {
+                                      GlobalNav.popGlobal();
+                                    }
+                                  },
+                                  onCancel: () {
+                                    GlobalNav.popGlobal();
+                                  },
+                                  onDelete: () async {
+                                    UiUtils.hideDialog(context);
+
+                                    if (context.mounted) {
+                                      UiUtils.showLoadingDialog(context, message: "Removing content");
+                                    }
+                                    final outcome = await ModifyContentsAction().onDeleteContent(content.contentId);
+
+                                    GlobalNav.popGlobal();
+
+                                    if (context.mounted) {
+                                      if (outcome == null) {
+                                        UiUtils.showFlushBar(
+                                          context,
+                                          msg: "Deleted content!",
+                                          vibe: FlushbarVibe.success,
+                                        );
+                                      } else if (outcome.toLowerCase().contains("error")) {
+                                        UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.error);
+                                      } else {
+                                        UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.warning);
+                                      }
+                                    }
+                                  },
+                                ),
+                              );
+                            },
                           ),
                         ],
                       ),
@@ -140,14 +214,14 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
     );
   }
 
-  Widget _buildLeadingMenuOption(String title, {required IconData iconData}) {
+  Widget _buildLeadingMenuOption(String title, {required IconData iconData, required void Function() onTap}) {
     final theme = ref;
     return Expanded(
       child: CustomElevatedButton(
         contentPadding: EdgeInsets.zero,
         pixelWidth: 100,
         pixelHeight: 60,
-        onClick: () {},
+        onClick: onTap,
         backgroundColor: Colors.transparent,
         child: Column(
           spacing: 6,

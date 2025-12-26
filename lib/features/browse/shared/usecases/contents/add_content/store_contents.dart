@@ -7,17 +7,21 @@ import 'package:path/path.dart' as p;
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/core/storage/isar_data/isar_schemas.dart';
+import 'package:slidesync/core/storage/native/app_paths.dart';
 import 'package:slidesync/core/utils/smart_isolate.dart';
-import 'package:slidesync/data/models/course_model/course_collection.dart';
-import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/core/utils/string_utils.dart';
+import 'package:slidesync/data/models/course/course_metadata.dart';
+import 'package:slidesync/data/models/course_collection/course_collection.dart';
+import 'package:slidesync/data/models/course_content/content_metadata.dart';
+import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
-import 'package:slidesync/core/utils/basic_utils.dart';
-import 'package:slidesync/core/utils/file_utils.dart';
+import 'package:slidesync/core/utils/crypto_utils.dart';
+import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/browse/shared/allowed_file_extensions.dart';
-import 'package:slidesync/features/browse/shared/usecases/contents/create_content_preview_image.dart';
+import 'package:slidesync/features/browse/shared/usecases/contents/add_content/content_thumbnail_creator.dart';
 import 'package:slidesync/features/browse/shared/usecases/types/add_content_result.dart';
 import 'package:slidesync/features/browse/shared/usecases/types/store_content_args.dart';
 
@@ -42,7 +46,6 @@ Future<List<Map<String, dynamic>>> storeContents(
         CourseCollection? collection = await CourseCollectionRepo.getById(args.collectionId);
         if (collection == null) return "Unable to load collection";
 
-        final String dirToStoreAt = collection.absolutePath;
         final contentPathsLength = args.filePaths.length;
         // int totalFilesSizeSum = 0;
 
@@ -52,7 +55,9 @@ Future<List<Map<String, dynamic>>> storeContents(
           if (!(await file.exists())) continue;
           final fileName = p.basename(file.path);
           final fileNameWithoutExt = p.basenameWithoutExtension(fileName);
-          final hash = await BasicUtils.calculateFileHashXXH3(file.path);
+          final hash = await CryptoUtils.calculateFileHashXXH3(file.path);
+
+          final String dirToStoreAt = p.join(AppPaths.materialsFolder, StringUtils.getHashPrefixAsDir(hash));
           final fileSize = await FileUtils.getFileSize(file.path);
 
           if (seenHashesSet.contains(hash)) {
@@ -61,9 +66,9 @@ Future<List<Map<String, dynamic>>> storeContents(
             continue;
           }
 
-          final CourseContentType contentType = checkContentType(fileName);
+          final CourseContentType contentType = AllowedFileExtensions.checkContentType(fileName);
           final uuid = args.uuids[i];
-          final newFileName = "$uuid${p.extension(filePath)}";
+          final newFileName = "$hash${p.extension(filePath)}";
 
           final Result<String?> addContentResult = await Result.tryRunAsync(() async {
             final CourseContent? sameHashedContent = await CourseContentRepo.getByHash(hash);
@@ -77,10 +82,11 @@ Future<List<Map<String, dynamic>>> storeContents(
                 ),
               );
               // totalFilesSizeSum += fileSize;
-              final previewPath = await CreateContentPreviewImage.createPreviewImageForContent(
+              final previewPath = await ContentThumbnailCreator.createThumbnailForContent(
                 storedAt.path,
                 courseContentType: contentType,
-                filePath: storedAt.path,
+                dirToStoreAt: AppPaths.contentsThumbnailsFolder,
+                filename: p.basenameWithoutExtension(newFileName),
               );
               log("previewPath: $previewPath");
 
@@ -92,11 +98,10 @@ Future<List<Map<String, dynamic>>> storeContents(
                 path: FileDetails(filePath: storedAt.path),
                 fileSize: fileSize,
                 courseContentType: contentType,
-                metadataJson: jsonEncode(<String, dynamic>{
-                  'originalFilename': p.basename(filePath),
-                  'previewPath': previewPath,
-                  'fileSize': fileSize,
-                }),
+                metadataJson: ContentMetadata(
+                  originalFileName: p.basename(filePath),
+                  thumbnails: FileDetails(filePath: previewPath ?? '').toMap(),
+                ).toJson(),
               );
 
               contentsToAdd.add(content);
@@ -108,7 +113,7 @@ Future<List<Map<String, dynamic>>> storeContents(
                 hash,
               );
               if (sameHashedContentInColl == null) {
-                final metadataJson = jsonDecode(sameHashedContent.metadataJson);
+                final metadata = sameHashedContent.metadata;
                 final CourseContent content = CourseContent.create(
                   contentId: uuid,
                   contentHash: hash,
@@ -117,11 +122,7 @@ Future<List<Map<String, dynamic>>> storeContents(
                   path: sameHashedContent.path.fileDetails,
                   fileSize: fileSize,
                   courseContentType: contentType,
-                  metadataJson: jsonEncode(<String, dynamic>{
-                    'originalFilename': metadataJson['originalFilename'],
-                    'previewPath': metadataJson['previewPath'],
-                    'fileSize': fileSize,
-                  }),
+                  metadataJson: metadata.copyWith(originalFileName: fileName).toJson(),
                 );
                 contentsToAdd.add(content);
                 seenHashesSet.add(hash);
@@ -173,36 +174,4 @@ Future<List<Map<String, dynamic>>> storeContents(
     },
   );
   return result;
-}
-
-/// Returns the CourseContentType for a file extension or path.
-/// E.g. `.md`, `file.txt`, `/path/to/image.jpg`
-CourseContentType checkContentType(String pathOrExt) {
-  // Remove any leading dots and path parts
-  String ext = pathOrExt.trim().toLowerCase();
-
-  if (ext.contains(Platform.pathSeparator)) {
-    ext = ext.split(Platform.pathSeparator).last;
-  }
-  if (ext.contains('.')) {
-    ext = ext.split('.').last;
-  }
-
-  if (AllowedFileExtensions.allowedImageExtensions.contains(ext)) {
-    return CourseContentType.image;
-  }
-  // else if (AllowedFileExtensions.allowedVideoExtensions.contains(ext)) {
-  //   return CourseContentType.video;
-  // }
-  else if (AllowedFileExtensions.allowedDocumentExtensions.contains(ext)) {
-    return CourseContentType.document;
-  }
-  // else if (AllowedFileExtensions.allowedAudioExtensions.contains(ext)) {
-  //   return CourseContentType.audio;
-  // }
-  else if (['txt', 'md'].contains(ext)) {
-    return CourseContentType.note;
-  } else {
-    return CourseContentType.unknown;
-  }
 }

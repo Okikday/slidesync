@@ -7,13 +7,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:slidesync/core/storage/native/app_paths.dart';
 import 'package:slidesync/data/models/file_details.dart';
-import 'package:slidesync/core/utils/file_utils.dart';
+import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_model/course.dart';
+import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/browse/shared/usecases/collections/modify_collection_uc.dart';
+import 'package:slidesync/features/browse/shared/usecases/contents/add_content/content_thumbnail_creator.dart';
 import 'package:slidesync/features/browse/shared/usecases/courses/create_course_uc.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/shared/course_description_dialog.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/shared/edit_course_bottom_sheet.dart';
@@ -40,16 +42,18 @@ class ModifyCourseActions {
     final Result<bool?> createCourseOutcome = await Result.tryRunAsync<bool>(() async {
       Course? course = await CourseRepo.getCourseByDbId(id);
       if (course == null) return false;
-      if (course.imageLocationJson.containsAnyFilePath) {
-        await FileUtils.deleteFileAtPath(course.imageLocationJson.filePath);
-      }
-      final String? newPath = await CreateCourseUc.compressImageToPath(
+
+      await FileUtils.deleteFileAtPath(course.metadata.thumbnailsDetails.filePath);
+      final String? newPath = await ContentThumbnailCreator.createThumbnailForCourse(
         newImageFile.path,
-        folderPath: "courses/${course.courseId}",
+        filename: course.courseId,
       );
       if (newPath != null) {
-        course = course.setImageLocation(FileDetails(filePath: newPath));
-        await CourseRepo.addCourse(course);
+        final newCourse = course.copyWith(
+          metadataJson: course.metadata.copyWith(thumbnails: FileDetails(filePath: newPath).toMap()).toJson(),
+        );
+        log("New course thumbnail path: ${newCourse.metadata}");
+        await CourseRepo.addCourse(newCourse);
         log("Successfully changed image ");
         return true;
       }
@@ -66,9 +70,12 @@ class ModifyCourseActions {
   Future<bool> deleteCourseImageAction({required int courseDbId}) async {
     Course? course = await CourseRepo.getCourseByDbId(courseDbId);
     if (course == null) return false;
-    if (course.imageLocationJson.containsAnyFilePath) {
-      await CourseRepo.addCourse(course.setImageLocation(FileDetails()));
-      await FileUtils.deleteFileAtPath(course.imageLocationJson.filePath);
+    final thumbnailPath = course.thumbnailPath;
+    if (course.metadata.thumbnailsDetails.containsFilePath) {
+      await CourseRepo.addCourse(
+        course.copyWith(metadataJson: course.metadata.copyWith(thumbnails: FileDetails().toMap()).toJson()),
+      );
+      await FileUtils.deleteFileAtPath(thumbnailPath);
       return true;
     }
     return false;
@@ -148,10 +155,10 @@ class ModifyCourseActions {
   }
 
   /// When the course image is clicked, it shows some options in a dialog the user can choose from.
-  void onClickCourseImage(WidgetRef ref, {required Course course}) {
+  void onClickCourseImage(WidgetRef ref, {required Course course}) async {
     final context = ref.context;
     final iconColor = ref.supportingText;
-    final hasImage = course.imageLocation.containsFilePath;
+    final hasImage = await File(course.thumbnailPath).exists();
     final List<AppActionDialogModel> dialogModels = [
       if (hasImage)
         AppActionDialogModel(
@@ -160,7 +167,7 @@ class ModifyCourseActions {
           onTap: () async {
             CustomDialog.hide(context);
             await Future.delayed(Durations.short2);
-            if (context.mounted) previewImageActionRoute(context, courseImagePath: course.imageLocationJson);
+            if (context.mounted) previewImageActionRoute(context, courseImagePath: course.thumbnailPath);
           },
         )
       else

@@ -3,9 +3,9 @@ import 'dart:math' as math;
 
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
-import 'package:slidesync/core/utils/file_utils.dart';
+import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/data/models/course_model/course_collection.dart';
+import 'package:slidesync/data/models/course_collection/course_collection.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
@@ -20,8 +20,8 @@ class ModifyCollectionUc {
         final filePath = item.path.filePath;
         await FileUtils.deleteFileAtPath(filePath);
 
-        final previewPath = jsonDecode(item.metadataJson)['previewPath'];
-        if (previewPath is String) await FileUtils.deleteFileAtPath(previewPath);
+        final previewPath = FileDetails.fromMap(item.metadata.thumbnails ?? {}).filePath;
+        await FileUtils.deleteFileAtPath(previewPath);
         fileSum += item.fileSize;
       }
     }

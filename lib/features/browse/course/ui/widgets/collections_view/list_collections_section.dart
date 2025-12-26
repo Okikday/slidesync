@@ -6,7 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/data/models/course_model/course_collection.dart';
+import 'package:slidesync/data/models/course_collection/course_collection.dart';
 import 'package:slidesync/features/browse/course/ui/components/collection_card.dart';
 import 'package:slidesync/shared/global/providers/collections_providers.dart';
 import 'package:slidesync/routes/routes.dart';
@@ -48,7 +48,7 @@ class ListCollectionsSection extends ConsumerWidget {
                 },
               );
             }
-            
+
             final searchText = searchCollectionTextNotifier.value;
             final collections =
                 (searchText.trim().isEmpty

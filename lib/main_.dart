@@ -21,14 +21,14 @@ Future<void> _appLaunchRoutine() async {
   final lastDate = lastDateHive;
   final dateDiff = lastDate.difference(DateTime.now());
   if (dateDiff.inHours > 20) {
-    final token = RootIsolateToken.instance;
-    if (token != null) {
-      compute(FileUtils.deleteEmptyCoursesDirsInIsolate, {'rootIsolateToken': token});
-      await AppHiveData.instance.setData(
-        key: HiveDataPathKey.lastClearedCacheDate.name,
-        value: DateTime.now().toIso8601String(),
-      );
-    }
+    // final token = RootIsolateToken.instance;
+    // if (token != null) {
+    //   compute(FileUtils.deleteEmptyCoursesDirsInIsolate, {'rootIsolateToken': token});
+    //   await AppHiveData.instance.setData(
+    //     key: HiveDataPathKey.lastClearedCacheDate.name,
+    //     value: DateTime.now().toIso8601String(),
+    //   );
+    // }
   }
 }
 

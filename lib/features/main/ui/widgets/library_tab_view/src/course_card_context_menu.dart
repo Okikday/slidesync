@@ -12,7 +12,7 @@ import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/file_details.dart';
-import 'package:slidesync/data/models/course_model/course.dart';
+import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -101,7 +101,7 @@ class CourseCardContextMenu extends ConsumerWidget {
                                       child: SizedBox.square(
                                         dimension: dimension - 8,
                                         child: BuildImagePathWidget(
-                                          fileDetails: course.imageLocationJson.fileDetails,
+                                          fileDetails: FileDetails(filePath: course.thumbnailPath),
                                           fallbackWidget: Icon(Iconsax.document_1, size: 16, color: theme.onBackground),
                                         ),
                                       ),

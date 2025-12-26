@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/modify_contents_action.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/modify_content_uc.dart';
 import 'package:slidesync/shared/widgets/bottom_sheets/input_text_bottom_sheet.dart';

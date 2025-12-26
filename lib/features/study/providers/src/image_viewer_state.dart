@@ -10,7 +10,7 @@ import 'package:photo_view/photo_view.dart';
 import 'package:slidesync/core/base/use_value_notifier.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/data/models/progress_track_models/course_track.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
@@ -109,9 +109,7 @@ class ImageViewerState with ValueNotifierFactoryMixin {
       return await _updateProgressTrack(
         ptm.copyWith(
           lastRead: DateTime.now(),
-          metadataJson: jsonEncode(<String, dynamic>{
-            'previewPath': jsonDecode(content.metadataJson)['previewPath'] ?? content.previewPath,
-          }),
+          metadataJson: jsonEncode(<String, dynamic>{'previewPath': content.thumbnailPath}),
         ),
       );
     }
@@ -135,7 +133,7 @@ class ImageViewerState with ValueNotifierFactoryMixin {
         progress: 0.0,
         pages: const [],
         lastRead: DateTime.now(),
-        metadataJson: jsonEncode({'previewPath': content.previewPath}),
+        metadataJson: jsonEncode({'previewPath': content.thumbnailPath}),
       );
 
       return await ContentTrackRepo.isarData.getById(await ContentTrackRepo.isarData.store(newPtm));

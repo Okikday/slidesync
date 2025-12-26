@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/shared/global/providers/course_providers.dart';
-import 'package:slidesync/data/models/course_model/course.dart';
+import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/features/browse/course/ui/actions/edit_course_actions.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/create_course/input_course_code_field.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/create_course/input_course_title_field.dart';

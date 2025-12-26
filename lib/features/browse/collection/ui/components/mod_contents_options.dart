@@ -7,7 +7,7 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/features/browse/collection/providers/collection_materials_provider.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/modify_content_card_actions.dart';

@@ -5,7 +5,7 @@ import 'package:image/image.dart' as img;
 
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path/path.dart' as p;
-import 'package:slidesync/core/utils/file_utils.dart';
+import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 
 import 'result.dart';
 

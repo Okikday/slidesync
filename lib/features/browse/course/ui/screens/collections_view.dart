@@ -5,7 +5,7 @@ import 'package:slidesync/features/browse/collection/providers/modify_collection
 import 'package:slidesync/features/browse/course/providers/course_details_provider.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/shared/global/providers/course_providers.dart';
-import 'package:slidesync/data/models/course_model/course.dart';
+import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/add_collection_action_button.dart';
 import '../widgets/collections_view/list_collections_section.dart';
 import '../../../collection/ui/widgets/collections_search_bar.dart';

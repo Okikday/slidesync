@@ -3,20 +3,15 @@ import 'dart:convert';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:lottie/lottie.dart';
 import 'package:slidesync/core/assets/assets.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/file_details.dart';
-import 'package:slidesync/features/main/ui/actions/recent_dialog_actions.dart';
+import 'package:slidesync/features/main/ui/actions/home/recent_dialog_actions.dart';
 import 'package:slidesync/features/main/providers/home_provider.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
-import 'package:slidesync/features/main/ui/components/recent_dialog.dart';
-import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
+import 'package:slidesync/features/main/ui/components/recent_dialog/recent_dialog.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
-
-import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 import 'recent_list_tile.dart';
 
@@ -62,27 +57,7 @@ class RecentsSectionBody extends ConsumerWidget {
                       barrierColor: Colors.black.withValues(alpha: 0.6),
                       transitionDuration: Durations.short4,
                       reverseTransitionDuration: Durations.short4,
-                      child: RecentDialog(
-                        recentDialogModel: RecentDialogModel(
-                          contentId: content.contentId,
-                          imagePreview: BuildImagePathWidget(
-                            fileDetails: FileDetails(filePath: previewPath ?? ''),
-                            fallbackWidget: Icon(Iconsax.document_1, size: 26, color: ref.onBackground),
-                          ),
-                          isStarred: false,
-                          title: content.title ?? "No title",
-                          description: content.description ?? "No description",
-                          onContinueReading: () async {
-                            await rda.onContinueReading(ref, content.contentId);
-                          },
-                          onShare: () async {
-                            ShareContentActions.shareFileContent(context, content.contentId);
-                          },
-                          onDelete: () async {
-                            await rda.onRemoveFromRecents(context, content);
-                          },
-                        ),
-                      ),
+                      child: RecentDialog(contentTrack: content),
                     );
                   },
                 ),

@@ -4,7 +4,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -98,7 +98,7 @@ class _ContentViewGateState extends ConsumerState<ContentViewGate> {
                       Expanded(
                         child: SizedBox.expand(
                           child: BuildImagePathWidget(
-                            fileDetails: FileDetails(filePath: content.previewPath ?? ''),
+                            fileDetails: FileDetails(filePath: content.previewPath),
                             fit: BoxFit.cover,
                             fallbackWidget: Icon(
                               WidgetHelper.resolveIconData(content.courseContentType, false),

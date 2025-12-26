@@ -1305,6 +1305,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.16.12"
+  native_file_preview:
+    dependency: "direct main"
+    description:
+      name: native_file_preview
+      sha256: "6d6b368be8a2ec816afac18013b176fad753080c3e9da4f5179e01499c93266d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   nested:
     dependency: transitive
     description:

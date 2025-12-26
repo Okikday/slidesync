@@ -9,7 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
-import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/features/browse/collection/ui/components/content_card_context_menu.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/retrieve_content_uc.dart';
@@ -575,8 +575,8 @@ class ContentCardPreviewImage extends StatelessWidget {
         imageFilter: ColorFilter.mode(Colors.black.withAlpha(10), BlendMode.color),
         child: BuildImagePathWidget(
           fileDetails: content.courseContentType == CourseContentType.link
-              ? FileDetails(urlPath: content.previewPath ?? '')
-              : FileDetails(filePath: content.previewPath ?? ''),
+              ? FileDetails(urlPath: content.previewPath)
+              : FileDetails(filePath: content.previewPath),
           fit: BoxFit.cover,
           fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, false), size: 36),
         ),

@@ -1,6 +1,6 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/data/models/course_model/course_collection.dart';
+import 'package:slidesync/data/models/course_collection/course_collection.dart';
 import 'package:slidesync/features/browse/course/ui/screens/collections_view.dart';
 import 'package:slidesync/features/browse/course/ui/screens/course_details_view.dart';
 import 'package:slidesync/routes/routes.dart';

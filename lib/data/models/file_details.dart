@@ -12,8 +12,8 @@ class FileDetails {
     return FileDetails(urlPath: urlPath ?? this.urlPath, filePath: filePath ?? this.filePath);
   }
 
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{'urlPath': urlPath, 'filePath': filePath};
+  Map<String, String> toMap() {
+    return <String, String>{'urlPath': urlPath, 'filePath': filePath};
   }
 
   factory FileDetails.fromMap(Map<String, dynamic> map) {

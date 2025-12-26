@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/features/study/ui/actions/pdf_doc_viewer_actions.dart';
 import 'package:slidesync/features/study/providers/pdf_doc_viewer_provider.dart';
 import 'package:slidesync/features/study/ui/screens/pdf_doc_viewer/pdf_doc_app_bar/pdf_doc_viewer_app_bar.dart';

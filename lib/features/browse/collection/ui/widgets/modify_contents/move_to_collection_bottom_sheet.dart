@@ -8,17 +8,17 @@ import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:isar/isar.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_model/course_collection.dart';
-import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/course_collection/course_collection.dart';
+import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/modify_contents/edit_course_tile.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/modify_contents/empty_courses_view.dart';
 import 'package:slidesync/features/browse/course/ui/components/collection_card.dart';
-import 'package:slidesync/features/browse/shared/usecases/contents/add_contents_uc.dart';
+import 'package:slidesync/features/browse/shared/usecases/contents/add_content/add_contents_uc.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/shared/create_collection_bottom_sheet.dart';
 import 'package:slidesync/routes/routes.dart';
-import 'package:slidesync/data/models/course_model/course.dart';
+import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
@@ -239,7 +239,7 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
                                         courseCode: course.courseCode,
                                         categoriesCount: course.collections.length,
                                         selectionState: (selected: false, isSelecting: false),
-                                        syncImagePath: course.imageLocationJson,
+                                        syncImagePath: course.thumbnailPath,
                                         onTap: () => _handleCourseSelection(context, course),
                                         onSelected: () {},
                                       )

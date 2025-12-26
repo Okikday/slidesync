@@ -7,7 +7,7 @@ import 'package:isar/isar.dart';
 import 'package:path/path.dart' as p;
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/share/logic/usecases/share_content_uc.dart';
@@ -54,7 +54,7 @@ class ShareContentActions {
     final Set<(File file, String fileName)> dataSet = contents.map((e) {
       return (
         File(e.path.filePath),
-        (e.metadata['originalFilename'] as String?) ?? p.setExtension(e.title, p.extension(e.path.filePath)),
+        (e.metadata.originalFileName) ?? p.setExtension(e.title, p.extension(e.path.filePath)),
       );
     }).toSet();
     final files = dataSet.map((e) => e.$1).toList();
@@ -75,7 +75,7 @@ class ShareContentActions {
     final Set<(File file, String fileName)> dataSet = contents.map((e) {
       return (
         File(e.path.filePath),
-        (e.metadata['originalFilename'] as String?) ?? p.setExtension(e.title, p.extension(e.path.filePath)),
+        (e.metadata.originalFileName) ?? p.setExtension(e.title, p.extension(e.path.filePath)),
       );
     }).toSet();
     final files = dataSet.map((e) => e.$1).toList();

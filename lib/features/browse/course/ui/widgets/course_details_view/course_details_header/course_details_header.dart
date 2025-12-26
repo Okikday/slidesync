@@ -4,7 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/data/models/file_details.dart';
-import 'package:slidesync/data/models/course_model/course.dart';
+import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/browse/course/providers/course_details_provider.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/course_details_view/course_details_header/progress_shape_animated_widget.dart';
@@ -75,7 +75,7 @@ class CourseDetailsHeaderContent extends ConsumerWidget {
     final courseDetail = ref.watch(
       CourseProviders.courseProvider(courseId).select(
         (s) => s.whenData(
-          (cb) => (title: cb.courseTitle, imageLocationJson: cb.imageLocationJson, description: cb.description),
+          (cb) => (title: cb.courseTitle, imageLocationJson: cb.thumbnailPath, description: cb.description),
         ),
       ),
     );
@@ -93,7 +93,7 @@ class CourseDetailsHeaderContent extends ConsumerWidget {
             courseId: courseId,
             courseCode: courseCode,
             shapeSize: shapeSize,
-            imageLocationJson: imageLocationJson,
+            thumbnailPath: imageLocationJson,
             courseName: courseName,
             description: description,
           );
@@ -103,7 +103,7 @@ class CourseDetailsHeaderContent extends ConsumerWidget {
           courseId: '',
           courseCode: "",
           shapeSize: shapeSize,
-          imageLocationJson: "",
+          thumbnailPath: "",
           courseName: "Loading...",
           description: "description",
         ),
@@ -118,14 +118,14 @@ class CourseDetailsHeaderContentChild extends ConsumerWidget {
     required this.courseId,
     required this.courseCode,
     required this.shapeSize,
-    required this.imageLocationJson,
+    required this.thumbnailPath,
     required this.courseName,
     required this.description,
   });
   final String courseId;
   final String courseCode;
   final double shapeSize;
-  final String imageLocationJson;
+  final String thumbnailPath;
   final String courseName;
   final String description;
 
@@ -180,7 +180,7 @@ class CourseDetailsHeaderContentChild extends ConsumerWidget {
                         return AnimatedShapeProgressWidget(
                               progress: data,
                               shapeSize: shapeSize,
-                              fileDetails: imageLocationJson.fileDetails,
+                              fileDetails: FileDetails(filePath: thumbnailPath),
                               onClick: () async {
                                 await Future.delayed(Durations.short4);
                                 final course = await CourseRepo.getCourseById(courseId);

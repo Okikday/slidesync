@@ -9,23 +9,10 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:isar/isar.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/base/leak_prevention.dart';
-import 'package:slidesync/data/models/course_model/course.dart';
+import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 
-// class DoFetchInIsolateArgs {
-//   final int pageKey;
-//   final int limit;
-//   final CourseSortOption sortOption;
-//   final RootIsolateToken token;
-
-//   DoFetchInIsolateArgs(this.pageKey, this.limit, this.sortOption, this.token);
-// }
-
-const int limit = 20;
-
 class CoursesPagination extends LeakPrevention {
-  ///|
-  ///|
   /// ===================================================================================================
   /// VARIABLES
   /// ===================================================================================================
@@ -33,29 +20,26 @@ class CoursesPagination extends LeakPrevention {
   CourseSortOption sortOption;
   bool _fetching = false;
   final Queue<Completer<List<Course>>> _waitingQueue = Queue();
+  int limit;
 
   /// For stream cases, to keep track of what's going on
   int count = -1;
   bool isUpdating = false;
   late final PagingController<int, Course> pagingController;
 
-  ///|
-  ///|
   /// ===================================================================================================
   /// INIT
   /// ===================================================================================================
-  CoursesPagination._({this.sortOption = CourseSortOption.dateModifiedDesc}) {
+  CoursesPagination._({this.sortOption = CourseSortOption.dateModifiedDesc, this.limit = 20}) {
     pagingController = PagingController(
       getNextPageKey: getNextPageKey,
       fetchPage: (pageKey) => fetchPage(pageKey, limit),
     );
   }
 
-  static CoursesPagination of({CourseSortOption? sortOption}) =>
-      CoursesPagination._(sortOption: sortOption ?? CourseSortOption.dateModifiedDesc);
+  static CoursesPagination of({CourseSortOption? sortOption, int? limit}) =>
+      CoursesPagination._(sortOption: sortOption ?? CourseSortOption.dateModifiedDesc, limit: limit ?? 20);
 
-  ///|
-  ///|
   /// ===================================================================================================
   /// DISPOSALS
   /// ===================================================================================================
@@ -66,12 +50,11 @@ class CoursesPagination extends LeakPrevention {
     log("Disposed Courses Pagination");
   }
 
-  ///|
-  ///|
   /// ===================================================================================================
   /// METHODS
   /// ===================================================================================================
 
+  /// fetches a page of courses based on the current sort option
   Future<List<Course>> fetchPage(int pageKey, int limit) async {
     if (count <= 0) count = await (await CourseRepo.isar).courses.count();
     if (_fetching) {
@@ -101,24 +84,31 @@ class CoursesPagination extends LeakPrevention {
     }
   }
 
+  /// clears the waiting queue by completing all pending fetch requests with an error
   void clearQueue() {
     while (_waitingQueue.isNotEmpty) {
       _waitingQueue.removeFirst().completeError(StateError('Queue cleared'));
     }
   }
 
+  /// determines the next page key based on the current paging state
   static int? getNextPageKey(PagingState<int, Course> state) {
     return state.lastPageIsEmpty ? null : state.nextIntPageKey;
   }
 
+  /// updates the sort option and optionally refreshes the pagination
   void updateSortOption(CourseSortOption newSortOption, [bool refresh = false]) {
     sortOption = newSortOption;
     if (refresh) pagingController.refresh();
   }
 
+  /// for checking the length of the waiting queue
   int get queueLength => _waitingQueue.length;
+
+  /// indicates if a fetch operation is currently ongoing
   bool get isBusy => _fetching;
 
+  /// compares the current courses with the ones in the database and updates if there are changes
   Future<void> compareCoursesAndUpdate(CoursesPagination cp) async {
     final presentCount = await (await CourseRepo.isar).courses.count();
     if (cp.isUpdating) {
@@ -227,11 +217,11 @@ class CoursesPagination extends LeakPrevention {
     cp.isUpdating = false;
   }
 
-  ///|
-  ///|
   /// ===================================================================================================
   /// PRIVATE METHODS
   /// ===================================================================================================
+
+  /// implements the actual fetching logic based on sort option
   Future<List<Course>> _doFetch(int pageKey, int limit, CourseSortOption sortOption) async {
     final List<Course> result;
 
@@ -259,6 +249,7 @@ class CoursesPagination extends LeakPrevention {
     return result;
   }
 
+  /// fetches courses by title in ascending or descending order
   Future<List<Course>> _fetchByTitle(int pageKey, int limit, [bool ascending = true]) async {
     final offset = (pageKey - 1) * limit;
     final filter = (await CourseRepo.isar).courses.where();
@@ -267,6 +258,7 @@ class CoursesPagination extends LeakPrevention {
         : filter.sortByCourseTitleDesc().offset(offset).limit(limit).findAll());
   }
 
+  /// fetches courses by date created in ascending or descending order
   Future<List<Course>> _fetchByDateCreated(int pageKey, int limit, [bool ascending = true]) async {
     final offset = (pageKey - 1) * limit;
     final filter = (await CourseRepo.isar).courses.where();
@@ -275,6 +267,7 @@ class CoursesPagination extends LeakPrevention {
         : filter.sortByCreatedAtDesc().offset(offset).limit(limit).findAll());
   }
 
+  /// fetches courses by date modified in ascending or descending order
   Future<List<Course>> _fetchByDateModified(int pageKey, int limit, [bool ascending = true]) async {
     final offset = (pageKey - 1) * limit;
     final filter = (await CourseRepo.isar).courses.where();
@@ -283,6 +276,7 @@ class CoursesPagination extends LeakPrevention {
         : filter.sortByLastUpdatedDesc().offset(offset).limit(limit).findAll());
   }
 
+  /// checks if two courses are the same
   bool _areCoursesEqual(Course a, Course b) {
     return a == b;
   }

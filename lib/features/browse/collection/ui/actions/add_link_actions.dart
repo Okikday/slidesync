@@ -3,8 +3,8 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
-import 'package:slidesync/core/utils/basic_utils.dart';
-import 'package:slidesync/data/models/course_model/course_content.dart';
+import 'package:slidesync/core/utils/crypto_utils.dart';
+import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
@@ -21,7 +21,7 @@ class AddLinkActions {
     if (parentId.isEmpty) return false;
     final collection = await CourseCollectionRepo.getById(parentId);
     if (collection == null) return false;
-    final contentHash = BasicUtils.calculateStringHash(link);
+    final contentHash = CryptoUtils.calculateStringHash(link);
     final CourseContent? sameHashedContent = await CourseContentRepo.findFirstDuplicateContentByHash(
       collection,
       contentHash,

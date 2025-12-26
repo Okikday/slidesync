@@ -1,27 +1,34 @@
 import 'dart:convert';
 
 import 'package:isar/isar.dart';
+import 'package:path/path.dart' as p;
+import 'package:slidesync/core/constants/src/app_constants.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
-import 'package:slidesync/core/utils/result.dart';
+import 'package:slidesync/core/storage/native/app_paths.dart';
+import 'package:slidesync/data/models/course_content/content_metadata.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:uuid/uuid.dart';
 
 part 'course_content.g.dart';
+part 'extension_on_course_content.dart';
 
 @collection
 class CourseContent {
   Id id = Isar.autoIncrement;
 
-  /// Holds the hash of the content basically
+  /// Holds the hash of the content
   @Index()
   late String contentHash;
 
+  /// Unique identifier for the content
   @Index(unique: true)
   late String contentId;
 
+  /// Identifier for the parent collection
   @Index()
   late String parentId;
 
+  /// Title of the content (e.g., file name or link title)
   @Index(caseSensitive: false)
   late String title;
 
@@ -40,13 +47,16 @@ class CourseContent {
 
   late String metadataJson;
 
+  @ignore
+  ContentMetadata get metadata => ContentMetadata.fromJson(metadataJson);
+
   CourseContent();
 
   factory CourseContent.create({
-    required String contentHash,
-    String? contentId,
-    required String parentId,
-    required String title,
+    required String contentHash, // file hash or link hash
+    String? contentId, // unique id
+    required String parentId, // collection id
+    required String title, // file name or link title
     required FileDetails path,
     DateTime? createdAt,
     DateTime? lastModified,
@@ -82,7 +92,7 @@ class CourseContent {
       'lastModified': lastModified?.toIso8601String(),
       'description': description,
       'courseContentType': courseContentType.index,
-      'fileSize': fileSize, // NEW: Include in map
+      'fileSize': fileSize,
       'metadataJson': metadataJson,
     };
   }
@@ -99,9 +109,7 @@ class CourseContent {
       ..lastModified = map['lastModified'] != null ? DateTime.tryParse(map['lastModified']) : null
       ..description = map['description'] ?? ''
       ..courseContentType = CourseContentType.values[map['courseContentType'] ?? 0]
-      ..fileSize =
-          map['fileSize'] ??
-          0 // NEW: Parse fileSize
+      ..fileSize = map['fileSize'] ?? 0
       ..metadataJson = map['metadataJson'] ?? '{}';
   }
 
@@ -147,55 +155,4 @@ class CourseContent {
   String toString() {
     return 'CourseContent(id: $id, contentHash: $contentHash, contentId: $contentId, parentId: $parentId, title: $title, path: $path, createdAt: $createdAt, lastModified: $lastModified, description: $description, courseContentType: $courseContentType, fileSize: $fileSize, metadataJson: $metadataJson)';
   }
-}
-
-extension CourseContentExtension on CourseContent {
-  String get collectionId => parentId;
-
-  CourseContent copyWith({
-    required String contentHash,
-    String? parentId,
-    String? title,
-    FileDetails? path,
-    DateTime? createdAt,
-    DateTime? lastModified,
-    String? description,
-    CourseContentType? courseContentType,
-    int? fileSize, // NEW: Add to copyWith
-    String? metadataJson,
-  }) {
-    return this
-      ..contentHash = contentHash
-      ..parentId = parentId ?? this.parentId
-      ..title = title ?? this.title
-      ..path = path?.toJson() ?? this.path
-      ..createdAt = createdAt ?? this.createdAt
-      ..lastModified = lastModified ?? this.lastModified
-      ..description = description ?? this.description
-      ..courseContentType = courseContentType ?? this.courseContentType
-      ..fileSize =
-          fileSize ??
-          this
-              .fileSize // NEW: Include in copyWith
-      ..metadataJson = metadataJson ?? this.metadataJson;
-  }
-
-  Map<String, dynamic> get metadata =>
-      Result.tryRun(() => Map<String, dynamic>.from(jsonDecode(metadataJson))).data ?? <String, dynamic>{};
-  String? get previewPath => metadata['previewPath'];
-}
-
-extension CourseContentMapX on Map<String, dynamic> {
-  int get id => this['id'] as int? ?? -1;
-  String get contentHash => this['contentHash'] as String? ?? '';
-  String get contentId => this['contentId'] as String? ?? '';
-  String get parentId => this['parentId'] as String? ?? '';
-  String get title => this['title'] as String? ?? '';
-  String get path => this['path'] as String? ?? '{}';
-  DateTime? get createdAt => this['createdAt'] != null ? DateTime.tryParse(this['createdAt'] as String) : null;
-  DateTime? get lastModified => this['lastModified'] != null ? DateTime.tryParse(this['lastModified'] as String) : null;
-  String get description => this['description'] as String? ?? '';
-  int get courseContentTypeIndex => this['courseContentType'] as int? ?? 0;
-  int get fileSize => this['fileSize'] as int? ?? 0; // NEW: Add fileSize getter
-  String get metadataJson => this['metadataJson'] as String? ?? '{}';
 }

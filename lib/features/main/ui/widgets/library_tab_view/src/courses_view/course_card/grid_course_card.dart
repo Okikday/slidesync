@@ -4,7 +4,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/data/models/course_model/course.dart';
+import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/models/progress_track_models/course_track.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
@@ -118,7 +118,7 @@ class GridCourseCardStackedCard extends ConsumerWidget {
                                     child: BuildImagePathWidget(
                                       width: 40,
                                       height: 40,
-                                      fileDetails: course.imageLocationJson.fileDetails,
+                                      fileDetails: FileDetails(filePath: course.thumbnailPath),
                                       fallbackWidget: Icon(
                                         Iconsax.star,
                                         size: 16,

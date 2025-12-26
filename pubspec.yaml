@@ -100,6 +100,7 @@ dependencies:
   es_compression: ^2.0.15
   heroine: ^0.7.0
   phosphor_flutter: ^2.1.0
+  native_file_preview: ^1.0.1
 
 flutter_native_splash:
   android: true

@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_model/course_collection.dart';
+import 'package:slidesync/data/models/course_collection/course_collection.dart';
 import 'package:slidesync/features/browse/course/ui/actions/edit_collection_actions.dart';
 import 'package:slidesync/features/browse/course/ui/actions/modify_collection_actions.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';

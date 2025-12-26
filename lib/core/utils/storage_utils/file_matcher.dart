@@ -1,7 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 import 'package:file_picker/file_picker.dart';
-import 'package:slidesync/core/utils/basic_utils.dart';
+import 'package:slidesync/core/utils/crypto_utils.dart';
 import 'package:slidesync/core/utils/smart_isolate.dart';
 
 /// Service class for finding and matching files by size and hash in an isolate.
@@ -207,7 +207,7 @@ class FileMatcher {
       bool foundMatch = false;
       for (final filePath in candidateFiles) {
         try {
-          final String calculatedHash = await BasicUtils.calculateFileHashXXH3(filePath);
+          final String calculatedHash = await CryptoUtils.calculateFileHashXXH3(filePath);
 
           if (calculatedHash == targetHash) {
             hashToFilePath[targetHash] = filePath;
@@ -296,5 +296,3 @@ class _IsolateProgress {
 
   _IsolateProgress({this.message});
 }
-
-
