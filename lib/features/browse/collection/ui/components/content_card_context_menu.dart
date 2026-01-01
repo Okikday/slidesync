@@ -2,19 +2,15 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_content/course_content.dart';
-import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/browse/collection/providers/collection_materials_provider.dart';
-import 'package:slidesync/features/browse/collection/ui/actions/content_card_actions.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/modify_content_card_actions.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/modify_contents_action.dart';
 import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
 import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
-import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
@@ -99,7 +95,7 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                             iconData: PhosphorIcons.playCircle(PhosphorIconsStyle.bold),
                             onTap: () {
                               UiUtils.hideDialog(context);
-                              context.pushNamed(Routes.contentGate.name, extra: widget.content);
+                              ContentViewGateActions.redirectToViewer(ref, widget.content, openOutsideApp: false);
                             },
                           ),
                           _buildLeadingMenuOption(
@@ -107,12 +103,7 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                             iconData: PhosphorIcons.fileArrowUp(PhosphorIconsStyle.bold),
                             onTap: () {
                               UiUtils.hideDialog(context);
-                              ContentViewGateActions.redirectToViewer(
-                                ref,
-                                widget.content,
-                                popBefore: false,
-                                openOutsideApp: true,
-                              );
+                              ContentViewGateActions.redirectToViewer(ref, widget.content, openOutsideApp: false);
                             },
                           ),
                           _buildLeadingMenuOption(

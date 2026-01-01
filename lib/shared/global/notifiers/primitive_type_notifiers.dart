@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
@@ -123,7 +124,7 @@ class AsyncDynamicNotifier extends AsyncNotifier<dynamic> {
     return _defaultKey;
   }
 
-  void set(dynamic value) => state = AsyncData(value);
+  Future<void> set(dynamic value) async => state = AsyncData(value);
 }
 
 class ImpliedNotifier<T> extends Notifier<T> {
@@ -160,25 +161,72 @@ class ImpliedNotifierN<T> extends Notifier<T?> {
   void set(T? value) => state = value;
 }
 
-class AsyncImpliedNotifier<T> extends AsyncNotifier<T> {
+// ============================================================================
+// HiveAsyncImpliedNotifier - With Hive persistence
+// ============================================================================
+
+class HiveAsyncImpliedNotifier<T> extends AsyncNotifier<T> {
   final String _hiveKey;
   final T _defaultKey;
   final bool? isUpdateNotifying;
-  final T? Function(dynamic data)? resolveData;
+  final FutureOr<T?> Function(dynamic data)? resolveData;
 
-  AsyncImpliedNotifier(this._hiveKey, this._defaultKey, [this.isUpdateNotifying, this.resolveData]);
+  final Queue<Completer<void>> _updateQueue = Queue<Completer<void>>();
+  bool _isProcessingQueue = false;
+
+  HiveAsyncImpliedNotifier(this._hiveKey, this._defaultKey, [this.isUpdateNotifying, this.resolveData]);
+
   @override
   Future<T> build() async {
     return (await Result.tryRunAsync(() async {
           final data = await AppHiveData.instance.getData(key: _hiveKey);
-          return resolveData != null ? resolveData!(data) : data as T? ?? _defaultKey;
+          return resolveData != null ? await resolveData!(data) : data as T? ?? _defaultKey;
         })).data ??
         _defaultKey;
   }
 
-  void set(T value) async {
+  Future<void> set(T value) async {
     state = AsyncData(value);
     await AppHiveData.instance.setData(key: _hiveKey, value: value);
+  }
+
+  /// Schedule an update to be processed sequentially
+  Future<void> scheduleUpdating(T value) async {
+    final completer = Completer<void>();
+    _updateQueue.add(completer);
+
+    // Start processing if not already running
+    if (!_isProcessingQueue) {
+      _processQueue();
+    }
+
+    // Update state immediately for UI responsiveness
+    state = AsyncData(value);
+
+    // Wait for this update to be processed
+    await completer.future;
+  }
+
+  Future<void> _processQueue() async {
+    if (_isProcessingQueue) return;
+    _isProcessingQueue = true;
+
+    while (_updateQueue.isNotEmpty) {
+      final completer = _updateQueue.removeFirst();
+
+      try {
+        // Get current state value
+        final currentValue = state.value;
+        if (currentValue != null) {
+          await AppHiveData.instance.setData(key: _hiveKey, value: currentValue);
+        }
+        completer.complete();
+      } catch (e) {
+        completer.completeError(e);
+      }
+    }
+
+    _isProcessingQueue = false;
   }
 
   @override
@@ -186,20 +234,221 @@ class AsyncImpliedNotifier<T> extends AsyncNotifier<T> {
       isUpdateNotifying ?? super.updateShouldNotify(previous, next);
 }
 
-class AsyncImpliedNotifierN<T> extends AsyncNotifier<T?> {
-  final T? _defaultKey;
+// ============================================================================
+// HiveAsyncImpliedNotifierN - Nullable with Hive persistence
+// ============================================================================
+
+class HiveAsyncImpliedNotifierN<T> extends AsyncNotifier<T?> {
+  final T? defaultKey;
   final String _hiveKey;
-  AsyncImpliedNotifierN(this._hiveKey, [this._defaultKey]);
+  final FutureOr<T?> Function(dynamic data)? resolveData;
+  bool? _isModifying;
+
+  final Queue<Completer<void>> _updateQueue = Queue<Completer<void>>();
+  bool _isProcessingQueue = false;
+
+  /// [null] => it's building or refreshing, [true] => Provider value is currently being modified
+  bool? get isModifying => _isModifying;
+
+  HiveAsyncImpliedNotifierN(this._hiveKey, {this.defaultKey, this.resolveData});
+
   @override
   Future<T?> build() async {
-    return (await Result.tryRunAsync(() async {
-          return await AppHiveData.instance.getData(key: _hiveKey) as T? ?? _defaultKey;
+    final data =
+        (await Result.tryRunAsync(() async {
+          final data = await AppHiveData.instance.getData(key: _hiveKey) as T? ?? defaultKey;
+          return resolveData != null ? await resolveData!(data) : data ?? defaultKey;
         })).data ??
-        _defaultKey;
+        defaultKey;
+    _isModifying = false;
+    return data;
   }
 
-  void set(T value) async {
+  Future<void> set(T value) async {
+    _isModifying = true;
     state = AsyncData(value);
     await AppHiveData.instance.setData(key: _hiveKey, value: value);
+    _isModifying = false;
+  }
+
+  /// Schedule an update to be processed sequentially
+  Future<void> scheduleUpdating(T value) async {
+    final completer = Completer<void>();
+    _updateQueue.add(completer);
+
+    // Start processing if not already running
+    if (!_isProcessingQueue) {
+      _processQueue();
+    }
+
+    // Update state immediately for UI responsiveness
+    _isModifying = true;
+    state = AsyncData(value);
+
+    // Wait for this update to be processed
+    await completer.future;
+    _isModifying = false;
+  }
+
+  Future<void> _processQueue() async {
+    if (_isProcessingQueue) return;
+    _isProcessingQueue = true;
+
+    while (_updateQueue.isNotEmpty) {
+      final completer = _updateQueue.removeFirst();
+
+      try {
+        // Get current state value
+        final currentValue = state.value;
+        if (currentValue != null) {
+          await AppHiveData.instance.setData(key: _hiveKey, value: currentValue);
+        }
+        completer.complete();
+      } catch (e) {
+        completer.completeError(e);
+      }
+    }
+
+    _isProcessingQueue = false;
+  }
+}
+
+// ============================================================================
+// AsyncImpliedNotifier - Without Hive (in-memory only)
+// ============================================================================
+
+class AsyncImpliedNotifier<T> extends AsyncNotifier<T> {
+  final T _defaultValue;
+  final bool? isUpdateNotifying;
+  final FutureOr<T> Function()? initializer;
+
+  final Queue<Completer<void>> _updateQueue = Queue<Completer<void>>();
+  bool _isProcessingQueue = false;
+
+  AsyncImpliedNotifier(this._defaultValue, {this.isUpdateNotifying, this.initializer});
+
+  @override
+  Future<T> build() async {
+    if (initializer != null) {
+      return await initializer!();
+    }
+    return _defaultValue;
+  }
+
+  Future<void> set(T value) async {
+    state = AsyncData(value);
+  }
+
+  /// Schedule an update to be processed sequentially
+  Future<void> scheduleUpdating(T value) async {
+    final completer = Completer<void>();
+    _updateQueue.add(completer);
+
+    // Start processing if not already running
+    if (!_isProcessingQueue) {
+      _processQueue();
+    }
+
+    // Update state immediately for UI responsiveness
+    state = AsyncData(value);
+
+    // Wait for this update to be processed
+    await completer.future;
+  }
+
+  Future<void> _processQueue() async {
+    if (_isProcessingQueue) return;
+    _isProcessingQueue = true;
+
+    while (_updateQueue.isNotEmpty) {
+      final completer = _updateQueue.removeFirst();
+
+      try {
+        // For in-memory notifier, we just complete the operation
+        // You can add custom logic here if needed (e.g., validation, callbacks)
+        await Future.delayed(Duration.zero); // Yield to event loop
+        completer.complete();
+      } catch (e) {
+        completer.completeError(e);
+      }
+    }
+
+    _isProcessingQueue = false;
+  }
+
+  @override
+  bool updateShouldNotify(AsyncValue<T> previous, AsyncValue<T> next) =>
+      isUpdateNotifying ?? super.updateShouldNotify(previous, next);
+}
+
+// ============================================================================
+// AsyncImpliedNotifierN - Nullable without Hive (in-memory only)
+// ============================================================================
+
+class AsyncImpliedNotifierN<T> extends AsyncNotifier<T?> {
+  final T? defaultValue;
+  final FutureOr<T?> Function()? initializer;
+  bool? _isModifying;
+
+  final Queue<Completer<void>> _updateQueue = Queue<Completer<void>>();
+  bool _isProcessingQueue = false;
+
+  /// [null] => it's building or refreshing, [true] => Provider value is currently being modified
+  bool? get isModifying => _isModifying;
+
+  AsyncImpliedNotifierN({this.defaultValue, this.initializer});
+
+  @override
+  Future<T?> build() async {
+    _isModifying = false;
+    if (initializer != null) {
+      return await initializer!();
+    }
+    return defaultValue;
+  }
+
+  Future<void> set(T? value) async {
+    _isModifying = true;
+    state = AsyncData(value);
+    _isModifying = false;
+  }
+
+  /// Schedule an update to be processed sequentially
+  Future<void> scheduleUpdating(T? value) async {
+    final completer = Completer<void>();
+    _updateQueue.add(completer);
+
+    // Start processing if not already running
+    if (!_isProcessingQueue) {
+      _processQueue();
+    }
+
+    // Update state immediately for UI responsiveness
+    _isModifying = true;
+    state = AsyncData(value);
+
+    // Wait for this update to be processed
+    await completer.future;
+    _isModifying = false;
+  }
+
+  Future<void> _processQueue() async {
+    if (_isProcessingQueue) return;
+    _isProcessingQueue = true;
+
+    while (_updateQueue.isNotEmpty) {
+      final completer = _updateQueue.removeFirst();
+
+      try {
+        // For in-memory notifier, we just complete the operation
+        // You can add custom logic here if needed (e.g., validation, callbacks)
+        await Future.delayed(Duration.zero); // Yield to event loop
+        completer.complete();
+      } catch (e) {
+        completer.completeError(e);
+      }
+    }
+
+    _isProcessingQueue = false;
   }
 }

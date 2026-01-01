@@ -33,7 +33,7 @@ class MaterialsView extends ConsumerWidget {
           return Consumer(
             builder: (context, ref, child) {
               final int cardViewType = ref.watch(CollectionMaterialsProvider.cardViewType).value ?? 0;
-              final isGrid = cardViewType == 0 ? true : (cardViewType == 1 ? false : null);
+              final isGrid = cardViewType == 0;
               return PagingListener(
                 controller: data,
                 builder: (context, state, fetchNextPage) {
@@ -77,89 +77,88 @@ class PagedSliverContentView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    if (isGrid == null) {
-      return PagedSliverList<int, CourseContent>(
-        state: state,
-        fetchNextPage: fetchNextPage,
-        builderDelegate: PagedChildBuilderDelegate(
-          itemBuilder: (context, item, index) {
-            return MaterialListCard(content: item).animate().fadeIn().moveY(
-              begin: index.isEven ? 40 : 20,
-              end: 0,
-              curve: Curves.fastEaseInToSlowEaseOut,
-              duration: Durations.medium3,
-            );
-          },
-        ),
-      );
-    }
-    if (isGrid!) {
-      return PagedSliverGrid<int, CourseContent>(
-        state: state,
-        fetchNextPage: fetchNextPage,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: isFullScreen
-              ? context.deviceWidth ~/ 200
-              : (DeviceUtils.isDesktop() ? ((context.deviceWidth / 3) ~/ 160) : context.deviceWidth ~/ 160),
-          crossAxisSpacing: isFullScreen ? 30 : 12,
-          mainAxisSpacing: isFullScreen ? 40 : 20,
-        ),
-        builderDelegate: PagedChildBuilderDelegate(
-          // noMoreItemsIndicatorBuilder: (context) => const SizedBox(height: 56),
-          itemBuilder: (context, item, index) {
-            return Builder(
-              builder: (context) {
-                final modState = CollectionMaterialsProvider.modState.read(ref);
-                return ValueListenableBuilder(
-                  valueListenable: modState.selectSignal,
-                  builder: (context, _, child) {
-                    return ContentCard(
-                      content: item,
-                      select: modState.isEmpty
-                          ? null
-                          : (
-                              isSelected: modState.lookup(item),
-                              onSelect: (content) {
-                                if (modState.lookup(content)) {
-                                  modState.removeContent(content);
-                                } else {
-                                  modState.selectContent(content);
-                                }
-                              },
-                            ),
-                    ).animate().fadeIn().moveY(
+    // if (isGrid == null) {
+    //   return PagedSliverList<int, CourseContent>(
+    //     state: state,
+    //     fetchNextPage: fetchNextPage,
+    //     builderDelegate: PagedChildBuilderDelegate(
+    //       itemBuilder: (context, item, index) {
+    //         return MaterialListCard(content: item).animate().fadeIn().moveY(
+    //           begin: index.isEven ? 40 : 20,
+    //           end: 0,
+    //           curve: Curves.fastEaseInToSlowEaseOut,
+    //           duration: Durations.medium3,
+    //         );
+    //       },
+    //     ),
+    //   );
+    // }
+    return Builder(
+      builder: (context) {
+        final modState = CollectionMaterialsProvider.modState.read(ref);
+        return ValueListenableBuilder(
+          valueListenable: modState.selectSignal,
+          builder: (context, _, child) {
+            ({bool isSelected, void Function(CourseContent item) onSelect})? select(CourseContent item) =>
+                modState.isEmpty
+                ? null
+                : (
+                    isSelected: modState.lookup(item),
+                    onSelect: (content) {
+                      if (modState.lookup(content)) {
+                        modState.removeContent(content);
+                      } else {
+                        modState.selectContent(content);
+                      }
+                    },
+                  );
+            if (isGrid == true) {
+              return PagedSliverGrid<int, CourseContent>(
+                state: state,
+                fetchNextPage: fetchNextPage,
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: isFullScreen
+                      ? context.deviceWidth ~/ 200
+                      : (DeviceUtils.isDesktop() ? ((context.deviceWidth / 3) ~/ 160) : context.deviceWidth ~/ 160),
+                  crossAxisSpacing: isFullScreen ? 30 : 12,
+                  mainAxisSpacing: isFullScreen ? 40 : 20,
+                ),
+                builderDelegate: PagedChildBuilderDelegate(
+                  // noMoreItemsIndicatorBuilder: (context) => const SizedBox(height: 56),
+                  itemBuilder: (context, item, index) {
+                    return ContentCard(content: item, select: select(item)).animate().fadeIn().moveY(
                       begin: index.isEven ? 40 : 20,
                       end: 0,
                       curve: Curves.fastEaseInToSlowEaseOut,
                       duration: Durations.medium3,
                     );
                   },
-                );
-              },
-            );
+                ),
+              );
+            } else {
+              return PagedSliverList<int, CourseContent>(
+                state: state,
+                itemExtent: isFullScreen ? 400 : 200,
+                fetchNextPage: fetchNextPage,
+                builderDelegate: PagedChildBuilderDelegate(
+                  itemBuilder: (context, item, index) {
+                    return Padding(
+                      padding: isFullScreen ? const EdgeInsets.only(bottom: 24) : const EdgeInsets.only(bottom: 16),
+                      child: ContentCard(content: item, select: select(item)).animate().fadeIn().moveY(
+                        begin: index.isEven ? 40 : 20,
+                        end: 0,
+                        curve: Curves.fastEaseInToSlowEaseOut,
+                        duration: Durations.medium3,
+                      ),
+                    );
+                  },
+                ),
+              );
+            }
           },
-        ),
-      );
-    } else {
-      return PagedSliverList<int, CourseContent>(
-        state: state,
-        itemExtent: isFullScreen ? 400 : 200,
-        fetchNextPage: fetchNextPage,
-        builderDelegate: PagedChildBuilderDelegate(
-          itemBuilder: (context, item, index) {
-            return Padding(
-              padding: isFullScreen ? const EdgeInsets.only(bottom: 24) : const EdgeInsets.only(bottom: 16),
-              child: ContentCard(content: item).animate().fadeIn().moveY(
-                begin: index.isEven ? 40 : 20,
-                end: 0,
-                curve: Curves.fastEaseInToSlowEaseOut,
-                duration: Durations.medium3,
-              ),
-            );
-          },
-        ),
-      );
-    }
+        );
+      },
+    );
   }
 }
 

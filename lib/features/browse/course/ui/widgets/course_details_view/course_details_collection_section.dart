@@ -7,22 +7,13 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
-import 'package:slidesync/features/browse/course/ui/actions/modify_collection_actions.dart';
-import 'package:slidesync/features/browse/course/ui/widgets/shared/edit_collection_title_bottom_sheet.dart';
 import 'package:slidesync/features/settings/providers/settings_provider.dart';
-import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/browse/course/providers/course_details_provider.dart';
 import 'package:slidesync/features/browse/course/ui/components/collection_card.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/shared/create_collection_bottom_sheet.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/collections_view/empty_collections_view.dart';
 import 'package:slidesync/shared/global/providers/collections_providers.dart';
-import 'package:slidesync/shared/helpers/extensions/extensions.dart';
-import 'package:slidesync/shared/helpers/global_nav.dart';
-import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
-import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 
 class CourseDetailsCollectionSection extends ConsumerWidget {
   const CourseDetailsCollectionSection({super.key, required this.courseId});

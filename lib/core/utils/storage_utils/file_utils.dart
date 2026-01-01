@@ -1,11 +1,9 @@
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:slidesync/core/constants/src/enums.dart';
-import 'package:slidesync/core/storage/native/app_paths.dart';
 
 export 'dart:io';
 

@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/crypto_utils.dart';
+import 'package:slidesync/data/models/course_content/content_metadata.dart';
 import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
@@ -61,7 +62,7 @@ class AddLinkActions {
         path: FileDetails(urlPath: link),
         fileSize: link.length,
         courseContentType: CourseContentType.link,
-        metadataJson: jsonEncode({'previewUrl': previewLinkDetails.previewUrl}),
+        metadata: ContentMetadata(fields: {'previewUrl': previewLinkDetails.previewUrl}),
       );
       return await CourseContentRepo.addMultipleContents(newContent.collectionId, [newContent]);
     }

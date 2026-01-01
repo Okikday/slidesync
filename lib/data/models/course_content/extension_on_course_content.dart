@@ -28,9 +28,9 @@ extension CourseContentExtension on CourseContent {
       ..metadataJson = metadataJson ?? this.metadataJson;
   }
 
-  String get previewPath => FileDetails.fromMap(metadata.thumbnails ?? {}).filePath;
+  String get previewPath => metadata.thumbnails?.filePath ?? '';
   String get thumbnailPath => previewPath;
-  FileDetails get thumbnailDetails => FileDetails(filePath: thumbnailPath);
+  FileDetails get thumbnailDetails => metadata.thumbnails ?? FileDetails();
 }
 
 // extension CourseContentMapX on Map<String, dynamic> {

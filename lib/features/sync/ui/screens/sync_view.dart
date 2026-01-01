@@ -1,11 +1,9 @@
-import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
-import 'package:slidesync/features/sync/providers/sync_state.dart';
-import 'package:slidesync/features/sync/ui/screens/downloads_tab_view.dart';
-import 'package:slidesync/features/sync/ui/screens/uploads_tab_view.dart';
+import 'package:slidesync/features/sync/ui/widgets/sync_view/downloads_tab_view.dart';
+import 'package:slidesync/features/sync/ui/widgets/sync_view/uploads_tab_view.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 

@@ -2,7 +2,7 @@ import 'dart:io';
 
 class AppPaths {
   static const _appFolderName = "slidesync";
-  static const _coursesFolderName = "courses";
+  // static const _coursesFolderName = "courses";
   static const _previewsFolderName = "previews";
   static const _materialsFolderName = "materials";
   static const _thumbnailsFolderName = "thumbnails";

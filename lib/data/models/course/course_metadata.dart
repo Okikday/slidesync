@@ -1,16 +1,18 @@
 import 'dart:convert';
-import 'dart:developer';
 
+import 'package:flutter/painting.dart';
+import 'package:slidesync/core/utils/theme_utils.dart';
 import 'package:slidesync/data/models/file_details.dart';
 
 class CourseMetadata {
   final String? author;
   final Map<String, dynamic>? thumbnails;
+  final Color? color;
   final Map<String, dynamic>? fields; // For any additional metadata
 
   FileDetails get thumbnailsDetails => FileDetails.fromMap(thumbnails ?? {});
 
-  CourseMetadata({this.author, this.thumbnails, this.fields});
+  CourseMetadata({this.author, this.thumbnails, this.color, this.fields});
 
   // Create empty metadata
   factory CourseMetadata.empty() => CourseMetadata();
@@ -22,7 +24,8 @@ class CourseMetadata {
   Map<String, dynamic> toMap() {
     return {
       if (author != null) 'author': author,
-      if (thumbnails != null) 'thumbnails': thumbnails,
+      if (thumbnails != null) 'thumbnails': color != null ? ThemeUtils.colorToHex(color!) : null,
+      if (color != null) 'color': color,
       if (fields != null) ...fields!,
     };
   }
@@ -39,28 +42,35 @@ class CourseMetadata {
   // Create from Map
   factory CourseMetadata.fromMap(Map<String, dynamic> map) {
     // Extract known fields
-    final knownFields = {'author', 'thumbnails'};
+    final knownFields = {'author', 'thumbnails', 'color'};
     final fields = Map<String, dynamic>.from(map)..removeWhere((key, value) => knownFields.contains(key));
 
     return CourseMetadata(
       author: map['author'] as String?,
       thumbnails: map['thumbnails'] as Map<String, dynamic>?,
+      color: map['color'] != null ? ThemeUtils.hexToColor(map['color'] as String) : null,
       fields: fields.isNotEmpty ? fields : null,
     );
   }
 
   // Create a copy with updated fields
-  CourseMetadata copyWith({String? author, Map<String, String>? thumbnails, Map<String, dynamic>? fields}) {
+  CourseMetadata copyWith({
+    String? author,
+    Map<String, String>? thumbnails,
+    Color? color,
+    Map<String, dynamic>? fields,
+  }) {
     return CourseMetadata(
       author: author ?? this.author,
       thumbnails: thumbnails ?? this.thumbnails,
+      color: color ?? this.color,
       fields: fields ?? this.fields,
     );
   }
 
   @override
   String toString() {
-    return 'CourseMetadata(author: $author, thumbnails: $thumbnails, fields: $fields)';
+    return 'CourseMetadata(author: $author, thumbnails: $thumbnails, color: $color, fields: $fields)';
   }
 
   @override
@@ -70,12 +80,13 @@ class CourseMetadata {
     return other is CourseMetadata &&
         other.author == author &&
         other.thumbnails == thumbnails &&
+        other.color == color &&
         _mapsEqual(other.fields, fields);
   }
 
   @override
   int get hashCode {
-    return author.hashCode ^ thumbnails.hashCode ^ fields.hashCode;
+    return author.hashCode ^ thumbnails.hashCode ^ color.hashCode ^ fields.hashCode;
   }
 
   // Helper method to compare maps

@@ -1,6 +1,6 @@
-import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/routes/transition.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class ScaleClickWrapper extends ConsumerStatefulWidget {
@@ -57,7 +57,7 @@ class _ScaleClickWrapperState extends ConsumerState<ScaleClickWrapper> {
         return AnimatedScale(
           scale: value ? widget.scaleBetween.$2 : widget.scaleBetween.$1,
           duration: widget.animationDuration,
-          curve: widget.curve ?? CustomCurves.defaultIosSpring,
+          curve: widget.curve ?? defaultCurve,
           child: InnerScaleClickWrapper(
             scaleClickNotifier: scaleClickNotifier,
             borderRadius: widget.borderRadius,

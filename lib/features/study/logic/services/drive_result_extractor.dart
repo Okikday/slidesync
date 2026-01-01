@@ -1,8 +1,8 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
+import 'package:slidesync/data/models/course_content/content_metadata.dart';
 import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
@@ -225,7 +225,10 @@ Future<CourseContent?> _createCourseContentFromDriveFile(
     lastModified: driveFile.modifiedTime != null ? DateTime.tryParse(driveFile.modifiedTime!) : DateTime.now(),
     courseContentType: determinedType,
     description: driveFile.description ?? '',
-    metadataJson: jsonEncode({'previewUrl': metadata['thumbnailLink'], 'resolved': true, 'size': driveFile.size}),
+    metadata: ContentMetadata(
+      thumbnails: FileDetails(urlPath: metadata['thumbnailLink'] as String? ?? ''),
+      fields: {'previewUrl': metadata['thumbnailLink'], 'resolved': true, 'size': driveFile.size},
+    ),
   );
 }
 

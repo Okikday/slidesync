@@ -9,6 +9,7 @@ import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/features/browse/collection/ui/components/material_list_card.dart';
+import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
@@ -59,7 +60,8 @@ class MaterialsSearchButton extends ConsumerWidget {
                 showGoToCollection: true,
                 onTapCard: () {
                   context.pop();
-                  context.pushNamed(Routes.contentGate.name, extra: searchResults[i]);
+                  // context.pushNamed(Routes.contentGate.name, extra: searchResults[i]);
+                  ContentViewGateActions.redirectToViewer(ref, searchResults[i]);
                 },
               ),
             ),

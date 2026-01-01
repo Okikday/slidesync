@@ -239,7 +239,7 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
                                         courseCode: course.courseCode,
                                         categoriesCount: course.collections.length,
                                         selectionState: (selected: false, isSelecting: false),
-                                        syncImagePath: course.thumbnailPath,
+                                        imgFilePath: course.thumbnailPath,
                                         onTap: () => _handleCourseSelection(context, course),
                                         onSelected: () {},
                                       )

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -10,7 +9,6 @@ import 'package:slidesync/core/storage/isar_data/isar_schemas.dart';
 import 'package:slidesync/core/storage/native/app_paths.dart';
 import 'package:slidesync/core/utils/smart_isolate.dart';
 import 'package:slidesync/core/utils/string_utils.dart';
-import 'package:slidesync/data/models/course/course_metadata.dart';
 import 'package:slidesync/data/models/course_collection/course_collection.dart';
 import 'package:slidesync/data/models/course_content/content_metadata.dart';
 import 'package:slidesync/data/models/course_content/course_content.dart';
@@ -98,10 +96,11 @@ Future<List<Map<String, dynamic>>> storeContents(
                 path: FileDetails(filePath: storedAt.path),
                 fileSize: fileSize,
                 courseContentType: contentType,
-                metadataJson: ContentMetadata(
+                metadata: ContentMetadata(
                   originalFileName: p.basename(filePath),
-                  thumbnails: FileDetails(filePath: previewPath ?? '').toMap(),
-                ).toJson(),
+                  contentOrigin: ContentOrigin.local,
+                  thumbnails: FileDetails(filePath: previewPath ?? ''),
+                ),
               );
 
               contentsToAdd.add(content);
@@ -122,7 +121,7 @@ Future<List<Map<String, dynamic>>> storeContents(
                   path: sameHashedContent.path.fileDetails,
                   fileSize: fileSize,
                   courseContentType: contentType,
-                  metadataJson: metadata.copyWith(originalFileName: fileName).toJson(),
+                  metadata: metadata.copyWith(originalFileName: fileName),
                 );
                 contentsToAdd.add(content);
                 seenHashesSet.add(hash);

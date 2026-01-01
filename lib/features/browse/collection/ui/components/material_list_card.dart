@@ -94,7 +94,7 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
         label: "Open",
         icon: Iconsax.play_circle,
         onTap: () {
-          context.pushNamed(Routes.contentGate.name, extra: content);
+          ContentViewGateActions.redirectToViewer(ref, content);
         },
       ),
       if (content.courseContentType != CourseContentType.link)
@@ -102,7 +102,7 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
           label: "Open Outside app",
           icon: Icons.send_to_mobile_outlined,
           onTap: () {
-            ContentViewGateActions.redirectToViewer(ref, content, popBefore: false, openOutsideApp: true);
+            ContentViewGateActions.redirectToViewer(ref, content, openOutsideApp: true);
           },
         ),
       if (content.courseContentType == CourseContentType.link)
@@ -313,7 +313,8 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
                         pixelHeight: DeviceUtils.isDesktop() ? 32 : null,
                         backgroundColor: theme.onSurface.withAlpha(10),
                         onClick: () {
-                          context.pushNamed(Routes.contentGate.name, extra: content);
+                          // context.pushNamed(Routes.contentGate.name, extra: content);
+                          ContentViewGateActions.redirectToViewer(ref, content);
                         },
                         contentPadding: EdgeInsets.all(8.0),
                         child: Icon(Iconsax.arrow_circle_right, color: theme.onSurface),

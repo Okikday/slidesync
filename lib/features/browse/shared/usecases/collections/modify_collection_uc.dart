@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
@@ -20,8 +19,8 @@ class ModifyCollectionUc {
         final filePath = item.path.filePath;
         await FileUtils.deleteFileAtPath(filePath);
 
-        final previewPath = FileDetails.fromMap(item.metadata.thumbnails ?? {}).filePath;
-        await FileUtils.deleteFileAtPath(previewPath);
+        final previewPath = item.metadata.thumbnails?.filePath;
+        if (previewPath != null && previewPath.isNotEmpty) await FileUtils.deleteFileAtPath(previewPath);
         fileSum += item.fileSize;
       }
     }

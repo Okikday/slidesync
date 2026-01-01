@@ -10,6 +10,7 @@ import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
+import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/main/providers/home_provider.dart';
@@ -65,9 +66,9 @@ class HomeBody extends ConsumerWidget {
                           if (nextContentTrack == null) return;
                           final nextContent = await CourseContentRepo.getByContentId(nextContentTrack.contentId);
                           if (nextContent == null) return;
-                          if (context.mounted) context.pushNamed(Routes.contentGate.name, extra: nextContent);
+                          if (context.mounted) ContentViewGateActions.redirectToViewer(ref, nextContent);
                         } else {
-                          if (context.mounted) context.pushNamed(Routes.contentGate.name, extra: content);
+                          if (context.mounted) ContentViewGateActions.redirectToViewer(ref, content);
                         }
                       },
                     );

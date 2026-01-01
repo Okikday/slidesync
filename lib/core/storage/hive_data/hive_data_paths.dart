@@ -30,6 +30,10 @@ enum HiveDataPathKey {
 
   /// Pdf Viewer view
   ispdfViewerInDarkMode,
+
+  /// Syncs - Keeps a Map of Id to [SyncType]
+  downloads,
+  uploads,
 }
 
 // class HiveDataPaths {

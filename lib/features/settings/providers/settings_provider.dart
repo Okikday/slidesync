@@ -4,8 +4,8 @@ import 'package:slidesync/features/settings/providers/settings_state.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 
 final _settingsProvider =
-    AsyncNotifierProvider.autoDispose<AsyncImpliedNotifier<Map<String, dynamic>>, Map<String, dynamic>>(
-      () => AsyncImpliedNotifier<Map<String, dynamic>>(
+    AsyncNotifierProvider.autoDispose<HiveAsyncImpliedNotifier<Map<String, dynamic>>, Map<String, dynamic>>(
+      () => HiveAsyncImpliedNotifier<Map<String, dynamic>>(
         HiveDataPathKey.isBuiltInViewer.name,
         SettingsModel().toMap(),
         true,
@@ -18,8 +18,8 @@ final _settingsProvider =
     );
 
 class SettingsProvider {
-  static AsyncNotifierProvider<AsyncImpliedNotifier<Map<String, dynamic>>, Map<String, dynamic>> get settingsProvider =>
-      _settingsProvider;
+  static AsyncNotifierProvider<HiveAsyncImpliedNotifier<Map<String, dynamic>>, Map<String, dynamic>>
+  get settingsProvider => _settingsProvider;
 
   static final state = Provider.autoDispose((ref) {
     final state = SettingsState();

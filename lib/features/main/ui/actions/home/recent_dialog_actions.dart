@@ -42,7 +42,7 @@ mixin class RecentDialogActions {
       }
       return;
     }
-    if (context.mounted) context.pushNamed(Routes.contentGate.name, extra: newContent);
+    if (context.mounted) ContentViewGateActions.redirectToViewer(ref, newContent);
   }
 
   /// Adds content to bookmarks collection
@@ -60,7 +60,8 @@ mixin class RecentDialogActions {
   void onOpenOutsideApp(WidgetRef ref, String contentId) async {
     final content = await CourseContentRepo.getByContentId(contentId);
     if (content == null) return;
-    ContentViewGateActions.redirectToViewer(ref, content, popBefore: true, openOutsideApp: true);
+    if (ref.context.mounted) UiUtils.hideDialog(ref.context);
+    ContentViewGateActions.redirectToViewer(ref, content, openOutsideApp: true);
   }
 
   /// Shares the content file for the contentId provided

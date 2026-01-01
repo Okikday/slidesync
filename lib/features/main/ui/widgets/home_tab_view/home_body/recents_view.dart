@@ -10,6 +10,7 @@ import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/main/providers/home_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recent_list_tile.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recents_section_body.dart';
+import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
 import 'package:slidesync/routes/routes.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -55,9 +56,7 @@ class RecentsView extends ConsumerWidget {
                     onTapTile: () async {
                       final toPushContent = await CourseContentRepo.getByContentId(content.contentId);
                       if (toPushContent == null) return;
-                      GlobalNav.withContext(
-                        (context) => context.pushNamed(Routes.contentGate.name, extra: toPushContent),
-                      );
+                      GlobalNav.withContext((context) => ContentViewGateActions.redirectToViewer(ref, toPushContent));
                     },
                     onLongTapTile: () {},
                   ),

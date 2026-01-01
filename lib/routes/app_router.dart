@@ -34,7 +34,7 @@ class AppRouter {
       // -> MODIFY COURSE
       //    -> EDIT COURSE
       ...courseMgmtRoutes,
-      contentViewerRoute,
+      ...contentViewerRoutes,
 
       ...courseNavRoutes,
 

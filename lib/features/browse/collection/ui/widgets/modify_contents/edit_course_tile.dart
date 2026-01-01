@@ -13,7 +13,7 @@ class EditCourseTile extends ConsumerWidget {
     required this.courseName,
     required this.courseCode,
     required this.categoriesCount,
-    required this.syncImagePath,
+    required this.imgFilePath,
     required this.selectionState,
     required this.onTap,
     required this.onSelected,
@@ -21,7 +21,7 @@ class EditCourseTile extends ConsumerWidget {
   final String courseName;
   final String courseCode;
   final int categoriesCount;
-  final String syncImagePath;
+  final String imgFilePath;
 
   final ({bool selected, bool isSelecting}) selectionState;
 
@@ -36,7 +36,7 @@ class EditCourseTile extends ConsumerWidget {
       borderRadius: BorderRadius.circular(12),
       onTap: onTap,
       onLongPress: onSelected,
-      
+
       child: Container(
         padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         constraints: BoxConstraints(minHeight: 90, maxHeight: 140),
@@ -56,7 +56,7 @@ class EditCourseTile extends ConsumerWidget {
                   child: ClipOval(
                     child: SizedBox.square(
                       dimension: 44,
-                      child: BuildImagePathWidget(fileDetails: syncImagePath.fileDetails),
+                      child: BuildImagePathWidget(fileDetails: FileDetails(filePath: imgFilePath)),
                     ),
                   ),
                 ),

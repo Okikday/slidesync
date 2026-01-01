@@ -63,7 +63,7 @@ class CollectionMaterialsProvider {
   /// ===================================================================================================
   /// 0 for Grid, 1 for List, 2 for otherwise
   static final cardViewType = AsyncNotifierProvider.autoDispose<CardViewTypeNotifier, int>(
-    () => CardViewTypeNotifier(HiveDataPathKey.courseMaterialscardViewType.name, 3),
+    () => CardViewTypeNotifier(HiveDataPathKey.courseMaterialscardViewType.name, 2),
   );
 
   static final scrollOffsetProvider = NotifierProvider.autoDispose<DoubleNotifier, double>(DoubleNotifier.new);

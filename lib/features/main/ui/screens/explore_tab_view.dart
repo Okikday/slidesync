@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:slidesync/features/main/ui/widgets/explore_tab_view/explore_card.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -71,6 +72,20 @@ class ExploreTabView extends ConsumerWidget {
             ),
 
             SliverToBoxAdapter(child: ConstantSizing.columnSpacingLarge),
+
+            SliverList.list(
+              children: [
+                ExploreCard(
+                  data: sampleData,
+                  onTap: () {
+                    // Navigate to detail page
+                  },
+                  onAuthorTap: () {
+                    // Navigate to author profile
+                  },
+                ),
+              ],
+            ),
           ],
         ),
       ),

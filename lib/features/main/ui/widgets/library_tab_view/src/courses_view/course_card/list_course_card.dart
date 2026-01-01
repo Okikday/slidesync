@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -104,7 +102,7 @@ class ListCourseCard extends ConsumerWidget {
             ),
 
             // ListCourseCardProgressIndicator(courseId: course.courseId),
-            Icon(Iconsax.arrow_right_1, size: 30, color: theme.supportingText.withAlpha(100)),
+            Icon(Iconsax.arrow_right, size: 30, color: theme.supportingText.withAlpha(100)),
           ],
         ),
       ),

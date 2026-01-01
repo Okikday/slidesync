@@ -2,9 +2,6 @@
 import 'dart:convert';
 
 import 'package:isar/isar.dart';
-import 'package:path/path.dart' as p;
-import 'package:slidesync/core/constants/src/app_constants.dart';
-import 'package:slidesync/core/storage/native/app_paths.dart';
 import 'package:slidesync/data/models/course/course_metadata.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/shared/helpers/formatter.dart';

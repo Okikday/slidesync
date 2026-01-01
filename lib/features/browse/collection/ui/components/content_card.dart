@@ -8,30 +8,22 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
-import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/features/browse/collection/ui/components/content_card_context_menu.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/retrieve_content_uc.dart';
-import 'package:slidesync/features/browse/collection/ui/actions/modify_content_card_actions.dart';
-import 'package:slidesync/features/settings/logic/models/settings_model.dart';
-import 'package:slidesync/features/settings/providers/settings_provider.dart';
 import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
 import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
-import 'package:slidesync/routes/app_router.dart';
 
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/content_card_actions.dart';
-import 'package:slidesync/features/browse/collection/ui/actions/modify_contents_action.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/widget_helper.dart';
 
-import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_customizable_dialog.dart';
-import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/circular_loading_indicator.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
@@ -84,64 +76,26 @@ class _ContentCardState extends ConsumerState<ContentCard> {
   Widget build(BuildContext context) {
     final theme = ref;
     final content = widget.content;
+    final isDarkMode = theme.isDarkMode;
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Flexible(
           child: InkWell(
             borderRadius: BorderRadius.circular(14),
-            onTap: widget.select == null
-                ? () {
-                    context.pushNamed(Routes.contentGate.name, extra: content);
-                  }
-                : () {
-                    widget.select?.onSelect(content);
-                  },
+            onTap: () {
+              if (widget.select == null) {
+                ContentViewGateActions.redirectToViewer(ref, content);
+              } else {
+                widget.select?.onSelect(content);
+              }
+            },
             child: Container(
               // curve: CustomCurves.defaultIosSpring,
               // duration: Durations.extralong1,
               constraints: BoxConstraints(maxHeight: 400, maxWidth: 700),
               clipBehavior: Clip.antiAlias,
-              decoration: BoxDecoration(
-                color: theme.background.lightenColor(theme.isDarkMode ? 0.1 : 0.9),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.fromBorderSide(
-                  BorderSide(
-                    color: widget.select?.isSelected == true
-                        ? theme.altBackgroundPrimary
-                        : theme.onBackground.withAlpha(40),
-                  ),
-                ),
-                boxShadow: context.isDarkMode
-                    ? [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.08),
-                          offset: Offset(0, 1),
-                          blurRadius: 3,
-                          spreadRadius: 0,
-                        ),
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.06),
-                          offset: Offset(0, 4),
-                          blurRadius: 6,
-                          spreadRadius: 0,
-                        ),
-                      ]
-                    : [
-                        BoxShadow(
-                          color: Colors.white.withValues(alpha: 0.05),
-                          offset: Offset(0, 1),
-                          blurRadius: 2,
-                          spreadRadius: 0,
-                        ),
-                        BoxShadow(
-                          color: Colors.white.withValues(alpha: 0.04),
-                          offset: Offset(0, 6),
-                          blurRadius: 12,
-                          spreadRadius: -2,
-                        ),
-                      ],
-              ),
+              decoration: _getCardDecoration(theme),
               child: Stack(
                 // clipBehavior: Clip.antiAlias,
                 fit: StackFit.expand,
@@ -160,7 +114,7 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                                   key: ValueKey(content.contentId),
                                   target: widget.select?.isSelected == true ? 0 : 1,
                                 )
-                                .fade(begin: 0.4, end: 0.6),
+                                .fade(begin: isDarkMode ? 0.4 : 0.7, end: isDarkMode ? 0.6 : 1.0),
                           ),
                         ),
                       ),
@@ -170,9 +124,7 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                           return LinearProgressIndicator(
                             value: asyncSnapshot.hasData && asyncSnapshot.data != null ? asyncSnapshot.data : 0.0,
                             color: theme.primaryColor,
-                            backgroundColor: theme.background
-                                .lightenColor(theme.isDarkMode ? 0.15 : 0.85)
-                                .withAlpha(200),
+                            backgroundColor: theme.background.lightenColor(isDarkMode ? 0.15 : 0.85).withAlpha(200),
                           );
                         },
                       ),
@@ -180,7 +132,7 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                       Container(
                         padding: EdgeInsets.fromLTRB(8, 8, 4, 8),
                         decoration: BoxDecoration(
-                          color: theme.background.lightenColor(theme.isDarkMode ? 0.15 : 0.85).withAlpha(200),
+                          color: theme.background.lightenColor(isDarkMode ? 0.15 : 0.85).withAlpha(200),
                           borderRadius: BorderRadius.only(
                             bottomLeft: const Radius.circular(16),
                             bottomRight: const Radius.circular(16),
@@ -258,6 +210,52 @@ class _ContentCardState extends ConsumerState<ContentCard> {
       ],
     );
   }
+
+  BoxDecoration _getCardDecoration(WidgetRef theme) {
+    final isDarkMode = theme.isDarkMode;
+    return BoxDecoration(
+      color: theme.background.lightenColor(isDarkMode ? 0.1 : 0.9),
+      borderRadius: BorderRadius.circular(16),
+      border: Border.fromBorderSide(
+        BorderSide(
+          color: widget.select?.isSelected == true ? theme.altBackgroundPrimary : theme.onBackground.withAlpha(40),
+        ),
+      ),
+      boxShadow: _getCardShadow(isDarkMode),
+    );
+  }
+
+  List<BoxShadow> _getCardShadow(bool isDarkMode) {
+    return isDarkMode
+        ? [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              offset: Offset(0, 1),
+              blurRadius: 3,
+              spreadRadius: 0,
+            ),
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              offset: Offset(0, 4),
+              blurRadius: 6,
+              spreadRadius: 0,
+            ),
+          ]
+        : [
+            BoxShadow(
+              color: Colors.white.withValues(alpha: 0.05),
+              offset: Offset(0, 1),
+              blurRadius: 2,
+              spreadRadius: 0,
+            ),
+            BoxShadow(
+              color: Colors.white.withValues(alpha: 0.04),
+              offset: Offset(0, 6),
+              blurRadius: 12,
+              spreadRadius: -2,
+            ),
+          ];
+  }
 }
 
 class ContentCardTitle extends ConsumerWidget {
@@ -297,136 +295,136 @@ class ContentCardTitle extends ConsumerWidget {
   }
 }
 
-class ContentCardPopUpMenuButton extends ConsumerWidget {
-  const ContentCardPopUpMenuButton({super.key, required this.content, required this.previewDetailsFuture});
+// class ContentCardPopUpMenuButton extends ConsumerWidget {
+//   const ContentCardPopUpMenuButton({super.key, required this.content, required this.previewDetailsFuture});
 
-  final CourseContent content;
-  final Future<PreviewLinkDetails?>? previewDetailsFuture;
+//   final CourseContent content;
+//   final Future<PreviewLinkDetails?>? previewDetailsFuture;
 
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return SizedBox(
-      width: 26,
-      height: 26,
-      child: AppPopupMenuButton(
-        iconSize: 22,
-        padding: EdgeInsets.zero,
-        icon: Iconsax.more_copy,
-        actions: [
-          PopupMenuAction(
-            title: content.courseContentType == CourseContentType.link ? "Open link" : "Open",
-            iconData: Iconsax.play,
-            onTap: () {
-              context.pushNamed(Routes.contentGate.name, extra: content);
-            },
-          ),
-          if (content.courseContentType != CourseContentType.link)
-            ...(() {
-              final settingsModelProvider = ref.watch(SettingsProvider.settingsProvider);
-              final settingsModel = settingsModelProvider.value == null
-                  ? SettingsModel()
-                  : SettingsModel.fromMap(settingsModelProvider.value!);
-              return [
-                if (settingsModel.useBuiltInViewer ?? !DeviceUtils.isDesktop())
-                  PopupMenuAction(
-                    title: "Open Outside App",
-                    iconData: Iconsax.send,
-                    onTap: () {
-                      ContentViewGateActions.redirectToViewer(ref, content, popBefore: false, openOutsideApp: true);
-                    },
-                  )
-                else
-                  PopupMenuAction(
-                    title: "Open Inside App",
-                    iconData: Iconsax.received,
-                    onTap: () {
-                      ContentViewGateActions.redirectToViewer(ref, content, popBefore: false, openOutsideApp: false);
-                    },
-                  ),
-              ];
-            }()),
+//   @override
+//   Widget build(BuildContext context, WidgetRef ref) {
+//     return SizedBox(
+//       width: 26,
+//       height: 26,
+//       child: AppPopupMenuButton(
+//         iconSize: 22,
+//         padding: EdgeInsets.zero,
+//         icon: Iconsax.more_copy,
+//         actions: [
+//           PopupMenuAction(
+//             title: content.courseContentType == CourseContentType.link ? "Open link" : "Open",
+//             iconData: Iconsax.play,
+//             onTap: () {
+//               //context.pushNamed(Routes.contentGate.name, extra: content); // Use the actions
+//             },
+//           ),
+//           if (content.courseContentType != CourseContentType.link)
+//             ...(() {
+//               final settingsModelProvider = ref.watch(SettingsProvider.settingsProvider);
+//               final settingsModel = settingsModelProvider.value == null
+//                   ? SettingsModel()
+//                   : SettingsModel.fromMap(settingsModelProvider.value!);
+//               return [
+//                 if (settingsModel.useBuiltInViewer ?? !DeviceUtils.isDesktop())
+//                   PopupMenuAction(
+//                     title: "Open Outside App",
+//                     iconData: Iconsax.send,
+//                     onTap: () {
+//                       ContentViewGateActions.redirectToViewer(ref, content, popBefore: false, openOutsideApp: true);
+//                     },
+//                   )
+//                 else
+//                   PopupMenuAction(
+//                     title: "Open Inside App",
+//                     iconData: Iconsax.received,
+//                     onTap: () {
+//                       ContentViewGateActions.redirectToViewer(ref, content, popBefore: false, openOutsideApp: false);
+//                     },
+//                   ),
+//               ];
+//             }()),
 
-          if (content.courseContentType == CourseContentType.link)
-            PopupMenuAction(
-              title: "View link",
-              iconData: Icons.remove_red_eye_outlined,
-              onTap: () {
-                UiUtils.showCustomDialog(
-                  context,
-                  child: PreviewLinkTypeDialog(previewDetailsFuture: previewDetailsFuture, content: content),
-                );
-              },
-            ),
+//           if (content.courseContentType == CourseContentType.link)
+//             PopupMenuAction(
+//               title: "View link",
+//               iconData: Icons.remove_red_eye_outlined,
+//               onTap: () {
+//                 UiUtils.showCustomDialog(
+//                   context,
+//                   child: PreviewLinkTypeDialog(previewDetailsFuture: previewDetailsFuture, content: content),
+//                 );
+//               },
+//             ),
 
-          if (content.courseContentType == CourseContentType.link)
-            PopupMenuAction(
-              title: "Copy",
-              iconData: Iconsax.copy_copy,
-              onTap: () {
-                Clipboard.setData(ClipboardData(text: content.path.fileDetails.urlPath));
-              },
-            ),
-          PopupMenuAction(
-            title: "Share",
-            iconData: Iconsax.send_1_copy,
-            onTap: () async {
-              ShareContentActions.shareContent(context, content.contentId);
-            },
-          ),
-          PopupMenuAction(
-            title: "Rename",
-            iconData: Iconsax.edit_2_copy,
-            onTap: () async {
-              ModifyContentCardActions.onRenameContent(context, content);
-            },
-          ),
-          PopupMenuAction(
-            title: content.courseContentType == CourseContentType.link ? "Remove" : "Delete",
-            iconData: Iconsax.trash_copy,
-            onTap: () async {
-              UiUtils.showCustomDialog(
-                context,
-                child: ConfirmDeletionDialog(
-                  content: "Are you sure you want to delete this item?",
-                  onPop: () {
-                    if (context.mounted) {
-                      UiUtils.hideDialog(context);
-                    } else {
-                      rootNavigatorKey.currentContext?.pop();
-                    }
-                  },
-                  onCancel: () {
-                    rootNavigatorKey.currentContext?.pop();
-                  },
-                  onDelete: () async {
-                    UiUtils.hideDialog(context);
+//           if (content.courseContentType == CourseContentType.link)
+//             PopupMenuAction(
+//               title: "Copy",
+//               iconData: Iconsax.copy_copy,
+//               onTap: () {
+//                 Clipboard.setData(ClipboardData(text: content.path.fileDetails.urlPath));
+//               },
+//             ),
+//           PopupMenuAction(
+//             title: "Share",
+//             iconData: Iconsax.send_1_copy,
+//             onTap: () async {
+//               ShareContentActions.shareContent(context, content.contentId);
+//             },
+//           ),
+//           PopupMenuAction(
+//             title: "Rename",
+//             iconData: Iconsax.edit_2_copy,
+//             onTap: () async {
+//               ModifyContentCardActions.onRenameContent(context, content);
+//             },
+//           ),
+//           PopupMenuAction(
+//             title: content.courseContentType == CourseContentType.link ? "Remove" : "Delete",
+//             iconData: Iconsax.trash_copy,
+//             onTap: () async {
+//               UiUtils.showCustomDialog(
+//                 context,
+//                 child: ConfirmDeletionDialog(
+//                   content: "Are you sure you want to delete this item?",
+//                   onPop: () {
+//                     if (context.mounted) {
+//                       UiUtils.hideDialog(context);
+//                     } else {
+//                       rootNavigatorKey.currentContext?.pop();
+//                     }
+//                   },
+//                   onCancel: () {
+//                     rootNavigatorKey.currentContext?.pop();
+//                   },
+//                   onDelete: () async {
+//                     UiUtils.hideDialog(context);
 
-                    if (context.mounted) {
-                      UiUtils.showLoadingDialog(rootNavigatorKey.currentContext!, message: "Removing content");
-                    }
-                    final outcome = await ModifyContentsAction().onDeleteContent(content.contentId);
+//                     if (context.mounted) {
+//                       UiUtils.showLoadingDialog(rootNavigatorKey.currentContext!, message: "Removing content");
+//                     }
+//                     final outcome = await ModifyContentsAction().onDeleteContent(content.contentId);
 
-                    rootNavigatorKey.currentContext?.pop();
+//                     rootNavigatorKey.currentContext?.pop();
 
-                    if (context.mounted) {
-                      if (outcome == null) {
-                        UiUtils.showFlushBar(context, msg: "Deleted content!", vibe: FlushbarVibe.success);
-                      } else if (outcome.toLowerCase().contains("error")) {
-                        UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.error);
-                      } else {
-                        UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.warning);
-                      }
-                    }
-                  },
-                ),
-              );
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
+//                     if (context.mounted) {
+//                       if (outcome == null) {
+//                         UiUtils.showFlushBar(context, msg: "Deleted content!", vibe: FlushbarVibe.success);
+//                       } else if (outcome.toLowerCase().contains("error")) {
+//                         UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.error);
+//                       } else {
+//                         UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.warning);
+//                       }
+//                     }
+//                   },
+//                 ),
+//               );
+//             },
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+// }
 
 class PreviewLinkTypeDialog extends ConsumerWidget {
   const PreviewLinkTypeDialog({super.key, required this.previewDetailsFuture, required this.content});

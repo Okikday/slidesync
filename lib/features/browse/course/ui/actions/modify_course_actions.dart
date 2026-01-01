@@ -167,7 +167,9 @@ class ModifyCourseActions {
           onTap: () async {
             CustomDialog.hide(context);
             await Future.delayed(Durations.short2);
-            if (context.mounted) previewImageActionRoute(context, courseImagePath: course.thumbnailPath);
+            if (context.mounted) {
+              previewImageActionRoute(context, courseImagePath: course.metadata.thumbnailsDetails.toJson());
+            }
           },
         )
       else
