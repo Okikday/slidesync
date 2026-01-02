@@ -1,38 +1,24 @@
-import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/data/models/file_details.dart';
-import 'package:slidesync/features/study/ui/screens/content_view_gate.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/features/study/ui/screens/image_viewer.dart';
 import 'package:slidesync/features/study/ui/screens/link_viewer/drive_listing_view.dart';
-import 'package:slidesync/features/study/ui/screens/pdf_doc_viewer/pdf_doc_viewer.dart';
+import 'package:slidesync/features/study/ui/screens/pdf_doc_viewer.dart';
+import 'package:slidesync/routes/transition.dart';
 
 final contentViewerRoutes = [
   GoRoute(
     name: Routes.pdfDocumentViewer.name,
     path: Routes.pdfDocumentViewer.path,
-    pageBuilder: (context, state) => PageAnimation.buildCustomTransitionPage(
-      state.pageKey,
-      type: TransitionType.rightToLeftWithFade,
-      duration: Durations.extralong1,
-      reverseDuration: Durations.medium1,
-      curve: CustomCurves.defaultIosSpring,
-      child: PdfDocViewer(content: state.extra as CourseContent),
-    ),
+    pageBuilder: (context, state) =>
+        defaultTransition(state.pageKey, child: PdfDocViewer(content: state.extra as CourseContent)),
   ),
   GoRoute(
     name: Routes.imageViewer.name,
     path: Routes.imageViewer.path,
-    pageBuilder: (context, state) => PageAnimation.buildCustomTransitionPage(
-      state.pageKey,
-      type: TransitionType.rightToLeftWithFade,
-      duration: Durations.extralong1,
-      reverseDuration: Durations.medium1,
-      curve: CustomCurves.defaultIosSpring,
-      child: ImageViewer(content: state.extra as CourseContent),
-    ),
+    pageBuilder: (context, state) =>
+        defaultTransition(state.pageKey, child: ImageViewer(content: state.extra as CourseContent)),
   ),
 
   GoRoute(
@@ -40,12 +26,8 @@ final contentViewerRoutes = [
     path: Routes.driveLinkViewer.path,
     pageBuilder: (context, state) {
       final content = (state.extra as CourseContent);
-      return PageAnimation.buildCustomTransitionPage(
+      return defaultTransition(
         state.pageKey,
-        type: TransitionType.rightToLeftWithFade,
-        duration: Durations.extralong1,
-        reverseDuration: Durations.medium1,
-        curve: CustomCurves.defaultIosSpring,
         child: DriveListingView(initialFolderId: content.path.urlPath, collectionId: content.parentId),
       );
     },

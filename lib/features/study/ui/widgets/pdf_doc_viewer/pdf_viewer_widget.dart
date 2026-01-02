@@ -11,7 +11,7 @@ import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/study/providers/pdf_doc_viewer_provider.dart';
 import 'package:slidesync/features/study/providers/src/pdf_doc_viewer_state/pdf_doc_viewer_state.dart';
-import 'package:slidesync/features/study/ui/screens/pdf_doc_viewer/pdf_overlay_widgets/pdf_scrollbar_overlay.dart';
+import 'package:slidesync/features/study/ui/widgets/pdf_doc_viewer/pdf_overlay_widgets/pdf_scrollbar_overlay.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:url_launcher/url_launcher.dart';
 

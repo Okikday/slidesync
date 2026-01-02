@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as p;
+import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -57,6 +58,7 @@ class ContentViewGateActions {
       await launchUrl(Uri.parse(content.path.urlPath));
       UiUtils.showFlushBar(context, msg: "Opening link outside app");
     } else {
+      // final toOpen = await FileUtils.storeFile(file: File(content.path.filePath), base: AppDirType.cache, newFileName: content.title);
       await OpenFilex.open(content.path.filePath);
       UiUtils.showFlushBar(context, msg: "Opening with external application...");
     }
@@ -69,7 +71,7 @@ class ContentViewGateActions {
     final userPreference = settings.useBuiltInViewer;
 
     // Default behavior based on content type and platform
-    final defaultBehavior = content.courseContentType == CourseContentType.image ? true : DeviceUtils.isDesktop();
+    final defaultBehavior = content.courseContentType == CourseContentType.image ? true : !DeviceUtils.isDesktop();
 
     return userPreference ?? defaultBehavior;
   }
@@ -211,7 +213,7 @@ class ContentViewGateActions {
   // ==================== Navigation Helpers ====================
 
   static void _navigateTo(BuildContext context, Routes route, CourseContent content) {
-    GoRouter.of(context).pushNamed(route.name, extra: content);
+    context.pushNamed(route.name, extra: content);
   }
 
   static Future<void> _stopPaginationIfNeeded(WidgetRef ref, CourseContent content) async {

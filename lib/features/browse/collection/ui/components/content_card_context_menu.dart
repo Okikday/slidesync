@@ -50,7 +50,7 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
             children: [
               Container(
                 clipBehavior: Clip.hardEdge,
-                constraints: BoxConstraints(maxWidth: 260),
+                constraints: BoxConstraints(maxWidth: 300),
                 decoration: BoxDecoration(
                   color: theme.background.withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(30.0),

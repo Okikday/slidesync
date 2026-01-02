@@ -4,8 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/study/ui/actions/pdf_doc_viewer_actions.dart';
 import 'package:slidesync/features/study/providers/pdf_doc_viewer_provider.dart';
 import 'package:slidesync/features/study/providers/src/pdf_doc_viewer_state/pdf_doc_viewer_state.dart';
-import 'package:slidesync/features/study/ui/screens/pdf_doc_viewer/pdf_doc_app_bar/pdf_doc_normal_app_bar.dart';
-import 'package:slidesync/features/study/ui/screens/pdf_doc_viewer/pdf_doc_app_bar/pdf_doc_search_app_bar.dart';
+import 'package:slidesync/features/study/ui/widgets/pdf_doc_viewer/pdf_doc_app_bar/pdf_doc_normal_app_bar.dart';
+import 'package:slidesync/features/study/ui/widgets/pdf_doc_viewer/pdf_doc_app_bar/pdf_doc_search_app_bar.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 

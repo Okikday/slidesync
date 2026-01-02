@@ -3,7 +3,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/study/providers/pdf_doc_viewer_provider.dart';
-import 'package:slidesync/features/study/ui/screens/pdf_doc_viewer/pdf_overlay_widgets/navigation_button.dart';
+import 'package:slidesync/features/study/ui/widgets/pdf_doc_viewer/pdf_overlay_widgets/navigation_button.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class NavigationControls extends ConsumerWidget {

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/study/providers/pdf_doc_viewer_provider.dart';
-import 'package:slidesync/features/study/ui/screens/pdf_doc_viewer/pdf_overlay_widgets/navigation_controls.dart';
-import 'package:slidesync/features/study/ui/screens/pdf_doc_viewer/pdf_overlay_widgets/pdf_tools_menu.dart';
+import 'package:slidesync/features/study/ui/widgets/pdf_doc_viewer/pdf_overlay_widgets/navigation_controls.dart';
+import 'package:slidesync/features/study/ui/widgets/pdf_doc_viewer/pdf_overlay_widgets/pdf_tools_menu.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class PdfFloatingActionMenu extends ConsumerWidget {

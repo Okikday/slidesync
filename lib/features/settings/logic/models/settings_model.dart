@@ -32,7 +32,7 @@ class SettingsModel {
     return SettingsModel(
       useSystemBrightness: map['useSystemBrightness'] ?? false,
       contentNotCopied: map['contentNotCopied'] ?? false,
-      useBuiltInViewer: map['useBuiltInViewer'] ?? false,
+      useBuiltInViewer: map['useBuiltInViewer'] ?? true,
       summarizedSuggestions: map['summarizedSuggestions'] ?? false,
       allowMultipleContents: map['allowMultipleContents'] ?? false,
       showMaterialsInFullScreen: map['showMaterialsInFullScreen'] ?? false,

@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:pdfrx/pdfrx.dart';
@@ -165,11 +164,10 @@ class ContentThumbnailCreator {
 
         pageImage.dispose();
         final _last = path.split(Platform.pathSeparator).last;
-        final genFilename = "${(_last.isEmpty ? null : _last) ?? filename}tmp";
+        final genFilename = "${(_last.isEmpty ? null : _last) ?? filename}.tmp";
 
         final tempFile = File(p.join((await getTemporaryDirectory()).path, genFilename));
         await tempFile.writeAsBytes(bytes);
-        bytes.clear();
 
         await Result.tryRunAsync(() async => await document.dispose());
 
