@@ -103,7 +103,7 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                             iconData: PhosphorIcons.fileArrowUp(PhosphorIconsStyle.bold),
                             onTap: () {
                               UiUtils.hideDialog(context);
-                              ContentViewGateActions.redirectToViewer(ref, widget.content, openOutsideApp: false);
+                              ContentViewGateActions.redirectToViewer(ref, widget.content, openOutsideApp: true);
                             },
                           ),
                           _buildLeadingMenuOption(

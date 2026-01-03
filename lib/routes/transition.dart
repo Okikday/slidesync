@@ -9,7 +9,7 @@ dynamic defaultTransition(
   TransitionType defaultIncoming = TransitionType.rightToLeft,
   TransitionType? outgoing,
   Duration incomingDuration = const Duration(milliseconds: 400),
-  Duration outgoingDuration = const Duration(milliseconds: 300),
+  Duration outgoingDuration = const Duration(milliseconds: 200),
 }) {
   return PageAnimation.buildCustomTransitionPage(
     pageKey,
@@ -23,10 +23,10 @@ dynamic defaultTransition(
       curve: defaultCurve,
       reverseCurve: defaultCurve,
     ),
-    // duration: Durations.extralong2,
-    duration: incomingDuration,
-    reverseDuration: outgoingDuration,
 
+    // duration: Durations.extralong2,
+    // duration: incomingDuration,
+    // reverseDuration: outgoingDuration,
     child: child,
   );
 }

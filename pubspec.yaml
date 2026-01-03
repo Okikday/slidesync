@@ -102,6 +102,9 @@ dependencies:
   phosphor_flutter: ^2.1.0
   native_file_preview: ^1.0.1
 
+  internet_connection_checker_plus: ^2.5.2
+  flutter_local_notifications: ^18.0.1
+
 flutter_native_splash:
   android: true
   ios: true

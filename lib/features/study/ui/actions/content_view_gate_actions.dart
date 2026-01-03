@@ -10,6 +10,7 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as p;
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/features/study/logic/usecases/content_progress_tracker.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:slidesync/core/constants/src/enums.dart';
@@ -58,8 +59,16 @@ class ContentViewGateActions {
       await launchUrl(Uri.parse(content.path.urlPath));
       UiUtils.showFlushBar(context, msg: "Opening link outside app");
     } else {
-      // final toOpen = await FileUtils.storeFile(file: File(content.path.filePath), base: AppDirType.cache, newFileName: content.title);
-      await OpenFilex.open(content.path.filePath);
+      ContentProgressTracker().registerContentAccess(content.contentId);
+      // Launching outside application
+      final extWithDot = p.extension(content.path.filePath);
+      final toOpen = await FileUtils.storeFile(
+        file: File(content.path.filePath),
+        base: AppDirType.temporary,
+        newFileName: content.title + extWithDot,
+      );
+
+      await OpenFilex.open(toOpen);
       UiUtils.showFlushBar(context, msg: "Opening with external application...");
     }
   }

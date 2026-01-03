@@ -83,7 +83,7 @@ class FilePackageManager {
   static Future<String?> _packageSingleFile(File file, {String? outputPath, bool overwriteExisting = false}) async {
     final fileName = file.uri.pathSegments.last;
     final uuid = _uuid.v4();
-    final outputDir = outputPath ?? AppPaths.operationsCacheFolder;
+    final outputDir = outputPath ?? operationsCacheFolder;
 
     final finalPath = '$outputDir/$uuid$finishedExtension';
     final tempPath = '$outputDir/$uuid$tempExtension';
@@ -191,7 +191,7 @@ class FilePackageManager {
       // Read metadata
       final metadata = await readMetadata(packagedFile);
       final originalName = metadata['originalName'] as String;
-      final outputDir = outputPath ?? AppPaths.operationsCacheFolder;
+      final outputDir = outputPath ?? operationsCacheFolder;
 
       final finalPath = '$outputDir/$originalName';
       final tempPath = '$finalPath.tmp';
@@ -372,9 +372,6 @@ class FilePackageManager {
 
     return cleaned;
   }
-}
 
-/// Placeholder for app paths - replace with your actual implementation
-class AppPaths {
   static String get operationsCacheFolder => '/tmp/cache';
 }

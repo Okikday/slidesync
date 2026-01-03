@@ -11,6 +11,7 @@ import 'package:slidesync/features/browse/course/ui/actions/course_details_actio
 import 'package:slidesync/features/browse/course/ui/actions/modify_course_actions.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/shared/edit_course_bottom_sheet.dart';
 import 'package:slidesync/features/share/ui/screens/export/course_export_manager.dart';
+import 'package:slidesync/features/sync/logic/sync_service.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/course_details_view/course_details_header/animated_shape.dart';
 import 'package:slidesync/features/browse/course/ui/actions/modify_collection_actions.dart';
@@ -116,6 +117,16 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
           onTap: () {
             context.pop();
             context.pushNamed(Routes.collectionsView.name, extra: course.courseId);
+          },
+        ),
+
+        AppActionDialogModel(
+          title: "Sync Course",
+          icon: Icon(Iconsax.export_1, size: 24, color: theme.supportingText),
+          onTap: () async {
+            context.pop();
+            if (course.courseId.isEmpty) return;
+            SyncService.instance.uploadCourse(ref, course);
           },
         ),
 
