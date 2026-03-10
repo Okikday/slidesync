@@ -25,8 +25,8 @@ class CollectionNotifier extends StreamNotifier<CourseCollection> {
   final String collectionId;
   CollectionNotifier(this.collectionId);
   @override
-  Stream<CourseCollection> build() async* {
-    yield* CourseCollectionRepo.watchCollectionById(collectionId).map((c) {
+  Stream<CourseCollection> build() {
+    return CourseCollectionRepo.watchCollectionById(collectionId).map((c) {
       log("detect collection change");
       return c ?? defaultCollection;
     });

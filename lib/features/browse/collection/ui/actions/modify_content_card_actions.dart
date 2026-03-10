@@ -1,6 +1,7 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_content/course_content.dart';
@@ -18,8 +19,8 @@ class ModifyContentCardActions {
             hintText: "Input a title different from previous one",
             defaultText: content.title,
             onSubmitted: (String text) async {
+              context.pop();
               await ModifyContentsAction().onRenameContent(content, newTitle: text.trim());
-              if (context.mounted) UiUtils.hideDialog(context);
             },
           ).animate().fadeIn().scaleY(
             begin: 0.1,

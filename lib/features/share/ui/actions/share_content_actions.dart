@@ -73,9 +73,10 @@ class ShareContentActions {
         .anyOf(contentIds, (a, b) => a.contentIdEqualTo(b))
         .findAll();
     final Set<(File file, String fileName)> dataSet = contents.map((e) {
+      final filename = p.setExtension(e.title, p.extension(e.path.filePath));
       return (
         File(e.path.filePath),
-        (e.metadata.originalFileName) ?? p.setExtension(e.title, p.extension(e.path.filePath)),
+        filename.isEmpty ? ((e.metadata.originalFileName) ?? "Unknown file" ): filename ,
       );
     }).toSet();
     final files = dataSet.map((e) => e.$1).toList();

@@ -314,6 +314,7 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
     UiUtils.showLoadingDialog(context, message: "Storing your files...", canPop: false);
 
     await _storeContentsToCollection(collectionId: collection.collectionId, filePaths: widget.filePaths!);
+    context.pop();
 
     // GlobalNav.withContext((c) => c.pop());
     GlobalNav.withContext((c) => c.pushNamed(Routes.courseMaterials.name, extra: collection));

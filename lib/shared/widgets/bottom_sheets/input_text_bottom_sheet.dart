@@ -1,6 +1,7 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class InputTextBottomSheet extends ConsumerStatefulWidget {
@@ -48,7 +49,7 @@ class _InputTextBottomSheetState extends ConsumerState<InputTextBottomSheet> {
     final theme = ref;
     return Stack(
       children: [
-        Positioned.fill(child: GestureDetector(onTap: () => CustomDialog.hide(context))),
+        Positioned.fill(child: GestureDetector(onTap: () => context.pop())),
         Align(
           alignment: Alignment.bottomCenter,
           child: Container(

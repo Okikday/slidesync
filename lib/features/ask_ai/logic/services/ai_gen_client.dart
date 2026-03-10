@@ -18,14 +18,13 @@ class AiGenClient {
       );
 
   /// Streams chat responses for anonymous conversations
-  Stream<StringBuffer> streamChatAnon(List<Content> messages) {
+  /// returns true when there's an update to the StringBuffer
+  Stream<bool> streamChatAnon(StringBuffer buffer, {List<Content> messages = const []}) {
     final model = _model();
-    final buffer = StringBuffer();
 
-    return model.generateContentStream(messages).map((response) {
-      final text = response.text ?? '';
-      buffer.write(text);
-      return buffer;
+    return model.generateContentStream(messages).asyncMap((response) {
+      buffer.write(response.text ?? '');
+      return true;
     });
   }
 

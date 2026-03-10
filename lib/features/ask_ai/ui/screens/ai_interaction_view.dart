@@ -83,7 +83,7 @@ class _AiInteractionViewState extends ConsumerState<AiInteractionView> {
             );
           }
 
-          final isStreaming = isLastMessage && state.isProcessingNotifier.value;
+          final isStreaming = isLastMessage && state.isGeneratingNotifier.value;
 
           return buildAiMessageContent(
             text: message.text,

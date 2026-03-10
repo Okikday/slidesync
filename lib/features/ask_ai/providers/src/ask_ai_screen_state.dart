@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:developer';
 
 // import 'package:firebase_ai/firebase_ai.dart';
 import 'package:flutter/foundation.dart';
@@ -23,12 +24,11 @@ class AskAiScreenState extends LeakPrevention with ValueNotifierFactoryMixin {
   /// ===================================================================================================
   final Ref ref;
   late final ValueNotifier<Uint8List?> imageToAiNotifier;
-  late final ValueNotifier<String?> aiResponseNotifier;
   late final TextEditingController aiFieldInputController;
-  late final ValueNotifier<bool> isProcessingNotifier;
+  late final ValueNotifier<bool> isGeneratingNotifier;
 
   LinkedHashSet<Content> aiChatHistory = LinkedHashSet();
-  StreamSubscription<StringBuffer>? aiMessageSub;
+  StreamSubscription<bool>? aiMessageSub;
   bool containsImage = false;
   late final InMemoryChatController chatController;
 
@@ -52,14 +52,13 @@ class AskAiScreenState extends LeakPrevention with ValueNotifierFactoryMixin {
   /// ===================================================================================================
   AskAiScreenState(this.ref) {
     imageToAiNotifier = useValueNotifier(null);
-    aiResponseNotifier = useValueNotifier(null);
-    isProcessingNotifier = useValueNotifier(false);
+    isGeneratingNotifier = useValueNotifier(false);
     aiFieldInputController = TextEditingController();
     chatController = InMemoryChatController();
   }
 
   Future<void> sendCurrContentToAi() async {
-    if (isProcessingNotifier.value) return;
+    if (isGeneratingNotifier.value) return;
     final text = aiFieldInputController.text;
     if (text.trim().isEmpty) return;
     aiFieldInputController.clear();
@@ -86,13 +85,13 @@ class AskAiScreenState extends LeakPrevention with ValueNotifierFactoryMixin {
 
       // Get all messages for the request
       final allMessages = aiChatHistory.toList();
-
-      final stream = AiGenClient.instance.streamChatAnon(allMessages);
-      final StringBuffer buffer = StringBuffer();
+      final buffer = StringBuffer();
+      int failTimes = 0;
+      final stream = AiGenClient.instance.streamChatAnon(buffer, messages: allMessages);
 
       aiMessageSub = stream.listen(
         (response) async {
-          buffer.write(response);
+          if (!response) failTimes++;
           await chatController.updateMessage(
             aiMessage,
             Message.text(id: aiMessageId, authorId: 'ai', text: buffer.toString()),
@@ -101,23 +100,21 @@ class AskAiScreenState extends LeakPrevention with ValueNotifierFactoryMixin {
         onDone: () async {
           final aiContent = Content("model", [TextPart(buffer.toString())]);
           aiChatHistory.add(aiContent);
-
           await aiMessageSub?.cancel();
           aiMessageSub = null;
-          isProcessingNotifier.value = false;
+          isGeneratingNotifier.value = false;
+          log("number of fails: $failTimes");
         },
         onError: (e) async {
-          if (aiChatHistory.isNotEmpty) {
-            aiChatHistory.remove(aiChatHistory.last);
-          }
-
+          if (aiChatHistory.isNotEmpty) aiChatHistory.remove(aiChatHistory.last);
           await aiMessageSub?.cancel();
           aiMessageSub = null;
-          isProcessingNotifier.value = false;
+          isGeneratingNotifier.value = false;
+          log("number of fails: $failTimes");
         },
       );
     });
-    isProcessingNotifier.value = false;
+    isGeneratingNotifier.value = false;
   }
 
   Future<void> captureCurrentView(BuildContext context) async {

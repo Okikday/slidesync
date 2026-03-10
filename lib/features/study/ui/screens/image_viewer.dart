@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
@@ -7,9 +8,11 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
+import 'package:slidesync/data/models/course_collection/course_collection.dart';
 import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/features/ask_ai/ui/screens/ask_ai_screen.dart';
 import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
 import 'package:slidesync/features/study/providers/image_viewer_provider.dart';
@@ -29,17 +32,28 @@ class ImageViewer extends ConsumerStatefulWidget {
 }
 
 class _ImageViewerState extends ConsumerState<ImageViewer> {
+  late final Future<CourseCollection> collectionFuture;
   final ValueNotifier<Provider<ImageViewerState>?> imageViewerStateProvider = ValueNotifier(null);
+  final ValueNotifier<int> positionNotifier = ValueNotifier(0);
+  final pageController = PageController();
+
   @override
-  dispose() {
+  void initState() {
+    super.initState();
+    collectionFuture = CourseCollectionRepo.getById(widget.content.parentId).then((c) => c ?? defaultCollection);
+  }
+
+  @override
+  void dispose() {
     imageViewerStateProvider.dispose();
+    positionNotifier.dispose();
+    pageController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = ref;
-    final collectionProvider = ref.read(CollectionsProviders.collectionProvider(widget.content.collectionId));
 
     return AnnotatedRegion(
       value: UiUtils.getSystemUiOverlayStyle(theme.background, theme.isDarkMode),
@@ -47,47 +61,62 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
         body: Stack(
           fit: StackFit.expand,
           children: [
-            collectionProvider.maybeWhen(
-              orElse: () => const SizedBox(),
-              data: (data) {
-                final contents = data.contents.where((c) => c.courseContentType == CourseContentType.image);
+            FutureBuilder(
+              future: collectionFuture,
+              builder: (context, snapshot) {
+                log("Load data!");
+                if (!snapshot.hasData || snapshot.data == null) return const SizedBox();
+                final contents = snapshot.data!.contents.where((c) => c.courseContentType == CourseContentType.image);
 
                 return PageView.builder(
                   itemCount: contents.length,
+                  controller: pageController,
+                  onPageChanged: (value) => positionNotifier.value = value,
                   itemBuilder: (context, index) {
-                    final currContent = contents.elementAt(index);
-                    this.imageViewerStateProvider.value = ImageViewerProvider.state(currContent.contentId);
-                    final imageViewerStateProvider = this.imageViewerStateProvider.value;
-                    if (imageViewerStateProvider == null) {
-                      return const SizedBox();
-                    }
-                    return FutureBuilder(
-                      future: ref.watch(imageViewerStateProvider.select((s) => s.isInitialized)),
-                      builder: (context, asyncSnapshot) {
-                        if (asyncSnapshot.connectionState != ConnectionState.done) return const SizedBox();
-                        return Screenshot(
-                          controller: PdfDocViewerState.screenshotController,
-                          child: ValueListenableBuilder(
-                            valueListenable: ref.watch(
-                              imageViewerStateProvider.select((s) => s.isAppBarVisibleNotifier),
-                            ),
-                            builder: (context, isAppBarVisible, child) {
-                              return _PhotoViewPadding(isAppBarVisible: isAppBarVisible, child: child!);
-                            },
-                            child: PhotoView(
-                              enablePanAlways: true,
-                              maxScale: 10.0,
-                              onTapUp: (context, details, controllerValue) {
-                                ref.read(imageViewerStateProvider).toggleAppBarVisible();
+                    return ValueListenableBuilder(
+                      valueListenable: positionNotifier,
+                      builder: (context, position, child) {
+                        final currContent = contents.elementAt(position);
+                        Future.microtask(
+                          () => imageViewerStateProvider.value = ImageViewerProvider.state(currContent.contentId),
+                        );
+
+                        return ValueListenableBuilder(
+                          valueListenable: imageViewerStateProvider,
+                          builder: (context, imageViewerStateProvider, child) {
+                            if (imageViewerStateProvider == null) return const SizedBox();
+                            return FutureBuilder(
+                              key: ValueKey(currContent.contentId),
+                              future: ref.watch(imageViewerStateProvider.select((s) => s.isInitialized)),
+                              builder: (context, asyncSnapshot) {
+                                if (asyncSnapshot.connectionState != ConnectionState.done) return const SizedBox();
+                                return Screenshot(
+                                  controller: PdfDocViewerState.screenshotController,
+                                  child: ValueListenableBuilder(
+                                    valueListenable: ref.watch(
+                                      imageViewerStateProvider.select((s) => s.isAppBarVisibleNotifier),
+                                    ),
+                                    builder: (context, isAppBarVisible, child) {
+                                      return _PhotoViewPadding(isAppBarVisible: isAppBarVisible, child: child!);
+                                    },
+                                    child: PhotoView(
+                                      enablePanAlways: true,
+                                      maxScale: 10.0,
+                                      onTapUp: (context, details, controllerValue) {
+                                        ref.read(imageViewerStateProvider).toggleAppBarVisible();
+                                      },
+                                      controller: ref.watch(imageViewerStateProvider.select((s) => s.controller)),
+                                      filterQuality: FilterQuality.high,
+                                      imageProvider: widget.content.path.fileDetails.containsFilePath
+                                          ? FileImage(File(widget.content.path.filePath))
+                                          : NetworkImage(widget.content.path.urlPath),
+                                      minScale: PhotoViewComputedScale.contained,
+                                    ),
+                                  ),
+                                );
                               },
-                              controller: ref.watch(imageViewerStateProvider.select((s) => s.controller)),
-                              filterQuality: FilterQuality.high,
-                              imageProvider: widget.content.path.fileDetails.containsFilePath
-                                  ? FileImage(File(widget.content.path.filePath))
-                                  : NetworkImage(widget.content.path.urlPath),
-                              minScale: PhotoViewComputedScale.contained,
-                            ),
-                          ),
+                            );
+                          },
                         );
                       },
                     );
