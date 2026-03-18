@@ -1,15 +1,19 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/main/ui/screens/explore_tab_view.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/library_floating_action_button.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_drawer.dart';
 import 'package:slidesync/features/main/ui/screens/library_tab_view.dart';
+import 'package:slidesync/shared/widgets/state/absorber.dart';
 
 import 'home_tab_view.dart';
 import '../widgets/main_view/bottom_nav_bar.dart';
 import '../widgets/main_view/main_view_annotated_region.dart';
+
+const _views = [HomeTabView(), LibraryTabView(), ExploreTabView()];
 
 class MainView extends ConsumerStatefulWidget {
   final int tabIndex;
@@ -55,10 +59,11 @@ class _MainViewState extends ConsumerState<MainView> {
             children: [
               PageView(
                 controller: pageController,
+                // physics: const NeverScrollableScrollPhysics(),
                 onPageChanged: (index) {
                   ref.read(MainProvider.tabIndexProvider.notifier).update((cb) => index);
                 },
-                children: const [HomeTabView(), LibraryTabView(), ExploreTabView()],
+                children: _views,
               ),
 
               Positioned(

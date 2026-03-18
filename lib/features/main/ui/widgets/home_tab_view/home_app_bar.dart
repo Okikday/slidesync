@@ -1,10 +1,14 @@
+import 'dart:ui';
+
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:soft_edge_blur/soft_edge_blur.dart';
 
 class HomeAppBar extends ConsumerWidget {
   const HomeAppBar({super.key, required this.onClickHamburger, required this.title, required this.onClickNotification});
@@ -20,7 +24,7 @@ class HomeAppBar extends ConsumerWidget {
 
     return Consumer(
       builder: (context, ref, child) {
-        final bool isScrolled = ref.watch(MainProvider.isHomeScrolledProvider);
+        // final bool isScrolled = ref.watch(MainProvider.isHomeScrolledProvider);
         return SliverAppBar(
           elevation: 64,
           pinned: true,
@@ -32,9 +36,7 @@ class HomeAppBar extends ConsumerWidget {
           forceMaterialTransparency: true,
           surfaceTintColor: Colors.transparent,
           systemOverlayStyle: SystemUiOverlayStyle(
-            statusBarColor: isScrolled
-                ? theme.background.lightenColor(theme.isDarkMode ? .1 : .9)
-                : context.scaffoldBackgroundColor,
+            statusBarColor: theme.background.withValues(alpha: 0.6),
             statusBarBrightness: context.isDarkMode ? Brightness.light : Brightness.dark,
             statusBarIconBrightness: context.isDarkMode ? Brightness.light : Brightness.dark,
           ),
@@ -42,19 +44,25 @@ class HomeAppBar extends ConsumerWidget {
             expandedTitleScale: 1.0,
             background: GestureDetector(
               onTap: () {},
-              child: Material(
-                type: MaterialType.transparency,
-                shape: isScrolled
-                    ? LinearBorder(
-                        bottom: LinearBorderEdge(),
-                        side: BorderSide(color: theme.altBackgroundSecondary.withValues(alpha: 0.4)),
-                      )
-                    : null,
-                child: AnimatedContainer(
-                  duration: Durations.medium3,
-                  clipBehavior: Clip.hardEdge,
-                  color: isScrolled ? theme.surface.withValues(alpha: 0.9) : theme.background,
-                  child: isScrolled ? const SizedBox.expand() : null,
+              child: ClipRRect(
+                child: SizedBox(
+                  height: 80,
+
+                  child: SoftEdgeBlur(
+                    edges: [
+                      EdgeBlur(
+                        type: EdgeType.topEdge,
+                        size: 80,
+                        sigma: 30,
+                        tintColor: theme.background,
+                        controlPoints: [
+                          ControlPoint(position: 0.4, type: ControlPointType.visible),
+                          ControlPoint(position: 1.0, type: ControlPointType.transparent),
+                        ],
+                      ),
+                    ],
+                    child: SizedBox.expand(),
+                  ),
                 ),
               ),
             ),
@@ -75,14 +83,19 @@ class HomeAppBar extends ConsumerWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        CustomElevatedButton(
-                          onClick: onClickHamburger,
-                          pixelHeight: 48,
-                          pixelWidth: 48,
-                          contentPadding: EdgeInsets.zero,
-                          backgroundColor: theme.adjustBgAndPrimaryWithLerp,
-                          shape: CircleBorder(side: BorderSide(color: theme.onSurface.withValues(alpha: .05))),
-                          child: Icon(Iconsax.menu_1_copy, color: theme.onBackground, size: 48 * 0.5),
+                        ClipOval(
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                            child: CustomElevatedButton(
+                              onClick: onClickHamburger,
+                              pixelHeight: 48,
+                              pixelWidth: 48,
+                              contentPadding: EdgeInsets.zero,
+                              backgroundColor: theme.scaffoldBackgroundColor.withValues(alpha: 0.6),
+                              shape: CircleBorder(side: BorderSide(color: theme.onSurface.withValues(alpha: .1))),
+                              child: Icon(Iconsax.menu_1_copy, color: theme.onBackground, size: 48 * 0.5),
+                            ),
+                          ),
                         ),
 
                         ConstantSizing.rowSpacingMedium,
@@ -95,20 +108,25 @@ class HomeAppBar extends ConsumerWidget {
                           ),
                         ),
 
-                        CustomElevatedButton(
-                          onClick: onClickNotification,
-                          pixelWidth: 44,
-                          pixelHeight: 44,
-                          overlayColor: ref.secondary.withAlpha(40),
-                          contentPadding: EdgeInsets.zero,
-                          shape: CircleBorder(
-                            side: BorderSide(color: theme.altBackgroundSecondary.withValues(alpha: 0.4)),
-                          ),
-                          backgroundColor: theme.adjustBgAndSecondaryWithLerp,
-                          child: Badge(
-                            backgroundColor: Colors.transparent,
-                            offset: Offset(-1, -1),
-                            child: Icon(Iconsax.crop, color: theme.supportingText, size: 24),
+                        ClipOval(
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                            child: CustomElevatedButton(
+                              onClick: onClickNotification,
+                              pixelWidth: 44,
+                              pixelHeight: 44,
+                              overlayColor: ref.secondary.withAlpha(40),
+                              contentPadding: EdgeInsets.zero,
+                              shape: CircleBorder(
+                                side: BorderSide(color: theme.altBackgroundSecondary.withValues(alpha: 0.4)),
+                              ),
+                              backgroundColor: theme.scaffoldBackgroundColor.withValues(alpha: 0.6),
+                              child: Badge(
+                                backgroundColor: Colors.transparent,
+                                offset: Offset(-1, -1),
+                                child: Icon(HugeIconsSolid.focusPoint, color: theme.supportingText, size: 24),
+                              ),
+                            ),
                           ),
                         ),
                       ],

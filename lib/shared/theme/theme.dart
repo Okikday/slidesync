@@ -70,7 +70,8 @@ ThemeData resolveThemeData(AppTheme theme) {
     useMaterial3: true,
     colorScheme: cs,
     brightness: theme.brightness,
-
+    fontFamily: "Raleway",
+    fontFamilyFallback: ["Raleway"],
     pageTransitionsTheme: PageTransitionsTheme(
       builders: {
         TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),

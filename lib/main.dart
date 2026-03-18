@@ -1,9 +1,11 @@
 // import 'package:firebase_core/firebase_core.dart';
 
+import 'dart:developer';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-// import 'package:flutter/services.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -22,6 +24,10 @@ import 'package:window_manager/window_manager.dart';
 
 import 'dev/provider_observer.dart';
 // import 'firebase_options.dart';
+import 'dart:async';
+
+// ignore: implementation_imports
+import 'package:pdfrx/src/utils/platform.dart';
 
 part 'main_.dart';
 

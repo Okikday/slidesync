@@ -8,6 +8,7 @@ import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
+import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 
@@ -69,6 +70,14 @@ class ModifyContentUc {
       }
 
       await CourseContentRepo.add(stContent.copyWith(contentHash: content.contentHash, title: newTitle));
+      try {
+        final contentTrack = await ContentTrackRepo.getByContentId(content.contentId);
+        final updated = contentTrack?.copyWith(title: newTitle);
+        if (updated != null) await ContentTrackRepo.add(updated);
+      } catch (e) {
+        //ignore
+      }
+
       return null;
     })).data;
   }

@@ -13,6 +13,7 @@ import 'package:slidesync/core/utils/image_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:image/image.dart';
+import 'package:slidesync/main.dart';
 
 // typedef PreviewImagePathRecord<Record> = ({String previewDirPath, String previewPath});
 
@@ -134,7 +135,8 @@ class ContentThumbnailCreator {
     final Result<String?> result = await Result.tryRunAsync(() async {
       log("Creating preview for Type Document");
 
-      pdfrxFlutterInitialize();
+      // pdfrxFlutterInitialize();
+      await pdfrxFlutterInitializeInIsolate();
 
       final PdfDocument document = await PdfDocument.openFile(path);
       try {

@@ -77,15 +77,54 @@ Future<void> _initDesktop() async {
   }
 }
 
-// Future<void> initPdfrx({bool dismissPdfiumWasmWarnings = false}) async {
-//   if (_isPdfrxInitialized) return;
+bool _isInitialized = false;
 
-//   Pdfrx.loadAsset ??= (name) async {
-//     final asset = await rootBundle.load(name);
-//     return asset.buffer.asUint8List();
-//   };
+Future<void> pdfrxFlutterInitializeInIsolate({bool dismissPdfiumWasmWarnings = false}) async {
+  if (_isInitialized) return;
 
-//   /// NOTE: it's actually async, but hopefully, it finishes quickly...
-//   await PdfrxEntryFunctions.instance.initPdfium();
-//   _isPdfrxInitialized = true;
-// }
+  try {
+    WidgetsFlutterBinding.ensureInitialized();
+  } catch (e) {
+    log("Couldn't init flutter bindings");
+  }
+
+  if (pdfrxEntryFunctionsOverride != null) {
+    PdfrxEntryFunctions.instance = pdfrxEntryFunctionsOverride!;
+  }
+
+  Pdfrx.loadAsset ??= (name) async {
+    final asset = await rootBundle.load(name);
+    return asset.buffer.asUint8List();
+  };
+  Pdfrx.getCacheDirectory ??= getCacheDirectory;
+
+  // Checking pdfium.wasm availability for Web and debug builds.
+  if (kDebugMode && !dismissPdfiumWasmWarnings) {
+    () async {
+      try {
+        await Pdfrx.loadAsset!('packages/pdfrx/assets/pdfium.wasm');
+        if (!kIsWeb) {
+          debugPrint(
+            '⚠️\u001b[37;41;1mDEBUG TIME WARNING: The app is bundling PDFium WASM module (about 4MB) as a part of the app.\u001b[0m\n'
+            '\u001b[91mFor production use (not for Web/Debug), you\'d better remove the PDFium WASM module.\u001b[0m\n'
+            '\u001b[91mSee https://github.com/espresso3389/pdfrx/tree/master/packages/pdfrx#note-for-building-release-builds for more details.\u001b[0m\n',
+          );
+        }
+      } catch (e) {
+        if (kIsWeb) {
+          debugPrint(
+            '⚠️\u001b[37;41;1mDEBUG TIME WARNING: The app is running on Web, but the PDFium WASM module is not bundled with the app.\u001b[0m\n'
+            '\u001b[91mMake sure to include the PDFium WASM module in your web project.\u001b[0m\n'
+            '\u001b[91mIf you explicitly set Pdfrx.pdfiumWasmModulesUrl, you can ignore this warning.\u001b[0m\n'
+            '\u001b[91mSee https://github.com/espresso3389/pdfrx/tree/master/packages/pdfrx#note-for-building-release-builds for more details.\u001b[0m\n',
+          );
+        }
+      }
+    }();
+  }
+
+  /// NOTE: it's actually async, but hopefully, it finishes quickly...
+  await platformInitialize();
+
+  _isInitialized = true;
+}

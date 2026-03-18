@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/main/providers/library/library_tab_provider.dart';
@@ -12,6 +14,12 @@ class LibraryTabView extends ConsumerStatefulWidget {
 }
 
 class _LibraryTabViewState extends ConsumerState<LibraryTabView> with AutomaticKeepAliveClientMixin {
+  @override
+  void initState() {
+    super.initState();
+    log("LibraryTabView initialized");
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);

@@ -18,7 +18,7 @@ if(keystorePropertiesFile.exists()){
 android {
     namespace = "com.bubble.slidesync"
     compileSdk = 36
-//    ndkVersion = flutter.ndkVersion
+    //    ndkVersion = flutter.ndkVersion
     ndkVersion = "28.2.13676358"
 
     compileOptions {

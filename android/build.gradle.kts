@@ -20,8 +20,8 @@ subprojects {
                     ?: project.extensions.getByName("android") as? com.android.build.gradle.AppExtension
 
             androidExtension?.apply {
-                compileSdkVersion(35)
-                buildToolsVersion = "35.0.0"
+                compileSdkVersion(36)
+                buildToolsVersion = "36.0.0"
             }
         }
 

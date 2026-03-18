@@ -65,7 +65,7 @@ class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAli
       headerSliverBuilder: (context, isInnerBoxScrolled) {
         return [
           HomeAppBar(
-            title: 'SlideSync',
+            title: '',
             onClickHamburger: () {
               Scaffold.of(context).openDrawer();
               // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(statusBarColor: Theme.of(context).scaffoldBackgroundColor));

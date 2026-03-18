@@ -24,8 +24,8 @@ class CourseMetadata {
   Map<String, dynamic> toMap() {
     return {
       if (author != null) 'author': author,
-      if (thumbnails != null) 'thumbnails': color != null ? ThemeUtils.colorToHex(color!) : null,
-      if (color != null) 'color': color,
+      if (thumbnails != null) 'thumbnails': thumbnails,
+      if (color != null) 'color': color != null ? ThemeUtils.colorToHex(color!) : null,
       if (fields != null) ...fields!,
     };
   }

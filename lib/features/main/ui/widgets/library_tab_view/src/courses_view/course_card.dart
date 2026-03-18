@@ -23,7 +23,8 @@ class CourseCard extends ConsumerWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: ScaleClickWrapper(
-        borderRadius: isGrid ? 24 : 14,
+        // borderRadius: isGrid ? 24 : 14,
+        borderRadius: 24,
         onTapDown: (details) {
           updateTapDownDetailsProvider(ref, details.globalPosition);
         },

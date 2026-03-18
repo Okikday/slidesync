@@ -34,7 +34,7 @@ class ListCourseCard extends ConsumerWidget {
       constraints: BoxConstraints(maxWidth: 500),
       decoration: BoxDecoration(
         color: theme.cardColor,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(24),
         border: Border.fromBorderSide(BorderSide(color: theme.onBackground.withAlpha(10))),
         boxShadow: context.isDarkMode
             ? [
@@ -69,12 +69,12 @@ class ListCourseCard extends ConsumerWidget {
       child: Badge(
         backgroundColor: Colors.transparent,
         isLabelVisible: (course.createdAt?.difference(DateTime.now()).inMinutes.abs() ?? 10) <= 5,
-        alignment: Alignment.topLeft,
-        offset: Offset(-20, -16),
+        alignment: Alignment.bottomRight,
+        offset: Offset(-8, 0),
         label: DecoratedBox(
           decoration: BoxDecoration(
-            color: theme.onBackground.withValues(alpha: 0.4),
-            borderRadius: BorderRadius.only(topLeft: Radius.circular(14), bottomRight: Radius.circular(14)),
+            color: theme.onSecondary.withValues(alpha: 0.4),
+            borderRadius: BorderRadius.only(bottomRight: Radius.circular(12), topLeft: Radius.circular(12)),
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -82,8 +82,8 @@ class ListCourseCard extends ConsumerWidget {
               spacing: 1,
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Iconsax.star_1, size: 10, color: theme.adjustBgAndPrimaryWithLerpExtra),
-                CustomText("New", fontSize: 8, fontWeight: FontWeight.bold, color: theme.background),
+                // Icon(Iconsax.star_1, size: 10, color: theme.adjustBgAndPrimaryWithLerpExtra),
+                CustomText("New", fontSize: 8, fontWeight: FontWeight.bold, color: theme.secondary),
               ],
             ),
           ),
@@ -102,7 +102,7 @@ class ListCourseCard extends ConsumerWidget {
             ),
 
             // ListCourseCardProgressIndicator(courseId: course.courseId),
-            Icon(Iconsax.arrow_right, size: 30, color: theme.supportingText.withAlpha(100)),
+            Icon(Iconsax.arrow_right, size: 30, color: course.metadata.color ?? theme.supportingText.withAlpha(100)),
           ],
         ),
       ),
@@ -172,17 +172,25 @@ class _ListCourseCardIconState extends ConsumerState<ListCourseCardIcon> {
                   fileDetails: FileDetails(filePath: widget.course.thumbnailPath),
                   fallbackWidget: Padding(
                     padding: const EdgeInsets.all(8.0),
-                    child: widget.course.courseCode.isEmpty
-                        ? const SizedBox.shrink()
-                        : Center(
-                            child: CustomText(
-                              widget.course.courseCode.substring(0, widget.course.courseCode.length.clamp(0, 8)),
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              textAlign: TextAlign.center,
-                              color: theme.onBackground.withValues(alpha: 0.5),
-                            ),
-                          ),
+                    child: Center(
+                      child: Builder(
+                        builder: (context) {
+                          final text = widget.course.courseCode.isEmpty
+                              ? widget.course.courseTitle
+                                    .splitMapJoin(" ", onNonMatch: (str) => str.isNotEmpty ? str[0] : "")
+                                    .toUpperCase()
+                              : widget.course.courseCode.substring(0, widget.course.courseCode.length.clamp(0, 7));
+
+                          return CustomText(
+                            text,
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            textAlign: TextAlign.center,
+                            color: theme.onBackground.withValues(alpha: 0.5),
+                          );
+                        },
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -205,7 +213,7 @@ class _ListCourseCardIconState extends ConsumerState<ListCourseCardIcon> {
                           ? progress?.clamp(0.01, 1.0) ?? 0.01
                           : progress,
                       strokeCap: StrokeCap.round,
-                      color: theme.primaryColor,
+                      color: widget.course.metadata.color ?? theme.primaryColor,
                       backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.4),
                     ),
 

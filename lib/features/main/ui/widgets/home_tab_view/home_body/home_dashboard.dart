@@ -39,12 +39,12 @@ class HomeDashboard extends ConsumerWidget {
       margin: EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         color: theme.adjustBgAndPrimaryWithLerp,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(25),
         border: Border.all(width: 2, color: theme.adjustBgAndPrimaryWithLerpExtra),
         image: DecorationImage(
           image: Assets.images.bookSparkleBg.asImageProvider,
           fit: BoxFit.cover,
-          opacity: 0.03,
+          opacity: 0.05,
           colorFilter: ColorFilter.mode(theme.primaryColor, BlendMode.srcIn),
         ),
       ),
@@ -102,7 +102,7 @@ class HomeDashboard extends ConsumerWidget {
             children: [
               Expanded(
                 child: ClipRSuperellipse(
-                  borderRadius: BorderRadiusGeometry.circular(12),
+                  borderRadius: BorderRadiusGeometry.circular(16),
                   child: CustomElevatedButton(
                     pixelHeight: 48,
                     elevation: 100,
@@ -115,6 +115,7 @@ class HomeDashboard extends ConsumerWidget {
                               ? (completed! ? "Read next slide" : "Jump right back in")
                               : "Start Reading"),
                       fontSize: 15,
+                      fontWeight: FontWeight.w600,
                       color: theme.onPrimary,
                     ),
                     onClick: () {

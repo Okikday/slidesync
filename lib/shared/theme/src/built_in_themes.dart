@@ -4,7 +4,7 @@ import 'package:slidesync/shared/theme/src/app_theme.dart';
 List<UnifiedThemeModel> defaultUnifiedThemeModels = [
   const UnifiedThemeModel(
     title: 'Default',
-    fontFamily: 'Inter',
+    fontFamily: 'Raleway',
     // Light
     primary: Color(0xFF5000B8),
     secondary: Colors.teal,
@@ -90,7 +90,7 @@ List<UnifiedThemeModel> defaultUnifiedThemeModels = [
 
   const UnifiedThemeModel(
     title: 'Ocean Cream',
-    fontFamily: 'Lato',
+    fontFamily: 'DM Sans',
     // Light
     primary: Color(0xFF4A9B9A),
     secondary: Color(0xFF39ACAB),

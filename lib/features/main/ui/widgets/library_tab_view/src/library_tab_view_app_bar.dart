@@ -9,6 +9,7 @@ import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/library_tab_view_layout_button.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/library_tab_view_search_button.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:soft_edge_blur/soft_edge_blur.dart';
 
 final double libraryAppBarMaxHeight = DeviceUtils.isDesktop() ? 160 : 220;
 const double libraryAppBarMinHeight = kToolbarHeight;
@@ -40,50 +41,75 @@ class LibraryTabViewAppBar extends ConsumerWidget {
               image: Assets.images.zigZagWavy.asImageProvider,
               repeat: ImageRepeat.repeat,
               // fit: BoxFit.cover,
-              opacity: ref.isDarkMode ? 0.02 : 0.01,
+              opacity: ref.isDarkMode ? 0.05 : 0.02,
               colorFilter: ColorFilter.mode(theme.primaryColor, BlendMode.srcIn),
             ),
           ),
         ),
-        title: ClipRRect(
-          child: Stack(
-            alignment: Alignment.bottomRight,
-            children: [
-              const LibraryTabViewHeaderText(),
-              SizedBox(
-                height: kToolbarHeight,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  child: Row(
-                    spacing: 8.0,
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      // const Expanded(child: SizedBox()),
-                      LibraryTabViewSearchButton(backgroundColor: theme.adjustBgAndSecondaryWithLerp),
-                      DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: theme.surface.withValues(alpha: 0.75),
-                          borderRadius: BorderRadius.circular(40),
-                          border: Border.fromBorderSide(BorderSide(color: theme.onBackground.withAlpha(10))),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const LibraryTabViewFilterButton(),
-                            LibraryTabViewLayoutButton(
-                              layoutProvider: LibraryTabProvider.cardViewTypeProvider,
-                              backgroundColor: Colors.transparent,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+        title: Stack(
+          children: [
+            ClipRRect(
+              child: SizedBox(
+                height: 80,
+
+                child: SoftEdgeBlur(
+                  edges: [
+                    EdgeBlur(
+                      type: EdgeType.topEdge,
+                      size: 60,
+                      sigma: 30,
+                      tintColor: theme.background,
+                      controlPoints: [
+                        ControlPoint(position: 0.4, type: ControlPointType.visible),
+                        ControlPoint(position: 1.0, type: ControlPointType.transparent),
+                      ],
+                    ),
+                  ],
+                  child: SizedBox.expand(),
                 ),
               ),
-            ],
-          ),
+            ),
+            ClipRRect(
+              child: Stack(
+                alignment: Alignment.bottomRight,
+                children: [
+                  const LibraryTabViewHeaderText(),
+                  SizedBox(
+                    height: kToolbarHeight,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                      child: Row(
+                        spacing: 8.0,
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          // const Expanded(child: SizedBox()),
+                          LibraryTabViewSearchButton(backgroundColor: theme.adjustBgAndSecondaryWithLerp),
+                          DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: theme.surface.withValues(alpha: 0.75),
+                              borderRadius: BorderRadius.circular(40),
+                              border: Border.fromBorderSide(BorderSide(color: theme.onBackground.withAlpha(10))),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const LibraryTabViewFilterButton(),
+                                LibraryTabViewLayoutButton(
+                                  layoutProvider: LibraryTabProvider.cardViewTypeProvider,
+                                  backgroundColor: Colors.transparent,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -9,7 +9,8 @@ class LoadingLogo extends ConsumerStatefulWidget {
   final double? size;
   final bool rotate;
   final Color? color;
-  const LoadingLogo({super.key, this.size = 40, this.rotate = true, this.color});
+  final bool animate;
+  const LoadingLogo({super.key, this.size = 40, this.rotate = true, this.color, this.animate = true});
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _LoadingLogoState();
@@ -37,7 +38,11 @@ class _LoadingLogoState extends ConsumerState<LoadingLogo> with SingleTickerProv
     anim = Tween<double>(begin: 1, end: 0).animate(_curvedAnim);
     scaleAnim = Tween<double>(begin: 0.9, end: 1).animate(_curvedAnim);
     fadeAnim = Tween<double>(begin: 0.5, end: 1).animate(_curvedAnim);
-    controller.repeat(reverse: true);
+    if (widget.animate) {
+      controller.repeat(reverse: true);
+    } else {
+      controller.forward();
+    }
   }
 
   @override
@@ -48,7 +53,7 @@ class _LoadingLogoState extends ConsumerState<LoadingLogo> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
-    final lottieChild = LottieBuilder.asset(Assets.anims.experimentalLoadingLottie, reverse: true, controller: anim);
+    final lottieChild = LottieBuilder.asset(Assets.anims.experimentalLoadingJson, reverse: true, controller: anim);
     final child = SizedBox.square(
       dimension: widget.size,
       child: FadeTransition(
@@ -61,7 +66,7 @@ class _LoadingLogoState extends ConsumerState<LoadingLogo> with SingleTickerProv
         ),
       ),
     );
-    if (widget.rotate) {
+    if (widget.rotate && widget.animate) {
       return child
           .animate(onPlay: (controller) => controller.repeat())
           .rotate(duration: Duration(milliseconds: 1800), curve: CustomCurves.bouncySpring);

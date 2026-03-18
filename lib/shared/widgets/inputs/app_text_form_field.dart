@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/constants/constants.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/theme/src/app_theme.dart';
 import 'package:slidesync/shared/widgets/layout/app_text.dart';
@@ -156,40 +155,40 @@ class AppTextFormField extends ConsumerWidget {
         errorText: errorText,
         error: error,
         hintStyle: TextStyle(color: theme.supportingText, fontSize: 14),
-        errorStyle: errorStyle ?? textTheme.labelSmall?.copyWith(color: AppColors.red500),
+        errorStyle: errorStyle ?? TextStyle(color: theme.supportingText, fontSize: 11),
         contentPadding: contentPadding ?? const EdgeInsets.all(12),
         prefix: prefix,
         prefixIcon: prefixIcon,
         suffixIcon: suffix,
         filled: true,
         border: OutlineInputBorder(
-          borderSide: BorderSide(color: borderColor ?? AppColors.neutralBlack50, width: 1),
-          borderRadius: BorderRadius.circular(Spacing.xs),
+          borderSide: BorderSide(color: borderColor ?? theme.outline, width: 1),
+          borderRadius: BorderRadius.circular(16),
         ),
         enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: borderColor ?? AppColors.neutralBlack100, width: 1),
-          borderRadius: BorderRadius.circular(Spacing.xs),
+          borderSide: BorderSide(color: borderColor ?? theme.outline, width: 1),
+          borderRadius: BorderRadius.circular(16),
         ),
         focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: AppColors.primaryColorA500, width: 1),
-          borderRadius: BorderRadius.circular(Spacing.xs),
+          borderSide: BorderSide(color: theme.primary, width: 1),
+          borderRadius: BorderRadius.circular(16),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: AppColors.red500, width: 1),
-          borderRadius: BorderRadius.circular(Spacing.xs),
+          borderSide: BorderSide(color: theme.errorColor, width: 1),
+          borderRadius: BorderRadius.circular(16),
         ),
         disabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: AppColors.neutralBlack50, width: 1),
-          borderRadius: BorderRadius.circular(Spacing.xs),
+          borderSide: BorderSide(color: theme.outline.withAlpha(40), width: 1),
+          borderRadius: BorderRadius.circular(16),
         ),
 
         errorBorder: OutlineInputBorder(
-          borderSide: const BorderSide(color: AppColors.red500, width: 1),
-          borderRadius: BorderRadius.circular(Spacing.xs),
+          borderSide: BorderSide(color: theme.errorColor.withAlpha(100), width: 1),
+          borderRadius: BorderRadius.circular(16),
         ),
       ),
       cursorRadius: const Radius.circular(2),
-      cursorColor: AppColors.primaryColorA500,
+      cursorColor: theme.primary,
       contextMenuBuilder: (context, editableTextState) =>
           _DefaultContextMenuBuilder(editableTextState: editableTextState),
     );
@@ -197,7 +196,7 @@ class AppTextFormField extends ConsumerWidget {
 }
 
 /// The default context menu builder for [AppTextFormField]. This is used to ensure that the context menu is consistent across all platforms, and to provide a fallback for platforms that do
-class _DefaultContextMenuBuilder extends StatelessWidget {
+class _DefaultContextMenuBuilder extends ConsumerWidget {
   final EditableTextState editableTextState;
   const _DefaultContextMenuBuilder({required this.editableTextState});
 
@@ -232,13 +231,13 @@ class _DefaultContextMenuBuilder extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final anchors = editableTextState.contextMenuAnchors;
     final buttonItems = editableTextState.contextMenuButtonItems;
     return TextSelectionToolbar(
       anchorAbove: anchors.primaryAnchor,
       anchorBelow: anchors.secondaryAnchor == null ? anchors.primaryAnchor : anchors.secondaryAnchor!,
-      toolbarBuilder: (context, child) => _TextSelectionToolbarContainer(child: child),
+      toolbarBuilder: (context, child) => _TextSelectionToolbarContainer(primaryColor: ref.primary, child: child),
       children: [
         for (int i = 0; i < buttonItems.length; i++)
           TextSelectionToolbarTextButton(
@@ -253,11 +252,11 @@ class _DefaultContextMenuBuilder extends StatelessWidget {
 }
 
 class _TextSelectionToolbarContainer extends StatelessWidget {
-  const _TextSelectionToolbarContainer({required this.child});
-
+  const _TextSelectionToolbarContainer({required this.primaryColor, required this.child});
+  final Color primaryColor;
   final Widget child;
 
-  static Color _getColor(ColorScheme colorScheme) {
+  Color _getColor(ColorScheme colorScheme) {
     final bool isDefaultSurface = switch (colorScheme.brightness) {
       Brightness.light => identical(ThemeData().colorScheme.surface, colorScheme.surface),
       Brightness.dark => identical(ThemeData.dark().colorScheme.surface, colorScheme.surface),
@@ -269,7 +268,7 @@ class _TextSelectionToolbarContainer extends StatelessWidget {
     //   Brightness.light => AppColors.green50,
     //   Brightness.dark => A[],
     // };
-    return AppColors.green50;
+    return primaryColor;
   }
 
   @override
