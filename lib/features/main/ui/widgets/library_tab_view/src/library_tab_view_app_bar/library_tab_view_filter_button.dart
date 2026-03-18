@@ -6,7 +6,7 @@ import 'package:slidesync/features/main/providers/library/library_tab_provider.d
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 
-import 'package:slidesync/shared/widgets/progress_indicator/circular_loading_indicator.dart';
+import 'package:slidesync/shared/widgets/progress_indicator/app_circular_loading_indicator.dart';
 
 class LibraryTabViewFilterButton extends ConsumerWidget {
   const LibraryTabViewFilterButton({super.key});
@@ -87,7 +87,7 @@ class LibraryTabViewFilterButton extends ConsumerWidget {
         );
       },
       error: (e, st) => Icon(Icons.error_rounded),
-      loading: () => CircularLoadingIndicator(),
+      loading: () => AppCircularLoadingIndicator(),
     );
   }
 }

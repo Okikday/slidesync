@@ -13,6 +13,14 @@ extension AppProviderTheme on WidgetRef {
   Color get onBackground => watch(appThemeProvider.select((p) => p.onBackground));
   Color get onPrimary => watch(appThemeProvider.select((p) => p.onPrimary));
   Color get onSecondary => watch(appThemeProvider.select((p) => p.onSecondary));
+  Color get error => watch(appThemeProvider.select((p) => p.error));
+  Color get onError => watch(appThemeProvider.select((p) => p.onError));
+  Color get success => watch(appThemeProvider.select((p) => p.success));
+  Color get onSuccess => watch(appThemeProvider.select((p) => p.onSuccess));
+  Color get outline => watch(appThemeProvider.select((p) => p.outline));
+  Color get shadow => watch(appThemeProvider.select((p) => p.shadow));
+  Color get inverseSurface => watch(appThemeProvider.select((p) => p.inverseSurface));
+  Color get onInverseSurface => watch(appThemeProvider.select((p) => p.onInverseSurface));
 
   // Alt background colors
   Color get altBackgroundPrimary => watch(appThemeProvider.select((p) => p.altBackgroundPrimary));
@@ -37,6 +45,14 @@ extension AppProviderTheme on WidgetRef {
   Color get onAltSurfaceColor => watch(appThemeProvider.select((p) => p.onAltSurfaceColor));
   Color get onPrimaryColor => watch(appThemeProvider.select((p) => p.onPrimaryColor));
   Color get onSecondaryColor => watch(appThemeProvider.select((p) => p.onSecondaryColor));
+  Color get errorColor => watch(appThemeProvider.select((p) => p.errorColor));
+  Color get onErrorColor => watch(appThemeProvider.select((p) => p.onErrorColor));
+  Color get successColor => watch(appThemeProvider.select((p) => p.successColor));
+  Color get onSuccessColor => watch(appThemeProvider.select((p) => p.onSuccessColor));
+  Color get outlineColor => watch(appThemeProvider.select((p) => p.outlineColor));
+  Color get shadowColor => watch(appThemeProvider.select((p) => p.shadowColor));
+  Color get inverseSurfaceColor => watch(appThemeProvider.select((p) => p.inverseSurfaceColor));
+  Color get onInverseSurfaceColor => watch(appThemeProvider.select((p) => p.onInverseSurfaceColor));
 
   // Computed colors
   Color get adjustBgAndPrimaryWithLerp => watch(appThemeProvider.select((p) => p.adjustBgAndPrimaryWithLerp));

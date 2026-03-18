@@ -4,7 +4,7 @@
 // import 'package:flutter/material.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:slidesync/features/auth/presentation/sign_in/sign_in_view.dart';
-// import 'package:slidesync/core/assets/assets.dart';
+// import 'package:slidesync/core/assets/assets.gen.dart';
 // import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 // import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
 

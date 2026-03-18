@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lottie/lottie.dart';
-import 'package:slidesync/core/assets/assets.dart';
+import 'package:slidesync/core/assets/assets.gen.dart';
 import 'package:slidesync/routes/routes.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -30,7 +30,7 @@ class EmptyLibraryView extends ConsumerWidget {
         children: [
           SizedBox.square(
             dimension: context.deviceWidth * 0.5,
-            child: LottieBuilder.asset(Assets.icons.roundedPlayingFace, reverse: true),
+            child: LottieBuilder.asset(Assets.anims.roundedPlayingFace, reverse: true),
           ),
 
           ConstantSizing.columnSpacingExtraLarge,

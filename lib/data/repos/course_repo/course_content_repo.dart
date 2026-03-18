@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/models/course_collection/course_collection.dart';

@@ -10,7 +10,7 @@
 // import 'package:slidesync/core/utils/file_utils.dart';
 // import 'package:slidesync/core/utils/ui_utils.dart';
 // import 'package:slidesync/features/auth/domain/services/user_auth/firebase_google_auth.dart';
-// import 'package:slidesync/core/assets/assets.dart';
+// import 'package:slidesync/core/assets/assets.gen.dart';
 // import 'package:slidesync/shared/helpers/global_nav.dart';
 // import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 // import 'package:slidesync/shared/helpers/extensions/extensions.dart';

@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:slidesync/core/storage/isar_data/isar_schemas.dart';
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 

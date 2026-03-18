@@ -4,7 +4,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
-import 'package:slidesync/core/assets/assets.dart';
+import 'package:slidesync/core/assets/assets.gen.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/main/ui/actions/home/recent_dialog_actions.dart';
 import 'package:slidesync/features/main/providers/home_provider.dart';
@@ -136,7 +136,7 @@ class _RecommendedSectionState extends ConsumerState<RecommendedSection> {
           Center(
             child: SizedBox.square(
               dimension: 100,
-              child: LottieBuilder.asset(Assets.icons.roundedPlayingFace, reverse: true),
+              child: LottieBuilder.asset(Assets.anims.roundedPlayingFace, reverse: true),
             ),
           ),
 

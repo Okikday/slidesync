@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
+import 'package:slidesync/core/assets/assets.dart';
 
 class LoadingLogo extends ConsumerStatefulWidget {
   final double? size;
@@ -47,11 +48,7 @@ class _LoadingLogoState extends ConsumerState<LoadingLogo> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
-    final lottieChild = LottieBuilder.asset(
-      "assets/icons/animated_jsons/experimental_loading.json",
-      reverse: true,
-      controller: anim,
-    );
+    final lottieChild = LottieBuilder.asset(Assets.anims.experimentalLoadingLottie, reverse: true, controller: anim);
     final child = SizedBox.square(
       dimension: widget.size,
       child: FadeTransition(

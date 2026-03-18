@@ -24,7 +24,7 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/widget_helper.dart';
 
 import 'package:slidesync/shared/widgets/dialogs/app_customizable_dialog.dart';
-import 'package:slidesync/shared/widgets/progress_indicator/circular_loading_indicator.dart';
+import 'package:slidesync/shared/widgets/progress_indicator/app_circular_loading_indicator.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 class ContentCard extends ConsumerStatefulWidget {
@@ -599,7 +599,7 @@ class ContentCardPreviewImage extends StatelessWidget {
             fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, false), size: 36),
           );
         } else {
-          return const CircularLoadingIndicator();
+          return const AppCircularLoadingIndicator();
         }
       },
     );

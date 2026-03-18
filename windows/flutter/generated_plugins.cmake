@@ -11,7 +11,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   firebase_storage
   flutter_secure_storage_windows
   irondash_engine_context
-  isar_flutter_libs
+  isar_community_flutter_libs
   pasteboard
   screen_retriever_windows
   share_plus
@@ -21,7 +21,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
 )
 
 list(APPEND FLUTTER_FFI_PLUGIN_LIST
-  pdfrx
+  pdfium_flutter
 )
 
 set(PLUGIN_BUNDLED_LIBRARIES)

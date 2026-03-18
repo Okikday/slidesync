@@ -2,7 +2,7 @@
 // import 'package:flutter/material.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
 // import 'package:iconsax_flutter/iconsax_flutter.dart';
-// import 'package:isar/isar.dart';
+// import 'package:isar_community/isar.dart';
 // import 'package:slidesync/data/models/course_model/course_content.dart';
 // import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 // import 'package:slidesync/features/main/presentation/library/ui/src/library_tab_view_app_bar/build_button.dart';

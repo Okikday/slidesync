@@ -42,7 +42,7 @@ class HomeDashboard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(18),
         border: Border.all(width: 2, color: theme.adjustBgAndPrimaryWithLerpExtra),
         image: DecorationImage(
-          image: Assets.images.bookSparkleTransparentBg.asImageProvider,
+          image: Assets.images.bookSparkleBg.asImageProvider,
           fit: BoxFit.cover,
           opacity: 0.03,
           colorFilter: ColorFilter.mode(theme.primaryColor, BlendMode.srcIn),
@@ -185,7 +185,7 @@ BoxDecoration _dashDecoratedBox(WidgetRef theme) {
     borderRadius: BorderRadius.circular(18),
     border: Border.all(width: 2, color: theme.adjustBgAndPrimaryWithLerpExtra),
     image: DecorationImage(
-      image: Assets.images.bookSparkleTransparentBg.asImageProvider,
+      image: Assets.images.bookSparkleBg.asImageProvider,
       fit: BoxFit.cover,
       opacity: 0.03,
       colorFilter: ColorFilter.mode(theme.primaryColor, BlendMode.srcIn),

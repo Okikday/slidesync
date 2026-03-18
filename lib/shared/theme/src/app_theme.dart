@@ -21,6 +21,14 @@ class UnifiedThemeModel {
   final Color altBackgroundSecondary;
   final Color onPrimary;
   final Color onSecondary;
+  final Color error;
+  final Color onError;
+  final Color success;
+  final Color onSuccess;
+  final Color outline;
+  final Color shadow;
+  final Color inverseSurface;
+  final Color onInverseSurface;
 
   // Dark theme colors
   final Color primaryDark;
@@ -33,12 +41,19 @@ class UnifiedThemeModel {
   final Color altBackgroundSecondaryDark;
   final Color onPrimaryDark;
   final Color onSecondaryDark;
+  final Color errorDark;
+  final Color onErrorDark;
+  final Color successDark;
+  final Color onSuccessDark;
+  final Color outlineDark;
+  final Color shadowDark;
+  final Color inverseSurfaceDark;
+  final Color onInverseSurfaceDark;
 
   const UnifiedThemeModel({
-    // Light theme
-    // Dark theme
     required this.title,
     this.fontFamily,
+    // Light
     required this.primary,
     required this.secondary,
     required this.surface,
@@ -49,6 +64,15 @@ class UnifiedThemeModel {
     required this.altBackgroundSecondary,
     required this.onPrimary,
     required this.onSecondary,
+    required this.error,
+    required this.onError,
+    required this.success,
+    required this.onSuccess,
+    required this.outline,
+    required this.shadow,
+    required this.inverseSurface,
+    required this.onInverseSurface,
+    // Dark
     required this.primaryDark,
     required this.secondaryDark,
     required this.surfaceDark,
@@ -59,6 +83,14 @@ class UnifiedThemeModel {
     required this.altBackgroundSecondaryDark,
     required this.onPrimaryDark,
     required this.onSecondaryDark,
+    required this.errorDark,
+    required this.onErrorDark,
+    required this.successDark,
+    required this.onSuccessDark,
+    required this.outlineDark,
+    required this.shadowDark,
+    required this.inverseSurfaceDark,
+    required this.onInverseSurfaceDark,
   });
 
   UnifiedThemeModel copyWith({
@@ -74,6 +106,14 @@ class UnifiedThemeModel {
     Color? altBackgroundSecondary,
     Color? onPrimary,
     Color? onSecondary,
+    Color? error,
+    Color? onError,
+    Color? success,
+    Color? onSuccess,
+    Color? outline,
+    Color? shadow,
+    Color? inverseSurface,
+    Color? onInverseSurface,
     Color? primaryDark,
     Color? secondaryDark,
     Color? surfaceDark,
@@ -84,6 +124,14 @@ class UnifiedThemeModel {
     Color? altBackgroundSecondaryDark,
     Color? onPrimaryDark,
     Color? onSecondaryDark,
+    Color? errorDark,
+    Color? onErrorDark,
+    Color? successDark,
+    Color? onSuccessDark,
+    Color? outlineDark,
+    Color? shadowDark,
+    Color? inverseSurfaceDark,
+    Color? onInverseSurfaceDark,
   }) {
     return UnifiedThemeModel(
       title: title ?? this.title,
@@ -98,6 +146,14 @@ class UnifiedThemeModel {
       altBackgroundSecondary: altBackgroundSecondary ?? this.altBackgroundSecondary,
       onPrimary: onPrimary ?? this.onPrimary,
       onSecondary: onSecondary ?? this.onSecondary,
+      error: error ?? this.error,
+      onError: onError ?? this.onError,
+      success: success ?? this.success,
+      onSuccess: onSuccess ?? this.onSuccess,
+      outline: outline ?? this.outline,
+      shadow: shadow ?? this.shadow,
+      inverseSurface: inverseSurface ?? this.inverseSurface,
+      onInverseSurface: onInverseSurface ?? this.onInverseSurface,
       primaryDark: primaryDark ?? this.primaryDark,
       secondaryDark: secondaryDark ?? this.secondaryDark,
       surfaceDark: surfaceDark ?? this.surfaceDark,
@@ -108,6 +164,14 @@ class UnifiedThemeModel {
       altBackgroundSecondaryDark: altBackgroundSecondaryDark ?? this.altBackgroundSecondaryDark,
       onPrimaryDark: onPrimaryDark ?? this.onPrimaryDark,
       onSecondaryDark: onSecondaryDark ?? this.onSecondaryDark,
+      errorDark: errorDark ?? this.errorDark,
+      onErrorDark: onErrorDark ?? this.onErrorDark,
+      successDark: successDark ?? this.successDark,
+      onSuccessDark: onSuccessDark ?? this.onSuccessDark,
+      outlineDark: outlineDark ?? this.outlineDark,
+      shadowDark: shadowDark ?? this.shadowDark,
+      inverseSurfaceDark: inverseSurfaceDark ?? this.inverseSurfaceDark,
+      onInverseSurfaceDark: onInverseSurfaceDark ?? this.onInverseSurfaceDark,
     );
   }
 
@@ -125,6 +189,14 @@ class UnifiedThemeModel {
       'altBackgroundSecondary': altBackgroundSecondary.toARGB32(),
       'onPrimary': onPrimary.toARGB32(),
       'onSecondary': onSecondary.toARGB32(),
+      'error': error.toARGB32(),
+      'onError': onError.toARGB32(),
+      'success': success.toARGB32(),
+      'onSuccess': onSuccess.toARGB32(),
+      'outline': outline.toARGB32(),
+      'shadow': shadow.toARGB32(),
+      'inverseSurface': inverseSurface.toARGB32(),
+      'onInverseSurface': onInverseSurface.toARGB32(),
       'primaryDark': primaryDark.toARGB32(),
       'secondaryDark': secondaryDark.toARGB32(),
       'surfaceDark': surfaceDark.toARGB32(),
@@ -135,6 +207,14 @@ class UnifiedThemeModel {
       'altBackgroundSecondaryDark': altBackgroundSecondaryDark.toARGB32(),
       'onPrimaryDark': onPrimaryDark.toARGB32(),
       'onSecondaryDark': onSecondaryDark.toARGB32(),
+      'errorDark': errorDark.toARGB32(),
+      'onErrorDark': onErrorDark.toARGB32(),
+      'successDark': successDark.toARGB32(),
+      'onSuccessDark': onSuccessDark.toARGB32(),
+      'outlineDark': outlineDark.toARGB32(),
+      'shadowDark': shadowDark.toARGB32(),
+      'inverseSurfaceDark': inverseSurfaceDark.toARGB32(),
+      'onInverseSurfaceDark': onInverseSurfaceDark.toARGB32(),
     };
   }
 
@@ -152,6 +232,14 @@ class UnifiedThemeModel {
       altBackgroundSecondary: Color(map['altBackgroundSecondary'] as int),
       onPrimary: Color(map['onPrimary'] as int),
       onSecondary: Color(map['onSecondary'] as int),
+      error: Color(map['error'] as int),
+      onError: Color(map['onError'] as int),
+      success: Color(map['success'] as int),
+      onSuccess: Color(map['onSuccess'] as int),
+      outline: Color(map['outline'] as int),
+      shadow: Color(map['shadow'] as int),
+      inverseSurface: Color(map['inverseSurface'] as int),
+      onInverseSurface: Color(map['onInverseSurface'] as int),
       primaryDark: Color(map['primaryDark'] as int),
       secondaryDark: Color(map['secondaryDark'] as int),
       surfaceDark: Color(map['surfaceDark'] as int),
@@ -162,6 +250,14 @@ class UnifiedThemeModel {
       altBackgroundSecondaryDark: Color(map['altBackgroundSecondaryDark'] as int),
       onPrimaryDark: Color(map['onPrimaryDark'] as int),
       onSecondaryDark: Color(map['onSecondaryDark'] as int),
+      errorDark: Color(map['errorDark'] as int),
+      onErrorDark: Color(map['onErrorDark'] as int),
+      successDark: Color(map['successDark'] as int),
+      onSuccessDark: Color(map['onSuccessDark'] as int),
+      outlineDark: Color(map['outlineDark'] as int),
+      shadowDark: Color(map['shadowDark'] as int),
+      inverseSurfaceDark: Color(map['inverseSurfaceDark'] as int),
+      onInverseSurfaceDark: Color(map['onInverseSurfaceDark'] as int),
     );
   }
 
@@ -171,14 +267,8 @@ class UnifiedThemeModel {
       UnifiedThemeModel.fromMap(json.decode(source) as Map<String, dynamic>);
 
   @override
-  String toString() {
-    return 'UnifiedThemeModel(title: $title, fontFamily: $fontFamily, primary: $primary, secondary: $secondary, surface: $surface, onSurface: $onSurface, background: $background, onBackground: $onBackground, altBackgroundPrimary: $altBackgroundPrimary, altBackgroundSecondary: $altBackgroundSecondary, onPrimary: $onPrimary, onSecondary: $onSecondary, primaryDark: $primaryDark, secondaryDark: $secondaryDark, surfaceDark: $surfaceDark, onSurfaceDark: $onSurfaceDark, backgroundDark: $backgroundDark, onBackgroundDark: $onBackgroundDark, altBackgroundPrimaryDark: $altBackgroundPrimaryDark, altBackgroundSecondaryDark: $altBackgroundSecondaryDark, onPrimaryDark: $onPrimaryDark, onSecondaryDark: $onSecondaryDark)';
-  }
-
-  @override
   bool operator ==(covariant UnifiedThemeModel other) {
     if (identical(this, other)) return true;
-
     return other.title == title &&
         other.fontFamily == fontFamily &&
         other.primary == primary &&
@@ -191,6 +281,14 @@ class UnifiedThemeModel {
         other.altBackgroundSecondary == altBackgroundSecondary &&
         other.onPrimary == onPrimary &&
         other.onSecondary == onSecondary &&
+        other.error == error &&
+        other.onError == onError &&
+        other.success == success &&
+        other.onSuccess == onSuccess &&
+        other.outline == outline &&
+        other.shadow == shadow &&
+        other.inverseSurface == inverseSurface &&
+        other.onInverseSurface == onInverseSurface &&
         other.primaryDark == primaryDark &&
         other.secondaryDark == secondaryDark &&
         other.surfaceDark == surfaceDark &&
@@ -200,7 +298,15 @@ class UnifiedThemeModel {
         other.altBackgroundPrimaryDark == altBackgroundPrimaryDark &&
         other.altBackgroundSecondaryDark == altBackgroundSecondaryDark &&
         other.onPrimaryDark == onPrimaryDark &&
-        other.onSecondaryDark == onSecondaryDark;
+        other.onSecondaryDark == onSecondaryDark &&
+        other.errorDark == errorDark &&
+        other.onErrorDark == onErrorDark &&
+        other.successDark == successDark &&
+        other.onSuccessDark == onSuccessDark &&
+        other.outlineDark == outlineDark &&
+        other.shadowDark == shadowDark &&
+        other.inverseSurfaceDark == inverseSurfaceDark &&
+        other.onInverseSurfaceDark == onInverseSurfaceDark;
   }
 
   @override
@@ -217,6 +323,14 @@ class UnifiedThemeModel {
         altBackgroundSecondary.hashCode ^
         onPrimary.hashCode ^
         onSecondary.hashCode ^
+        error.hashCode ^
+        onError.hashCode ^
+        success.hashCode ^
+        onSuccess.hashCode ^
+        outline.hashCode ^
+        shadow.hashCode ^
+        inverseSurface.hashCode ^
+        onInverseSurface.hashCode ^
         primaryDark.hashCode ^
         secondaryDark.hashCode ^
         surfaceDark.hashCode ^
@@ -226,7 +340,34 @@ class UnifiedThemeModel {
         altBackgroundPrimaryDark.hashCode ^
         altBackgroundSecondaryDark.hashCode ^
         onPrimaryDark.hashCode ^
-        onSecondaryDark.hashCode;
+        onSecondaryDark.hashCode ^
+        errorDark.hashCode ^
+        onErrorDark.hashCode ^
+        successDark.hashCode ^
+        onSuccessDark.hashCode ^
+        outlineDark.hashCode ^
+        shadowDark.hashCode ^
+        inverseSurfaceDark.hashCode ^
+        onInverseSurfaceDark.hashCode;
+  }
+
+  @override
+  String toString() {
+    return 'UnifiedThemeModel(title: $title, fontFamily: $fontFamily, '
+        'primary: $primary, secondary: $secondary, surface: $surface, '
+        'onSurface: $onSurface, background: $background, onBackground: $onBackground, '
+        'altBackgroundPrimary: $altBackgroundPrimary, altBackgroundSecondary: $altBackgroundSecondary, '
+        'onPrimary: $onPrimary, onSecondary: $onSecondary, '
+        'error: $error, onError: $onError, success: $success, onSuccess: $onSuccess, '
+        'outline: $outline, shadow: $shadow, '
+        'inverseSurface: $inverseSurface, onInverseSurface: $onInverseSurface, '
+        'primaryDark: $primaryDark, secondaryDark: $secondaryDark, surfaceDark: $surfaceDark, '
+        'onSurfaceDark: $onSurfaceDark, backgroundDark: $backgroundDark, onBackgroundDark: $onBackgroundDark, '
+        'altBackgroundPrimaryDark: $altBackgroundPrimaryDark, altBackgroundSecondaryDark: $altBackgroundSecondaryDark, '
+        'onPrimaryDark: $onPrimaryDark, onSecondaryDark: $onSecondaryDark, '
+        'errorDark: $errorDark, onErrorDark: $onErrorDark, successDark: $successDark, onSuccessDark: $onSuccessDark, '
+        'outlineDark: $outlineDark, shadowDark: $shadowDark, '
+        'inverseSurfaceDark: $inverseSurfaceDark, onInverseSurfaceDark: $onInverseSurfaceDark)';
   }
 }
 
@@ -245,6 +386,14 @@ class AppTheme {
   final Color altBackgroundSecondary;
   final Color onPrimary;
   final Color onSecondary;
+  final Color error;
+  final Color onError;
+  final Color success;
+  final Color onSuccess;
+  final Color outline;
+  final Color shadow;
+  final Color inverseSurface;
+  final Color onInverseSurface;
 
   const AppTheme({
     required this.title,
@@ -260,9 +409,16 @@ class AppTheme {
     required this.altBackgroundSecondary,
     required this.onPrimary,
     required this.onSecondary,
+    required this.error,
+    required this.onError,
+    required this.success,
+    required this.onSuccess,
+    required this.outline,
+    required this.shadow,
+    required this.inverseSurface,
+    required this.onInverseSurface,
   });
 
-  // Factory constructor to resolve from UnifiedThemeModel
   factory AppTheme.of(UnifiedThemeModel unified, Brightness brightness) {
     if (brightness == Brightness.light) {
       return AppTheme(
@@ -279,6 +435,14 @@ class AppTheme {
         altBackgroundSecondary: unified.altBackgroundSecondary,
         onPrimary: unified.onPrimary,
         onSecondary: unified.onSecondary,
+        error: unified.error,
+        onError: unified.onError,
+        success: unified.success,
+        onSuccess: unified.onSuccess,
+        outline: unified.outline,
+        shadow: unified.shadow,
+        inverseSurface: unified.inverseSurface,
+        onInverseSurface: unified.onInverseSurface,
       );
     } else {
       return AppTheme(
@@ -295,11 +459,20 @@ class AppTheme {
         altBackgroundSecondary: unified.altBackgroundSecondaryDark,
         onPrimary: unified.onPrimaryDark,
         onSecondary: unified.onSecondaryDark,
+        error: unified.errorDark,
+        onError: unified.onErrorDark,
+        success: unified.successDark,
+        onSuccess: unified.onSuccessDark,
+        outline: unified.outlineDark,
+        shadow: unified.shadowDark,
+        inverseSurface: unified.inverseSurfaceDark,
+        onInverseSurface: unified.onInverseSurfaceDark,
       );
     }
   }
 
   ThemeData get themeData => resolveThemeData(this);
+
   // Supporting text color - lighter version of onSurface for subtitles, captions, etc.
   Color get supportingText =>
       brightness == Brightness.light ? onSurface.withValues(alpha: 0.6) : onSurface.withValues(alpha: 0.7);
@@ -323,6 +496,14 @@ class AppTheme {
   Color get onAltSurfaceColor => onSurface;
   Color get onPrimaryColor => onPrimary;
   Color get onSecondaryColor => onSecondary;
+  Color get errorColor => error;
+  Color get onErrorColor => onError;
+  Color get successColor => success;
+  Color get onSuccessColor => onSuccess;
+  Color get outlineColor => outline;
+  Color get shadowColor => shadow;
+  Color get inverseSurfaceColor => inverseSurface;
+  Color get onInverseSurfaceColor => onInverseSurface;
 
   bool get isDarkTheme => brightness == Brightness.dark;
 
@@ -380,6 +561,14 @@ class AppTheme {
     Color? altBackgroundSecondary,
     Color? onPrimary,
     Color? onSecondary,
+    Color? error,
+    Color? onError,
+    Color? success,
+    Color? onSuccess,
+    Color? outline,
+    Color? shadow,
+    Color? inverseSurface,
+    Color? onInverseSurface,
   }) {
     return AppTheme(
       title: title ?? this.title,
@@ -395,13 +584,20 @@ class AppTheme {
       altBackgroundSecondary: altBackgroundSecondary ?? this.altBackgroundSecondary,
       onPrimary: onPrimary ?? this.onPrimary,
       onSecondary: onSecondary ?? this.onSecondary,
+      error: error ?? this.error,
+      onError: onError ?? this.onError,
+      success: success ?? this.success,
+      onSuccess: onSuccess ?? this.onSuccess,
+      outline: outline ?? this.outline,
+      shadow: shadow ?? this.shadow,
+      inverseSurface: inverseSurface ?? this.inverseSurface,
+      onInverseSurface: onInverseSurface ?? this.onInverseSurface,
     );
   }
 
   @override
   bool operator ==(covariant AppTheme other) {
     if (identical(this, other)) return true;
-
     return other.title == title &&
         other.fontFamily == fontFamily &&
         other.brightness == brightness &&
@@ -414,7 +610,15 @@ class AppTheme {
         other.altBackgroundPrimary == altBackgroundPrimary &&
         other.altBackgroundSecondary == altBackgroundSecondary &&
         other.onPrimary == onPrimary &&
-        other.onSecondary == onSecondary;
+        other.onSecondary == onSecondary &&
+        other.error == error &&
+        other.onError == onError &&
+        other.success == success &&
+        other.onSuccess == onSuccess &&
+        other.outline == outline &&
+        other.shadow == shadow &&
+        other.inverseSurface == inverseSurface &&
+        other.onInverseSurface == onInverseSurface;
   }
 
   @override
@@ -431,11 +635,26 @@ class AppTheme {
         altBackgroundPrimary.hashCode ^
         altBackgroundSecondary.hashCode ^
         onPrimary.hashCode ^
-        onSecondary.hashCode;
+        onSecondary.hashCode ^
+        error.hashCode ^
+        onError.hashCode ^
+        success.hashCode ^
+        onSuccess.hashCode ^
+        outline.hashCode ^
+        shadow.hashCode ^
+        inverseSurface.hashCode ^
+        onInverseSurface.hashCode;
   }
 
   @override
   String toString() {
-    return 'AppTheme(title: $title, fontFamily: $fontFamily, brightness: $brightness, primary: $primary, secondary: $secondary, surface: $surface, onSurface: $onSurface, background: $background, onBackground: $onBackground, altBackgroundPrimary: $altBackgroundPrimary, altBackgroundSecondary: $altBackgroundSecondary, onPrimary: $onPrimary, onSecondary: $onSecondary)';
+    return 'AppTheme(title: $title, fontFamily: $fontFamily, brightness: $brightness, '
+        'primary: $primary, secondary: $secondary, surface: $surface, '
+        'onSurface: $onSurface, background: $background, onBackground: $onBackground, '
+        'altBackgroundPrimary: $altBackgroundPrimary, altBackgroundSecondary: $altBackgroundSecondary, '
+        'onPrimary: $onPrimary, onSecondary: $onSecondary, '
+        'error: $error, onError: $onError, success: $success, onSuccess: $onSuccess, '
+        'outline: $outline, shadow: $shadow, '
+        'inverseSurface: $inverseSurface, onInverseSurface: $onInverseSurface)';
   }
 }

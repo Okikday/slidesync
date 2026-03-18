@@ -26,7 +26,8 @@ final mainRoute = GoRoute(
         GoRoute(
           name: Routes.recentsView.name,
           path: Routes.recentsView.subPath,
-          pageBuilder: (context, state) => defaultTransition(state.pageKey, child: const RecentsView()),
+          // pageBuilder: (context, state) => defaultTransition(state.pageKey, child: const RecentsView()),
+          builder: (context, state) => const RecentsView(),
         ),
       ],
     ),

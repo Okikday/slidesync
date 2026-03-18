@@ -4,7 +4,7 @@
 // import 'package:flutter/material.dart';
 // import 'package:flutter_animate/flutter_animate.dart';
 // import 'package:flutter_riverpod/flutter_riverpod.dart';
-// import 'package:slidesync/core/assets/assets.dart';
+// import 'package:slidesync/core/assets/assets.gen.dart';
 // import 'package:slidesync/features/auth/presentation/onboarding/onboarding_1.dart';
 
 // import 'package:slidesync/shared/helpers/extensions/extensions.dart';

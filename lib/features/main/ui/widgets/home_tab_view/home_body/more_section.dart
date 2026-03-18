@@ -73,7 +73,7 @@ class MoreSectionOption extends ConsumerWidget {
           borderRadius: BorderRadius.circular(36),
           border: Border.fromBorderSide(BorderSide(color: theme.backgroundSupportingText.withAlpha(10))),
           image: DecorationImage(
-            image: Assets.images.zigzagWavy.asImageProvider,
+            image: Assets.images.zigZagWavy.asImageProvider,
             fit: BoxFit.cover,
             opacity: 0.01,
             colorFilter: ColorFilter.mode(theme.primaryColor, BlendMode.srcIn),

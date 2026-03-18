@@ -15,7 +15,7 @@ import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_customizable_dialog.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
-import 'package:slidesync/shared/widgets/progress_indicator/circular_loading_indicator.dart';
+import 'package:slidesync/shared/widgets/progress_indicator/app_circular_loading_indicator.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class CollectionMaterialsAppBar extends ConsumerWidget {
@@ -127,7 +127,7 @@ class CollectionMaterialsAppBar extends ConsumerWidget {
                                     );
                                   },
                                   error: (e, st) => Icon(Icons.error_rounded),
-                                  loading: () => const CircularLoadingIndicator(),
+                                  loading: () => const AppCircularLoadingIndicator(),
                                 );
                               },
                             ),

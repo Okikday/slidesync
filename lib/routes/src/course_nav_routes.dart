@@ -24,18 +24,21 @@ final courseNavRoutes = [
       GoRoute(
         name: Routes.courseMaterials.name,
         path: Routes.courseMaterials.subPath,
-        pageBuilder: (context, state) => defaultTransition(
-          state.pageKey,
-          outgoing: TransitionType.fade,
-          child: CollectionMaterialsView(collection: state.extra as CourseCollection, isFullScreen: false),
-        ),
+        // pageBuilder: (context, state) => defaultTransition(
+        //   state.pageKey,
+        //   outgoing: TransitionType.fade,
+        //   child: CollectionMaterialsView(collection: state.extra as CourseCollection, isFullScreen: false),
+        // ),
+        builder: (context, state) =>
+            CollectionMaterialsView(collection: state.extra as CourseCollection, isFullScreen: false),
       ),
     ],
   ),
   GoRoute(
     name: Routes.collectionsView.name,
     path: Routes.collectionsView.path,
-    pageBuilder: (context, state) =>
-        defaultTransition(state.pageKey, child: CollectionsView(courseId: (state.extra as String))),
+    // pageBuilder: (context, state) =>
+    //     defaultTransition(state.pageKey, child: CollectionsView(courseId: (state.extra as String))),
+    builder: (context, state) => CollectionsView(courseId: (state.extra as String)),
   ),
 ];

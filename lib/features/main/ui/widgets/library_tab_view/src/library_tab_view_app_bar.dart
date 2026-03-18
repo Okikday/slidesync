@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/core/assets/assets.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/main/providers/library/library_tab_provider.dart';
@@ -7,7 +8,6 @@ import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/library_tab_view_header_text.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/library_tab_view_layout_button.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/library_tab_view_search_button.dart';
-import 'package:slidesync/core/assets/assets.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 final double libraryAppBarMaxHeight = DeviceUtils.isDesktop() ? 160 : 220;
@@ -37,7 +37,7 @@ class LibraryTabViewAppBar extends ConsumerWidget {
             // color: theme.background.withAlpha(200),
             borderRadius: BorderRadius.circular(24),
             image: DecorationImage(
-              image: Assets.images.zigzagWavy.asImageProvider,
+              image: Assets.images.zigZagWavy.asImageProvider,
               repeat: ImageRepeat.repeat,
               // fit: BoxFit.cover,
               opacity: ref.isDarkMode ? 0.02 : 0.01,

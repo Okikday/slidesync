@@ -3,7 +3,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:path/path.dart' as p;
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
@@ -74,10 +74,7 @@ class ShareContentActions {
         .findAll();
     final Set<(File file, String fileName)> dataSet = contents.map((e) {
       final filename = p.setExtension(e.title, p.extension(e.path.filePath));
-      return (
-        File(e.path.filePath),
-        filename.isEmpty ? ((e.metadata.originalFileName) ?? "Unknown file" ): filename ,
-      );
+      return (File(e.path.filePath), filename.isEmpty ? ((e.metadata.originalFileName) ?? "Unknown file") : filename);
     }).toSet();
     final files = dataSet.map((e) => e.$1).toList();
     final fileNames = dataSet.map((e) => e.$2).toList();

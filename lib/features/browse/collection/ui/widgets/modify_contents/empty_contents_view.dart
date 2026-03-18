@@ -2,7 +2,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
-import 'package:slidesync/core/assets/assets.dart';
+import 'package:slidesync/core/assets/assets.gen.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class EmptyContentsView extends ConsumerWidget {
@@ -18,7 +18,7 @@ class EmptyContentsView extends ConsumerWidget {
           physics: const NeverScrollableScrollPhysics(),
           children: [
             ConstantSizing.columnSpacing(context.deviceHeight * 0.2),
-            SizedBox.square(dimension: 200, child: LottieBuilder.asset(Assets.icons.roundedPlayingFace, reverse: true)),
+            SizedBox.square(dimension: 200, child: LottieBuilder.asset(Assets.anims.roundedPlayingFace, reverse: true)),
 
             ConstantSizing.columnSpacingExtraLarge,
             Center(

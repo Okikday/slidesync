@@ -11,25 +11,31 @@ final contentViewerRoutes = [
   GoRoute(
     name: Routes.pdfDocumentViewer.name,
     path: Routes.pdfDocumentViewer.path,
-    pageBuilder: (context, state) =>
-        defaultTransition(state.pageKey, child: PdfDocViewer(content: state.extra as CourseContent)),
+    // pageBuilder: (context, state) =>
+    //     defaultTransition(state.pageKey, child: PdfDocViewer(content: state.extra as CourseContent)),
+    builder: (context, state) => PdfDocViewer(content: state.extra as CourseContent),
   ),
   GoRoute(
     name: Routes.imageViewer.name,
     path: Routes.imageViewer.path,
-    pageBuilder: (context, state) =>
-        defaultTransition(state.pageKey, child: ImageViewer(content: state.extra as CourseContent)),
+    // pageBuilder: (context, state) =>
+    //     defaultTransition(state.pageKey, child: ImageViewer(content: state.extra as CourseContent)),
+    builder: (context, state) => ImageViewer(content: state.extra as CourseContent),
   ),
 
   GoRoute(
     name: Routes.driveLinkViewer.name,
     path: Routes.driveLinkViewer.path,
-    pageBuilder: (context, state) {
+    // pageBuilder: (context, state) {
+    //   final content = (state.extra as CourseContent);
+    //   return defaultTransition(
+    //     state.pageKey,
+    //     child: DriveListingView(initialFolderId: content.path.urlPath, collectionId: content.parentId),
+    //   );
+    // },
+    builder: (context, state) {
       final content = (state.extra as CourseContent);
-      return defaultTransition(
-        state.pageKey,
-        child: DriveListingView(initialFolderId: content.path.urlPath, collectionId: content.parentId),
-      );
+      return DriveListingView(initialFolderId: content.path.urlPath, collectionId: content.parentId);
     },
   ),
 ];

@@ -71,6 +71,14 @@ ThemeData resolveThemeData(AppTheme theme) {
     colorScheme: cs,
     brightness: theme.brightness,
 
+    pageTransitionsTheme: PageTransitionsTheme(
+      builders: {
+        TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+        TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+        TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
+      },
+    ),
+
     // Use background for scaffold, surface for cards
     scaffoldBackgroundColor: theme.background,
     canvasColor: theme.surface,

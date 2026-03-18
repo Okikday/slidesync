@@ -1,7 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:slidesync/data/models/course/course_metadata.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/shared/helpers/formatter.dart';

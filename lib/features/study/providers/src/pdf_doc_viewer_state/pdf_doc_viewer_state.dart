@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:slidesync/core/base/use_value_notifier.dart';

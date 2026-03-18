@@ -1,7 +1,7 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/models/course_collection/course_collection.dart';
 import 'package:slidesync/data/models/course_content/course_content.dart';
