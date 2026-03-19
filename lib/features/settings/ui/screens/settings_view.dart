@@ -14,6 +14,7 @@ import 'package:slidesync/features/settings/providers/settings_provider.dart';
 import 'package:slidesync/features/settings/ui/components/settings_appearance_dialog.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 
 class SettingsView extends ConsumerWidget {
@@ -26,7 +27,9 @@ class SettingsView extends ConsumerWidget {
 
     return AnnotatedRegion(
       value: UiUtils.getSystemUiOverlayStyle(Colors.transparent, context.isDarkMode),
-      child: Scaffold(
+      child: AppScaffold(
+        title: "",
+        extendBodyBehindAppBar: true,
         appBar: AppBarContainer(child: AppBarContainerChild(context.isDarkMode, title: "Settings")),
 
         body: Consumer(

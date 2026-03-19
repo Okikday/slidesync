@@ -21,6 +21,7 @@ import 'package:slidesync/features/browse/shared/usecases/types/store_content_ar
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/theme/src/app_theme.dart';
+import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:uuid/uuid.dart';
 import 'package:saf_stream/saf_stream.dart';
 import 'package:saf_util/saf_util.dart';
@@ -720,7 +721,8 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
   Widget build(BuildContext context) {
     final theme = ref.theme;
 
-    return Scaffold(
+    return AppScaffold(
+      title: "",
       backgroundColor: theme.background,
       appBar: AppBar(
         backgroundColor: theme.surface,

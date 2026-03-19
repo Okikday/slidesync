@@ -7,6 +7,7 @@ import 'package:slidesync/features/main/ui/widgets/library_tab_view/library_floa
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_drawer.dart';
 import 'package:slidesync/features/main/ui/screens/library_tab_view.dart';
+import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:slidesync/shared/widgets/state/absorber.dart';
 
 import 'home_tab_view.dart';
@@ -48,7 +49,8 @@ class _MainViewState extends ConsumerState<MainView> {
     return PopScope(
       canPop: false,
       child: MainViewAnnotatedRegion(
-        child: Scaffold(
+        child: AppScaffold(
+          title: "",
           extendBody: true,
           extendBodyBehindAppBar: true,
 

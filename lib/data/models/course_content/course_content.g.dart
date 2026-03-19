@@ -241,6 +241,7 @@ const _CourseContentcourseContentTypeEnumValueMap = {
   'link': 3,
   'note': 4,
   'reference': 5,
+  'group': 6,
 };
 const _CourseContentcourseContentTypeValueEnumMap = {
   0: CourseContentType.unknown,
@@ -249,6 +250,7 @@ const _CourseContentcourseContentTypeValueEnumMap = {
   3: CourseContentType.link,
   4: CourseContentType.note,
   5: CourseContentType.reference,
+  6: CourseContentType.group,
 };
 
 Id _courseContentGetId(CourseContent object) {

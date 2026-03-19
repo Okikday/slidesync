@@ -5,6 +5,7 @@ import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_drawer.dar
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/library_floating_action_button.dart';
 import 'package:slidesync/features/main/ui/screens/library_tab_view.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 
 class DesktopShellView extends ConsumerWidget {
   final Widget child;
@@ -19,7 +20,8 @@ class DesktopShellView extends ConsumerWidget {
 
     return PopScope(
       canPop: false,
-      child: Scaffold(
+      child: AppScaffold(
+        title: "",
         drawer: const HomeDrawer(),
         body: Row(
           children: [

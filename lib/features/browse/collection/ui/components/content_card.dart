@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/data/models/course_content/course_content.dart';
@@ -184,7 +185,10 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                                 onTap: () {
                                   UiUtils.showCustomDialog(context, child: ContentCardContextMenu(content: content));
                                 },
-                                child: SizedBox.square(dimension: 36, child: Icon(Iconsax.more_copy)),
+                                child: SizedBox.square(
+                                  dimension: 36,
+                                  child: Icon(HugeIconsSolid.moreHorizontalCircle01),
+                                ),
                               )
                             else
                               () {

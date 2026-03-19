@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,14 +29,24 @@ class BuildButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    return CustomElevatedButton(
-      contentPadding: EdgeInsets.all(8),
-      pixelHeight: size?.height ?? (DeviceUtils.isDesktop() ? 44 : 48),
-      pixelWidth: size?.width ?? (DeviceUtils.isDesktop() ? 44 : 48),
-      backgroundColor: backgroundColor ?? theme.altBackgroundPrimary,
-      shape: shape ?? const CircleBorder(),
-      onClick: onTap,
-      child: child ?? Icon(iconData, size: 20, color: iconColor ?? theme.supportingText),
+
+    return ClipOval(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+        child: CustomElevatedButton(
+          contentPadding: EdgeInsets.zero,
+          pixelHeight: size?.height ?? (DeviceUtils.isDesktop() ? 44 : 48),
+          pixelWidth: size?.width ?? (DeviceUtils.isDesktop() ? 44 : 48),
+          backgroundColor: theme.altBackgroundPrimary.withValues(alpha: 0.8),
+          shape:
+              shape ??
+              CircleBorder(
+                side: BorderSide(color: theme.onSurface.withValues(alpha: .1)),
+              ), //backgroundColor?.withValues(alpha: 0.8) ??
+          onClick: onTap,
+          child: child ?? Icon(iconData, size: 20, color: iconColor ?? theme.supportingText),
+        ),
+      ),
     );
   }
 }

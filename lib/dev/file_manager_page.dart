@@ -1,10 +1,14 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:path/path.dart' as p;
 import 'package:intl/intl.dart';
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/widgets/app_bar/app_bar_container_child.dart';
+import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 
 class FileManagerPage extends ConsumerStatefulWidget {
   const FileManagerPage({super.key});
@@ -76,23 +80,20 @@ class _FileManagerPageState extends ConsumerState<FileManagerPage> {
         final parent = _currentDir!.parent;
         _listDir(parent);
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text('File Manager: $dirName', style: TextStyle(color: theme.onBackground)),
-          leading: IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.refresh),
+      child: AppScaffold(
+        title: "",
+        extendBodyBehindAppBar: true,
+        appBar: AppBarContainer(
+          child: AppBarContainerChild(
+            context.isDarkMode,
+            title: "File Manager",
+            trailing: IconButton(
+              icon: Icon(HugeIconsSolid.refresh),
               onPressed: () {
                 if (_currentDir != null) _listDir(_currentDir!);
               },
             ),
-          ],
+          ),
         ),
         body: _loading
             ? Center(child: CircularProgressIndicator())

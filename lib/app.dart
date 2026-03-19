@@ -167,12 +167,9 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   Future<void> _showSavingBottomSheet(List<String> files) async {
     UiUtils.showFlushBar(context, msg: "Received contents!");
     GlobalNav.withContextAsync<bool>((context) async {
-      final pushRes = await Navigator.of(context).push(
-        PageAnimation.pageRouteBuilder(
-          MoveOrStoreContentBottomSheet.store(files: files),
-          type: TransitionType.rightToLeftWithFade,
-        ),
-      );
+      final pushRes = await Navigator.of(
+        context,
+      ).push(MaterialPageRoute(builder: (context) => MoveOrStoreContentBottomSheet.store(files: files)));
       if (pushRes is bool) return pushRes;
       return false;
     }).then((res) {

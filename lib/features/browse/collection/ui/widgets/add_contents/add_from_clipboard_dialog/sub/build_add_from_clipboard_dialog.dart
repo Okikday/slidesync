@@ -85,7 +85,7 @@
 //   final Widget child;
 //   final void Function([bool inInitPostFrame]) closeOverlay;
 
-//   const _DialogScaffold({required this.child, required this.closeOverlay});
+//   const _DialogAppScaffold( title: "",{required this.child, required this.closeOverlay});
 
 //   @override
 //   Widget build(BuildContext context, WidgetRef ref) {
@@ -137,7 +137,7 @@
 //   @override
 //   Widget build(BuildContext context, WidgetRef ref) {
 //     final theme = ref;
-//     return _DialogScaffold(
+//     return _DialogAppScaffold( title: "",
 //       closeOverlay: closeOverlay,
 //       child: Column(
 //         mainAxisSize: MainAxisSize.min,

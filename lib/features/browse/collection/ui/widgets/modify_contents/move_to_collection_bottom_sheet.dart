@@ -23,6 +23,7 @@ import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 
@@ -96,7 +97,9 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
       onPopInvokedWithResult: (didPop, result) {
         context.pop(false);
       },
-      child: Scaffold(
+      child: AppScaffold(
+        title: "",
+        extendBodyBehindAppBar: true,
         appBar: AppBarContainer(child: AppBarContainerChild(context.isDarkMode, title: "Save file")),
         body: AnimatedPadding(
           duration: Durations.medium1,

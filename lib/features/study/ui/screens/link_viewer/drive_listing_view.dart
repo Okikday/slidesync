@@ -10,6 +10,7 @@ import 'package:slidesync/features/study/logic/services/drive_browser.dart';
 import 'package:slidesync/features/study/logic/services/drive_result_extractor.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
+import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 
 /// Navigation history provider
 final navigationHistoryProvider = StateProvider.autoDispose<List<String>>((ref) => []);
@@ -72,7 +73,8 @@ class DriveListingView extends ConsumerWidget {
           _navigateBack(ref);
         }
       },
-      child: Scaffold(
+      child: AppScaffold(
+        title: "",
         backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
           elevation: 0,

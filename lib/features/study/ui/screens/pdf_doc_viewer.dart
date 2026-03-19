@@ -10,6 +10,7 @@ import 'package:slidesync/features/study/ui/widgets/pdf_doc_viewer/pdf_doc_app_b
 import 'package:slidesync/features/study/ui/widgets/pdf_doc_viewer/pdf_floating_action_menu.dart';
 import 'package:slidesync/features/study/ui/widgets/pdf_doc_viewer/pdf_viewer_widget.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 
 class PdfDocViewer extends ConsumerWidget {
   final CourseContent content;
@@ -22,7 +23,11 @@ class PdfDocViewer extends ConsumerWidget {
       // ignore: void_checks
       initialData: AnnotatedRegion(
         value: UiUtils.getSystemUiOverlayStyle(context.scaffoldBackgroundColor, context.isDarkMode),
-        child: Scaffold(floatingActionButton: PdfFloatingActionMenu(contentId: content.contentId)),
+        child: AppScaffold(
+          title: "",
+          floatingActionButton: PdfFloatingActionMenu(contentId: content.contentId),
+          body: SizedBox(),
+        ),
       ),
       builder: (context, asyncSnapshot) {
         return Consumer(
@@ -45,7 +50,8 @@ class PdfDocViewer extends ConsumerWidget {
           },
           child: AnnotatedRegion(
             value: UiUtils.getSystemUiOverlayStyle(context.scaffoldBackgroundColor, context.isDarkMode),
-            child: Scaffold(
+            child: AppScaffold(
+              title: "",
               floatingActionButton: PdfFloatingActionMenu(contentId: content.contentId),
 
               body: Stack(

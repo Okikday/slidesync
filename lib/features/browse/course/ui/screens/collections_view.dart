@@ -7,6 +7,8 @@ import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart'
 import 'package:slidesync/shared/global/providers/course_providers.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/add_collection_action_button.dart';
+import 'package:slidesync/shared/widgets/layout/app_padding.dart';
+import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import '../widgets/collections_view/list_collections_section.dart';
 import '../../../collection/ui/widgets/collections_search_bar.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -22,10 +24,10 @@ class CollectionsView extends ConsumerStatefulWidget {
   const CollectionsView({super.key, required this.courseId});
 
   @override
-  ConsumerState createState() => _ModifyCollectionsViewState();
+  ConsumerState createState() => _CollectionsViewState();
 }
 
-class _ModifyCollectionsViewState extends ConsumerState<CollectionsView> {
+class _CollectionsViewState extends ConsumerState<CollectionsView> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(ModifyCollectionProvider.state);
@@ -33,7 +35,9 @@ class _ModifyCollectionsViewState extends ConsumerState<CollectionsView> {
 
     return AnnotatedRegion(
       value: UiUtils.getSystemUiOverlayStyle(context.scaffoldBackgroundColor, context.isDarkMode),
-      child: Scaffold(
+      child: AppScaffold(
+        title: "",
+        extendBodyBehindAppBar: true,
         appBar: AppBarContainer(
           child: Consumer(
             builder: (context, ref, child) {
@@ -81,6 +85,7 @@ class _ModifyCollectionsViewState extends ConsumerState<CollectionsView> {
         body: SmoothCustomScrollView(
           controller: state.scrollController,
           slivers: [
+            SliverToBoxAdapter(child: TopPadding(withHeight: 60)),
             Consumer(
               builder: (context, ref, child) {
                 final dataN = ref.watch(courseProvider.select((c) => c.whenData((cb) => cb.collections)));

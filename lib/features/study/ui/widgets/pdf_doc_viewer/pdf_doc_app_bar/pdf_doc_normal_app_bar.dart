@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
@@ -63,7 +64,7 @@ class PdfDocNormalAppBar extends ConsumerWidget {
                           actions: [
                             PopupMenuAction(
                               title: "Go to last page",
-                              iconData: Iconsax.play,
+                              iconData: HugeIconsSolid.playCircle,
                               onTap: () async {
                                 final p = ref.read(PdfDocViewerProvider.state(contentId));
                                 p.controller.goToPage(pageNumber: p.initialPage ?? 1);
@@ -71,7 +72,7 @@ class PdfDocNormalAppBar extends ConsumerWidget {
                             ),
                             PopupMenuAction(
                               title: "Share",
-                              iconData: Icons.share_rounded,
+                              iconData: HugeIconsSolid.share01,
                               onTap: () async {
                                 ShareContentActions.shareFileContent(context, contentId);
                               },
@@ -87,7 +88,7 @@ class PdfDocNormalAppBar extends ConsumerWidget {
                               final isDarkMode = (ref.watch(PdfDocViewerProvider.ispdfViewerInDarkMode).value ?? false);
                               return PopupMenuAction(
                                 title: isDarkMode ? "Normal mode(Light)" : "Inverted mode(Dark)",
-                                iconData: isDarkMode ? Iconsax.sun_1 : Iconsax.moon,
+                                iconData: isDarkMode ? HugeIconsSolid.sun01 : HugeIconsSolid.moon,
                                 onTap: () {
                                   ref.read(PdfDocViewerProvider.ispdfViewerInDarkMode.notifier).toggle();
                                 },

@@ -7,7 +7,6 @@ import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/features/browse/collection/providers/collection_materials_provider.dart';
 import 'package:slidesync/features/browse/collection/ui/components/content_card.dart';
-import 'package:slidesync/features/browse/collection/ui/components/material_list_card.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/modify_contents/empty_contents_view.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';

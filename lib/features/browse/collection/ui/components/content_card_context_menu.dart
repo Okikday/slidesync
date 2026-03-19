@@ -2,6 +2,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
@@ -92,7 +93,7 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                         children: [
                           _buildLeadingMenuOption(
                             "Open",
-                            iconData: PhosphorIcons.playCircle(PhosphorIconsStyle.bold),
+                            iconData: HugeIconsStroke.playCircle,
                             onTap: () {
                               UiUtils.hideDialog(context);
                               ContentViewGateActions.redirectToViewer(ref, widget.content, openOutsideApp: false);
@@ -100,7 +101,7 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                           ),
                           _buildLeadingMenuOption(
                             "Launch",
-                            iconData: PhosphorIcons.fileArrowUp(PhosphorIconsStyle.bold),
+                            iconData: HugeIconsStroke.sendToMobile,
                             onTap: () {
                               UiUtils.hideDialog(context);
                               ContentViewGateActions.redirectToViewer(ref, widget.content, openOutsideApp: true);
@@ -108,7 +109,7 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                           ),
                           _buildLeadingMenuOption(
                             "Share",
-                            iconData: PhosphorIcons.share(PhosphorIconsStyle.bold),
+                            iconData: HugeIconsStroke.share01,
                             onTap: () {
                               UiUtils.hideDialog(context);
                               ShareContentActions.shareContent(context, widget.content.contentId);
@@ -125,7 +126,7 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                         children: [
                           BuildPlainActionButton(
                             title: "Select",
-                            icon: Icon(PhosphorIcons.checkCircle(PhosphorIconsStyle.bold), color: theme.onSurface),
+                            icon: Icon(HugeIconsStroke.checkmarkCircle01, color: theme.onSurface),
                             onTap: () {
                               CollectionMaterialsProvider.modState.read(ref).selectContent(widget.content);
                               UiUtils.hideDialog(context);
@@ -134,7 +135,7 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                           divider,
                           BuildPlainActionButton(
                             title: "Rename",
-                            icon: Icon(PhosphorIcons.cursorText(PhosphorIconsStyle.bold), color: theme.onSurface),
+                            icon: Icon(HugeIconsStroke.cursorEdit01, color: theme.onSurface),
                             onTap: () {
                               UiUtils.hideDialog(context);
                               ModifyContentCardActions.onRenameContent(context, widget.content);
@@ -144,7 +145,7 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                           BuildPlainActionButton(
                             title: "Delete",
                             textStyle: TextStyle(fontSize: 14, color: Colors.red),
-                            icon: Icon(Iconsax.trash, color: Colors.red.withAlpha(200)),
+                            icon: Icon(HugeIconsSolid.delete02, color: Colors.red.withAlpha(200)),
                             onTap: () {
                               UiUtils.hideDialog(context);
                               UiUtils.showCustomDialog(

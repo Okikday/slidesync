@@ -19,7 +19,7 @@ class ModifyContentCardActions {
             hintText: "Input a title different from previous one",
             defaultText: content.title,
             onSubmitted: (String text) async {
-              context.pop();
+              // context.pop();
               await ModifyContentsAction().onRenameContent(content, newTitle: text.trim());
             },
           ).animate().fadeIn().scaleY(

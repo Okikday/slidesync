@@ -24,7 +24,7 @@
 //     final theme = ref;
 //     return AnnotatedRegion(
 //       value: UiUtils.getSystemUiOverlayStyle(theme.background, context.isDarkMode),
-//       child: Scaffold(
+//       child: AppScaffold( title: "",
 //         body: Stack(
 //           fit: StackFit.expand,
 //           children: [

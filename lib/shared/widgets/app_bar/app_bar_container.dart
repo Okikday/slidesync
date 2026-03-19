@@ -1,12 +1,11 @@
-import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:soft_edge_blur/soft_edge_blur.dart';
 
 export 'app_bar_container_child.dart';
 
-class AppBarContainer extends ConsumerWidget implements PreferredSizeWidget {
+class AppBarContainer extends ConsumerWidget {
   final Color? scaffoldBgColor;
   final EdgeInsets? padding;
   final Widget child;
@@ -37,12 +36,6 @@ class AppBarContainer extends ConsumerWidget implements PreferredSizeWidget {
       child: child,
     );
   }
-
-  @override
-  Size get preferredSize {
-    if (deviceWidth != null) return Size(deviceWidth!, appBarHeight ?? kToolbarHeight + 8);
-    return Size.fromHeight(appBarHeight ?? kToolbarHeight + 8);
-  }
 }
 
 class _AppBarContainerWidget extends ConsumerWidget {
@@ -62,40 +55,43 @@ class _AppBarContainerWidget extends ConsumerWidget {
     this.scaffoldBgColor,
   });
 
-  EdgeInsets? _resolvePadding(double topPadding) {
-    if (padding == null) {
-      return EdgeInsets.only(
-        left: deviceWidth > deviceHeight ? (DeviceUtils.isDesktop() ? 12 : 24) : 12,
-        right: deviceWidth > deviceHeight ? 24 : 12,
-        top: topPadding + 4,
-        bottom: 4,
-      );
-    } else if (padding == EdgeInsets.zero) {
-      return EdgeInsets.only(top: topPadding + 4, bottom: 4);
-    } else {
-      return padding;
-    }
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final double topPadding = MediaQuery.paddingOf(context).top;
-    return AnimatedContainer(
-      curve: CustomCurves.decelerate,
-      duration: Durations.medium2,
-      width: deviceWidth,
-      clipBehavior: Clip.hardEdge,
-      height: (appBarHeight ?? (kToolbarHeight + 8 + topPadding)),
-      decoration: BoxDecoration(
-        color: scaffoldBgColor ?? context.scaffoldBackgroundColor,
-        // border: Border(
-        //   bottom: BorderSide(
-        //     color: scaffoldBgColor ?? (context.scaffoldBackgroundColor).lightenColor(ref.isDarkMode ? 0.15 : 0.85),
-        //   ),
-        // ),
-      ),
-      padding: _resolvePadding(topPadding),
-      child: child,
+    final topPadding = context.topPadding;
+    return Column(
+      children: [
+        SizedBox(
+          height: topPadding,
+          child: ColoredBox(color: scaffoldBgColor ?? context.scaffoldBackgroundColor, child: SizedBox.expand()),
+        ),
+        Stack(
+          children: [
+            ClipRRect(
+              child: SizedBox(
+                height: 72,
+
+                child: SoftEdgeBlur(
+                  edges: [
+                    EdgeBlur(
+                      type: EdgeType.topEdge,
+                      size: 72,
+                      sigma: 30,
+                      tintColor: scaffoldBgColor ?? context.scaffoldBackgroundColor,
+                      controlPoints: [
+                        ControlPoint(position: 0.4, type: ControlPointType.visible),
+                        ControlPoint(position: 1.0, type: ControlPointType.transparent),
+                      ],
+                    ),
+                  ],
+                  child: SizedBox.expand(),
+                ),
+              ),
+            ),
+
+            child,
+          ],
+        ),
+      ],
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/shared/global/notifiers/common/card_view_type_notifier.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
@@ -22,7 +23,7 @@ class LibraryTabViewLayoutButton extends ConsumerWidget {
             ref.read(layoutProvider.notifier).toggle();
           },
           backgroundColor: backgroundColor,
-          iconData: isGrid ? Iconsax.menu : Icons.list_rounded,
+          iconData: isGrid ? HugeIconsStroke.grid02 : HugeIconsStroke.menu02,
         );
       },
       error: (e, st) => Icon(Icons.error_rounded),

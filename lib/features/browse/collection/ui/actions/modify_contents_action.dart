@@ -5,6 +5,7 @@ import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/modify_content_uc.dart';
 import 'package:slidesync/routes/app_router.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 
 class ModifyContentsAction {
   Future<String?> onDeleteContent(String contentId, {int? courseDbId}) async {
@@ -28,12 +29,13 @@ class ModifyContentsAction {
   Future<String?> onRenameContent(CourseContent content, {required String newTitle}) async {
     if (newTitle.isEmpty || newTitle == content.title || newTitle.length < 2) return "Try inputting a valid title!";
     if (rootNavigatorKey.currentContext!.mounted) {
-      UiUtils.showLoadingDialog(rootNavigatorKey.currentContext!, message: "Renaming content...");
+      UiUtils.showLoadingDialog(rootNavigatorKey.currentContext!, canPop: false, message: "Renaming content...");
     }
     final Result<String?> renameOutcome = await Result.tryRunAsync(() async {
       return await ModifyContentUc().renameContent(content, newTitle);
     });
     Navigator.pop(rootNavigatorKey.currentContext!);
+    GlobalNav.popGlobal();
 
     if (renameOutcome.isSuccess) {
       return renameOutcome.data;

@@ -11,6 +11,7 @@ import 'package:slidesync/features/quiz/ui/widgets/question_section.dart';
 import 'package:slidesync/features/quiz/ui/widgets/show_answer_button.dart';
 import 'package:slidesync/features/quiz/ui/widgets/timer_widget.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 
 class QuizScreen extends ConsumerWidget {
   final QuizScreenConfig config;
@@ -24,7 +25,8 @@ class QuizScreen extends ConsumerWidget {
 
     log("question: ${config.questions}");
 
-    return Scaffold(
+    return AppScaffold(
+      title: "",
       backgroundColor: theme.background,
       appBar: AppBar(
         backgroundColor: theme.surface,

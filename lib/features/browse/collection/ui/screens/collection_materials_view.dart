@@ -14,6 +14,7 @@ import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/layout/app_padding.dart';
+import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 
 class CollectionMaterialsView extends ConsumerStatefulWidget {
@@ -63,7 +64,8 @@ class _CollectionMaterialsViewState extends ConsumerState<CollectionMaterialsVie
     // );
     return AnnotatedRegion(
       value: UiUtils.getSystemUiOverlayStyle(context.scaffoldBackgroundColor, context.isDarkMode),
-      child: Scaffold(
+      child: AppScaffold(
+        title: "",
         appBar: AppBarContainer(
           child: AppBarContainerChild(
             context.isDarkMode,
@@ -74,6 +76,7 @@ class _CollectionMaterialsViewState extends ConsumerState<CollectionMaterialsVie
             ),
           ),
         ),
+        extendBodyBehindAppBar: true,
 
         floatingActionButton: AddContentFAB(
           collection: widget.collection,
@@ -95,13 +98,11 @@ class _CollectionMaterialsViewState extends ConsumerState<CollectionMaterialsVie
                 collectionLength: 5,
                 onMoveContents: (contents) async {
                   await Navigator.of(context).push(
-                    PageAnimation.pageRouteBuilder(
-                      MoveOrStoreContentBottomSheet.move(contents: contents),
-                      type: TransitionType.rightToLeftWithFade,
-                    ),
+                    MaterialPageRoute(builder: (context) => MoveOrStoreContentBottomSheet.move(contents: contents)),
                   );
                 },
               ),
+              SliverToBoxAdapter(child: TopPadding(withHeight: 72)),
               MaterialsView(collectionId: widget.collection.collectionId, isFullScreen: widget.isFullScreen),
               SliverToBoxAdapter(child: BottomPadding(withHeight: 64)),
             ],

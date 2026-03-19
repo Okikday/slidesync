@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 
 class DesktopHomeView extends ConsumerWidget {
   const DesktopHomeView({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
+    return AppScaffold(
+      title: "",
       body: Row(
         children: [
           ColoredBox(

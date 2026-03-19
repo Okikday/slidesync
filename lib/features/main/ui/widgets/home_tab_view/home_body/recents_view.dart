@@ -16,6 +16,7 @@ import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 
 class RecentsView extends ConsumerWidget {
@@ -29,7 +30,8 @@ class RecentsView extends ConsumerWidget {
     );
     return AnnotatedRegion(
       value: UiUtils.getSystemUiOverlayStyle(theme.scaffoldBackgroundColor, theme.isDarkMode),
-      child: Scaffold(
+      child: AppScaffold(
+        title: "",
         appBar: AppBarContainer(child: AppBarContainerChild(theme.isDarkMode, title: "Recent reads")),
         body: asyncProgressTrackValues.when(
           data: (data) {

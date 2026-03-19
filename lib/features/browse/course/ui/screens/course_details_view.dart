@@ -10,6 +10,7 @@ import 'package:slidesync/features/browse/course/providers/course_details_provid
 import 'package:slidesync/features/browse/course/ui/widgets/course_details_view/course_details_collection_section.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/course_details_view/course_details_header/course_details_header.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 import 'package:slidesync/shared/widgets/state/absorber.dart';
 
@@ -27,7 +28,8 @@ class CourseDetailsView extends ConsumerWidget {
         context.isDarkMode,
         statusBarColor: Colors.transparent,
       ),
-      child: Scaffold(
+      child: AppScaffold(
+        title: "",
         extendBody: true,
         body: NotificationListener(
           onNotification: (notification) {

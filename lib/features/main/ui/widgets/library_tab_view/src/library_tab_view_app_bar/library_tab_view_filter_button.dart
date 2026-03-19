@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/features/main/providers/library/library_tab_provider.dart';
@@ -59,8 +60,9 @@ class LibraryTabViewFilterButton extends ConsumerWidget {
         final isSortOptionNone = currSortOption == CourseSortOption.dateModifiedDesc;
 
         return AppPopupMenuButton(
-          icon: isSortOptionNone ? Iconsax.filter : Iconsax.filter_copy,
+          icon: isSortOptionNone ? HugeIconsSolid.filter : HugeIconsStroke.filter,
           iconColor: theme.onPrimary,
+          iconSize: 20,
           buttonStyle: ButtonStyle(backgroundColor: WidgetStatePropertyAll(theme.primary)),
           actions: [
             for (final item in plainList)

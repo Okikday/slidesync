@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 
 class AppScaffold extends ConsumerWidget {
   final bool extendBodyBehindAppBar;
@@ -12,7 +13,7 @@ class AppScaffold extends ConsumerWidget {
   final Color? appBarBackgroundColor;
   final bool? resizeToAvoidBottomInset;
   final Widget? appBar;
-  final EdgeInsets Function(EdgeInsets apply)? appBarPadding;
+  // final EdgeInsets Function(EdgeInsets apply)? appBarPadding;
 
   final String title;
   final String? subtitle;
@@ -30,17 +31,18 @@ class AppScaffold extends ConsumerWidget {
   final void Function(bool, dynamic)? onPopInvokedWithResult;
   final EdgeInsets? viewPadding;
   final void Function()? onBackButtonPressed;
+  final Widget? drawer;
   final Widget body;
 
   const AppScaffold({
     super.key,
     this.extendBodyBehindAppBar = false,
-    this.appBarPadding,
+    // this.appBarPadding,
     this.extendBody = false,
     this.backgroundColor,
     this.resizeToAvoidBottomInset,
     this.appBar,
-    this.applyDefaultAppBar = true,
+    this.applyDefaultAppBar = false,
     this.floatingActionButton,
     this.bottomNavigationBar,
     this.systemUiOverlayStyle,
@@ -55,6 +57,7 @@ class AppScaffold extends ConsumerWidget {
     required this.body,
     this.onBackButtonPressed,
     this.appBarBackgroundColor,
+    this.drawer,
   });
 
   Widget _defaultAppBar(WidgetRef ref) => AppBarContainer(
@@ -68,7 +71,6 @@ class AppScaffold extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final defaultPadding = context.padding.copyWith(left: 20, right: 20);
     return PopScope(
       canPop: canPop,
       onPopInvokedWithResult: onPopInvokedWithResult,
@@ -88,36 +90,22 @@ class AppScaffold extends ConsumerWidget {
           resizeToAvoidBottomInset: resizeToAvoidBottomInset,
           floatingActionButton: floatingActionButton,
           bottomNavigationBar: bottomNavigationBar,
+          drawer: drawer,
           body: applyDefaultAppBar || appBar != null
               ? (extendBodyBehindAppBar
                     ? Stack(
                         fit: StackFit.expand,
                         children: [
-                          Padding(padding: viewPadding ?? defaultPadding.copyWith(bottom: 24), child: body),
-                          Positioned(
-                            top: 24,
-                            left: 0,
-                            right: 0,
-                            child: Padding(
-                              padding: appBarPadding != null
-                                  ? appBarPadding!(defaultPadding.copyWith(top: 24))
-                                  : defaultPadding.copyWith(top: 24),
-                              child: appBar ?? _defaultAppBar(ref),
-                            ),
-                          ),
+                          Padding(padding: viewPadding ?? EdgeInsets.zero, child: body),
+                          appBar ?? _defaultAppBar(ref),
                         ],
                       )
                     : Column(
                         mainAxisSize: MainAxisSize.max,
                         children: [
-                          Padding(
-                            padding: appBarPadding != null
-                                ? appBarPadding!(defaultPadding.copyWith(top: defaultPadding.top + 24, bottom: 24))
-                                : defaultPadding.copyWith(top: defaultPadding.top + 24, bottom: 24),
-                            child: appBar ?? _defaultAppBar(ref),
-                          ),
+                          appBar ?? _defaultAppBar(ref),
                           Flexible(
-                            child: Padding(padding: viewPadding ?? defaultPadding.copyWith(top: 0), child: body),
+                            child: Padding(padding: viewPadding ?? EdgeInsets.zero, child: body),
                           ),
                         ],
                       ))

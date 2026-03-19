@@ -10,6 +10,7 @@ import 'package:slidesync/features/quiz/providers/quiz_screen_provider.dart';
 import 'package:slidesync/features/quiz/ui/screens/quiz_screen.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/app_circular_loading_indicator.dart';
 
 class QuizListing extends ConsumerStatefulWidget {
@@ -30,7 +31,8 @@ class _QuizListingState extends ConsumerState<QuizListing> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppScaffold(
+      title: "",
       appBar: AppBarContainer(child: AppBarContainerChild(context.isDarkMode, title: "Questions available")),
       body: FutureBuilder(
         future: allQuestionsFuture,

@@ -160,7 +160,7 @@
 //   Widget build(BuildContext context) {
 //     final Color current = primaryColor;
 
-//     return Scaffold(
+//     return AppScaffold( title: "",
 //       appBar: AppBar(
 //         title: const Text('Theme Generator'),
 //         backgroundColor: current,

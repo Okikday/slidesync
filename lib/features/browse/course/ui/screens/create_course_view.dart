@@ -12,6 +12,7 @@ import 'package:slidesync/features/browse/course/ui/widgets/create_course/input_
 import 'package:slidesync/features/browse/course/ui/widgets/create_course/input_course_title_field.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 
 class CreateCourseView extends ConsumerStatefulWidget {
   const CreateCourseView({super.key});
@@ -25,7 +26,8 @@ class _CreateCourseViewState extends ConsumerState<CreateCourseView> with Single
   Widget build(BuildContext context) {
     return AnnotatedRegion(
       value: UiUtils.getSystemUiOverlayStyle(Colors.transparent, context.isDarkMode),
-      child: Scaffold(
+      child: AppScaffold(
+        title: "",
         appBar: AppBarContainer(child: AppBarContainerChild(context.isDarkMode, title: "Create Course")),
 
         body: CreateCourseOuterSection(),

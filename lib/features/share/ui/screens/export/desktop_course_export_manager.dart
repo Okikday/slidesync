@@ -17,6 +17,7 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/theme/src/app_theme.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 
 /// Export progress state
@@ -359,8 +360,10 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
     final theme = ref.theme;
     final isDarkMode = theme.isDarkTheme;
 
-    return Scaffold(
+    return AppScaffold(
+      title: "",
       backgroundColor: theme.background,
+      extendBodyBehindAppBar: true,
       appBar: AppBarContainer(
         child: AppBarContainerChild(isDarkMode, title: "Export Course", subtitle: widget.course.courseTitle),
       ),

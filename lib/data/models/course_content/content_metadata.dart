@@ -8,6 +8,7 @@ class ContentMetadata {
   final FileDetails? thumbnails;
   final ContentOrigin contentOrigin;
   final String? groupId;
+  final String? author;
   final Map<String, dynamic>? fields; // For any additional metadata
 
   ContentMetadata({
@@ -15,6 +16,7 @@ class ContentMetadata {
     this.thumbnails,
     this.contentOrigin = ContentOrigin.none,
     this.groupId,
+    this.author,
     this.fields,
   });
 
@@ -31,6 +33,7 @@ class ContentMetadata {
       if (thumbnails != null) 'thumbnails': thumbnails?.toJson(),
       'contentOrigin': contentOrigin.name,
       if (groupId != null) 'groupId': groupId,
+      if (author != null) 'author': author,
       if (fields != null) ...fields!,
     };
   }
@@ -47,7 +50,7 @@ class ContentMetadata {
   // Create from Map
   factory ContentMetadata.fromMap(Map<String, dynamic> map) {
     // Extract known fields
-    final knownFields = {'originalFileName', 'thumbnails', 'contentOrigin', 'groupId'};
+    final knownFields = {'originalFileName', 'thumbnails', 'contentOrigin', 'groupId', 'author'};
     final fields = Map<String, dynamic>.from(map)..removeWhere((key, value) => knownFields.contains(key));
 
     return ContentMetadata(
@@ -58,24 +61,33 @@ class ContentMetadata {
         orElse: () => ContentOrigin.none,
       ),
       groupId: map['groupId'] as String?,
+      author: map['author'] as String?,
       fields: fields.isNotEmpty ? fields : null,
     );
   }
 
   // Create a copy with updated fields
-  ContentMetadata copyWith({String? originalFileName, FileDetails? thumbnails, Map<String, dynamic>? fields}) {
+  ContentMetadata copyWith({
+    String? originalFileName,
+    FileDetails? thumbnails,
+    ContentOrigin? contentOrigin,
+    String? groupId,
+    String? author,
+    Map<String, dynamic>? fields,
+  }) {
     return ContentMetadata(
       originalFileName: originalFileName ?? this.originalFileName,
       thumbnails: thumbnails ?? this.thumbnails,
-      contentOrigin: contentOrigin,
-      groupId: groupId,
+      contentOrigin: contentOrigin ?? this.contentOrigin,
+      groupId: groupId ?? this.groupId,
+      author: author ?? this.author,
       fields: fields ?? this.fields,
     );
   }
 
   @override
   String toString() {
-    return 'ContentMetadata(originalFileName: $originalFileName, thumbnails: $thumbnails, contentOrigin: $contentOrigin, groupId: $groupId, fields: $fields)';
+    return 'ContentMetadata(originalFileName: $originalFileName, thumbnails: $thumbnails, contentOrigin: $contentOrigin, groupId: $groupId, author: $author, fields: $fields)';
   }
 
   @override
@@ -87,6 +99,7 @@ class ContentMetadata {
         other.thumbnails == thumbnails &&
         other.contentOrigin == contentOrigin &&
         other.groupId == groupId &&
+        other.author == author &&
         _mapsEqual(other.fields, fields);
   }
 
@@ -96,6 +109,7 @@ class ContentMetadata {
         thumbnails.hashCode ^
         contentOrigin.hashCode ^
         groupId.hashCode ^
+        author.hashCode ^
         fields.hashCode;
   }
 

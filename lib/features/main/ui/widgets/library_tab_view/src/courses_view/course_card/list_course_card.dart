@@ -176,10 +176,11 @@ class _ListCourseCardIconState extends ConsumerState<ListCourseCardIcon> {
                       child: Builder(
                         builder: (context) {
                           final text = widget.course.courseCode.isEmpty
-                              ? widget.course.courseTitle
-                                    .splitMapJoin(" ", onNonMatch: (str) => str.isNotEmpty ? str[0] : "")
-                                    .toUpperCase()
-                              : widget.course.courseCode.substring(0, widget.course.courseCode.length.clamp(0, 7));
+                              ? ""
+                              // widget.course.courseTitle
+                              //       .splitMapJoin(" ", onNonMatch: (str) => str.isNotEmpty ? str[0] : "")
+                              //       .toUpperCase()
+                              : widget.course.courseCode.substring(0, widget.course.courseCode.length.clamp(0, 8));
 
                           return CustomText(
                             text,
@@ -213,7 +214,7 @@ class _ListCourseCardIconState extends ConsumerState<ListCourseCardIcon> {
                           ? progress?.clamp(0.01, 1.0) ?? 0.01
                           : progress,
                       strokeCap: StrokeCap.round,
-                      color: widget.course.metadata.color ?? theme.primaryColor,
+                      color: theme.primaryColor,
                       backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.4),
                     ),
 
@@ -305,86 +306,86 @@ class ListCourseCardTitleColumn extends ConsumerWidget {
   }
 }
 
-class ListCourseCardProgressIndicator extends ConsumerStatefulWidget {
-  const ListCourseCardProgressIndicator({super.key, required this.courseId});
+// class ListCourseCardProgressIndicator extends ConsumerStatefulWidget {
+//   const ListCourseCardProgressIndicator({super.key, required this.courseId});
 
-  final String courseId;
+//   final String courseId;
 
-  @override
-  ConsumerState<ListCourseCardProgressIndicator> createState() => _ListCourseCardProgressIndicatorState();
-}
+//   @override
+//   ConsumerState<ListCourseCardProgressIndicator> createState() => _ListCourseCardProgressIndicatorState();
+// }
 
-class _ListCourseCardProgressIndicatorState extends ConsumerState<ListCourseCardProgressIndicator> {
-  late Stream<CourseTrack?> _courseTrackStream;
+// class _ListCourseCardProgressIndicatorState extends ConsumerState<ListCourseCardProgressIndicator> {
+//   late Stream<CourseTrack?> _courseTrackStream;
 
-  @override
-  void initState() {
-    super.initState();
-    _courseTrackStream = CourseTrackRepo.watchByCourseId(widget.courseId);
-  }
+//   @override
+//   void initState() {
+//     super.initState();
+//     _courseTrackStream = CourseTrackRepo.watchByCourseId(widget.courseId);
+//   }
 
-  @override
-  void didUpdateWidget(covariant ListCourseCardProgressIndicator oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.courseId != widget.courseId) {
-      setState(() {
-        _courseTrackStream = CourseTrackRepo.watchByCourseId(widget.courseId);
-      });
-    }
-  }
+//   @override
+//   void didUpdateWidget(covariant ListCourseCardProgressIndicator oldWidget) {
+//     super.didUpdateWidget(oldWidget);
+//     if (oldWidget.courseId != widget.courseId) {
+//       setState(() {
+//         _courseTrackStream = CourseTrackRepo.watchByCourseId(widget.courseId);
+//       });
+//     }
+//   }
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = ref;
-    return StreamBuilder<CourseTrack?>(
-      stream: _courseTrackStream,
-      builder: (context, asyncSnapshot) {
-        if (asyncSnapshot.connectionState == ConnectionState.active) {
-          final progress = asyncSnapshot.data?.progress;
-          return SizedBox.square(
-            dimension: 40,
-            child: Stack(
-              children: [
-                CustomElevatedButton(
-                  pixelWidth: 46,
-                  pixelHeight: 46,
-                  contentPadding: EdgeInsets.zero,
-                  shape: CircleBorder(),
-                  backgroundColor: theme.altBackgroundPrimary,
-                  overlayColor: theme.altBackgroundSecondary,
-                  onClick: () {},
-                  child: progress == null || (progress <= 0.0)
-                      ? Icon(Iconsax.play, color: theme.onBackground)
-                      : CustomText(
-                          "${((progress.clamp(0, 1.0)) * 100.0).toInt()}%",
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: theme.supportingText.withValues(alpha: 0.5),
-                        ),
-                ),
-                Positioned.fill(
-                  child: IgnorePointer(
-                    child: CircularProgressIndicator(
-                      value: progress?.clamp(0.01, 1.0) ?? 0.01,
-                      strokeCap: StrokeCap.round,
-                      color: theme.primaryColor,
-                      backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.4),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-        return SizedBox.square(
-          dimension: 30,
-          child: CircularProgressIndicator(
-            strokeCap: StrokeCap.round,
-            color: theme.primaryColor,
-            backgroundColor: theme.altBackgroundPrimary.withValues(alpha: 0.4),
-          ),
-        );
-      },
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     final theme = ref;
+//     return StreamBuilder<CourseTrack?>(
+//       stream: _courseTrackStream,
+//       builder: (context, asyncSnapshot) {
+//         if (asyncSnapshot.connectionState == ConnectionState.active) {
+//           final progress = asyncSnapshot.data?.progress;
+//           return SizedBox.square(
+//             dimension: 40,
+//             child: Stack(
+//               children: [
+//                 CustomElevatedButton(
+//                   pixelWidth: 46,
+//                   pixelHeight: 46,
+//                   contentPadding: EdgeInsets.zero,
+//                   shape: CircleBorder(),
+//                   backgroundColor: theme.altBackgroundPrimary,
+//                   overlayColor: theme.altBackgroundSecondary,
+//                   onClick: () {},
+//                   child: progress == null || (progress <= 0.0)
+//                       ? Icon(Iconsax.play, color: theme.onBackground)
+//                       : CustomText(
+//                           "${((progress.clamp(0, 1.0)) * 100.0).toInt()}%",
+//                           fontSize: 11,
+//                           fontWeight: FontWeight.bold,
+//                           color: theme.supportingText.withValues(alpha: 0.5),
+//                         ),
+//                 ),
+//                 Positioned.fill(
+//                   child: IgnorePointer(
+//                     child: CircularProgressIndicator(
+//                       value: progress?.clamp(0.01, 1.0) ?? 0.01,
+//                       strokeCap: StrokeCap.round,
+//                       color: theme.primaryColor,
+//                       backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.4),
+//                     ),
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           );
+//         }
+//         return SizedBox.square(
+//           dimension: 30,
+//           child: CircularProgressIndicator(
+//             strokeCap: StrokeCap.round,
+//             color: theme.primaryColor,
+//             backgroundColor: theme.altBackgroundPrimary.withValues(alpha: 0.4),
+//           ),
+//         );
+//       },
+//     );
+//   }
+// }

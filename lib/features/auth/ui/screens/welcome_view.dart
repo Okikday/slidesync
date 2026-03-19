@@ -17,7 +17,7 @@
 //   @override
 //   Widget build(BuildContext context, WidgetRef ref) {
 //     final theme = ref;
-//     return Scaffold(
+//     return AppScaffold( title: "",
 //       body: Padding(
 //         padding: const EdgeInsets.symmetric(horizontal: 8),
 //         child: Stack(

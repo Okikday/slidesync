@@ -16,7 +16,7 @@
 //     final shapeRadius = context.deviceWidth < context.deviceHeight ? context.deviceWidth : context.deviceHeight;
 //     const Color primaryPurple = Color(0xFF7D19FF);
 //     final theme = ref;
-//     return Scaffold(
+//     return AppScaffold( title: "",
 //       backgroundColor: Color(0xFFE1E1E0),
 //       body: Stack(
 //         fit: StackFit.expand,

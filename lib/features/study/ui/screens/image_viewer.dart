@@ -22,6 +22,7 @@ import 'package:slidesync/shared/global/providers/collections_providers.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
+import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 
 class ImageViewer extends ConsumerStatefulWidget {
   final CourseContent content;
@@ -35,11 +36,13 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
   late final Future<CourseCollection> collectionFuture;
   final ValueNotifier<Provider<ImageViewerState>?> imageViewerStateProvider = ValueNotifier(null);
   final ValueNotifier<int> positionNotifier = ValueNotifier(0);
-  final pageController = PageController();
+  late final PageController pageController;
+  bool _isInitialJumpDone = false;
 
   @override
   void initState() {
     super.initState();
+    pageController = PageController();
     collectionFuture = CourseCollectionRepo.getById(widget.content.parentId).then((c) => c ?? defaultCollection);
   }
 
@@ -57,134 +60,145 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
 
     return AnnotatedRegion(
       value: UiUtils.getSystemUiOverlayStyle(theme.background, theme.isDarkMode),
-      child: Scaffold(
-        body: Stack(
-          fit: StackFit.expand,
-          children: [
-            FutureBuilder(
-              future: collectionFuture,
-              builder: (context, snapshot) {
-                log("Load data!");
-                if (!snapshot.hasData || snapshot.data == null) return const SizedBox();
-                final contents = snapshot.data!.contents.where((c) => c.courseContentType == CourseContentType.image);
+      child: AppScaffold(
+        title: "",
+        body: FutureBuilder<CourseCollection>(
+          future: collectionFuture,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
 
-                return PageView.builder(
-                  itemCount: contents.length,
-                  controller: pageController,
-                  onPageChanged: (value) => positionNotifier.value = value,
-                  itemBuilder: (context, index) {
+            final contents = snapshot.data!.contents
+                .where((c) => c.courseContentType == CourseContentType.image)
+                .toList()
+                .reversed
+                .toList();
+
+            if (!_isInitialJumpDone && contents.isNotEmpty) {
+              final startIndex = contents.indexWhere((c) => c.contentId == widget.content.contentId);
+              final index = startIndex != -1 ? startIndex : 0;
+
+              _isInitialJumpDone = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                positionNotifier.value = index;
+                imageViewerStateProvider.value = ImageViewerProvider.state(contents[index].contentId);
+                if (pageController.hasClients) pageController.jumpToPage(index);
+              });
+            }
+
+            return Stack(
+              fit: StackFit.expand,
+              children: [
+                // 1. Image View Layer
+                Screenshot(
+                  controller: PdfDocViewerState.screenshotController,
+                  child: PageView.builder(
+                    itemCount: contents.length,
+                    controller: pageController,
+                    onPageChanged: (value) {
+                      positionNotifier.value = value;
+                      imageViewerStateProvider.value = ImageViewerProvider.state(contents[value].contentId);
+                    },
+                    itemBuilder: (context, index) {
+                      final currContent = contents[index];
+                      final stateProvider = ImageViewerProvider.state(currContent.contentId);
+                      final state = ref.read(stateProvider);
+
+                      return FutureBuilder(
+                        key: ValueKey(currContent.contentId),
+                        future: state.isInitialized,
+                        builder: (context, asyncSnapshot) {
+                          if (asyncSnapshot.connectionState != ConnectionState.done) {
+                            return const Center(child: CircularProgressIndicator());
+                          }
+
+                          return ValueListenableBuilder(
+                            valueListenable: ref.watch(stateProvider.select((s) => s.isAppBarVisibleNotifier)),
+                            builder: (context, isAppBarVisible, _) {
+                              return _PhotoViewPadding(
+                                isAppBarVisible: isAppBarVisible,
+                                child: PhotoView(
+                                  enablePanAlways: true,
+                                  maxScale: 10.0,
+                                  filterQuality: FilterQuality.high,
+                                  minScale: PhotoViewComputedScale.contained,
+                                  controller: ref.watch(stateProvider.select((s) => s.controller)),
+                                  imageProvider: currContent.path.fileDetails.containsFilePath
+                                      ? FileImage(File(currContent.path.filePath))
+                                      : NetworkImage(currContent.path.urlPath),
+                                  onTapUp: (context, details, controllerValue) {
+                                    ref.read(stateProvider).toggleAppBarVisible();
+                                  },
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+
+                // 2. AppBar Layer (Synced with current position)
+                ValueListenableBuilder(
+                  valueListenable: imageViewerStateProvider,
+                  builder: (context, activeProvider, _) {
+                    if (activeProvider == null) {
+                      return AppBarContainer(child: AppBarContainerChild(theme.isDarkMode, title: "Loading..."));
+                    }
+
                     return ValueListenableBuilder(
-                      valueListenable: positionNotifier,
-                      builder: (context, position, child) {
-                        final currContent = contents.elementAt(position);
-                        Future.microtask(
-                          () => imageViewerStateProvider.value = ImageViewerProvider.state(currContent.contentId),
-                        );
-
+                      valueListenable: ref.watch(activeProvider.select((s) => s.isAppBarVisibleNotifier)),
+                      builder: (context, isVisible, _) {
                         return ValueListenableBuilder(
-                          valueListenable: imageViewerStateProvider,
-                          builder: (context, imageViewerStateProvider, child) {
-                            if (imageViewerStateProvider == null) return const SizedBox();
-                            return FutureBuilder(
-                              key: ValueKey(currContent.contentId),
-                              future: ref.watch(imageViewerStateProvider.select((s) => s.isInitialized)),
-                              builder: (context, asyncSnapshot) {
-                                if (asyncSnapshot.connectionState != ConnectionState.done) return const SizedBox();
-                                return Screenshot(
-                                  controller: PdfDocViewerState.screenshotController,
-                                  child: ValueListenableBuilder(
-                                    valueListenable: ref.watch(
-                                      imageViewerStateProvider.select((s) => s.isAppBarVisibleNotifier),
+                          valueListenable: positionNotifier,
+                          builder: (context, pos, _) {
+                            final currentItem = contents[pos];
+
+                            return AppBarContainer(
+                              appBarHeight: isVisible ? null : 0,
+                              child: AppBarContainerChild(
+                                theme.isDarkMode,
+                                title: currentItem.title,
+                                trailing: AppPopupMenuButton(
+                                  actions: [
+                                    PopupMenuAction(
+                                      title: "Rotate Image",
+                                      iconData: Iconsax.d_rotate,
+                                      onTap: () => ref.read(activeProvider).setRotation(),
                                     ),
-                                    builder: (context, isAppBarVisible, child) {
-                                      return _PhotoViewPadding(isAppBarVisible: isAppBarVisible, child: child!);
-                                    },
-                                    child: PhotoView(
-                                      enablePanAlways: true,
-                                      maxScale: 10.0,
-                                      onTapUp: (context, details, controllerValue) {
-                                        ref.read(imageViewerStateProvider).toggleAppBarVisible();
+                                    PopupMenuAction(
+                                      title: "Share",
+                                      iconData: Icons.share_rounded,
+                                      onTap: () => ShareContentActions.shareFileContent(context, currentItem.contentId),
+                                    ),
+                                    PopupMenuAction(
+                                      title: "Invoke Study AI",
+                                      iconData: Iconsax.magic_star_copy,
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          PageAnimation.pageRouteBuilder(
+                                            AskAiScreen(contentId: currentItem.contentId),
+                                            type: TransitionType.none,
+                                            opaque: false,
+                                            barrierColor: theme.background.withAlpha(180),
+                                          ),
+                                        );
                                       },
-                                      controller: ref.watch(imageViewerStateProvider.select((s) => s.controller)),
-                                      filterQuality: FilterQuality.high,
-                                      imageProvider: widget.content.path.fileDetails.containsFilePath
-                                          ? FileImage(File(widget.content.path.filePath))
-                                          : NetworkImage(widget.content.path.urlPath),
-                                      minScale: PhotoViewComputedScale.contained,
                                     ),
-                                  ),
-                                );
-                              },
+                                  ],
+                                ),
+                              ),
                             );
                           },
                         );
                       },
                     );
                   },
-                );
-              },
-            ),
-
-            Positioned(
-              top: 0,
-              child: ValueListenableBuilder(
-                valueListenable: imageViewerStateProvider,
-                builder: (context, imageViewerStateProvider, child) {
-                  if (imageViewerStateProvider == null) {
-                    return AppBarContainer(child: AppBarContainerChild(theme.isDarkMode, title: "Loading..."));
-                  }
-                  return ValueListenableBuilder(
-                    valueListenable: ref.watch(imageViewerStateProvider.select((s) => s.isAppBarVisibleNotifier)),
-                    builder: (context, isAppBarVisible, child) {
-                      return AppBarContainer(
-                        appBarHeight: isAppBarVisible ? null : 0,
-                        child: AppBarContainerChild(
-                          theme.isDarkMode,
-                          title: widget.content.title,
-                          trailing: AppPopupMenuButton(
-                            actions: [
-                              PopupMenuAction(
-                                title: "Rotate Image",
-                                iconData: Iconsax.d_rotate,
-                                onTap: () {
-                                  ref.read(imageViewerStateProvider).setRotation();
-                                },
-                              ),
-
-                              PopupMenuAction(
-                                title: "Share",
-                                iconData: Icons.share_rounded,
-                                onTap: () async {
-                                  ShareContentActions.shareFileContent(context, widget.content.contentId);
-                                },
-                              ),
-
-                              PopupMenuAction(
-                                title: "Invoke Study AI",
-                                iconData: Iconsax.magic_star_copy,
-                                onTap: () {
-                                  Navigator.push(
-                                    context,
-                                    PageAnimation.pageRouteBuilder(
-                                      AskAiScreen(contentId: widget.content.contentId),
-                                      type: TransitionType.none,
-                                      reverseDuration: Durations.short1,
-                                      opaque: false,
-                                      barrierColor: theme.background.withAlpha(180),
-                                    ),
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
@@ -198,11 +212,10 @@ class _PhotoViewPadding extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final topPadding = context.topPadding;
     return AnimatedPadding(
       duration: Durations.extralong1,
       curve: CustomCurves.defaultIosSpring,
-      padding: EdgeInsets.only(top: isAppBarVisible ? kToolbarHeight + topPadding + 12 : 0),
+      padding: EdgeInsets.only(top: isAppBarVisible ? kToolbarHeight + context.topPadding + 12 : 0),
       child: child,
     );
   }

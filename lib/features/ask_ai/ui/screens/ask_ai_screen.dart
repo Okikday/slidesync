@@ -5,6 +5,7 @@ import 'package:slidesync/features/ask_ai/ui/screens/ai_interaction_view.dart';
 import 'package:slidesync/features/ask_ai/ui/widgets/ai_screen_capture_button.dart';
 import 'package:slidesync/features/ask_ai/ui/widgets/shimmery_gradient_background.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 
 class AskAiScreen extends ConsumerStatefulWidget {
   final String contentId;
@@ -42,7 +43,8 @@ class _AskAiScreenState extends ConsumerState<AskAiScreen> with SingleTickerProv
   @override
   Widget build(BuildContext context) {
     // final theme = ref;
-    return Scaffold(
+    return AppScaffold(
+      title: "",
       backgroundColor: Colors.transparent,
       body: Align(
         alignment: Alignment.bottomCenter,

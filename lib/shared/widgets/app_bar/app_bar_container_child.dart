@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -35,45 +37,48 @@ class AppBarContainerChild extends ConsumerWidget {
       triggerMode: TooltipTriggerMode.tap,
       message: tooltipMessage ?? title,
       showDuration: 4.inSeconds,
-      child: Row(
-        children: [
-          AppBackButton(onPressed: onBackButtonClicked),
-          ConstantSizing.rowSpacing(8),
-          Expanded(
-            child: (subtitle != null || (subtitle != null && subtitle!.isNotEmpty))
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    spacing: 2.5,
-                    children: [
-                      CustomText(
-                        title,
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        overflow: TextOverflow.ellipsis,
-                        color: theme.onBackground,
-                      ),
-                      CustomText(
-                        subtitle!,
-                        fontSize: 12,
-                        color: theme.background.lightenColor(theme.isDarkMode ? .4 : .6),
-                        overflow: TextOverflow.ellipsis,
-                        style: subtitleStyle,
-                      ),
-                    ],
-                  )
-                : CustomText(
-                    title,
-                    fontSize: 17,
-                    fontWeight: FontWeight.bold,
-                    overflow: TextOverflow.ellipsis,
-                    style: titleStyle,
-                    color: theme.onBackground,
-                  ),
-          ),
-          if (trailing == null) ConstantSizing.rowSpacingMedium,
-          if (trailing != null) trailing!,
-        ],
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Row(
+          children: [
+            AppBackButton(onPressed: onBackButtonClicked),
+            ConstantSizing.rowSpacing(8),
+            Expanded(
+              child: (subtitle != null || (subtitle != null && subtitle!.isNotEmpty))
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      spacing: 2.5,
+                      children: [
+                        CustomText(
+                          title,
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          overflow: TextOverflow.ellipsis,
+                          color: theme.onBackground,
+                        ),
+                        CustomText(
+                          subtitle!,
+                          fontSize: 12,
+                          color: theme.background.lightenColor(theme.isDarkMode ? .4 : .6),
+                          overflow: TextOverflow.ellipsis,
+                          style: subtitleStyle,
+                        ),
+                      ],
+                    )
+                  : CustomText(
+                      title,
+                      fontSize: 17,
+                      fontWeight: FontWeight.bold,
+                      overflow: TextOverflow.ellipsis,
+                      style: titleStyle,
+                      color: theme.onBackground,
+                    ),
+            ),
+            if (trailing == null) ConstantSizing.rowSpacingMedium,
+            ?trailing,
+          ],
+        ),
       ),
     );
   }
@@ -87,21 +92,42 @@ class AppBackButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    return IconButton(
-      color: theme.supportingText,
-      onPressed: () {
-        if (onPressed == null) {
-          context.pop();
-          return;
-        } else {
-          onPressed!();
-        }
-      },
-      icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: theme.supportingText),
-      style: ButtonStyle(
-        backgroundColor: WidgetStatePropertyAll(backgroundColor ?? theme.altBackgroundPrimary.withValues(alpha: 0.9)),
-        shape: WidgetStatePropertyAll(CircleBorder(side: BorderSide(color: ref.onBackground.withAlpha(10)))),
+    return ClipOval(
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+        child: CustomElevatedButton(
+          onClick: () {
+            if (onPressed == null) {
+              context.pop();
+              return;
+            } else {
+              onPressed!();
+            }
+          },
+          pixelHeight: 40,
+          pixelWidth: 40,
+          contentPadding: EdgeInsets.zero,
+          backgroundColor: theme.scaffoldBackgroundColor.withValues(alpha: 0.6),
+          shape: CircleBorder(side: BorderSide(color: theme.onSurface.withValues(alpha: .1))),
+          child: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: theme.supportingText),
+        ),
       ),
     );
+    // return IconButton(
+    //   color: theme.supportingText,
+    //   onPressed: () {
+    //     if (onPressed == null) {
+    //       context.pop();
+    //       return;
+    //     } else {
+    //       onPressed!();
+    //     }
+    //   },
+    //   icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: theme.supportingText),
+    //   style: ButtonStyle(
+    //     backgroundColor: WidgetStatePropertyAll(backgroundColor ?? theme.altBackgroundPrimary.withValues(alpha: 0.9)),
+    //     shape: WidgetStatePropertyAll(CircleBorder(side: BorderSide(color: ref.onBackground.withAlpha(10)))),
+    //   ),
+    // );
   }
 }
