@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
-import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 
 class AppScaffold extends ConsumerWidget {
   final bool extendBodyBehindAppBar;
@@ -13,7 +12,7 @@ class AppScaffold extends ConsumerWidget {
   final Color? appBarBackgroundColor;
   final bool? resizeToAvoidBottomInset;
   final Widget? appBar;
-  // final EdgeInsets Function(EdgeInsets apply)? appBarPadding;
+  final EdgeInsets Function(EdgeInsets apply)? appBarPadding;
 
   final String title;
   final String? subtitle;
@@ -22,7 +21,6 @@ class AppScaffold extends ConsumerWidget {
   final Widget? trailingWidget;
   final Widget? leadingWidget;
 
-  /// Won't work if [appBar] is provided
   final bool applyDefaultAppBar;
   final Widget? floatingActionButton;
   final Widget? bottomNavigationBar;
@@ -32,12 +30,14 @@ class AppScaffold extends ConsumerWidget {
   final EdgeInsets? viewPadding;
   final void Function()? onBackButtonPressed;
   final Widget? drawer;
+  final Widget? footer;
+  final EdgeInsets? footerPadding;
   final Widget body;
 
   const AppScaffold({
     super.key,
     this.extendBodyBehindAppBar = false,
-    // this.appBarPadding,
+    this.appBarPadding,
     this.extendBody = false,
     this.backgroundColor,
     this.resizeToAvoidBottomInset,
@@ -58,6 +58,8 @@ class AppScaffold extends ConsumerWidget {
     this.onBackButtonPressed,
     this.appBarBackgroundColor,
     this.drawer,
+    this.footer,
+    this.footerPadding,
   });
 
   Widget _defaultAppBar(WidgetRef ref) => AppBarContainer(
@@ -71,47 +73,246 @@ class AppScaffold extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final systemUiOverlayStyle = this.systemUiOverlayStyle == const SystemUiOverlayStyle()
+        ? null
+        : (this.systemUiOverlayStyle ??
+              UiUtils.getSystemUiOverlayStyle(
+                ref.scaffoldBackgroundColor,
+                ref.isDarkMode,
+                statusBarColor: Colors.transparent,
+              ));
     return PopScope(
       canPop: canPop,
       onPopInvokedWithResult: onPopInvokedWithResult,
-      child: AnnotatedRegion(
-        // value: systemUiOverlayStyle ?? UiUtils.systemUiOverlayStyle(theme),
-        value:
-            systemUiOverlayStyle ??
-            UiUtils.getSystemUiOverlayStyle(
-              ref.scaffoldBackgroundColor,
-              ref.isDarkMode,
-              statusBarColor: Colors.transparent,
+      child: systemUiOverlayStyle == null
+          ? _AppScaffoldBody(
+              extendBodyBehindAppBar: extendBodyBehindAppBar,
+              extendBody: extendBody,
+              backgroundColor: backgroundColor,
+              resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+              floatingActionButton: floatingActionButton,
+              bottomNavigationBar: bottomNavigationBar,
+              drawer: drawer,
+              body: body,
+              footer: footer,
+              viewPadding: viewPadding,
+              appBar: appBar,
+              applyDefaultAppBar: applyDefaultAppBar,
+              appBarPadding: appBarPadding,
+              footerPadding: footerPadding,
+              defaultAppBar: _defaultAppBar(ref),
+            )
+          : AnnotatedRegion(
+              value: systemUiOverlayStyle,
+              child: _AppScaffoldBody(
+                extendBodyBehindAppBar: extendBodyBehindAppBar,
+                extendBody: extendBody,
+                backgroundColor: backgroundColor,
+                resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+                floatingActionButton: floatingActionButton,
+                bottomNavigationBar: bottomNavigationBar,
+                drawer: drawer,
+                body: body,
+                footer: footer,
+                viewPadding: viewPadding,
+                appBar: appBar,
+                applyDefaultAppBar: applyDefaultAppBar,
+                appBarPadding: appBarPadding,
+                footerPadding: footerPadding,
+                defaultAppBar: _defaultAppBar(ref),
+              ),
             ),
-        child: Scaffold(
-          extendBodyBehindAppBar: extendBodyBehindAppBar,
-          extendBody: extendBody,
-          backgroundColor: backgroundColor,
-          resizeToAvoidBottomInset: resizeToAvoidBottomInset,
-          floatingActionButton: floatingActionButton,
-          bottomNavigationBar: bottomNavigationBar,
-          drawer: drawer,
-          body: applyDefaultAppBar || appBar != null
-              ? (extendBodyBehindAppBar
-                    ? Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Padding(padding: viewPadding ?? EdgeInsets.zero, child: body),
-                          appBar ?? _defaultAppBar(ref),
-                        ],
-                      )
-                    : Column(
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          appBar ?? _defaultAppBar(ref),
-                          Flexible(
-                            child: Padding(padding: viewPadding ?? EdgeInsets.zero, child: body),
-                          ),
-                        ],
-                      ))
+    );
+  }
+}
+
+class _AppScaffoldBody extends StatelessWidget {
+  final bool extendBodyBehindAppBar;
+  final bool extendBody;
+  final Color? backgroundColor;
+  final bool? resizeToAvoidBottomInset;
+  final Widget? floatingActionButton;
+  final Widget? bottomNavigationBar;
+  final Widget? drawer;
+  final Widget body;
+  final Widget? footer;
+  final EdgeInsets? viewPadding;
+  final Widget? appBar;
+  final bool applyDefaultAppBar;
+  final EdgeInsets Function(EdgeInsets)? appBarPadding;
+  final EdgeInsets? footerPadding;
+  final Widget defaultAppBar;
+
+  const _AppScaffoldBody({
+    required this.extendBodyBehindAppBar,
+    required this.extendBody,
+    required this.backgroundColor,
+    required this.resizeToAvoidBottomInset,
+    required this.floatingActionButton,
+    required this.bottomNavigationBar,
+    required this.drawer,
+    required this.body,
+    required this.footer,
+    required this.viewPadding,
+    required this.appBar,
+    required this.applyDefaultAppBar,
+    required this.appBarPadding,
+    required this.footerPadding,
+    required this.defaultAppBar,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      extendBodyBehindAppBar: extendBodyBehindAppBar,
+      extendBody: extendBody,
+      backgroundColor: backgroundColor,
+      resizeToAvoidBottomInset: resizeToAvoidBottomInset,
+      floatingActionButton: floatingActionButton,
+      bottomNavigationBar: bottomNavigationBar,
+      drawer: drawer,
+      body: (extendBodyBehindAppBar
+          ? _ExtendBodyBehindAppBar(
+              footer: footer,
+              extendBody: extendBody,
+              viewPadding: viewPadding,
+              body: body,
+              applyDefaultAppBar: applyDefaultAppBar,
+              appBar: appBar,
+              appBarPadding: appBarPadding,
+              defaultAppBar: defaultAppBar,
+              footerPadding: footerPadding,
+            )
+          : extendBody
+          ? Stack(
+              children: [
+                _NotExtendBodyBehindAppBar(
+                  body: body,
+                  viewPadding: viewPadding,
+                  applyDefaultAppBar: applyDefaultAppBar,
+                  appBar: appBar,
+                  appBarPadding: appBarPadding,
+                  defaultAppBar: defaultAppBar,
+                  footer: footer,
+                  extendBody: extendBody,
+                ),
+                if (footer != null) Positioned(bottom: 0, left: 0, right: 0, child: footer!),
+              ],
+            )
+          : _NotExtendBodyBehindAppBar(
+              body: body,
+              viewPadding: viewPadding,
+              applyDefaultAppBar: applyDefaultAppBar,
+              appBar: appBar,
+              appBarPadding: appBarPadding,
+              defaultAppBar: defaultAppBar,
+              footer: footer,
+              extendBody: extendBody,
+            )),
+    );
+  }
+}
+
+class _ExtendBodyBehindAppBar extends StatelessWidget {
+  final Widget? footer;
+  final bool extendBody;
+  final EdgeInsets? viewPadding;
+  final Widget body;
+  final bool applyDefaultAppBar;
+  final Widget? appBar;
+  final EdgeInsets Function(EdgeInsets)? appBarPadding;
+  final Widget defaultAppBar;
+  final EdgeInsets? footerPadding;
+
+  const _ExtendBodyBehindAppBar({
+    required this.footer,
+    required this.extendBody,
+    required this.viewPadding,
+    required this.body,
+    required this.applyDefaultAppBar,
+    required this.appBar,
+    required this.appBarPadding,
+    required this.defaultAppBar,
+    required this.footerPadding,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final defaultPadding = EdgeInsets.zero;
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        Padding(
+          padding: viewPadding ?? EdgeInsets.zero,
+          child: footer != null
+              ? Column(
+                  children: [
+                    Expanded(child: body),
+                    if (!extendBody) footer!,
+                  ],
+                )
               : body,
         ),
-      ),
+        if (applyDefaultAppBar || appBar != null)
+          Positioned(
+            left: 0,
+            right: 0,
+            child: Padding(
+              padding: appBarPadding != null ? appBarPadding!(defaultPadding) : defaultPadding,
+              child: appBar ?? defaultAppBar,
+            ),
+          ),
+        if (extendBody && footer != null)
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Padding(padding: footerPadding ?? defaultPadding, child: footer!),
+          ),
+      ],
+    );
+  }
+}
+
+class _NotExtendBodyBehindAppBar extends StatelessWidget {
+  final Widget body;
+  final EdgeInsets? viewPadding;
+  final bool applyDefaultAppBar;
+  final Widget? appBar;
+  final EdgeInsets Function(EdgeInsets)? appBarPadding;
+  final Widget defaultAppBar;
+  final Widget? footer;
+  final bool extendBody;
+
+  const _NotExtendBodyBehindAppBar({
+    required this.body,
+    required this.viewPadding,
+    required this.applyDefaultAppBar,
+    required this.appBar,
+    required this.appBarPadding,
+    required this.defaultAppBar,
+    required this.footer,
+    required this.extendBody,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final defaultPadding = EdgeInsets.zero;
+
+    return Column(
+      mainAxisSize: MainAxisSize.max,
+      children: [
+        if (applyDefaultAppBar || appBar != null)
+          Padding(
+            padding: appBarPadding != null ? appBarPadding!(defaultPadding) : defaultPadding,
+            child: appBar ?? defaultAppBar,
+          ),
+        Flexible(
+          child: Padding(padding: viewPadding ?? defaultPadding, child: body),
+        ),
+        if (!extendBody && footer != null) footer!,
+      ],
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/main/ui/screens/explore_tab_view.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/library_floating_action_button.dart';
@@ -7,11 +8,13 @@ import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_drawer.dart';
 import 'package:slidesync/features/main/ui/screens/library_tab_view.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/decorations/back_soft_edge_blur.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
+import 'package:slidesync/shared/widgets/state/absorber.dart';
+import 'package:soft_edge_blur/soft_edge_blur.dart';
 
 import 'home_tab_view.dart';
 import '../widgets/main_view/bottom_nav_bar.dart';
-import '../widgets/main_view/main_view_annotated_region.dart';
 
 const _views = [HomeTabView(), LibraryTabView(), ExploreTabView()];
 
@@ -43,55 +46,48 @@ class _MainViewState extends ConsumerState<MainView> {
 
   @override
   Widget build(BuildContext context) {
-    // super.build(context);
-
-    return PopScope(
-      canPop: false,
-      child: MainViewAnnotatedRegion(
-        child: AppScaffold(
+    return AbsorberWatch(
+      listenable: MainProvider.of(ref).home.select((s) => s.isScrolled),
+      builder: (_, isScrolled, ref, body) {
+        return AppScaffold(
           title: "",
+          canPop: false,
           extendBody: true,
-          extendBodyBehindAppBar: true,
-
           drawer: const HomeDrawer(),
           floatingActionButton: const LibraryFloatingActionButton(),
-
-          body: Stack(
-            children: [
-              PageView(
-                controller: pageController,
-                // physics: const NeverScrollableScrollPhysics(),
-                onPageChanged: (index) {
-                  MainProvider.of(ref).state.act(ref).setTabIndex(index);
-                },
-                children: _views,
-              ),
-
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: BottomNavBar(
-                  onTap: (index) {
-                    final tabIndex = MainProvider.from(ref, (r, v) => v.state.read(r).tabIndex);
-                    if (index != tabIndex) {
-                      MainProvider.from(ref, (r, v) => v.state.act(r)).setTabIndex(index);
-                      pageController.animateToPage(
-                        index,
-                        duration: Durations.extralong1,
-                        curve: CustomCurves.defaultIosSpring,
-                      );
-                    }
-                  },
-                ),
-              ),
-            ],
+          systemUiOverlayStyle: _deriveSystemUiOverlayStyle(ref, isScrolled),
+          body: body!,
+          footer: BackSoftEdgeBlur(
+            edgeType: EdgeType.bottomEdge,
+            height: 84 + context.bottomPadding,
+            child: BottomNavBar(
+              onTap: (index) => MainProvider.from(ref, (r, v) {
+                if (v.state.read(r).tabIndex != index) {
+                  MainProvider.from(ref, (r, v) => v.state.act(r)).setTabIndex(index);
+                  pageController.animateToPage(index, duration: 700.inMs, curve: CustomCurves.defaultIosSpring);
+                }
+              }),
+            ),
           ),
-        ),
+        );
+      },
+      child: PageView(
+        controller: pageController,
+        onPageChanged: (index) => MainProvider.of(ref).state.act(ref).setTabIndex(index),
+        children: _views,
       ),
     );
   }
 
-  // @override
-  // bool get wantKeepAlive => true;
+  SystemUiOverlayStyle _deriveSystemUiOverlayStyle(WidgetRef ref, bool isScrolled) {
+    final theme = ref;
+    final brightness = ref.brightness;
+    return SystemUiOverlayStyle(
+      statusBarColor: isScrolled ? theme.secondaryColor.withAlpha(100) : theme.background,
+      statusBarBrightness: brightness,
+      statusBarIconBrightness: brightness,
+      systemNavigationBarIconBrightness: brightness,
+      systemNavigationBarColor: ref.cardColor,
+    );
+  }
 }

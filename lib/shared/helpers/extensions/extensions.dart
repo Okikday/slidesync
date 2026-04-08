@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/experimental/mutation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:slidesync/app.dart';
@@ -15,3 +14,4 @@ part 'src/extension_on_color.dart';
 part 'src/extension_on_context.dart';
 part 'src/extension_on_course_sort.dart';
 part 'src/extension_on_providers.dart';
+part 'src/extension_on_duration.dart';

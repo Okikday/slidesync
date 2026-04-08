@@ -161,7 +161,7 @@ class ImpliedNotifierN<T> extends Notifier<T?> {
   void set(T? value) => state = value;
 }
 
-class StreamedNotifier<T> extends StreamNotifier {
+class StreamedNotifier<T> extends StreamNotifier<T> {
   final Stream<T> Function() _streamFactory;
   StreamedNotifier(this._streamFactory);
   @override

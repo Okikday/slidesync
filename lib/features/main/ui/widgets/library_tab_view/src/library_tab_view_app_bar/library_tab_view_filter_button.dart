@@ -3,12 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
-import 'package:slidesync/features/main/providers/discarded/library/library_tab_provider.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
-
-import 'package:slidesync/shared/widgets/progress_indicator/app_circular_loading_indicator.dart';
 
 class LibraryTabViewFilterButton extends ConsumerWidget {
   const LibraryTabViewFilterButton({super.key});

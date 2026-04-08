@@ -7,11 +7,11 @@ final _isFocusModeProvider = NotifierProvider.autoDispose(BoolNotifier.new);
 class MainNotifier extends Notifier<MainState> {
   @override
   MainState build() {
-    ref.emptyListenMany([isFocusModeProvider]); // As long as MainNotifier is alive, this is also alive
+    ref.emptyListenMany([isFocusMode]); // As long as MainNotifier is alive, this is also alive
     return const MainState();
   }
 
-  final isFocusModeProvider = _isFocusModeProvider;
+  final isFocusMode = _isFocusModeProvider;
 
   void setTabIndex(int index) => state = state.copyWith(tabIndex: index);
 }

@@ -12,7 +12,6 @@ import 'package:slidesync/features/main/ui/models/explore_card_data.dart';
 import 'package:slidesync/features/main/ui/widgets/explore_tab_view/explore_card.dart';
 import 'package:slidesync/features/sync/logic/sync_service.dart';
 import 'package:slidesync/routes/routes.dart';
-import 'package:slidesync/shared/helpers/global_nav.dart';
 
 /// ============================================================================
 /// EXPLORE DOWNLOAD HELPER

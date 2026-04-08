@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
-import 'package:slidesync/features/main/providers/discarded/library/library_tab_provider.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';

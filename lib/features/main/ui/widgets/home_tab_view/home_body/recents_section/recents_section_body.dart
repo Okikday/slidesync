@@ -20,7 +20,7 @@ class RecentsSectionBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    final asyncProgressTrackValues = MainProvider.of(ref).home.act(ref).recentContentsTrack(10).watch(ref);
+    final asyncProgressTrackValues = MainProvider.of(ref).home.link(ref).recentContentsTrack(10).watch(ref);
 
     final rda = RecentDialogActions();
     return asyncProgressTrackValues.when(
@@ -28,40 +28,37 @@ class RecentsSectionBody extends ConsumerWidget {
         if (data.isEmpty) {
           return const SliverToBoxAdapter(child: RecommendedSection());
         }
-        return SliverPadding(
-          padding: EdgeInsets.only(bottom: kBottomNavigationBarHeight + context.bottomPadding),
-          sliver: SliverList.builder(
-            itemCount: data.length,
-            itemBuilder: (context, index) {
-              final content = data[index];
-              final previewPath = jsonDecode(content.metadataJson)['previewPath'];
-              return RecentListTile(
-                dataModel: RecentListTileModel(
-                  title: content.title ?? "No title",
-                  subtitle: content.pages.isEmpty ? "" : "Page ${content.pages.last}",
-                  // extraContent: DummySlides.dummySlides[index]['extraContent'] as String? ?? "",
-                  previewPath: previewPath,
-                  progressLevel: ProgressLevel.neutral,
-                  isStarred: false,
-                  progress: content.progress?.clamp(0, 1.0),
-                  onTapTile: () async {
-                    await rda.onContinueReading(ref, content.contentId);
-                  },
-                  onLongTapTile: () {
-                    UiUtils.showCustomDialog(
-                      context,
-                      canPop: true,
-                      transitionType: TransitionType.cupertinoDialog,
-                      barrierColor: Colors.black.withValues(alpha: 0.6),
-                      transitionDuration: Durations.short4,
-                      reverseTransitionDuration: Durations.short4,
-                      child: RecentDialog(contentTrack: content),
-                    );
-                  },
-                ),
-              );
-            },
-          ),
+        return SliverList.builder(
+          itemCount: data.length,
+          itemBuilder: (context, index) {
+            final content = data[index];
+            final previewPath = jsonDecode(content.metadataJson)['previewPath'];
+            return RecentListTile(
+              dataModel: RecentListTileModel(
+                title: content.title ?? "No title",
+                subtitle: content.pages.isEmpty ? "" : "Page ${content.pages.last}",
+                // extraContent: DummySlides.dummySlides[index]['extraContent'] as String? ?? "",
+                previewPath: previewPath,
+                progressLevel: ProgressLevel.neutral,
+                isStarred: false,
+                progress: content.progress?.clamp(0, 1.0),
+                onTapTile: () async {
+                  await rda.onContinueReading(ref, content.contentId);
+                },
+                onLongTapTile: () {
+                  UiUtils.showCustomDialog(
+                    context,
+                    canPop: true,
+                    transitionType: TransitionType.cupertinoDialog,
+                    barrierColor: Colors.black.withValues(alpha: 0.6),
+                    transitionDuration: Durations.short4,
+                    reverseTransitionDuration: Durations.short4,
+                    child: RecentDialog(contentTrack: content),
+                  );
+                },
+              ),
+            );
+          },
         );
       },
       error: (e, st) {

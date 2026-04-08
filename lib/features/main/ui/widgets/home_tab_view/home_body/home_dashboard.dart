@@ -1,7 +1,9 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:slidesync/core/assets/assets.dart';
+import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class HomeDashboard extends ConsumerWidget {
@@ -74,26 +76,7 @@ class HomeDashboard extends ConsumerWidget {
           ),
           if (detail.isNotEmpty) ConstantSizing.columnSpacingSmall,
           if (detail.isNotEmpty) CustomText(detail, fontSize: 12, color: theme.supportingText.withValues(alpha: 0.5)),
-          ConstantSizing.columnSpacingSmall,
 
-          // Row(
-          //   children: [
-          //     Expanded(
-          //       child: Badge(
-          //         backgroundColor: Colors.transparent,
-          //         // offset: Offset(-32, 10),
-          //         // label: CustomText("${(progressValue * 100).truncate()}%", fontWeight: FontWeight.bold, fontSize: 13),
-          //         child: LinearProgressIndicator(
-          //           minHeight: 36,
-          //           borderRadius: BorderRadius.circular(36),
-          //           value: progressValue,
-          //           backgroundColor: Colors.black.withAlpha(40),
-          //           color: theme.primaryColor.withValues(alpha: 0.6),
-          //         ),
-          //       ),
-          //     ),
-          //   ],
-          // ),
           ConstantSizing.columnSpacingLarge,
 
           Row(
@@ -178,21 +161,58 @@ class HomeDashboard extends ConsumerWidget {
       ),
     );
   }
+
+  factory HomeDashboard.defaultConfig(
+    bool? hasAnyCourse,
+    void Function() onEmptyReadingButtonTapped, {
+    BuildContext? context,
+  }) {
+    if (hasAnyCourse == null) {
+      return HomeDashboard(
+        courseName: "Looking around",
+        detail: "...",
+        buttonText: "",
+        progressValue: 0.0,
+        isFirst: true,
+        onReadingBtnTapped: () async {},
+      );
+    }
+
+    if (!hasAnyCourse) {
+      return HomeDashboard(
+        courseName: "Add a course",
+        detail: "Let's add a course to get you started!",
+        buttonText: "Get started!",
+        progressValue: 0.0,
+        isFirst: true,
+        onReadingBtnTapped: () async => context?.pushNamed(Routes.createCourse.name),
+      );
+    }
+
+    return HomeDashboard(
+      courseName: "Start reading",
+      detail: "You haven't started reading, get started!",
+      buttonText: "Take me there!",
+      progressValue: 0.0,
+      isFirst: true,
+      onReadingBtnTapped: onEmptyReadingButtonTapped,
+    );
+  }
 }
 
-BoxDecoration _dashDecoratedBox(WidgetRef theme) {
-  return BoxDecoration(
-    color: theme.adjustBgAndPrimaryWithLerp,
-    borderRadius: BorderRadius.circular(18),
-    border: Border.all(width: 2, color: theme.adjustBgAndPrimaryWithLerpExtra),
-    image: DecorationImage(
-      image: Assets.images.bookSparkleBg.asImageProvider,
-      fit: BoxFit.cover,
-      opacity: 0.03,
-      colorFilter: ColorFilter.mode(theme.primaryColor, BlendMode.srcIn),
-    ),
-  );
-}
+// BoxDecoration _dashDecoratedBox(WidgetRef theme) {
+//   return BoxDecoration(
+//     color: theme.adjustBgAndPrimaryWithLerp,
+//     borderRadius: BorderRadius.circular(18),
+//     border: Border.all(width: 2, color: theme.adjustBgAndPrimaryWithLerpExtra),
+//     image: DecorationImage(
+//       image: Assets.images.bookSparkleBg.asImageProvider,
+//       fit: BoxFit.cover,
+//       opacity: 0.03,
+//       colorFilter: ColorFilter.mode(theme.primaryColor, BlendMode.srcIn),
+//     ),
+//   );
+// }
 
 /*
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';

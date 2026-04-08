@@ -14,8 +14,11 @@ class RecentsSectionHeader extends ConsumerWidget {
     final theme = ref;
     final asyncMostRecent = MainProvider.from(
       ref,
-      (ref, v) =>
-          v.home.act(ref).recentContentsTrack(1).select((s) => s.whenData((v) => v.isEmpty ? null : v.last)).watch(ref),
+      (ref, v) => v.home
+          .link(ref)
+          .recentContentsTrack(1)
+          .select((s) => s.whenData((v) => v.isEmpty ? null : v.last))
+          .watch(ref),
     );
 
     return asyncMostRecent.when(

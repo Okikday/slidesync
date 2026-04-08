@@ -22,7 +22,7 @@ class RecentsView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    final asyncProgressTrackValues = MainProvider.of(ref).home.act(ref).recentContentsTrack(100).watch(ref);
+    final asyncProgressTrackValues = MainProvider.of(ref).home.link(ref).recentContentsTrack(100).watch(ref);
 
     return AnnotatedRegion(
       value: UiUtils.getSystemUiOverlayStyle(theme.scaffoldBackgroundColor, theme.isDarkMode),

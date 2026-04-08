@@ -4,9 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:lottie/lottie.dart';
-import 'package:slidesync/core/assets/assets.gen.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/auth/logic/usecases/auth_uc/user_data_functions.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -19,9 +16,7 @@ class HomeDrawer extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
     return PopScope(
-      onPopInvokedWithResult: (didPop, result) {
-        Scaffold.of(context).closeDrawer();
-      },
+      onPopInvokedWithResult: (didPop, result) => Scaffold.of(context).closeDrawer(),
       child: Drawer(
         backgroundColor: theme.background,
         child: SingleChildScrollView(

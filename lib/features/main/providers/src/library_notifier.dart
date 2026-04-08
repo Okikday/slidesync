@@ -6,12 +6,9 @@ import 'package:slidesync/features/main/providers/entities/library_state.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
-import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
-import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/main/providers/src/courses_pagination_notifier.dart';
 import 'package:slidesync/shared/global/notifiers/common/card_view_type_notifier.dart';
-import 'package:slidesync/shared/global/notifiers/common/course_sort_notifier.dart';
 
 class LibraryNotifier extends Notifier<LibraryState> {
   @override

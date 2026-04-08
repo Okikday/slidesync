@@ -14,7 +14,6 @@ import 'package:slidesync/features/main/ui/actions/library/course_card_actions.d
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/course_card.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
-import 'package:slidesync/shared/global/providers/course_providers.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';

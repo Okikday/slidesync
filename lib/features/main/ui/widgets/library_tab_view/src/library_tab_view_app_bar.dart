@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/assets/assets.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/features/main/providers/discarded/library/library_tab_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/library_tab_view_filter_button.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/library_tab_view_header_text.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/library_tab_view_layout_button.dart';

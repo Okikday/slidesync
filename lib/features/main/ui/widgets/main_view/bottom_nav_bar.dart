@@ -31,6 +31,7 @@ class BottomNavBar extends ConsumerWidget {
     final theme = ref;
 
     return BottomPadding(
+      withHeight: 4,
       child: SizedBox(
         height: 80,
         child: AbsorberWatch(
@@ -42,7 +43,7 @@ class BottomNavBar extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(40),
                 border: Border.all(color: theme.onScaffoldBackgroundColor.withValues(alpha: 0.4)),
               ),
-              margin: const EdgeInsets.fromLTRB(12, 0, 12, 4),
+              margin: const EdgeInsets.fromLTRB(12, 0, 12, 0),
               clipBehavior: Clip.antiAlias,
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),

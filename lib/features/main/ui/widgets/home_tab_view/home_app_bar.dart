@@ -6,17 +6,17 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
-import 'package:soft_edge_blur/soft_edge_blur.dart';
+import 'package:slidesync/shared/widgets/animations/animated_sizing.dart';
+import 'package:slidesync/shared/widgets/decorations/back_soft_edge_blur.dart';
 
 class HomeAppBar extends ConsumerWidget {
-  const HomeAppBar({super.key, required this.onClickHamburger, required this.title, required this.onClickNotification});
+  const HomeAppBar({super.key, required this.onClickHamburger, required this.title, required this.onClickFocusButton});
 
   final void Function() onClickHamburger;
 
   final String title;
-  final void Function() onClickNotification;
+  final void Function() onClickFocusButton;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
@@ -44,27 +44,7 @@ class HomeAppBar extends ConsumerWidget {
             expandedTitleScale: 1.0,
             background: GestureDetector(
               onTap: () {},
-              child: ClipRRect(
-                child: SizedBox(
-                  height: 80,
-
-                  child: SoftEdgeBlur(
-                    edges: [
-                      EdgeBlur(
-                        type: EdgeType.topEdge,
-                        size: 80,
-                        sigma: 30,
-                        tintColor: theme.background,
-                        controlPoints: [
-                          ControlPoint(position: 0.4, type: ControlPointType.visible),
-                          ControlPoint(position: 1.0, type: ControlPointType.transparent),
-                        ],
-                      ),
-                    ],
-                    child: SizedBox.expand(),
-                  ),
-                ),
-              ),
+              child: BackSoftEdgeBlur(height: 80, applyHeightToSize: true, child: const SizedBox.shrink()),
             ),
             // collapseMode: CollapseMode.pin,
             titlePadding: EdgeInsets.zero,
@@ -76,8 +56,7 @@ class HomeAppBar extends ConsumerWidget {
                     context,
                   ).animateTo(0, duration: Durations.extralong1, curve: CustomCurves.defaultIosSpring);
                 },
-                child: AnimatedSize(
-                  duration: Durations.medium3,
+                child: AnimatedSizing.fast(
                   child: Padding(
                     padding: EdgeInsets.fromLTRB(16, 8, 16, 4),
                     child: Row(
@@ -112,7 +91,7 @@ class HomeAppBar extends ConsumerWidget {
                           child: BackdropFilter(
                             filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
                             child: CustomElevatedButton(
-                              onClick: onClickNotification,
+                              onClick: onClickFocusButton,
                               pixelWidth: 44,
                               pixelHeight: 44,
                               overlayColor: ref.secondary.withAlpha(40),

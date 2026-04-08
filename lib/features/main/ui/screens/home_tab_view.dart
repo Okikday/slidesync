@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
-import 'package:slidesync/core/utils/ui_utils.dart';
+import 'package:slidesync/features/main/ui/actions/home/home_tab_actions.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_app_bar.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
-import 'package:window_manager/window_manager.dart';
 
 const double isScrolledLvl = 40.0;
 
@@ -18,7 +17,7 @@ class HomeTabView extends ConsumerStatefulWidget {
   ConsumerState createState() => _HomeTabViewState();
 }
 
-class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAliveClientMixin {
+class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAliveClientMixin, HomeTabActions {
   late final ScrollController scrollController;
 
   @override
@@ -27,36 +26,32 @@ class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAli
     scrollController = ScrollController()..addListener(scrollListener);
   }
 
-  void scrollListener() {
-    final homeProvider = MainProvider.of(ref).home;
-    final isScrolled = MainProvider.of(ref).home.select((s) => s.isScrolled).read(ref);
+  void scrollListener() => MainProvider.from(ref, (r, v) {
+    final isScrolled = v.home.select((s) => s.isScrolled).read(ref);
     scrollController.offset > isScrolledLvl && !isScrolled
-        ? homeProvider.act(ref).setIsScrolled(true)
+        ? v.home.act(ref).setIsScrolled(true)
         : isScrolled
-        ? homeProvider.act(ref).setIsScrolled(false)
+        ? v.home.act(ref).setIsScrolled(false)
         : () {};
-  }
+  });
 
   @override
   void dispose() {
-    scrollController.removeListener(scrollListener);
-    scrollController.dispose();
+    scrollController
+      ..removeListener(scrollListener)
+      ..dispose();
     super.dispose();
   }
 
-  void focusModeListener(bool? prev, bool next) {
-    if (next) {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-    } else {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    }
-  }
+  void focusModeListener(bool? prev, bool next) =>
+      SystemChrome.setEnabledSystemUIMode(next ? SystemUiMode.immersive : SystemUiMode.edgeToEdge);
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    final isFocusModeProvider = MainProvider.of(ref).state.act(ref).isFocusModeProvider;
-    ref.listen<bool>(isFocusModeProvider, focusModeListener);
+    // Listen to events on isFocusModeProvider
+    ref.listen<bool>(MainProvider.of(ref).state.link(ref).isFocusMode, focusModeListener);
+
     return NestedScrollView(
       controller: scrollController,
       physics: DeviceUtils.isDesktop() ? const NeverScrollableScrollPhysics() : null,
@@ -68,27 +63,7 @@ class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAli
               Scaffold.of(context).openDrawer();
               // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(statusBarColor: Theme.of(context).scaffoldBackgroundColor));
             },
-            onClickNotification: () {
-              final focusModeProvider = isFocusModeProvider.act(ref);
-              late bool prev;
-              focusModeProvider.update((cb) {
-                prev = cb;
-                return !cb;
-              });
-              if (DeviceUtils.isDesktop()) {
-                if (prev) {
-                  windowManager.setFullScreen(false).then((_) {
-                    windowManager.maximize(vertically: true);
-                  });
-                } else {
-                  windowManager.maximize(vertically: true).then((_) {
-                    windowManager.setFullScreen(true);
-                  });
-                }
-              }
-
-              UiUtils.showFlushBar(context, msg: "Focus mode ${prev ? "disabled" : "enabled"}");
-            },
+            onClickFocusButton: () => onClickFocusButton(ref),
           ),
         ];
       },
