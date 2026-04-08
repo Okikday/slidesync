@@ -5,10 +5,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/routes/routes.dart';
-import 'package:slidesync/features/main/providers/library/library_tab_provider.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/state/absorber.dart';
 
 class LibraryFloatingActionButton extends ConsumerWidget {
   final bool isDesktop;
@@ -16,14 +16,15 @@ class LibraryFloatingActionButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isAtLibrary = ref.watch(MainProvider.tabIndexProvider.select((p) => p == 1));
+    final mainProvider = MainProvider.of(ref);
+    final isAtLibrary = mainProvider.state.select((s) => s.tabIndex == 1).watch(ref);
     if (!isAtLibrary && !isDesktop) return const SizedBox();
     final theme = ref;
 
-    return ValueListenableBuilder(
-      valueListenable: ref.watch(LibraryTabProvider.state.select((s) => s.scrollOffsetNotifier)),
+    return AbsorberWatch(
+      listenable: mainProvider.library.act(ref).scrollOffset,
 
-      builder: (context, offset, child) {
+      builder: (context, offset, ref, child) {
         if (offset > libraryAppBarMaxHeight) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 80),
@@ -34,8 +35,8 @@ class LibraryFloatingActionButton extends ConsumerWidget {
               shape: const CircleBorder(),
               backgroundColor: ref.primary,
               onClick: () {
-                LibraryTabProvider.state
-                    .read(ref)
+                mainProvider.library
+                    .act(ref)
                     .scrollController
                     .animateTo(0, duration: Durations.extralong1, curve: CustomCurves.defaultIosSpring);
               },

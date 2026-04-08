@@ -10,10 +10,10 @@ import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
+import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/features/main/providers/home_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/home_dashboard.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/more_section.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recents_section_body.dart';
@@ -37,9 +37,15 @@ class HomeBody extends ConsumerWidget {
           child: Consumer(
             child: _CheckCourseDashboard(),
             builder: (context, ref, child) {
-              final asyncMostRecent = ref.watch(
-                HomeProvider.recentContentsTrackProvider(1).select((s) => s.whenData((v) => v.isEmpty ? null : v.last)),
+              final asyncMostRecent = MainProvider.from(
+                ref,
+                (r, v) => v.home
+                    .act(ref)
+                    .recentContentsTrack(1)
+                    .select((s) => s.whenData((v) => v.isEmpty ? null : v.last))
+                    .watch(r),
               );
+
               return asyncMostRecent.when(
                 data: (data) {
                   if (data != null) {

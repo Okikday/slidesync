@@ -4,9 +4,11 @@ import 'dart:ui';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/features/main/providers/library/library_tab_provider.dart';
+import 'package:slidesync/features/main/providers/discarded/library/library_tab_provider.dart';
+import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/state/absorber.dart';
 
 class LibraryTabViewHeaderText extends ConsumerWidget {
   const LibraryTabViewHeaderText({super.key, this.title = "Your Library"});
@@ -27,9 +29,9 @@ class LibraryTabViewHeaderText extends ConsumerWidget {
       child: Center(
         child: SizedBox(
           height: height,
-          child: ValueListenableBuilder(
-            valueListenable: ref.watch(LibraryTabProvider.state.select((s) => s.scrollOffsetNotifier)),
-            builder: (context, offset, child) {
+          child: AbsorberWatch(
+            listenable: MainProvider.of(ref).library.link(ref).scrollOffset,
+            builder: (context, offset, ref, child) {
               final double percentScroll = (math.min(offset, allowedHeight) / allowedHeight);
 
               // Interpolate between center and centerLeft.

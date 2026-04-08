@@ -6,6 +6,7 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_app_bar.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:window_manager/window_manager.dart';
 
 const double isScrolledLvl = 40.0;
@@ -27,17 +28,13 @@ class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAli
   }
 
   void scrollListener() {
-    final isScrolledProvider = MainProvider.isHomeScrolledProvider;
-    final isScrolled = ref.read(isScrolledProvider);
-    if (scrollController.offset > isScrolledLvl) {
-      if (!isScrolled) {
-        ref.read(isScrolledProvider.notifier).update((cb) => true);
-      }
-    } else {
-      if (isScrolled) {
-        ref.read(isScrolledProvider.notifier).update((cb) => false);
-      }
-    }
+    final homeProvider = MainProvider.of(ref).home;
+    final isScrolled = MainProvider.of(ref).home.select((s) => s.isScrolled).read(ref);
+    scrollController.offset > isScrolledLvl && !isScrolled
+        ? homeProvider.act(ref).setIsScrolled(true)
+        : isScrolled
+        ? homeProvider.act(ref).setIsScrolled(false)
+        : () {};
   }
 
   @override
@@ -58,7 +55,8 @@ class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAli
   @override
   Widget build(BuildContext context) {
     super.build(context);
-    ref.listen<bool>(MainProvider.isFocusModeProvider, focusModeListener);
+    final isFocusModeProvider = MainProvider.of(ref).state.act(ref).isFocusModeProvider;
+    ref.listen<bool>(isFocusModeProvider, focusModeListener);
     return NestedScrollView(
       controller: scrollController,
       physics: DeviceUtils.isDesktop() ? const NeverScrollableScrollPhysics() : null,
@@ -71,7 +69,7 @@ class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAli
               // SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(statusBarColor: Theme.of(context).scaffoldBackgroundColor));
             },
             onClickNotification: () {
-              final focusModeProvider = ref.read(MainProvider.isFocusModeProvider.notifier);
+              final focusModeProvider = isFocusModeProvider.act(ref);
               late bool prev;
               focusModeProvider.update((cb) {
                 prev = cb;

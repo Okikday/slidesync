@@ -14,7 +14,7 @@ class MainViewAnnotatedRegion extends ConsumerWidget {
     final Brightness brightness = ref.brightness;
     return AnnotatedRegion(
       value: SystemUiOverlayStyle(
-        statusBarColor: ref.watch(MainProvider.isHomeScrolledProvider)
+        statusBarColor: MainProvider.of(ref).home.select((s) => s.isScrolled).watch(ref)
             ? theme.secondaryColor.withAlpha(100)
             : theme.background,
         statusBarBrightness: brightness,

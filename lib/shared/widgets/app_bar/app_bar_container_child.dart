@@ -44,38 +44,53 @@ class AppBarContainerChild extends ConsumerWidget {
             AppBackButton(onPressed: onBackButtonClicked),
             ConstantSizing.rowSpacing(8),
             Expanded(
-              child: (subtitle != null || (subtitle != null && subtitle!.isNotEmpty))
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      spacing: 2.5,
-                      children: [
-                        CustomText(
-                          title,
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                          overflow: TextOverflow.ellipsis,
-                          color: theme.onBackground,
-                        ),
-                        CustomText(
-                          subtitle!,
-                          fontSize: 12,
-                          color: theme.background.lightenColor(theme.isDarkMode ? .4 : .6),
-                          overflow: TextOverflow.ellipsis,
-                          style: subtitleStyle,
-                        ),
-                      ],
-                    )
-                  : CustomText(
-                      title,
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
-                      overflow: TextOverflow.ellipsis,
-                      style: titleStyle,
-                      color: theme.onBackground,
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Flexible(
+                    child: Container(
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: theme.surface.withValues(alpha: 0.25),
+                        border: Border.fromBorderSide(BorderSide(color: theme.onBackground.withValues(alpha: 0.04))),
+                        borderRadius: BorderRadius.circular(40),
+                      ),
+                      child: (subtitle != null || (subtitle != null && subtitle!.isNotEmpty))
+                          ? Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              spacing: 2.5,
+                              children: [
+                                CustomText(
+                                  title,
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  overflow: TextOverflow.ellipsis,
+                                  color: theme.onBackground,
+                                ),
+                                CustomText(
+                                  subtitle!,
+                                  fontSize: 12,
+                                  color: theme.background.lightenColor(theme.isDarkMode ? .4 : .6),
+                                  overflow: TextOverflow.ellipsis,
+                                  style: subtitleStyle,
+                                ),
+                              ],
+                            )
+                          : CustomText(
+                              title,
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              overflow: TextOverflow.ellipsis,
+                              style: titleStyle,
+                              color: theme.onBackground,
+                            ),
                     ),
+                  ),
+                ],
+              ),
             ),
-            if (trailing == null) ConstantSizing.rowSpacingMedium,
+            ConstantSizing.rowSpacingSmall,
             ?trailing,
           ],
         ),

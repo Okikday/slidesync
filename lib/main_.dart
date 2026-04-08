@@ -6,16 +6,10 @@ part of 'main.dart';
 Future<void> _appLaunchRoutine() async {
   /// Clear App Cache every 23 hours
   final lastDateHive = DateTime.tryParse(
-    (await Result.tryRunAsync<String>(() async {
-          return (await AppHiveData.instance.getData<String?>(key: HiveDataPathKey.lastClearedCacheDate.name));
-        })).data ??
-        '',
+    (await HiveDataPathKey.lastClearedCacheDate.name.tryGetHiveData<String>()).data ?? '',
   );
   if (lastDateHive == null) {
-    await AppHiveData.instance.setData(
-      key: HiveDataPathKey.lastClearedCacheDate.name,
-      value: DateTime.now().toIso8601String(),
-    );
+    await HiveDataPathKey.lastClearedCacheDate.name.trySetHiveData(value: DateTime.now().toIso8601String());
     return;
   }
   final lastDate = lastDateHive;
@@ -49,7 +43,7 @@ Future<void> _firstAppLaunch() async {
     );
     await CourseCollectionRepo.add(referenceCollection);
     await CourseCollectionRepo.add(bookMarkCollection);
-    await AppHiveData.instance.setData(key: HiveDataPathKey.isFirstLaunch.name, value: false);
+    await HiveDataPathKey.isFirstLaunch.name.trySetHiveData(value: false);
   }
 }
 

@@ -1,3 +1,6 @@
+import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
+import 'package:slidesync/core/utils/result.dart';
+
 enum HiveDataPathKey {
   /// Miscellaneous
   isBuiltInViewer,
@@ -48,3 +51,30 @@ enum HiveDataPathKey {
 //     HiveDataPathKey.ispdfViewerInDarkMode: "pdfViewer/isDarkMode",
 //   };
 // }
+
+extension HiveDataPathKeyStringExtension on String {
+  /// Sets the Hive data for the current path key
+  Future<void> setHiveData<T>({required T value}) async =>
+      await AppHiveData.instance.setData<T>(key: this, value: value);
+
+  /// Gets the Hive data for the current path key
+  Future<T?> getHiveData<T>() async => await AppHiveData.instance.getData<T>(key: this);
+
+  /// Deletes the Hive data for the current path key
+  Future<void> deleteHiveData() async => await AppHiveData.instance.deleteData(key: this);
+
+  /// Try to get the Hive data for the current path key, returns a [Result] with the data or an error
+  Future<Result<T?>> tryGetHiveData<T>() async => await Result.tryRunAsync<T>(() async {
+    return await getHiveData<T>();
+  });
+
+  /// Try to set the Hive data for the current path key, returns a [Result] with the success status or an error
+  Future<Result<void>> trySetHiveData<T>({required T value}) async => await Result.tryRunAsync<void>(() async {
+    await setHiveData<T>(value: value);
+  });
+
+  /// Try to delete the Hive data for the current path key, returns a [Result] with the success status or an error
+  Future<Result<void>> tryDeleteHiveData() async => await Result.tryRunAsync<void>(() async {
+    await deleteHiveData();
+  });
+}

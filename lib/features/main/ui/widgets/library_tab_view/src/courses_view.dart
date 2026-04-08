@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
@@ -7,13 +5,12 @@ import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/data/models/course/course.dart';
-import 'package:slidesync/features/main/providers/library/library_tab_provider.dart';
+import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/course_card/list_course_card.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/empty_library_view.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/course_card.dart';
 import 'package:slidesync/shared/global/providers/course_providers.dart';
 
-import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_view.dart';
 
 import 'courses_view/course_card/grid_course_card.dart';
@@ -29,76 +26,79 @@ class CoursesView extends ConsumerStatefulWidget {
 class _CoursesViewState extends ConsumerState<CoursesView> {
   @override
   Widget build(BuildContext context) {
-    final int isListView = ref.watch(LibraryTabProvider.cardViewTypeProvider).value ?? 1;
+    final mainProvider = MainProvider.of(ref);
+    final int isListView = mainProvider.library.link(ref).cardViewType.watch(ref).value ?? 1;
     final isGrid = isListView == 0;
-    final cp = ref.watch(LibraryTabProvider.coursesPaginationProvider);
+    final cp = mainProvider.library.link(ref).coursesPagination.link(ref);
 
-    return cp.when(
-      data: (data) {
-        return SliverPadding(
-          padding: EdgeInsetsGeometry.symmetric(horizontal: 16),
-          sliver: PagingListener(
-            controller: data.pagingController,
-            builder: (context, state, fetchNextPage) {
-              if (!isGrid) {
-                return PagedSliverList(
-                  state: state,
-                  itemExtent: 120,
-                  fetchNextPage: fetchNextPage,
-                  builderDelegate: PagedChildBuilderDelegate(
-                    noItemsFoundIndicatorBuilder: (context) => EmptyLibraryView(asSliver: false),
-                    newPageProgressIndicatorBuilder: (context) => LoadingListCourseCardSkeletonizer(count: 1),
-                    firstPageProgressIndicatorBuilder: (context) {
-                      return LoadingListCourseCardSkeletonizer(count: 2);
-                    },
-                    firstPageErrorIndicatorBuilder: (context) {
-                      // log(pagingState.error.toString());
-                      return RotatedBox(quarterTurns: 2, child: Icon(Iconsax.info_circle));
-                    },
-                    itemBuilder: (context, item, index) {
-                      final course = item as Course;
-                      return CourseCard(course, isGrid);
-                    },
-                  ),
-                );
-              } else {
-                return PagedSliverGrid(
-                  state: state,
-                  fetchNextPage: fetchNextPage,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: DeviceUtils.isDesktop()
-                        ? ((context.deviceWidth / 3) ~/ 140)
-                        : context.deviceWidth ~/ 160,
-                    crossAxisSpacing: 12,
-                  ),
+    return SliverPadding(
+      padding: EdgeInsetsGeometry.symmetric(horizontal: 16),
+      sliver: PagingListener(
+        controller: cp.pagingController,
+        builder: (context, state, fetchNextPage) {
+          if (!isGrid) {
+            return PagedSliverList(
+              state: state,
+              itemExtent: 120,
+              fetchNextPage: fetchNextPage,
+              builderDelegate: PagedChildBuilderDelegate(
+                noItemsFoundIndicatorBuilder: (context) => EmptyLibraryView(asSliver: false),
+                newPageProgressIndicatorBuilder: (context) => LoadingListCourseCardSkeletonizer(count: 1),
+                firstPageProgressIndicatorBuilder: (context) {
+                  return LoadingListCourseCardSkeletonizer(count: 2);
+                },
+                firstPageErrorIndicatorBuilder: (context) {
+                  // log(pagingState.error.toString());
+                  return RotatedBox(quarterTurns: 2, child: Icon(Iconsax.info_circle));
+                },
+                itemBuilder: (context, item, index) {
+                  final course = item as Course;
+                  return CourseCard(course, isGrid);
+                },
+              ),
+            );
+          } else {
+            return PagedSliverGrid(
+              state: state,
+              fetchNextPage: fetchNextPage,
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: DeviceUtils.isDesktop()
+                    ? ((context.deviceWidth / 3) ~/ 140)
+                    : context.deviceWidth ~/ 160,
+                crossAxisSpacing: 12,
+              ),
 
-                  builderDelegate: PagedChildBuilderDelegate(
-                    noItemsFoundIndicatorBuilder: (context) => EmptyLibraryView(asSliver: false),
-                    newPageProgressIndicatorBuilder: (context) => Center(child: LoadingView(msg: "")),
-                    firstPageProgressIndicatorBuilder: (context) {
-                      return LoadingGridCourseCardSkeletonizer(count: 2);
-                    },
-                    firstPageErrorIndicatorBuilder: (context) {
-                      // log(pagingState.error.toString());
-                      return RotatedBox(quarterTurns: 2, child: Icon(Iconsax.info_circle));
-                    },
-                    itemBuilder: (context, item, index) {
-                      final course = item as Course;
-                      return CourseCard(course, isGrid);
-                    },
-                  ),
-                );
-              }
-            },
-          ),
-        );
-      },
-      loading: () => SliverToBoxAdapter(child: LoadingLogo()),
-      error: (error, stackTrace) {
-        log("error: ${error.toString()}");
-        return SliverToBoxAdapter(child: Icon(Icons.error));
-      },
+              builderDelegate: PagedChildBuilderDelegate(
+                noItemsFoundIndicatorBuilder: (context) => EmptyLibraryView(asSliver: false),
+                newPageProgressIndicatorBuilder: (context) => Center(child: LoadingView(msg: "")),
+                firstPageProgressIndicatorBuilder: (context) {
+                  return LoadingGridCourseCardSkeletonizer(count: 2);
+                },
+                firstPageErrorIndicatorBuilder: (context) {
+                  // log(pagingState.error.toString());
+                  return RotatedBox(quarterTurns: 2, child: Icon(Iconsax.info_circle));
+                },
+                itemBuilder: (context, item, index) {
+                  final course = item as Course;
+                  return CourseCard(course, isGrid);
+                },
+              ),
+            );
+          }
+        },
+      ),
     );
+
+    // return cp.when(
+    //   data: (data) {
+
+    //   },
+    //   loading: () => SliverToBoxAdapter(child: LoadingLogo()),
+    //   error: (error, stackTrace) {
+    //     log("error: ${error.toString()}");
+    //     return SliverToBoxAdapter(child: Icon(Icons.error));
+    //   },
+    // );
   }
 }
 

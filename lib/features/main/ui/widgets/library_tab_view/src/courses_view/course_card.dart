@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/data/models/course/course.dart';
+import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/actions/library/course_card_actions.dart';
-import 'package:slidesync/features/main/providers/library/src/library_tab_state.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/course_card/grid_course_card.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/course_card/list_course_card.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
 
 class CourseCard extends ConsumerWidget {
@@ -15,7 +16,7 @@ class CourseCard extends ConsumerWidget {
   const CourseCard(this.course, this.isGrid, {super.key, this.onTap});
 
   void updateTapDownDetailsProvider(WidgetRef ref, Offset det) {
-    LibraryTabState.cardTapPositionDetails = det;
+    MainProvider.from(ref, (r, v) => v.library.act(r)).cardTapPositionDetails = det;
   }
 
   @override

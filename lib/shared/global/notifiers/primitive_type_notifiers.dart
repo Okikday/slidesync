@@ -161,6 +161,13 @@ class ImpliedNotifierN<T> extends Notifier<T?> {
   void set(T? value) => state = value;
 }
 
+class StreamedNotifier<T> extends StreamNotifier {
+  final Stream<T> Function() _streamFactory;
+  StreamedNotifier(this._streamFactory);
+  @override
+  Stream<T> build() => _streamFactory();
+}
+
 // ============================================================================
 // HiveAsyncImpliedNotifier - With Hive persistence
 // ============================================================================

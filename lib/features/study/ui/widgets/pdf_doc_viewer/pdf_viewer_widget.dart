@@ -220,7 +220,8 @@ class _PdfViewerWidgetState extends ConsumerState<PdfViewerWidget> {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
     } else {
       ref.read(docViewP).updateScrollOffset(0);
-      final bool isFocusMode = ref.read(MainProvider.isFocusModeProvider) ?? false;
+      final bool isFocusMode = MainProvider.from(ref, (ref, v) => v.state.act(ref).isFocusModeProvider).read(ref);
+
       if (isFocusMode) {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
       } else {

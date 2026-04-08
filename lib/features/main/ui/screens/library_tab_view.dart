@@ -2,9 +2,10 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/features/main/providers/library/library_tab_provider.dart';
+import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/library_tab_body.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class LibraryTabView extends ConsumerStatefulWidget {
   const LibraryTabView({super.key});
@@ -25,7 +26,7 @@ class _LibraryTabViewState extends ConsumerState<LibraryTabView> with AutomaticK
     super.build(context);
 
     return NestedScrollView(
-      controller: ref.watch(LibraryTabProvider.state).scrollController,
+      controller: MainProvider.of(ref).library.act(ref).scrollController,
       physics: const NeverScrollableScrollPhysics(),
       headerSliverBuilder: (context, isInnerBoxScrolled) => const [LibraryTabViewAppBar()],
 

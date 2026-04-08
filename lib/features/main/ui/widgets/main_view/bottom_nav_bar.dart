@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:ui';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
@@ -11,8 +10,6 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 import 'package:slidesync/shared/widgets/layout/app_text.dart';
 import 'package:slidesync/shared/widgets/state/absorber.dart';
-import 'package:soft_edge_blur/soft_edge_blur.dart';
-import 'package:progressive_blur/progressive_blur.dart';
 
 const List<({String label, String tooltip, IconData icon, IconData activeIcon})> _defaultNavBarOptions = [
   (label: "Home", tooltip: "Home", icon: HugeIconsStroke.home01, activeIcon: HugeIconsSolid.home01),
@@ -37,8 +34,8 @@ class BottomNavBar extends ConsumerWidget {
       child: SizedBox(
         height: 80,
         child: AbsorberWatch(
-          listenable: MainProvider.tabIndexProvider,
-          builder: (context, value, ref, _) {
+          listenable: MainProvider.of(ref).state.select((s) => s.tabIndex),
+          builder: (context, tabIndex, ref, _) {
             return Container(
               decoration: BoxDecoration(
                 color: theme.scaffoldBackgroundColor.withValues(alpha: 0.5),
@@ -56,7 +53,7 @@ class BottomNavBar extends ConsumerWidget {
                       Builder(
                         builder: (context) {
                           final index = _defaultNavBarOptions.indexOf(option);
-                          final isActive = value == index;
+                          final isActive = tabIndex == index;
                           return _BuildNavItem(
                             label: option.label,
                             tooltip: option.tooltip,

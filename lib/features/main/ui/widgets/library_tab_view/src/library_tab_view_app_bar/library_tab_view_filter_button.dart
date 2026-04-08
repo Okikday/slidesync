@@ -3,7 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
-import 'package:slidesync/features/main/providers/library/library_tab_provider.dart';
+import 'package:slidesync/features/main/providers/discarded/library/library_tab_provider.dart';
+import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 
@@ -51,45 +52,40 @@ class LibraryTabViewFilterButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
 
-    final asyncCurrSortOption = LibraryTabProvider.coursesFilterProvider.watch(ref);
-    return asyncCurrSortOption.when(
-      data: (CourseSortOption currSortOption) {
-        final currSortData = parseCourseSortOption(currSortOption);
-        final currPlain = currSortOption.toPlain();
-        final plainList = plainListFromCourseSortOptions();
-        final isSortOptionNone = currSortOption == CourseSortOption.dateModifiedDesc;
+    final currSortOption = MainProvider.of(
+      ref,
+    ).library.link(ref).coursesPagination.select((s) => s.sortOption).watch(ref);
+    final currSortData = parseCourseSortOption(currSortOption);
+    final currPlain = currSortOption.toPlain();
+    final plainList = plainListFromCourseSortOptions();
+    final isSortOptionNone = currSortOption == CourseSortOption.dateModifiedDesc;
 
-        return AppPopupMenuButton(
-          icon: isSortOptionNone ? HugeIconsSolid.filter : HugeIconsStroke.filter,
-          iconColor: theme.onPrimary,
-          iconSize: 20,
-          buttonStyle: ButtonStyle(backgroundColor: WidgetStatePropertyAll(theme.primary)),
-          actions: [
-            for (final item in plainList)
-              PopupMenuAction(
-                title: parseCourseSortOption(_fromPlain(item, true)).title,
-                iconData: Icons.circle_outlined,
-                icon: item == currPlain
-                    ? Icon(
-                        item == PlainCourseSortOption.dateModified
-                            ? Icons.check
-                            : currSortData.asc
-                            ? Iconsax.arrow_circle_up
-                            : Iconsax.arrow_circle_down,
-                        color: theme.primary,
-                      )
-                    : null,
-                onTap: () async {
-                  final newOpt = item == currPlain ? _fromPlain(item, !currSortData.asc) : _fromPlain(item, true);
-                  ref.read(LibraryTabProvider.coursesFilterProvider.notifier).set(newOpt);
-                  (await ref.read(LibraryTabProvider.coursesPaginationProvider.future)).updateSortOption(newOpt, true);
-                },
-              ),
-          ],
-        );
-      },
-      error: (e, st) => Icon(Icons.error_rounded),
-      loading: () => AppCircularLoadingIndicator(),
+    return AppPopupMenuButton(
+      icon: isSortOptionNone ? HugeIconsSolid.filter : HugeIconsStroke.filter,
+      iconColor: theme.onPrimary,
+      iconSize: 20,
+      buttonStyle: ButtonStyle(backgroundColor: WidgetStatePropertyAll(theme.primary)),
+      actions: [
+        for (final item in plainList)
+          PopupMenuAction(
+            title: parseCourseSortOption(_fromPlain(item, true)).title,
+            iconData: Icons.circle_outlined,
+            icon: item == currPlain
+                ? Icon(
+                    item == PlainCourseSortOption.dateModified
+                        ? Icons.check
+                        : currSortData.asc
+                        ? Iconsax.arrow_circle_up
+                        : Iconsax.arrow_circle_down,
+                    color: theme.primary,
+                  )
+                : null,
+            onTap: () async {
+              final newOpt = item == currPlain ? _fromPlain(item, !currSortData.asc) : _fromPlain(item, true);
+              MainProvider.of(ref).library.act(ref).coursesPagination.act(ref).updateSortOption(newOpt, refresh: true);
+            },
+          ),
+      ],
     );
   }
 }

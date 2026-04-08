@@ -6,9 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
 import 'package:slidesync/core/assets/assets.gen.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
+import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/actions/home/recent_dialog_actions.dart';
-import 'package:slidesync/features/main/providers/home_provider.dart';
-import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/features/main/ui/components/recent_dialog/recent_dialog.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
@@ -21,9 +20,8 @@ class RecentsSectionBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    final AsyncValue<List<ContentTrack>> asyncProgressTrackValues = ref.watch(
-      HomeProvider.recentContentsTrackProvider(10),
-    );
+    final asyncProgressTrackValues = MainProvider.of(ref).home.act(ref).recentContentsTrack(10).watch(ref);
+
     final rda = RecentDialogActions();
     return asyncProgressTrackValues.when(
       data: (data) {

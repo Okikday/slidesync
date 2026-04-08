@@ -1,0 +1,71 @@
+import 'dart:developer';
+
+import 'package:flutter/widgets.dart';
+import 'package:slidesync/features/main/providers/entities/course_pagination_state.dart';
+import 'package:slidesync/features/main/providers/entities/library_state.dart';
+import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar.dart';
+import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
+import 'package:slidesync/data/repos/course_repo/course_repo.dart';
+import 'package:slidesync/features/main/providers/src/courses_pagination_notifier.dart';
+import 'package:slidesync/shared/global/notifiers/common/card_view_type_notifier.dart';
+import 'package:slidesync/shared/global/notifiers/common/course_sort_notifier.dart';
+
+class LibraryNotifier extends Notifier<LibraryState> {
+  @override
+  LibraryState build() {
+    ref.onDispose(_dispose);
+    scrollController.addListener(scrollListener);
+
+    // Keep scroll offset notifier alive as long as the library tab is alive
+    ref.emptyListenMany([scrollOffset]);
+    return LibraryState();
+  }
+
+  void _dispose() {
+    scrollController.removeListener(scrollListener);
+    scrollController.dispose();
+    log("Disposed $runtimeType!");
+  }
+
+  void scrollListener() {
+    const tol = 20;
+    final currOffset = scrollController.offset;
+
+    if (currOffset > libraryAppBarMaxHeight + tol) return;
+    // if (offset < libraryAppBarMaxHeight - tol) return; // Because of the Library Header Text
+    final lastOffset = ref.read(scrollOffset);
+    if ((currOffset - lastOffset).abs() < 0.5) return;
+    scrollOffset.actX(ref).set(currOffset);
+  }
+
+  final ScrollController scrollController = ScrollController();
+  final scrollOffset = _scrollOffsetNotifier;
+  final coursesPagination = _coursesPaginationNotifier;
+  final cardViewType = _cardViewTypeProvider;
+
+  bool isAnyCardAnimating = false;
+  Offset? cardTapPositionDetails;
+}
+
+///|
+/// ===================================================================================================
+/// EXTRA PROVIDERS
+/// ===================================================================================================
+
+final _scrollOffsetNotifier = NotifierProvider.autoDispose(() => DoubleNotifier());
+final _coursesPaginationNotifier = NotifierProvider.autoDispose<CoursesPaginationNotifier, CoursePaginationState>(
+  CoursesPaginationNotifier.new,
+);
+
+///|
+///|
+/// ===================================================================================================
+/// OTHERS
+/// ===================================================================================================
+
+final _cardViewTypeProvider = AsyncNotifierProvider.autoDispose<CardViewTypeNotifier, int>(
+  () => CardViewTypeNotifier(HiveDataPathKey.libraryTabCardViewType.name, 2),
+);

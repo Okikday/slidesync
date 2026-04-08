@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:developer';
 import 'dart:io' show Platform;
 
-import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -67,7 +66,8 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   }
 
   void _enforceImmersiveMode() {
-    final isFocusMode = ref.read(MainProvider.isFocusModeProvider);
+    final isFocusMode = MainProvider.from(ref, (ref, v) => v.state.act(ref).isFocusModeProvider).read(ref);
+
     if (isFocusMode) {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
     }

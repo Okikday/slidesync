@@ -22,7 +22,7 @@ import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/firebase_options.dart';
 import 'package:window_manager/window_manager.dart';
 
-import 'dev/provider_observer.dart';
+// import 'dev/provider_observer.dart';
 // import 'firebase_options.dart';
 import 'dart:async';
 
@@ -31,7 +31,7 @@ import 'package:pdfrx/src/utils/platform.dart';
 
 part 'main_.dart';
 
-final obs = ActiveProvidersObserver();
+// final obs = ActiveProvidersObserver();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

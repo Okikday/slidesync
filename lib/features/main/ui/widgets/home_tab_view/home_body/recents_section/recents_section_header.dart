@@ -2,8 +2,8 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/routes/routes.dart';
-import 'package:slidesync/features/main/providers/home_provider.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class RecentsSectionHeader extends ConsumerWidget {
@@ -12,9 +12,12 @@ class RecentsSectionHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    final asyncMostRecent = ref.watch(
-      HomeProvider.recentContentsTrackProvider(1).select((s) => s.whenData((v) => v.isEmpty ? null : v.last)),
+    final asyncMostRecent = MainProvider.from(
+      ref,
+      (ref, v) =>
+          v.home.act(ref).recentContentsTrack(1).select((s) => s.whenData((v) => v.isEmpty ? null : v.last)).watch(ref),
     );
+
     return asyncMostRecent.when(
       data: (data) {
         if (data == null) return const SliverToBoxAdapter();

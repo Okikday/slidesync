@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
-import 'package:slidesync/features/main/providers/explore/explore_controller.dart';
+import 'package:slidesync/features/main/providers/discarded/explore/explore_controller.dart';
 import 'package:slidesync/features/main/ui/models/explore_card_data.dart';
 import 'package:slidesync/features/main/ui/widgets/explore_tab_view/explore_card.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/build_button.dart';

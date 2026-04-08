@@ -3,15 +3,12 @@ import 'dart:convert';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
-import 'package:slidesync/features/main/providers/home_provider.dart';
+import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recent_list_tile.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recents_section_body.dart';
 import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
-import 'package:slidesync/routes/routes.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
@@ -25,9 +22,8 @@ class RecentsView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    final AsyncValue<List<ContentTrack>> asyncProgressTrackValues = ref.watch(
-      HomeProvider.recentContentsTrackProvider(100),
-    );
+    final asyncProgressTrackValues = MainProvider.of(ref).home.act(ref).recentContentsTrack(100).watch(ref);
+
     return AnnotatedRegion(
       value: UiUtils.getSystemUiOverlayStyle(theme.scaffoldBackgroundColor, theme.isDarkMode),
       child: AppScaffold(

@@ -1,14 +1,13 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/main/ui/screens/explore_tab_view.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/library_floating_action_button.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_drawer.dart';
 import 'package:slidesync/features/main/ui/screens/library_tab_view.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
-import 'package:slidesync/shared/widgets/state/absorber.dart';
 
 import 'home_tab_view.dart';
 import '../widgets/main_view/bottom_nav_bar.dart';
@@ -32,7 +31,7 @@ class _MainViewState extends ConsumerState<MainView> {
     super.initState();
     pageController = PageController(initialPage: widget.tabIndex);
     WidgetsBinding.instance.addPostFrameCallback(
-      (_) => ref.read(MainProvider.tabIndexProvider.notifier).update((cb) => widget.tabIndex),
+      (_) => MainProvider.of(ref).state.act(ref).setTabIndex(widget.tabIndex),
     );
   }
 
@@ -63,7 +62,7 @@ class _MainViewState extends ConsumerState<MainView> {
                 controller: pageController,
                 // physics: const NeverScrollableScrollPhysics(),
                 onPageChanged: (index) {
-                  ref.read(MainProvider.tabIndexProvider.notifier).update((cb) => index);
+                  MainProvider.of(ref).state.act(ref).setTabIndex(index);
                 },
                 children: _views,
               ),
@@ -74,8 +73,9 @@ class _MainViewState extends ConsumerState<MainView> {
                 right: 0,
                 child: BottomNavBar(
                   onTap: (index) {
-                    if (index != ref.read(MainProvider.tabIndexProvider)) {
-                      ref.read(MainProvider.tabIndexProvider.notifier).update((cb) => index);
+                    final tabIndex = MainProvider.from(ref, (r, v) => v.state.read(r).tabIndex);
+                    if (index != tabIndex) {
+                      MainProvider.from(ref, (r, v) => v.state.act(r)).setTabIndex(index);
                       pageController.animateToPage(
                         index,
                         duration: Durations.extralong1,
