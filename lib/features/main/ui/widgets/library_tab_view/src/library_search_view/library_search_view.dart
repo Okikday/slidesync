@@ -1,15 +1,21 @@
+import 'dart:ui';
+
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:isar_community/isar.dart';
 import 'package:slidesync/data/models/course_content/course_content.dart';
 import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/browse/collection/ui/components/material_list_card.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/decorations/back_soft_edge_blur.dart';
+import 'package:slidesync/shared/widgets/inputs/app_text_form_field.dart';
+import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/app_circular_loading_indicator.dart';
+import 'package:soft_edge_blur/soft_edge_blur.dart';
 
 class LibrarySearchView extends ConsumerStatefulWidget {
   const LibrarySearchView({super.key});
@@ -45,82 +51,97 @@ class _LibrarySearchViewState extends ConsumerState<LibrarySearchView> {
     final theme = ref;
     return AppScaffold(
       title: "",
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          children: [
-            ConstantSizing.columnSpacing(context.topPadding + kToolbarHeight),
-
-            Row(
-              spacing: 12,
-              children: [
-                Expanded(
-                  child: CustomTextfield(
-                    controller: searchTextController,
-                    autoDispose: false,
-                    backgroundColor: theme.secondary.withAlpha(50),
-                    inputContentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                    inputTextStyle: TextStyle(color: theme.onBackground, fontSize: 15),
-                    hint: "Search materials",
-                    onchanged: (text) {
-                      if (text.trim().isEmpty) {
-                        if (futureContentsNotifier.value != null) {
-                          futureContentsNotifier.value = CourseContentRepo.getAll();
+      extendBody: true,
+      extendBodyBehindAppBar: true,
+      appBarPadding: (apply) => EdgeInsets.zero.copyWith(top: apply.top),
+      appBar: BackSoftEdgeBlur(height: 40, applyHeightToSize: true, child: SizedBox()),
+      body: TopPadding(
+        child: BottomPadding(
+          withHeight: 8,
+          child: ValueListenableBuilder(
+            valueListenable: futureContentsNotifier,
+            builder: (context, futureContents, child) {
+              return futureContents == null
+                  ? Center(child: CustomText("Input a title to search", color: theme.onBackground))
+                  : FutureBuilder(
+                      future: futureContents,
+                      builder: (context, snapshot) {
+                        if (snapshot.hasData && snapshot.data != null) {
+                          final contents = snapshot.data!;
+                          return SmoothListView.builder(
+                            padding: EdgeInsets.fromLTRB(20, 20, 20, 72),
+                            itemCount: contents.length,
+                            itemBuilder: (context, index) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 8.0),
+                                child: MaterialListCard(content: contents[index], showGoToCollection: true),
+                              );
+                            },
+                          );
+                        } else if (snapshot.connectionState == ConnectionState.waiting ||
+                            snapshot.connectionState == ConnectionState.active) {
+                          return AppCircularLoadingIndicator(dimension: 30);
+                        } else {
+                          return Center(
+                            child: CustomText(
+                              "No results found for the ${searchTextController.text}",
+                              color: theme.onBackground,
+                            ),
+                          );
                         }
-                      } else {
-                        futureContentsNotifier.value =
-                            (filter as QueryBuilder<CourseContent, CourseContent, QFilterCondition>)
-                                .titleContains(searchTextController.text, caseSensitive: false)
-                                .findAll();
-                      }
-                    },
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.only(left: 12, right: 8),
-                      child: Icon(Iconsax.search_normal_copy),
+                      },
+                    );
+            },
+          ),
+        ),
+      ),
+
+      footer: BackSoftEdgeBlur(
+        edgeType: EdgeType.bottomEdge,
+        applyHeightToSize: true,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          child: Row(
+            spacing: 12,
+            children: [
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(40),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                    child: AppTextFormField(
+                      controller: searchTextController,
+                      // autoDispose: false,
+                      fillColor: theme.background.withValues(alpha: 0.9),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      style: TextStyle(color: theme.onBackground, fontSize: 15),
+                      borderRadius: 40,
+                      borderSide: BorderSide(color: theme.onBackground.withValues(alpha: 0.15)),
+
+                      hintText: "Search materials",
+                      onChanged: (text) {
+                        if (text.trim().isEmpty) {
+                          if (futureContentsNotifier.value != null) {
+                            futureContentsNotifier.value = CourseContentRepo.getAll();
+                          }
+                        } else {
+                          futureContentsNotifier.value =
+                              (filter as QueryBuilder<CourseContent, CourseContent, QFilterCondition>)
+                                  .titleContains(searchTextController.text, caseSensitive: false)
+                                  .findAll();
+                        }
+                      },
+                      prefixIcon: Padding(
+                        padding: const EdgeInsets.only(left: 12, right: 8),
+                        child: Icon(HugeIconsStroke.search02),
+                      ),
                     ),
                   ),
                 ),
-                CloseButton(),
-              ],
-            ),
-
-            Expanded(
-              child: ValueListenableBuilder(
-                valueListenable: futureContentsNotifier,
-                builder: (context, futureContents, child) {
-                  return futureContents == null
-                      ? Center(child: CustomText("Input a title to search", color: theme.onBackground))
-                      : FutureBuilder(
-                          future: futureContents,
-                          builder: (context, snapshot) {
-                            if (snapshot.hasData && snapshot.data != null) {
-                              final contents = snapshot.data!;
-                              return SmoothListView.builder(
-                                itemCount: contents.length,
-                                itemBuilder: (context, index) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(bottom: 8.0),
-                                    child: MaterialListCard(content: contents[index], showGoToCollection: true),
-                                  );
-                                },
-                              );
-                            } else if (snapshot.connectionState == ConnectionState.waiting ||
-                                snapshot.connectionState == ConnectionState.active) {
-                              return AppCircularLoadingIndicator(dimension: 30);
-                            } else {
-                              return Center(
-                                child: CustomText(
-                                  "No results found for the ${searchTextController.text}",
-                                  color: theme.onBackground,
-                                ),
-                              );
-                            }
-                          },
-                        );
-                },
               ),
-            ),
-          ],
+              CloseButton(),
+            ],
+          ),
         ),
       ),
     );

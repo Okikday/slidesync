@@ -14,6 +14,7 @@ import 'package:slidesync/features/settings/providers/settings_provider.dart';
 import 'package:slidesync/features/settings/ui/components/settings_appearance_dialog.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 
@@ -31,17 +32,16 @@ class SettingsView extends ConsumerWidget {
         title: "",
         extendBodyBehindAppBar: true,
         appBar: AppBarContainer(child: AppBarContainerChild(context.isDarkMode, title: "Settings")),
+        body: TopPadding(
+          child: Consumer(
+            builder: (context, ref, child) {
+              final settingsModelProvider = ref.watch(SettingsProvider.settingsProvider);
+              final settingsModel = settingsModelProvider.value == null
+                  ? SettingsModel()
+                  : SettingsModel.fromMap(settingsModelProvider.value!);
 
-        body: Consumer(
-          builder: (context, ref, child) {
-            final settingsModelProvider = ref.watch(SettingsProvider.settingsProvider);
-            final settingsModel = settingsModelProvider.value == null
-                ? SettingsModel()
-                : SettingsModel.fromMap(settingsModelProvider.value!);
-
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 8),
-              child: SmoothListView(
+              return SmoothListView(
+                padding: const EdgeInsets.fromLTRB(20, 60, 20, 8),
                 children: [
                   CustomText("Appearance", color: theme.supportingText),
 
@@ -246,9 +246,9 @@ class SettingsView extends ConsumerWidget {
 
                   // ConstantSizing.columnSpacingMedium,
                 ],
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 // import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
+import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_search_view/library_search_view.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 import 'package:slidesync/shared/widgets/layout/app_text.dart';
@@ -19,7 +20,7 @@ const List<({String label, String tooltip, IconData icon, IconData activeIcon})>
     icon: HugeIconsStroke.folder01,
     activeIcon: HugeIconsSolid.folder01,
   ),
-  (label: "Explore", tooltip: "Explore courses", icon: HugeIconsStroke.compass01, activeIcon: HugeIconsSolid.compass01),
+  // (label: "Explore", tooltip: "Explore courses", icon: HugeIconsStroke.compass01, activeIcon: HugeIconsSolid.compass01),
 ];
 
 class BottomNavBar extends ConsumerWidget {
@@ -33,47 +34,96 @@ class BottomNavBar extends ConsumerWidget {
     return BottomPadding(
       withHeight: 4,
       child: SizedBox(
-        height: 80,
-        child: AbsorberWatch(
-          listenable: MainProvider.state.select((s) => s.tabIndex),
-          builder: (context, tabIndex, ref, _) {
-            return Container(
+        height: 72,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AbsorberWatch(
+              listenable: MainProvider.state.select((s) => s.tabIndex),
+              builder: (context, tabIndex, ref, _) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: theme.scaffoldBackgroundColor.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(40),
+                    border: Border.all(
+                      color: theme.onBackground.withValues(alpha: 0.15),
+                      strokeAlign: BorderSide.strokeAlignOutside,
+                    ),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                  margin: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+
+                  clipBehavior: Clip.antiAlias,
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        for (final option in _defaultNavBarOptions)
+                          Builder(
+                            builder: (context) {
+                              final index = _defaultNavBarOptions.indexOf(option);
+                              final isActive = tabIndex == index;
+                              return _BuildNavItem(
+                                label: option.label,
+                                tooltip: option.tooltip,
+                                isActive: isActive,
+                                onTap: () => onTap(index),
+                                labelColor: isActive ? theme.onBackground : theme.supportingText,
+                                icon: Icon(
+                                  isActive ? option.activeIcon : option.icon,
+                                  color: isActive ? theme.primaryColor : theme.onBackground,
+                                  size: 25,
+                                ),
+                              );
+                            },
+                          ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            Container(
+              width: 64,
+              height: 64,
+              margin: EdgeInsets.symmetric(horizontal: 12),
               decoration: BoxDecoration(
                 color: theme.scaffoldBackgroundColor.withValues(alpha: 0.5),
-                borderRadius: BorderRadius.circular(40),
-                border: Border.all(color: theme.onScaffoldBackgroundColor.withValues(alpha: 0.4)),
-              ),
-              margin: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-              clipBehavior: Clip.antiAlias,
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    for (final option in _defaultNavBarOptions)
-                      Builder(
-                        builder: (context) {
-                          final index = _defaultNavBarOptions.indexOf(option);
-                          final isActive = tabIndex == index;
-                          return _BuildNavItem(
-                            label: option.label,
-                            tooltip: option.tooltip,
-                            isActive: isActive,
-                            onTap: () => onTap(index),
-                            labelColor: isActive ? theme.onBackground : theme.supportingText,
-                            icon: Icon(
-                              isActive ? option.activeIcon : option.icon,
-                              color: isActive ? theme.primaryColor : theme.onBackground,
-                              size: 25,
-                            ),
-                          );
-                        },
-                      ),
-                  ],
+                border: Border.all(
+                  color: theme.onBackground.withValues(alpha: 0.15),
+                  strokeAlign: BorderSide.strokeAlignOutside,
                 ),
+                shape: BoxShape.circle,
               ),
-            );
-          },
+
+              // padding: EdgeInsets.symmetric(horizontal: 4),
+              child: CustomElevatedButton(
+                fixedSize: Size.square(64),
+                shape: CircleBorder(),
+                backgroundColor: Colors.transparent,
+                onClick: () {
+                  Navigator.push(
+                    context,
+                    PageAnimation.pageRouteBuilder(
+                      const LibrarySearchView(),
+                      curve: CustomCurves.defaultIosSpring,
+                      duration: 700.inMs,
+                      type: TransitionType.combine(
+                        transitions: [
+                          TransitionType.scale(alignment: Alignment.bottomRight, from: 0.1),
+                          TransitionType.fadeIn,
+                        ],
+                      ),
+                    ),
+                  );
+                },
+                child: Icon(HugeIconsSolid.search02, color: theme.onBackground, size: 25),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -98,18 +148,22 @@ class _BuildNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return CustomElevatedButton(
-      onClick: onTap,
-      fixedSize: Size(90, 64),
-      borderRadius: 40,
-      backgroundColor: Colors.transparent,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          icon,
-          ConstantSizing.columnSpacing(4),
-          AppText(label, fontSize: 10, color: labelColor),
-        ],
+    return Tooltip(
+      triggerMode: TooltipTriggerMode.longPress,
+      message: tooltip,
+      child: CustomElevatedButton(
+        onClick: onTap,
+        fixedSize: Size(90, 64),
+        borderRadius: 40,
+        backgroundColor: Colors.transparent,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            icon,
+            ConstantSizing.columnSpacing(4),
+            AppText(label, fontSize: 11, color: labelColor, fontWeight: FontWeight.w500),
+          ],
+        ),
       ),
     );
   }

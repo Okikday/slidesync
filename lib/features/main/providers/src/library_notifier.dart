@@ -10,6 +10,8 @@ import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/features/main/providers/src/courses_pagination_notifier.dart';
 import 'package:slidesync/shared/global/notifiers/common/card_view_type_notifier.dart';
 
+const scrollTolerance = 20;
+
 class LibraryNotifier extends Notifier<LibraryState> {
   @override
   LibraryState build() {
@@ -28,14 +30,13 @@ class LibraryNotifier extends Notifier<LibraryState> {
   }
 
   void scrollListener() {
-    const tol = 20;
     final currOffset = scrollController.offset;
-
-    if (currOffset > libraryAppBarMaxHeight + tol) return;
-    // if (offset < libraryAppBarMaxHeight - tol) return; // Because of the Library Header Text
     final lastOffset = ref.read(scrollOffset);
+    final tolerance = libraryAppBarMaxHeight + scrollTolerance;
+    if (currOffset > tolerance && lastOffset > tolerance) return;
+
     if ((currOffset - lastOffset).abs() < 0.5) return;
-    scrollOffset.actX(ref).set(currOffset);
+    ref.read(scrollOffset.notifier).set(currOffset);
   }
 
   final ScrollController scrollController = ScrollController();

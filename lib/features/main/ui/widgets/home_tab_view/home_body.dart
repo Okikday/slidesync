@@ -7,7 +7,7 @@ import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/actions/home/home_tab_actions.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/home_dashboard.dart';
-import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/more_section.dart';
+// import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/more_section.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recents_section_body.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recents_section_header.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -67,18 +67,17 @@ class _HomeBodyState extends ConsumerState<HomeBody> with HomeTabActions {
           ),
         ),
 
-        const SliverToBoxAdapter(child: ConstantSizing.columnSpacingExtraLarge),
+        // const SliverToBoxAdapter(child: ConstantSizing.columnSpacingExtraLarge),
 
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.only(left: 12),
-            child: CustomText("Quick access", color: ref.onBackground, fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-        ),
-        const SliverToBoxAdapter(child: ConstantSizing.columnSpacingLarge),
+        // SliverToBoxAdapter(
+        //   child: Padding(
+        //     padding: const EdgeInsets.only(left: 12),
+        //     child: CustomText("Quick access", color: ref.onBackground, fontSize: 16, fontWeight: FontWeight.bold),
+        //   ),
+        // ),
+        // // const SliverToBoxAdapter(child: ConstantSizing.columnSpacingLarge),
 
-        const SliverToBoxAdapter(child: MoreSection()),
-
+        // // const SliverToBoxAdapter(child: MoreSection()),
         const SliverToBoxAdapter(child: ConstantSizing.columnSpacingExtraLarge),
 
         // Recents Section Header

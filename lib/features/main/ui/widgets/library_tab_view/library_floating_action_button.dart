@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:slidesync/features/main/providers/src/library_notifier.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar.dart';
@@ -16,15 +17,20 @@ class LibraryFloatingActionButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isAtLibrary = MainProvider.state.select((s) => s.tabIndex == 1).watch(ref);
+    final tabIndex = MainProvider.state.select((s) => s.tabIndex).watch(ref);
+    // final isAtHome = tabIndex == 0;
+    final isAtLibrary = tabIndex == 1;
+    // final isAtElsewhere = !isAtHome && !isAtLibrary;
     if (!isAtLibrary && !isDesktop) return const SizedBox();
     final theme = ref;
+    final tolerance = libraryAppBarMaxHeight + scrollTolerance;
+
+    final isScrolledListenable = MainProvider.library.link(ref).scrollOffset.select((s) => s > tolerance);
 
     return AbsorberWatch(
-      listenable: MainProvider.library.act(ref).scrollOffset,
-
-      builder: (context, offset, ref, child) {
-        if (offset > libraryAppBarMaxHeight) {
+      listenable: isScrolledListenable,
+      builder: (context, isScrolled, ref, child) {
+        if (isScrolled) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 80),
             child: CustomElevatedButton(
@@ -50,9 +56,7 @@ class LibraryFloatingActionButton extends ConsumerWidget {
         padding: EdgeInsets.only(bottom: isDesktop ? 24 : 80),
         child:
             FloatingActionButton(
-              onPressed: () {
-                context.pushNamed(Routes.createCourse.name);
-              },
+              onPressed: () => context.pushNamed(Routes.createCourse.name),
               tooltip: "Create course",
               shape: const CircleBorder(),
               backgroundColor: theme.primaryColor,

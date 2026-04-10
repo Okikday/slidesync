@@ -1,10 +1,7 @@
-import 'dart:developer';
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/features/main/ui/screens/explore_tab_view.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/library_floating_action_button.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_drawer.dart';
@@ -18,7 +15,7 @@ import 'package:soft_edge_blur/soft_edge_blur.dart';
 import 'home_tab_view.dart';
 import '../widgets/main_view/bottom_nav_bar.dart';
 
-const _views = [HomeTabView(), LibraryTabView(), ExploreTabView()];
+const _views = [HomeTabView(), LibraryTabView()];
 
 class MainView extends ConsumerStatefulWidget {
   final int tabIndex;
@@ -46,12 +43,10 @@ class _MainViewState extends ConsumerState<MainView> {
 
   @override
   Widget build(BuildContext context) {
-    log("Rebuild MainView Outer");
     final bottomPadding = context.bottomPadding;
     return AbsorberWatch(
       listenable: MainProvider.home.select((s) => s.isScrolled),
       builder: (_, isScrolled, ref, body) {
-        log("Rebuild MainView Inner");
         return AppScaffold(
           title: "",
           canPop: false,

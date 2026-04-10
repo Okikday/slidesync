@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -53,7 +51,7 @@ class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAli
     super.build(context);
     // Listen to events on isFocusModeProvider
     ref.listen<bool>(MainProvider.state.link(ref).isFocusMode, focusModeListener);
-    log("Rebuild HomeTabView Outer");
+    // final tabIndex = MainProvider.state.select((s) => s.tabIndex).watch(ref);
     return NestedScrollView(
       controller: scrollController,
       physics: DeviceUtils.isDesktop() ? const NeverScrollableScrollPhysics() : null,
@@ -72,6 +70,10 @@ class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAli
 
       body: HomeBody(),
     );
+    // .animate(key: ValueKey(tabIndex != 0), target: tabIndex == 0 ? 1 : 0)
+    // .blurXY(begin: 0.5, end: 0)
+    // .scaleXY(begin: 1.1, end: 1.0, duration: 600.inMs, curve: CustomCurves.defaultIosSpring)
+    // .fade(begin: 0.4, end: 1.0);
   }
 
   @override

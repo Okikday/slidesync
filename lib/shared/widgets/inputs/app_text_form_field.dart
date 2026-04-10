@@ -30,7 +30,7 @@ class AppTextFormField extends ConsumerWidget {
   final String? initialValue;
   final String? hintText;
   final String? errorText;
-  final Color? borderColor;
+  final BorderSide? borderSide;
   final EdgeInsets? contentPadding;
   final Widget? prefix;
   final Widget? prefixIcon;
@@ -49,6 +49,8 @@ class AppTextFormField extends ConsumerWidget {
   final int? minLines;
   final int? maxLines;
   final int? maxLength;
+  final double? borderRadius;
+  final TextStyle? style;
 
   const AppTextFormField({
     super.key,
@@ -71,7 +73,7 @@ class AppTextFormField extends ConsumerWidget {
     this.initialValue,
     this.hintText,
     this.errorText,
-    this.borderColor,
+    this.borderSide,
     this.contentPadding,
     this.prefix,
     this.prefixIcon,
@@ -92,6 +94,8 @@ class AppTextFormField extends ConsumerWidget {
     this.minLines,
     this.maxLines = 1,
     this.maxLength,
+    this.borderRadius,
+    this.style,
   });
 
   @override
@@ -143,7 +147,7 @@ class AppTextFormField extends ConsumerWidget {
       maxLines: maxLines,
       maxLength: maxLength,
       textInputAction: textInputAction,
-      style: TextStyle(color: theme.primary, fontSize: 14),
+      style: style ?? TextStyle(color: theme.primary, fontSize: 14),
       autofillHints: autofillHints,
       autocorrect: autocorrect,
       autofocus: autofocus,
@@ -162,29 +166,29 @@ class AppTextFormField extends ConsumerWidget {
         suffixIcon: suffix,
         filled: true,
         border: OutlineInputBorder(
-          borderSide: BorderSide(color: borderColor ?? theme.outline, width: 1),
-          borderRadius: BorderRadius.circular(16),
+          borderSide: borderSide ?? BorderSide(color: theme.outline, width: 1),
+          borderRadius: BorderRadius.circular(borderRadius ?? 16),
         ),
         enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: borderColor ?? theme.outline, width: 1),
-          borderRadius: BorderRadius.circular(16),
+          borderSide: borderSide ?? BorderSide(color: theme.outline, width: 1),
+          borderRadius: BorderRadius.circular(borderRadius ?? 16),
         ),
         focusedBorder: OutlineInputBorder(
           borderSide: BorderSide(color: theme.primary, width: 1),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(borderRadius ?? 16),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderSide: BorderSide(color: theme.errorColor, width: 1),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(borderRadius ?? 16),
         ),
         disabledBorder: OutlineInputBorder(
           borderSide: BorderSide(color: theme.outline.withAlpha(40), width: 1),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(borderRadius ?? 16),
         ),
 
         errorBorder: OutlineInputBorder(
           borderSide: BorderSide(color: theme.errorColor.withAlpha(100), width: 1),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(borderRadius ?? 16),
         ),
       ),
       cursorRadius: const Radius.circular(2),
@@ -277,7 +281,7 @@ class _TextSelectionToolbarContainer extends StatelessWidget {
     return Material(
       // This value was eyeballed to match the native text selection menu on
       // a Pixel 6 emulator running Android API level 34.
-      borderRadius: const BorderRadius.all(Radius.circular(16)),
+      borderRadius: const BorderRadius.all(Radius.circular(20)),
       clipBehavior: Clip.antiAlias,
       color: _getColor(theme.colorScheme),
       elevation: 1.0,

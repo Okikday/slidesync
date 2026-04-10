@@ -7,6 +7,7 @@ class BackSoftEdgeBlur extends StatelessWidget {
   final EdgeType edgeType;
   final double height;
   final bool applyHeightToSize;
+  final List<ControlPoint>? points;
   final Widget child;
   const BackSoftEdgeBlur({
     super.key,
@@ -14,6 +15,7 @@ class BackSoftEdgeBlur extends StatelessWidget {
     this.edgeType = EdgeType.topEdge,
     this.applyHeightToSize = false,
     this.height = 72,
+    this.points,
     required this.child,
   });
 
@@ -31,10 +33,12 @@ class BackSoftEdgeBlur extends StatelessWidget {
                   size: applyHeightToSize ? height : 72,
                   sigma: 30,
                   tintColor: color ?? context.scaffoldBackgroundColor,
-                  controlPoints: [
-                    ControlPoint(position: 0.4, type: ControlPointType.visible),
-                    ControlPoint(position: 1.0, type: ControlPointType.transparent),
-                  ],
+                  controlPoints:
+                      points ??
+                      [
+                        ControlPoint(position: 0.4, type: ControlPointType.visible),
+                        ControlPoint(position: 1.0, type: ControlPointType.transparent),
+                      ],
                 ),
               ],
               child: SizedBox.expand(),
