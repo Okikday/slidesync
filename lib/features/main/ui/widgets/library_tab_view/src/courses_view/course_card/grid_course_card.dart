@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -33,10 +31,8 @@ class GridCourseCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    final courseCode = course.courseCode;
-    final categoriesCount = course.collections.length;
     final shadowSurfaceColor = theme.surface.lightenColor(0.5).withValues(alpha: 0.1);
-    log("Rebuild Grid course card");
+
     return Padding(
       padding: const EdgeInsets.all(1.5),
       child: ConstrainedBox(
@@ -51,10 +47,8 @@ class GridCourseCard extends ConsumerWidget {
             // fit: StackFit.expand,
             // clipBehavior: Clip.antiAlias,
             children: [
-              Expanded(
-                child: GridCourseCardStackedCard(course: course, courseCode: courseCode),
-              ),
-              GridCourseCardBottomStack(courseName: course.courseName, categoriesCount: categoriesCount),
+              Expanded(child: GridCourseCardStackedCard(course: course)),
+              GridCourseCardBottomStack(course: course),
             ],
           ),
         ),
@@ -64,10 +58,9 @@ class GridCourseCard extends ConsumerWidget {
 }
 
 class GridCourseCardStackedCard extends ConsumerWidget {
-  const GridCourseCardStackedCard({super.key, required this.course, required this.courseCode});
+  const GridCourseCardStackedCard({super.key, required this.course});
 
   final Course course;
-  final String courseCode;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -137,14 +130,14 @@ class GridCourseCardStackedCard extends ConsumerWidget {
                                   spacing: 4.0,
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    if (courseCode.isNotEmpty)
+                                    if (course.courseCode.isNotEmpty)
                                       CustomTextButton(
                                         backgroundColor: theme.altBackgroundSecondary,
                                         pixelHeight: 16,
                                         borderRadius: 8,
                                         contentPadding: EdgeInsets.symmetric(horizontal: 5.0),
                                         child: CustomText(
-                                          courseCode,
+                                          course.courseCode,
                                           fontSize: 8,
                                           fontWeight: FontWeight.bold,
                                           color: theme.secondary,
@@ -230,14 +223,14 @@ class _GridCourseCardProgressIndicatorState extends ConsumerState<GridCourseCard
 }
 
 class GridCourseCardBottomStack extends ConsumerWidget {
-  const GridCourseCardBottomStack({super.key, required this.courseName, required this.categoriesCount});
+  const GridCourseCardBottomStack({super.key, required this.course});
 
-  final String courseName;
-  final int categoriesCount;
+  final Course course;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
+    final categoriesCount = course.collections.length;
     return ClipRRect(
       clipBehavior: Clip.antiAlias,
       borderRadius: BorderRadius.only(bottomLeft: Radius.circular(22), bottomRight: Radius.circular(22)),
@@ -257,7 +250,7 @@ class GridCourseCardBottomStack extends ConsumerWidget {
               children: [
                 Flexible(
                   child: CustomText(
-                    courseName,
+                    course.courseName,
                     color: theme.onBackground,
                     fontWeight: FontWeight.bold,
                     textAlign: TextAlign.center,

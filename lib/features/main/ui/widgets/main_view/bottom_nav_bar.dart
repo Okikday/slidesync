@@ -35,7 +35,7 @@ class BottomNavBar extends ConsumerWidget {
       child: SizedBox(
         height: 80,
         child: AbsorberWatch(
-          listenable: MainProvider.of(ref).state.select((s) => s.tabIndex),
+          listenable: MainProvider.state.select((s) => s.tabIndex),
           builder: (context, tabIndex, ref, _) {
             return Container(
               decoration: BoxDecoration(

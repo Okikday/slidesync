@@ -3,8 +3,8 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_content/course_content.dart';
@@ -76,7 +76,7 @@ class ModContentsOptions extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     spacing: 4,
                     children: [
-                      Icon(PhosphorIcons.scissors(), color: theme.onSurface),
+                      Icon(HugeIconsSolid.move, color: theme.onSurface),
                       CustomText("Move", color: theme.onSurface),
                     ],
                   ),
@@ -96,7 +96,7 @@ class ModContentsOptions extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     spacing: 4,
                     children: [
-                      Icon(PhosphorIcons.share(), color: theme.onSurface),
+                      Icon(HugeIconsSolid.share01, color: theme.onSurface),
                       CustomText("Share", color: theme.onSurface),
                     ],
                   ),
@@ -119,7 +119,7 @@ class ModContentsOptions extends ConsumerWidget {
                     mainAxisSize: MainAxisSize.min,
                     spacing: 4,
                     children: [
-                      Icon(PhosphorIcons.listBullets(), color: theme.onSurface),
+                      Icon(HugeIconsSolid.listView, color: theme.onSurface),
                       CustomText("Select All", color: theme.onSurface),
                     ],
                   ),

@@ -37,6 +37,9 @@ extension NotifierX<N extends Notifier<S>, S> on NotifierProvider<N, S> {
 
   N link(WidgetRef ref) => ref.watch(notifier);
   N linkX(Ref ref) => ref.watch(notifier);
+
+  T expand<T>(WidgetRef ref, T Function(WidgetRef r, NotifierProvider<N, S> s) selector) => selector(ref, this);
+  T expandX<T>(Ref ref, T Function(Ref r, NotifierProvider<N, S> s) selector) => selector(ref, this);
 }
 
 extension AsyncNotifierX<N extends AsyncNotifier<S>, S> on AsyncNotifierProvider<N, S> {
@@ -45,4 +48,7 @@ extension AsyncNotifierX<N extends AsyncNotifier<S>, S> on AsyncNotifierProvider
 
   N link(WidgetRef ref) => ref.watch(notifier);
   N linkX(Ref ref) => ref.watch(notifier);
+
+  T expand<T>(WidgetRef ref, T Function(WidgetRef r, AsyncNotifierProvider<N, S> s) selector) => selector(ref, this);
+  T expandX<T>(Ref ref, T Function(Ref r, AsyncNotifierProvider<N, S> s) selector) => selector(ref, this);
 }

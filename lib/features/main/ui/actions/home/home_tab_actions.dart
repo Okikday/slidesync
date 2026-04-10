@@ -20,10 +20,9 @@ import 'package:window_manager/window_manager.dart';
 mixin HomeTabActions {
   /// Action taken when the notification button is clicked. Toggles focus mode and shows a flush bar indicating the new state.
   void onClickFocusButton(WidgetRef ref) {
-    MainProvider.from(ref, (r, v) {
-      final isFocusModePro = v.state.act(r).isFocusMode.act(ref);
+    MainProvider.state.act(ref).isFocusMode.expand(ref, (r, v) {
       late bool prev;
-      isFocusModePro.update((cb) {
+      v.act(ref).update((cb) {
         prev = cb;
         return !cb;
       });

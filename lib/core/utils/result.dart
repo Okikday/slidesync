@@ -10,7 +10,7 @@ class Result<T> {
 
   const Result._({required this.status, this.data, this.message, this.stackTrace});
 
-  const Result.loading() : this._(status: ResultStatus.loading);
+  // const Result.loading() : this._(status: ResultStatus.loading);
 
   factory Result.success(T value, {String? logMsg}) {
     if (logMsg != null) log("success: $logMsg");
@@ -18,7 +18,7 @@ class Result<T> {
   }
 
   factory Result.error(String message, [StackTrace? st, bool logError = true]) {
-   if(logError) log("error: $message", error: message, stackTrace: st);
+    if (logError) log("error: $message", error: message, stackTrace: st);
     return Result._(status: ResultStatus.error, message: message, stackTrace: st);
   }
 
@@ -61,22 +61,24 @@ class Result<T> {
   Result<U> doNext<U>(U Function(T data) transform) {
     if (isSuccess) {
       return Result<U>.success(transform(data as T));
-    } else if (isError) {
-      return Result<U>.error(message!);
     } else {
-      return Result<U>.loading();
+      return Result<U>.error(message!);
     }
+    // else {
+    //   return Result<U>.loading();
+    // }
   }
 
   /// Runs [futureProducer] only if this is a success; otherwise propagates loading/error.
   Future<Result<U>> doNextAsync<U>(Future<Result<U>> Function(T data) futureProducer) async {
     if (isSuccess) {
       return await futureProducer(data as T);
-    } else if (isError) {
-      return Result<U>.error(message!);
     } else {
-      return Result<U>.loading();
+      return Result<U>.error(message!);
     }
+    // else {
+    //   return Result<U>.loading();
+    // }
   }
 
   Result<T> onError(void Function(String message, [StackTrace? st]) handler) {

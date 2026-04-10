@@ -66,7 +66,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   }
 
   void _enforceImmersiveMode() {
-    final isFocusMode = MainProvider.from(ref, (ref, v) => v.state.act(ref).isFocusMode).read(ref);
+    final isFocusMode = MainProvider.state.act(ref).isFocusMode.read(ref);
 
     if (isFocusMode) {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);

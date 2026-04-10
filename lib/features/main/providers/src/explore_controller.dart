@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter_riverpod/legacy.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
-import 'package:slidesync/features/main/ui/models/explore_card_data.dart';
+import 'package:slidesync/features/main/ui/entities/explore_card_data.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/features/main/ui/widgets/explore_tab_view/explore_card.dart';
 import 'package:slidesync/features/sync/logic/firebase_sync_repository.dart';

@@ -8,7 +8,7 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/models/course_collection/course_collection.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
-import 'package:slidesync/features/main/ui/models/explore_card_data.dart';
+import 'package:slidesync/features/main/ui/entities/explore_card_data.dart';
 import 'package:slidesync/features/main/ui/widgets/explore_tab_view/explore_card.dart';
 import 'package:slidesync/features/sync/logic/sync_service.dart';
 import 'package:slidesync/routes/routes.dart';

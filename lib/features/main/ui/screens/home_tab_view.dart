@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,12 +28,12 @@ class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAli
     scrollController = ScrollController()..addListener(scrollListener);
   }
 
-  void scrollListener() => MainProvider.from(ref, (r, v) {
-    final isScrolled = v.home.select((s) => s.isScrolled).read(ref);
+  void scrollListener() => MainProvider.home.expand(ref, (r, v) {
+    final isScrolled = r.read(v.select((s) => s.isScrolled));
     scrollController.offset > isScrolledLvl && !isScrolled
-        ? v.home.act(ref).setIsScrolled(true)
+        ? r.read(v.notifier).setIsScrolled(true)
         : isScrolled
-        ? v.home.act(ref).setIsScrolled(false)
+        ? r.read(v.notifier).setIsScrolled(true)
         : () {};
   });
 
@@ -50,8 +52,8 @@ class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAli
   Widget build(BuildContext context) {
     super.build(context);
     // Listen to events on isFocusModeProvider
-    ref.listen<bool>(MainProvider.of(ref).state.link(ref).isFocusMode, focusModeListener);
-
+    ref.listen<bool>(MainProvider.state.link(ref).isFocusMode, focusModeListener);
+    log("Rebuild HomeTabView Outer");
     return NestedScrollView(
       controller: scrollController,
       physics: DeviceUtils.isDesktop() ? const NeverScrollableScrollPhysics() : null,

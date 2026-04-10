@@ -20,7 +20,10 @@ class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
   /// ===================================================================================================
   /// MUTABLE VARIABLES (Internal Manager State)
   /// ===================================================================================================
-  late final PagingController<int, Course> pagingController;
+  late final PagingController<int, Course> pagingController = PagingController(
+    getNextPageKey: (state) => state.lastPageIsEmpty ? null : state.nextIntPageKey,
+    fetchPage: (pageKey) => fetchPage(pageKey, limit),
+  );
   final Queue<Completer<List<Course>>> _waitingQueue = Queue();
   final coursesFilter = _coursesFilterProvider;
 
@@ -35,16 +38,14 @@ class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
 
   @override
   CoursePaginationState build() {
-    final initialSort = _coursesFilterProvider.readX(ref).value ?? CourseSortOption.dateModifiedDesc;
-
-    pagingController = PagingController(
-      getNextPageKey: (state) => state.lastPageIsEmpty ? null : state.nextIntPageKey,
-      fetchPage: (pageKey) => fetchPage(pageKey, limit),
-    );
+    log("Rebuild $runtimeType");
+    final filterPro = _coursesFilterProvider.readX(ref);
+    final initialSort = filterPro.value ?? CourseSortOption.dateModifiedDesc;
 
     ref.listen(
       _coursesFilterProvider,
       (prev, next) => next.whenData((newSort) => updateSortOption(newSort, refresh: true)),
+      fireImmediately: true,
     );
 
     ref.onDispose(() {
@@ -75,7 +76,7 @@ class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
     // Initialize count if first run
     if (count <= 0) {
       final isar = await CourseRepo.isar;
-      count = await isar.courses.count();
+      Future.microtask(() async => count = await isar.courses.count());
     }
 
     if (_fetching) {

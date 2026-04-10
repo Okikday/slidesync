@@ -8,7 +8,7 @@ import 'package:slidesync/core/assets/assets.gen.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/actions/home/recent_dialog_actions.dart';
-import 'package:slidesync/features/main/ui/components/recent_dialog/recent_dialog.dart';
+import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recent_dialog/recent_dialog.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 
@@ -20,7 +20,7 @@ class RecentsSectionBody extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    final asyncProgressTrackValues = MainProvider.of(ref).home.link(ref).recentContentsTrack(10).watch(ref);
+    final asyncProgressTrackValues = MainProvider.home.link(ref).recentContentsTrack(10).watch(ref);
 
     final rda = RecentDialogActions();
     return asyncProgressTrackValues.when(

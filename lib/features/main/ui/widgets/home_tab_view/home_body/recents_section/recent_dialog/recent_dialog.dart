@@ -9,7 +9,7 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/features/main/ui/actions/home/recent_dialog_actions.dart';
-import 'package:slidesync/features/main/ui/components/recent_dialog/recent_dialog_selection_options.dart';
+import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recent_dialog/recent_dialog_selection_options.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';

@@ -29,7 +29,7 @@ class LibraryTabViewHeaderText extends ConsumerWidget {
         child: SizedBox(
           height: height,
           child: AbsorberWatch(
-            listenable: MainProvider.of(ref).library.link(ref).scrollOffset,
+            listenable: MainProvider.library.link(ref).scrollOffset,
             builder: (context, offset, ref, child) {
               final double percentScroll = (math.min(offset, allowedHeight) / allowedHeight);
 

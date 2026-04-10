@@ -1073,7 +1073,7 @@ packages:
     source: hosted
     version: "0.15.6"
   http:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: http
       sha256: "87721a4a50b19c7f1d49001e51409bddc46303966ce89a65af4f4e6004896412"
@@ -1593,14 +1593,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.2"
-  phosphor_flutter:
-    dependency: "direct main"
-    description:
-      name: phosphor_flutter
-      sha256: "8a14f238f28a0b54842c5a4dc20676598dd4811fcba284ed828bd5a262c11fde"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.0"
   photo_view:
     dependency: "direct main"
     description:
@@ -1649,14 +1641,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.5.0"
-  progressive_blur:
-    dependency: "direct main"
-    description:
-      name: progressive_blur
-      sha256: "3a8845133b9c67dbd6b49eb14000c2a05d142d6d9ad7281f2d2eb63fba181d37"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.2"
   provider:
     dependency: transitive
     description:

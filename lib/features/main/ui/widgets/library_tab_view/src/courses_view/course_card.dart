@@ -16,7 +16,7 @@ class CourseCard extends ConsumerWidget {
   const CourseCard(this.course, this.isGrid, {super.key, this.onTap});
 
   void updateTapDownDetailsProvider(WidgetRef ref, Offset det) {
-    MainProvider.from(ref, (r, v) => v.library.act(r)).cardTapPositionDetails = det;
+    MainProvider.library.act(ref).cardTapPositionDetails = det;
   }
 
   @override

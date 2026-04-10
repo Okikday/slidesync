@@ -35,11 +35,10 @@ class _HomeBodyState extends ConsumerState<HomeBody> with HomeTabActions {
 
         SliverToBoxAdapter(
           child: AbsorberWatch(
-            listenable: MainProvider.from(
-              ref,
-              (r, v) =>
-                  v.home.link(ref).recentContentsTrack(1).select((s) => s.whenData((v) => v.isEmpty ? null : v.last)),
-            ),
+            listenable: MainProvider.home
+                .link(ref)
+                .recentContentsTrack(1)
+                .select((s) => s.whenData((v) => v.isEmpty ? null : v.last)),
 
             builder: (context, recentContentTrack, ref, child) {
               return recentContentTrack.when(

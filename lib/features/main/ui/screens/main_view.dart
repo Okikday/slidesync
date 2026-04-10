@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -33,9 +35,7 @@ class _MainViewState extends ConsumerState<MainView> {
   void initState() {
     super.initState();
     pageController = PageController(initialPage: widget.tabIndex);
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => MainProvider.of(ref).state.act(ref).setTabIndex(widget.tabIndex),
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) => MainProvider.state.act(ref).setTabIndex(widget.tabIndex));
   }
 
   @override
@@ -46,9 +46,12 @@ class _MainViewState extends ConsumerState<MainView> {
 
   @override
   Widget build(BuildContext context) {
+    log("Rebuild MainView Outer");
+    final bottomPadding = context.bottomPadding;
     return AbsorberWatch(
-      listenable: MainProvider.of(ref).home.select((s) => s.isScrolled),
+      listenable: MainProvider.home.select((s) => s.isScrolled),
       builder: (_, isScrolled, ref, body) {
+        log("Rebuild MainView Inner");
         return AppScaffold(
           title: "",
           canPop: false,
@@ -59,21 +62,23 @@ class _MainViewState extends ConsumerState<MainView> {
           body: body!,
           footer: BackSoftEdgeBlur(
             edgeType: EdgeType.bottomEdge,
-            height: 84 + context.bottomPadding,
+            height: 84 + bottomPadding,
             child: BottomNavBar(
-              onTap: (index) => MainProvider.from(ref, (r, v) {
-                if (v.state.read(r).tabIndex != index) {
-                  MainProvider.from(ref, (r, v) => v.state.act(r)).setTabIndex(index);
-                  pageController.animateToPage(index, duration: 700.inMs, curve: CustomCurves.defaultIosSpring);
-                }
-              }),
+              onTap: (index) {
+                MainProvider.state.expand(ref, (r, v) {
+                  if (v.read(r).tabIndex != index) {
+                    v.act(r).setTabIndex(index);
+                    pageController.animateToPage(index, duration: 700.inMs, curve: CustomCurves.defaultIosSpring);
+                  }
+                });
+              },
             ),
           ),
         );
       },
       child: PageView(
         controller: pageController,
-        onPageChanged: (index) => MainProvider.of(ref).state.act(ref).setTabIndex(index),
+        onPageChanged: (index) => MainProvider.state.act(ref).setTabIndex(index),
         children: _views,
       ),
     );

@@ -12,15 +12,14 @@ class LibraryTabViewLayoutButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mainProvider = MainProvider.of(ref);
-    final AsyncValue<int> asyncIsListView = mainProvider.library.link(ref).cardViewType.watch(ref);
+    final AsyncValue<int> asyncIsListView = MainProvider.library.link(ref).cardViewType.watch(ref);
 
     return asyncIsListView.when(
       data: (data) {
         final isGrid = data == 0;
         return BuildButton(
           onTap: () {
-            mainProvider.library.act(ref).cardViewType.act(ref).toggle();
+            MainProvider.library.act(ref).cardViewType.act(ref).toggle();
           },
           backgroundColor: backgroundColor,
           iconData: isGrid ? HugeIconsStroke.grid02 : HugeIconsStroke.menu02,

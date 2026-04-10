@@ -49,9 +49,7 @@ class LibraryTabViewFilterButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
 
-    final currSortOption = MainProvider.of(
-      ref,
-    ).library.link(ref).coursesPagination.select((s) => s.sortOption).watch(ref);
+    final currSortOption = MainProvider.library.link(ref).coursesPagination.select((s) => s.sortOption).watch(ref);
     final currSortData = parseCourseSortOption(currSortOption);
     final currPlain = currSortOption.toPlain();
     final plainList = plainListFromCourseSortOptions();
@@ -79,7 +77,7 @@ class LibraryTabViewFilterButton extends ConsumerWidget {
                 : null,
             onTap: () async {
               final newOpt = item == currPlain ? _fromPlain(item, !currSortData.asc) : _fromPlain(item, true);
-              MainProvider.of(ref).library.act(ref).coursesPagination.act(ref).updateSortOption(newOpt, refresh: true);
+              MainProvider.library.act(ref).coursesPagination.act(ref).updateSortOption(newOpt, refresh: true);
             },
           ),
       ],

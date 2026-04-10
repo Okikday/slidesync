@@ -16,13 +16,12 @@ class LibraryFloatingActionButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mainProvider = MainProvider.of(ref);
-    final isAtLibrary = mainProvider.state.select((s) => s.tabIndex == 1).watch(ref);
+    final isAtLibrary = MainProvider.state.select((s) => s.tabIndex == 1).watch(ref);
     if (!isAtLibrary && !isDesktop) return const SizedBox();
     final theme = ref;
 
     return AbsorberWatch(
-      listenable: mainProvider.library.act(ref).scrollOffset,
+      listenable: MainProvider.library.act(ref).scrollOffset,
 
       builder: (context, offset, ref, child) {
         if (offset > libraryAppBarMaxHeight) {
@@ -35,7 +34,7 @@ class LibraryFloatingActionButton extends ConsumerWidget {
               shape: const CircleBorder(),
               backgroundColor: ref.primary,
               onClick: () {
-                mainProvider.library
+                MainProvider.library
                     .act(ref)
                     .scrollController
                     .animateTo(0, duration: Durations.extralong1, curve: CustomCurves.defaultIosSpring);

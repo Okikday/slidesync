@@ -18,7 +18,7 @@ class _LibraryTabViewState extends ConsumerState<LibraryTabView> with AutomaticK
     super.build(context);
 
     return NestedScrollView(
-      controller: MainProvider.of(ref).library.link(ref).scrollController,
+      controller: MainProvider.library.link(ref).scrollController,
       physics: const NeverScrollableScrollPhysics(),
       headerSliverBuilder: (context, isInnerBoxScrolled) => const [LibraryTabViewAppBar()],
       body: const LibraryTabBody(),

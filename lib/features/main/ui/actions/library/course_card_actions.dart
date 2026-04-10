@@ -18,7 +18,7 @@ class CourseCardActions {
   BuildContext get context => ref.context;
 
   void onTapCourseCard(Course course) async {
-    final libraryNotifier = MainProvider.from(ref, (r, v) => v.library.act(r));
+    final libraryNotifier = MainProvider.library.act(ref);
     if (libraryNotifier.isAnyCardAnimating) return;
     libraryNotifier.isAnyCardAnimating = true; // Tell that a course is currently opened
     await Future.delayed(Durations.short4);
@@ -34,7 +34,7 @@ class CourseCardActions {
   }
 
   void onHoldCourseCard(Course course) async {
-    final libraryNotifier = MainProvider.from(ref, (r, v) => v.library.act(r));
+    final libraryNotifier = MainProvider.library.act(ref);
     final Offset? tapPosition = libraryNotifier.cardTapPositionDetails;
     if (tapPosition == null) return;
     UiUtils.showCustomDialog(
