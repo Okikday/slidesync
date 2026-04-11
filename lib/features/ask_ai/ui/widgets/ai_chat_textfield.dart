@@ -55,7 +55,7 @@ class _AiChatTextfieldState extends ConsumerState<AiChatTextfield> with SingleTi
           },
           child: CustomTextfield(
             autoDispose: false,
-            controller: ref.watch(AskAiScreenProvider.state.select((s) => s.aiFieldInputController)),
+            controller: ref.read(AskAiScreenProvider.notifier).aiFieldInputController,
             hint: "How may i assist you?",
             hintStyle: TextStyle(color: theme.onSurface.withValues(alpha: 0.6)),
             inputTextStyle: TextStyle(fontSize: 16, color: theme.onSurface),
@@ -70,7 +70,7 @@ class _AiChatTextfieldState extends ConsumerState<AiChatTextfield> with SingleTi
               child: CustomElevatedButton(
                 pixelHeight: 48,
                 onClick: () async {
-                  await AskAiScreenProvider.state.read(ref).sendCurrContentToAi();
+                  await ref.read(AskAiScreenProvider.notifier).sendCurrContentToAi();
                   if (context.mounted) FocusScope.of(context).unfocus();
                 },
                 shape: CircleBorder(),

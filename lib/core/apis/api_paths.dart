@@ -5,6 +5,7 @@ import 'entities/collection_entity.dart';
 import 'entities/content_entity.dart';
 import 'entities/source_entity.dart';
 import 'entities/misc_entities.dart';
+import 'entities/vault_entity.dart';
 
 class ApiPaths {
   ApiPaths._();
@@ -224,4 +225,29 @@ class ApiPaths {
           String uid, String courseId, String collectionId,
           String contentHash) =>
       privateContents(uid, courseId, collectionId).doc(contentHash);
+
+  // ── Storage Vault (admin only) ─────────────────────────────────────────────
+
+  static CollectionReference<VaultEntity> storageVault() =>
+      _db.collection('storageVault').withConverter(
+            fromFirestore: VaultEntity.fromFirestore,
+            toFirestore: (e, _) => e.toMap(),
+          );
+
+  static DocumentReference<VaultEntity> vaultEntry(String linkId) =>
+      storageVault().doc(linkId);
+
+  static CollectionReference<VaultUploadEntity> vaultUploads(String linkId) =>
+      _db
+          .collection('storageVault')
+          .doc(linkId)
+          .collection('uploads')
+          .withConverter(
+            fromFirestore: VaultUploadEntity.fromFirestore,
+            toFirestore: (e, _) => e.toMap(),
+          );
+
+  static DocumentReference<VaultUploadEntity> vaultUpload(
+          String linkId, String uploadId) =>
+      vaultUploads(linkId).doc(uploadId);
 }

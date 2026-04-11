@@ -94,10 +94,10 @@ class PagedSliverContentView extends ConsumerWidget {
     // }
     return Builder(
       builder: (context) {
-        final modState = CollectionMaterialsProvider.modState.read(ref);
-        return ValueListenableBuilder(
-          valueListenable: modState.selectSignal,
-          builder: (context, _, child) {
+        final _ = ref.watch(CollectionMaterialsProvider.modState);
+        final modState = ref.read(CollectionMaterialsProvider.modState.notifier);
+        return Builder(
+          builder: (context) {
             ({bool isSelected, void Function(CourseContent item) onSelect})? select(CourseContent item) =>
                 modState.isEmpty
                 ? null

@@ -8,11 +8,12 @@ class AskAiScreenProvider {
   /// ===================================================================================================
   /// STATE
   /// ===================================================================================================
-  static final state = Provider.autoDispose<AskAiScreenState>((ref) {
-    final aass = AskAiScreenState(ref);
-    ref.onDispose(aass.dispose);
-    return aass;
-  });
+  static final state = NotifierProvider<AskAiScreenNotifier, AskAiViewState>(
+    AskAiScreenNotifier.new,
+    isAutoDispose: true,
+  );
+
+  static final notifier = state.notifier;
 
   ///|
   ///|

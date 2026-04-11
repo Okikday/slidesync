@@ -12,73 +12,68 @@ class AiScreenCaptureButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    return ValueListenableBuilder(
-      valueListenable: ref.watch(AskAiScreenProvider.state.select((s) => s.imageToAiNotifier)),
-      builder: (context, value, child) {
-        if (value != null) {
-          final size = context.deviceHeight * 0.15;
-          return GestureDetector(
-            onTap: () {
-              CustomDialog.show(
-                context,
-                barrierColor: Colors.black.withAlpha(150),
-                transitionType: TransitionType.download,
-                curve: CustomCurves.defaultIosSpring,
-                transitionDuration: Durations.extralong1,
-                child: GestureDetector(
-                  onTap: () => CustomDialog.hide(context),
-                  child: SizedBox.expand(
-                    child: Container(
-                      alignment: Alignment.center,
-                      child: Image.memory(value, width: context.deviceWidth * 0.9),
-                    ),
-                  ),
+    final capturedImage = ref.watch(AskAiScreenProvider.state.select((s) => s.imageToAi));
+    if (capturedImage != null) {
+      final size = context.deviceHeight * 0.15;
+      return GestureDetector(
+        onTap: () {
+          CustomDialog.show(
+            context,
+            barrierColor: Colors.black.withAlpha(150),
+            transitionType: TransitionType.download,
+            curve: CustomCurves.defaultIosSpring,
+            transitionDuration: Durations.extralong1,
+            child: GestureDetector(
+              onTap: () => CustomDialog.hide(context),
+              child: SizedBox.expand(
+                child: Container(
+                  alignment: Alignment.center,
+                  child: Image.memory(capturedImage, width: context.deviceWidth * 0.9),
                 ),
-              );
-            },
-            onLongPress: () => AskAiScreenProvider.state.read(ref).imageToAiNotifier.value = null,
-            onDoubleTap: () => AskAiScreenProvider.state.read(ref).imageToAiNotifier.value = null,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              spacing: 4.0,
-              children: [
-                Container(
-                      height: size,
-                      decoration: BoxDecoration(color: theme.background.withAlpha(10)),
-                      child: Image.memory(value),
-                    )
-                    .animate()
-                    .scaleXY(begin: 1.1, end: 1, duration: Durations.medium4, curve: CustomCurves.defaultIosSpring)
-                    .fadeIn(),
-                CustomText(
-                  "Long press to clear selection",
-                  fontWeight: FontWeight.bold,
-                  fontSize: 12,
-                  color: ref.onBackground,
-                ),
-              ],
+              ),
             ),
           );
-        }
-        return GestureDetector(
-          onTap: () async {
-            final state = AskAiScreenProvider.state.read(ref);
-            final hasImage = state.imageToAiNotifier.value != null;
-            if (!hasImage) {
-              await state.captureCurrentView(context);
-            }
-          },
-          child: DottedBorder(
-            options: RoundedRectDottedBorderOptions(
-              radius: Radius.circular(8),
-              color: theme.onBackground,
-              padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-              strokeCap: StrokeCap.round,
+        },
+        onLongPress: () => ref.read(AskAiScreenProvider.notifier).clearCurrentCapture(),
+        onDoubleTap: () => ref.read(AskAiScreenProvider.notifier).clearCurrentCapture(),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 4.0,
+          children: [
+            Container(
+                  height: size,
+                  decoration: BoxDecoration(color: theme.background.withAlpha(10)),
+                  child: Image.memory(capturedImage),
+                )
+                .animate()
+                .scaleXY(begin: 1.1, end: 1, duration: Durations.medium4, curve: CustomCurves.defaultIosSpring)
+                .fadeIn(),
+            CustomText(
+              "Long press to clear selection",
+              fontWeight: FontWeight.bold,
+              fontSize: 12,
+              color: ref.onBackground,
             ),
-            child: CustomText("Capture screen context"),
-          ),
-        );
+          ],
+        ),
+      );
+    }
+    return GestureDetector(
+      onTap: () async {
+        final hasImage = ref.read(AskAiScreenProvider.state.select((s) => s.imageToAi != null));
+        if (!hasImage) {
+          await ref.read(AskAiScreenProvider.notifier).captureCurrentView(context);
+        }
       },
+      child: DottedBorder(
+        options: RoundedRectDottedBorderOptions(
+          radius: Radius.circular(8),
+          color: theme.onBackground,
+          padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+          strokeCap: StrokeCap.round,
+        ),
+        child: CustomText("Capture screen context"),
+      ),
     );
   }
 }

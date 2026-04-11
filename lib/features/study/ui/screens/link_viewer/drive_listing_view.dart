@@ -3,7 +3,6 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_riverpod/legacy.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/study/logic/services/drive_browser.dart';
@@ -12,9 +11,58 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 
-/// Navigation history provider
-final navigationHistoryProvider = StateProvider.autoDispose<List<String>>((ref) => []);
-final currentFolderIdProvider = StateProvider.autoDispose<String?>((ref) => null);
+class DriveListingNavState {
+  final List<String> navigationHistory;
+  final String? currentFolderId;
+
+  const DriveListingNavState({this.navigationHistory = const [], this.currentFolderId});
+
+  DriveListingNavState copyWith({List<String>? navigationHistory, String? currentFolderId}) {
+    return DriveListingNavState(
+      navigationHistory: navigationHistory ?? this.navigationHistory,
+      currentFolderId: currentFolderId ?? this.currentFolderId,
+    );
+  }
+
+  @override
+  bool operator ==(covariant DriveListingNavState other) {
+    if (identical(this, other)) return true;
+
+    return other.navigationHistory == navigationHistory && other.currentFolderId == currentFolderId;
+  }
+
+  @override
+  int get hashCode => Object.hash(navigationHistory, currentFolderId);
+}
+
+class DriveListingNavNotifier extends Notifier<DriveListingNavState> {
+  @override
+  DriveListingNavState build() => const DriveListingNavState();
+
+  void navigateBack() {
+    if (state.navigationHistory.isEmpty) return;
+    final updated = List<String>.from(state.navigationHistory);
+    final previousFolderId = updated.removeLast();
+    state = state.copyWith(navigationHistory: updated, currentFolderId: previousFolderId);
+  }
+
+  void navigateToFolder(String folderId) {
+    final currentId = state.currentFolderId;
+    state = state.copyWith(
+      navigationHistory: currentId == null ? state.navigationHistory : [...state.navigationHistory, currentId],
+      currentFolderId: folderId,
+    );
+  }
+
+  void setCurrentFolder(String? folderId) {
+    state = state.copyWith(currentFolderId: folderId);
+  }
+}
+
+final driveListingNavProvider = NotifierProvider<DriveListingNavNotifier, DriveListingNavState>(
+  DriveListingNavNotifier.new,
+  isAutoDispose: true,
+);
 
 /// Drive resource provider with proper caching
 final driveResourceProvider = FutureProvider.autoDispose.family<DriveResource, String?>((ref, folderId) async {
@@ -62,8 +110,14 @@ class DriveListingView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    final currentFolderId = ref.watch(currentFolderIdProvider) ?? initialFolderId;
-    final navigationHistory = ref.watch(navigationHistoryProvider);
+    final navState = ref.watch(driveListingNavProvider);
+    final currentFolderId = navState.currentFolderId ?? initialFolderId;
+    final navigationHistory = navState.navigationHistory;
+
+    if (navState.currentFolderId == null && initialFolderId != null) {
+      Future.microtask(() => ref.read(driveListingNavProvider.notifier).setCurrentFolder(initialFolderId));
+    }
+
     final resourceAsync = currentFolderId != null ? ref.watch(driveResourceProvider(currentFolderId)) : null;
 
     return PopScope(
@@ -126,21 +180,11 @@ class DriveListingView extends ConsumerWidget {
   }
 
   void _navigateBack(WidgetRef ref) {
-    final history = List<String>.from(ref.read(navigationHistoryProvider));
-    if (history.isNotEmpty) {
-      final previousFolderId = history.removeLast();
-      ref.read(navigationHistoryProvider.notifier).state = history;
-      ref.read(currentFolderIdProvider.notifier).state = previousFolderId;
-    }
+    ref.read(driveListingNavProvider.notifier).navigateBack();
   }
 
   void _navigateToFolder(WidgetRef ref, String folderId) {
-    final currentId = ref.read(currentFolderIdProvider);
-    if (currentId != null) {
-      final history = List<String>.from(ref.read(navigationHistoryProvider));
-      ref.read(navigationHistoryProvider.notifier).state = [...history, currentId];
-    }
-    ref.read(currentFolderIdProvider.notifier).state = folderId;
+    ref.read(driveListingNavProvider.notifier).navigateToFolder(folderId);
   }
 
   Future<void> _handleImportAll(BuildContext context, WidgetRef ref, DriveResource resource) async {

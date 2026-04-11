@@ -1,9 +1,7 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
@@ -16,8 +14,8 @@ import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/features/ask_ai/ui/screens/ask_ai_screen.dart';
 import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
 import 'package:slidesync/features/study/providers/image_viewer_provider.dart';
-import 'package:slidesync/features/study/providers/src/image_viewer_state.dart';
 import 'package:slidesync/features/study/providers/src/pdf_doc_viewer_state/pdf_doc_viewer_state.dart';
+import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/shared/global/providers/collections_providers.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -32,10 +30,14 @@ class ImageViewer extends ConsumerStatefulWidget {
   ConsumerState<ImageViewer> createState() => _ImageViewerState();
 }
 
+final _activeImageContentIdProvider = NotifierProvider<ImpliedNotifierN<String>, String?>(
+  () => ImpliedNotifierN<String>(),
+  isAutoDispose: true,
+);
+final _imageViewerPositionProvider = NotifierProvider<IntNotifier, int>(() => IntNotifier(0), isAutoDispose: true);
+
 class _ImageViewerState extends ConsumerState<ImageViewer> {
   late final Future<CourseCollection> collectionFuture;
-  final ValueNotifier<Provider<ImageViewerState>?> imageViewerStateProvider = ValueNotifier(null);
-  final ValueNotifier<int> positionNotifier = ValueNotifier(0);
   late final PageController pageController;
   bool _isInitialJumpDone = false;
 
@@ -48,8 +50,6 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
 
   @override
   void dispose() {
-    imageViewerStateProvider.dispose();
-    positionNotifier.dispose();
     pageController.dispose();
     super.dispose();
   }
@@ -79,8 +79,8 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
 
               _isInitialJumpDone = true;
               WidgetsBinding.instance.addPostFrameCallback((_) {
-                positionNotifier.value = index;
-                imageViewerStateProvider.value = ImageViewerProvider.state(contents[index].contentId);
+                ref.read(_imageViewerPositionProvider.notifier).set(index);
+                ref.read(_activeImageContentIdProvider.notifier).set(contents[index].contentId);
                 if (pageController.hasClients) pageController.jumpToPage(index);
               });
             }
@@ -95,8 +95,8 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
                     itemCount: contents.length,
                     controller: pageController,
                     onPageChanged: (value) {
-                      positionNotifier.value = value;
-                      imageViewerStateProvider.value = ImageViewerProvider.state(contents[value].contentId);
+                      ref.read(_imageViewerPositionProvider.notifier).set(value);
+                      ref.read(_activeImageContentIdProvider.notifier).set(contents[value].contentId);
                     },
                     itemBuilder: (context, index) {
                       final currContent = contents[index];
@@ -139,19 +139,21 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
                 ),
 
                 // 2. AppBar Layer (Synced with current position)
-                ValueListenableBuilder(
-                  valueListenable: imageViewerStateProvider,
-                  builder: (context, activeProvider, _) {
-                    if (activeProvider == null) {
+                Consumer(
+                  builder: (context, ref, _) {
+                    final activeContentId = ref.watch(_activeImageContentIdProvider);
+                    if (activeContentId == null) {
                       return AppBarContainer(child: AppBarContainerChild(theme.isDarkMode, title: "Loading..."));
                     }
+
+                    final activeProvider = ImageViewerProvider.state(activeContentId);
 
                     return ValueListenableBuilder(
                       valueListenable: ref.watch(activeProvider.select((s) => s.isAppBarVisibleNotifier)),
                       builder: (context, isVisible, _) {
-                        return ValueListenableBuilder(
-                          valueListenable: positionNotifier,
-                          builder: (context, pos, _) {
+                        return Consumer(
+                          builder: (context, ref, _) {
+                            final pos = ref.watch(_imageViewerPositionProvider);
                             final currentItem = contents[pos];
 
                             return AppBarContainer(

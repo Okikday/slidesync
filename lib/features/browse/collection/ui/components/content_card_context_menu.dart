@@ -126,7 +126,7 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                             title: "Select",
                             icon: Icon(HugeIconsStroke.checkmarkCircle01, color: theme.onSurface),
                             onTap: () {
-                              CollectionMaterialsProvider.modState.read(ref).selectContent(widget.content);
+                              ref.read(CollectionMaterialsProvider.modState.notifier).selectContent(widget.content);
                               UiUtils.hideDialog(context);
                             },
                           ),

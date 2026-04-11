@@ -37,6 +37,12 @@ enum HiveDataPathKey {
   /// Syncs - Keeps a Map of Id to [SyncType]
   downloads,
   uploads,
+
+  // ── Drive resumable session keys ──────────────────────────────────────────
+  // Stored as: driveUploadSession_{operationId} / driveDownloadSession_{operationId}
+  // These are automatically cleaned up when the operation completes.
+  driveUploadSession,
+  driveDownloadSession,
 }
 
 // class HiveDataPaths {

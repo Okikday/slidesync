@@ -26,7 +26,7 @@ class _AiInteractionViewState extends ConsumerState<AiInteractionView> {
   Widget build(BuildContext context) {
     final theme = ref;
     final state = ref.watch(AskAiScreenProvider.state);
-    final chatController = state.chatController;
+    final chatController = ref.read(AskAiScreenProvider.notifier).chatController;
     return Chat(
       currentUserId: ref.watch(AskAiScreenProvider.userIdProvider).value ?? "user",
       resolveUser: (String id) async => User(id: id),
@@ -83,7 +83,7 @@ class _AiInteractionViewState extends ConsumerState<AiInteractionView> {
             );
           }
 
-          final isStreaming = isLastMessage && state.isGeneratingNotifier.value;
+          final isStreaming = isLastMessage && state.isGenerating;
 
           return buildAiMessageContent(
             text: message.text,

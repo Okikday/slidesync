@@ -50,11 +50,7 @@ class CollectionMaterialsProvider {
   /// MODIFY CONTENTS STATE
   /// ===================================================================================================
 
-  static final modState = Provider<ModContentsState>((ref) {
-    final mcs = ModContentsState();
-    ref.onDispose(mcs.dispose);
-    return mcs;
-  });
+  static final modState = NotifierProvider<ModContentsNotifier, int>(ModContentsNotifier.new, isAutoDispose: true);
 
   ///|
   ///|

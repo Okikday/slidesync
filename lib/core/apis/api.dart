@@ -10,6 +10,7 @@ import 'entities/collection_entity.dart';
 import 'entities/content_entity.dart';
 import 'entities/source_entity.dart';
 import 'entities/misc_entities.dart';
+import 'entities/vault_entity.dart';
 
 part 'src/course_api.dart';
 part 'src/collection_api.dart';
@@ -20,6 +21,7 @@ part 'src/flag_api.dart';
 part 'src/user_api.dart';
 part 'src/institution_api.dart';
 part 'src/search_api.dart';
+part 'src/vault_api.dart';
 
 /// Shared pagination wrapper returned by all list() calls.
 class PageResult<T> {
@@ -52,4 +54,5 @@ class Api {
   final users = _UserApi();
   final institutions = _InstitutionApi();
   final search = _SearchApi();
+  final vault = _VaultApi();
 }

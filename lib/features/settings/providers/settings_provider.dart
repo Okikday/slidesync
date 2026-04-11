@@ -21,11 +21,10 @@ class SettingsProvider {
   static AsyncNotifierProvider<HiveAsyncImpliedNotifier<Map<String, dynamic>>, Map<String, dynamic>>
   get settingsProvider => _settingsProvider;
 
-  static final state = Provider.autoDispose((ref) {
-    final state = SettingsState();
-    ref.onDispose(() => state.dispose());
-    return state;
-  });
+  static final state = NotifierProvider<SettingsRevealNotifier, SettingsRevealState>(
+    SettingsRevealNotifier.new,
+    isAutoDispose: true,
+  );
 }
 
 extension SettingsModelExtension on WidgetRef {

@@ -24,7 +24,6 @@ class SettingsView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    final state = SettingsProvider.state.read(ref);
 
     return AnnotatedRegion(
       value: UiUtils.getSystemUiOverlayStyle(Colors.transparent, context.isDarkMode),
@@ -221,7 +220,7 @@ class SettingsView extends ConsumerWidget {
                   // ConstantSizing.columnSpacingMedium,
                   GestureDetector(
                     onTap: () {
-                      state.onRevealFileManager(context);
+                      ref.read(SettingsProvider.state.notifier).onRevealFileManager(context);
                     },
                     child: Center(
                       child: FutureBuilder(
