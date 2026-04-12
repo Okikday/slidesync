@@ -84,3 +84,10 @@ extension HiveDataPathKeyStringExtension on String {
     await deleteHiveData();
   });
 }
+
+extension HiveDataPathKeyExtension on HiveDataPathKey {
+  Future<Result<void>> setHiveData<T>({required T value}) =>
+      Result.tryRunAsync<void>(() => AppHiveData.instance.setData<T>(key: name, value: value));
+
+  Future<Result<T?>> getHiveData<T>() => Result.tryRunAsync<T?>(() => AppHiveData.instance.getData<T>(key: name));
+}

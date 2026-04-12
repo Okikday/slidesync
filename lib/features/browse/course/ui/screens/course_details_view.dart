@@ -34,8 +34,8 @@ class CourseDetailsView extends ConsumerWidget {
         body: NotificationListener(
           onNotification: (notification) {
             if (notification is ScrollUpdateNotification) {
-              final offset = notification.metrics.pixels;
-              ref.read(CourseDetailsProvider.state.select((s) => s.scrollOffsetNotifier)).value = offset;
+              ref.read(CourseDetailsProvider.state.select((s) => s.scrollOffsetNotifier)).value =
+                  notification.metrics.pixels;
             }
             return true;
           },

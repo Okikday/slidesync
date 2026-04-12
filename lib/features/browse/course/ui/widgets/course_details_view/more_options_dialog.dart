@@ -121,7 +121,7 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
         ),
 
         AppActionDialogModel(
-          title: "Sync Course",
+          title: "Upload Course for Public",
           icon: Icon(Iconsax.export_1, size: 24, color: theme.supportingText),
           onTap: () async {
             context.pop();
