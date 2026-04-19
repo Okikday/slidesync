@@ -65,6 +65,7 @@ class FirebaseGoogleAuth {
       } else if (e.code == "wrong-password") {
         return Result.error("Incorrect password was entered!");
       } else {
+        log("$e");
         return Result.error("An unknown error occurred!");
       }
     } catch (e) {

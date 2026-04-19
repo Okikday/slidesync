@@ -93,16 +93,8 @@ class _CollectionMaterialsViewState extends ConsumerState<CollectionMaterialsVie
             controller: scrollController,
             physics: const BouncingScrollPhysics(),
             slivers: [
-              ModContentsOptions(
-                collectionTitle: widget.collection.collectionTitle,
-                collectionLength: 5,
-                onMoveContents: (contents) async {
-                  await Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => MoveOrStoreContentBottomSheet.move(contents: contents)),
-                  );
-                },
-              ),
               SliverToBoxAdapter(child: TopPadding(withHeight: 72)),
+              ModContentsOptions(collectionTitle: widget.collection.collectionTitle, collectionLength: 5),
               MaterialsView(collectionId: widget.collection.collectionId, isFullScreen: widget.isFullScreen),
               SliverToBoxAdapter(child: BottomPadding(withHeight: 64)),
             ],

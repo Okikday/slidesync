@@ -6,6 +6,7 @@ import 'package:slidesync/features/sync/ui/widgets/sync_view/downloads_tab_view.
 import 'package:slidesync/features/sync/ui/widgets/sync_view/uploads_tab_view.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 
 class SyncView extends ConsumerStatefulWidget {
@@ -27,22 +28,8 @@ class _SyncViewState extends ConsumerState<SyncView> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     final theme = ref;
-    return AppScaffold(
-      title: "",
-      appBar: AppBarContainer(
-        child: AppBarContainerChild(
-          context.isDarkMode,
-          title: "Sync",
-          trailing: BuildButton(
-            onTap: () {},
-            iconData: Iconsax.activity_copy,
-            backgroundColor: theme.altBackgroundSecondary,
-            iconColor: theme.secondary,
-          ),
-        ),
-      ),
-
-      body: Column(
+    return TopPadding(
+      child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),

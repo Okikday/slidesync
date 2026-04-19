@@ -153,3 +153,12 @@ class CourseContent {
     return 'CourseContent(id: $id, contentHash: $contentHash, contentId: $contentId, parentId: $parentId, title: $title, path: $path, createdAt: $createdAt, lastModified: $lastModified, description: $description, courseContentType: $courseContentType, fileSize: $fileSize, metadataJson: $metadataJson)';
   }
 }
+
+final defaultContent = CourseContent.create(
+  contentHash: '_',
+  parentId: '_',
+  title: '_',
+  fileSize: 0,
+  path: const FileDetails(),
+  courseContentType: CourseContentType.unknown,
+);

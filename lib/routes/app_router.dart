@@ -10,6 +10,8 @@ import 'package:slidesync/routes/src/course_nav_routes.dart';
 import 'package:slidesync/routes/src/main_route.dart';
 import 'package:slidesync/routes/src/settings_route.dart';
 import 'package:slidesync/routes/src/sync_route.dart';
+import 'package:slidesync/routes/src/auth_route.dart';
+import 'package:slidesync/routes/src/onboarding_route.dart';
 import 'package:slidesync/splash_view.dart';
 
 import 'routes.dart';
@@ -25,8 +27,8 @@ class AppRouter {
     observers: [HeroineController()],
     routes: [
       splashRoute,
-      // authRoute,
-      // onboardingRoute,
+      authRoute,
+      onboardingRoute,
 
       // Home, Library, Explore tabs
       mainRoute,

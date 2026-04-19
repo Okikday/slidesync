@@ -31,10 +31,17 @@ class HomeDrawer extends ConsumerWidget {
                       future: UserDataFunctions().getUserDetails(),
                       builder: (context, asyncSnapshot) {
                         if (asyncSnapshot.hasData && asyncSnapshot.data != null && asyncSnapshot.data?.data != null) {
-                          return CircleAvatar(
-                            radius: 40,
-                            backgroundColor: theme.altBackgroundPrimary,
-                            backgroundImage: CachedNetworkImageProvider(asyncSnapshot.data!.data!.photoURL!),
+                          return DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: theme.onSecondaryColor,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: theme.supportingText.withValues(alpha: 0.1), width: 2),
+                            ),
+                            child: CircleAvatar(
+                              radius: 40,
+                              backgroundColor: theme.altBackgroundPrimary,
+                              backgroundImage: CachedNetworkImageProvider(asyncSnapshot.data!.data!.photoURL!),
+                            ),
                           );
                         }
                         return Container(
@@ -60,18 +67,25 @@ class HomeDrawer extends ConsumerWidget {
                         if (asyncSnapshot.hasData && asyncSnapshot.data != null && asyncSnapshot.data?.data != null) {
                           return Column(
                             mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              CustomText(asyncSnapshot.data!.data!.displayName, color: theme.onBackground),
+                              CustomText(
+                                asyncSnapshot.data!.data!.displayName,
+                                color: theme.onBackground,
+                                overflow: TextOverflow.ellipsis,
+                              ),
                               ConstantSizing.columnSpacingSmall,
                               CustomText(
                                 asyncSnapshot.data!.data!.email,
                                 color: theme.supportingText.withValues(alpha: 0.6),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ],
                           );
                         }
                         return Column(
                           mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             CustomText("Unknown User", color: theme.onBackground),
                             ConstantSizing.columnSpacingSmall,

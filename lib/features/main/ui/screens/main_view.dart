@@ -6,6 +6,7 @@ import 'package:slidesync/features/main/ui/widgets/library_tab_view/library_floa
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_drawer.dart';
 import 'package:slidesync/features/main/ui/screens/library_tab_view.dart';
+import 'package:slidesync/features/sync/ui/screens/sync_view.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/decorations/back_soft_edge_blur.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
@@ -15,7 +16,7 @@ import 'package:soft_edge_blur/soft_edge_blur.dart';
 import 'home_tab_view.dart';
 import '../widgets/main_view/bottom_nav_bar.dart';
 
-const _views = [HomeTabView(), LibraryTabView()];
+const _views = [HomeTabView(), LibraryTabView(), SyncView()];
 
 class MainView extends ConsumerStatefulWidget {
   final int tabIndex;
@@ -63,7 +64,8 @@ class _MainViewState extends ConsumerState<MainView> {
                 MainProvider.state.expand(ref, (r, v) {
                   if (v.read(r).tabIndex != index) {
                     v.act(r).setTabIndex(index);
-                    pageController.animateToPage(index, duration: 700.inMs, curve: CustomCurves.defaultIosSpring);
+                    // pageController.animateToPage(index, duration: 700.inMs, curve: CustomCurves.defaultIosSpring);
+                    pageController.jumpToPage(index);
                   }
                 });
               },

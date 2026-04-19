@@ -2,6 +2,7 @@
 import 'dart:convert';
 
 import 'package:isar_community/isar.dart';
+import 'package:slidesync/data/models/course_collection/collection_metadata.dart';
 // import 'package:path/path.dart' as p;
 // import 'package:slidesync/core/storage/native/app_paths.dart';
 import 'package:uuid/uuid.dart';
@@ -25,6 +26,9 @@ class CourseCollection {
   DateTime? createdAt;
   // late String imageLocationJson;
   late String metadataJson;
+
+  @ignore
+  late CollectionMetadata metadata = CollectionMetadata.fromJson(metadataJson);
 
   final IsarLinks<CourseContent> contents = IsarLinks<CourseContent>();
 

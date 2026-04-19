@@ -5,18 +5,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:slidesync/core/utils/result.dart';
+import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course/course.dart';
-import 'package:slidesync/features/browse/course/ui/actions/course_details_actions.dart';
 import 'package:slidesync/features/browse/course/ui/actions/modify_course_actions.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/shared/edit_course_bottom_sheet.dart';
 import 'package:slidesync/features/share/ui/screens/export/course_export_manager.dart';
-import 'package:slidesync/features/sync/logic/sync_service.dart';
+import 'package:slidesync/core/apis/abstract/sync_coordinator.dart';
+import 'package:slidesync/features/sync/providers/transfer_state_provider.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/course_details_view/course_details_header/animated_shape.dart';
-import 'package:slidesync/features/browse/course/ui/actions/modify_collection_actions.dart';
-import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
+import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
+import 'package:slidesync/features/auth/logic/usecases/auth_uc/user_data_functions.dart';
 
 class MoreOptionsDialog extends ConsumerStatefulWidget {
   final Course course;
@@ -87,18 +91,17 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
         ),
       ),
       actions: [
-        AppActionDialogModel(
-          title: "Create a new collection",
-          icon: Icon(Iconsax.add_circle, size: 24, color: theme.secondary),
-          onTap: () {
-            context.pop();
-            CourseDetailsActions.showNewCollectionDialog(context, course.courseId);
-          },
-        ),
-
+        // AppActionDialogModel(
+        //   title: "Create a new collection",
+        //   icon: Icon(HugeIconsSolid.addCircle, size: 24, color: theme.onBackground),
+        //   onTap: () {
+        //     context.pop();
+        //     CourseDetailsActions.showNewCollectionDialog(context, course.courseId);
+        //   },
+        // ),
         AppActionDialogModel(
           title: "Edit Course",
-          icon: Icon(Iconsax.edit_2, size: 24, color: theme.supportingText),
+          icon: Icon(HugeIconsSolid.edit01, size: 24, color: theme.onBackground),
           onTap: () async {
             context.pop();
             await showModalBottomSheet(
@@ -113,7 +116,7 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
 
         AppActionDialogModel(
           title: "See all collections",
-          icon: Icon(Iconsax.magic_star, size: 24, color: theme.supportingText),
+          icon: Icon(HugeIconsSolid.magicWand01, size: 24, color: theme.onBackground),
           onTap: () {
             context.pop();
             context.pushNamed(Routes.collectionsView.name, extra: course.courseId);
@@ -121,18 +124,52 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
         ),
 
         AppActionDialogModel(
-          title: "Upload Course for Public",
-          icon: Icon(Iconsax.export_1, size: 24, color: theme.supportingText),
+          title: "Upload to Public repository",
+          icon: Icon(Iconsax.export_1, size: 24, color: theme.onBackground),
           onTap: () async {
             context.pop();
             if (course.courseId.isEmpty) return;
-            SyncService.instance.uploadCourse(ref, course);
+
+            // Show loading dialog
+            UiUtils.showLoadingDialog(context, message: "Uploading course...", canPop: false);
+
+            try {
+              // Get user ID
+              final userIdResult = await UserDataFunctions().getUserId();
+              if (!userIdResult.isSuccess || userIdResult.data == null) {
+                GlobalNav.withContext((c) => c.pop());
+                UiUtils.showFlushBar(context, msg: 'User not authenticated', vibe: FlushbarVibe.error);
+                return;
+              }
+
+              // Use SyncCoordinator to upload the course
+              final coordinator = SyncCoordinator();
+              final result = await coordinator.syncCourse(
+                course: course,
+                userId: userIdResult.data!,
+                vaultLinks: [], // TODO: Get vault links from config
+              );
+
+              // Close loading dialog
+              GlobalNav.withContext((c) => c.pop());
+
+              if (result.data?.success ?? false) {
+                UiUtils.showFlushBar(context, msg: 'Course uploaded successfully!');
+              } else {
+                UiUtils.showFlushBar(context, msg: result.data?.error ?? 'Upload failed', vibe: FlushbarVibe.error);
+              }
+            } catch (e) {
+              // Close loading dialog
+              GlobalNav.withContext((c) => c.pop());
+              UiUtils.showFlushBar(context, msg: 'Upload failed: $e', vibe: FlushbarVibe.error);
+            }
           },
         ),
 
         AppActionDialogModel(
           title: "Export",
-          icon: Icon(Iconsax.export_3, size: 24, color: theme.supportingText),
+          icon: Icon(Iconsax.export_3, size: 24, color: Colors.blueAccent),
+          titleColor: Colors.blueAccent,
           onTap: () async {
             context.pop();
             if (course.courseId.isEmpty) return;
@@ -142,6 +179,7 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
         AppActionDialogModel(
           title: "Delete",
           icon: Icon(Iconsax.box_remove_copy, size: 24, color: Colors.redAccent),
+          titleColor: Colors.redAccent,
           onTap: () async {
             context.pop();
             if (course.courseId.isEmpty) return;

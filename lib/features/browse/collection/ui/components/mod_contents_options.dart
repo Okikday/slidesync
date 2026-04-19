@@ -1,38 +1,40 @@
-import 'package:collection/collection.dart';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
-import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/features/browse/collection/providers/collection_materials_provider.dart';
-import 'package:slidesync/features/browse/collection/ui/actions/modify_content_card_actions.dart';
-import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
-import 'package:slidesync/routes/app_router.dart';
+import 'package:slidesync/features/browse/collection/providers/src/mod_contents_state.dart';
+import 'package:slidesync/features/browse/collection/ui/actions/mod_contents_options_actions.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
-import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
+
+typedef _OptionStruct = ({
+  String title,
+  IconData iconData,
+  void Function(BuildContext c, ModContentsNotifier n) onClick,
+});
 
 class ModContentsOptions extends ConsumerWidget {
   final String collectionTitle;
   final int? collectionLength;
-
-  final void Function(List<CourseContent> contents) onMoveContents;
-  const ModContentsOptions({
-    super.key,
-    required this.collectionTitle,
-    this.collectionLength,
-    required this.onMoveContents,
-  });
+  ModContentsOptions({super.key, required this.collectionTitle, this.collectionLength});
+  final _options = <_OptionStruct>[
+    (title: "Move", iconData: HugeIconsSolid.move, onClick: (c, n) => ModContentsOptionsActions.onMove(c, n)),
+    (title: "Share", iconData: HugeIconsSolid.share01, onClick: (c, n) => ModContentsOptionsActions.onShare(c, n)),
+    (
+      title: "Select All",
+      iconData: HugeIconsSolid.select01,
+      onClick: (c, n) => ModContentsOptionsActions.onSelectAll(c, n),
+    ),
+    (title: "Delete", iconData: HugeIconsSolid.delete01, onClick: (c, n) => ModContentsOptionsActions.delete(c, n)),
+  ];
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final _ = ref.watch(CollectionMaterialsProvider.modState);
-    final mcvp = ref.read(CollectionMaterialsProvider.modState.notifier);
+    CollectionMaterialsProvider.modState.watch(ref);
+    final mcvp = CollectionMaterialsProvider.modState.link(ref);
     final theme = ref;
+    final plainBtnBgColor = theme.supportingText.withAlpha(20);
+    final plainBtnTextColor = theme.onSurface;
     return PinnedHeaderSliver(
       child: AnimatedContainer(
         duration: Durations.extralong1,
@@ -51,142 +53,55 @@ class ModContentsOptions extends ConsumerWidget {
           scrollDirection: Axis.horizontal,
           clipBehavior: Clip.none,
           children: [
-            CustomElevatedButton(
-              backgroundColor: theme.secondary.withAlpha(60),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12),
-              borderRadius: ConstantSizing.borderRadiusCircle,
-              onClick: () {
-                mcvp.clearContents();
-              },
-              child: Icon(Icons.cancel_rounded, color: theme.onSurface),
-            ),
-
-            CustomElevatedButton(
-              backgroundColor: theme.supportingText.withAlpha(20),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12),
-              borderRadius: ConstantSizing.borderRadiusCircle,
-              onClick: () {
-                final contents = mcvp.selectedContents.toList();
-                mcvp.clearContents();
-                onMoveContents(contents);
-              },
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                spacing: 4,
-                children: [
-                  Icon(HugeIconsSolid.move, color: theme.onSurface),
-                  CustomText("Move", color: theme.onSurface),
-                ],
+            Padding(
+              padding: EdgeInsets.only(right: 8),
+              child: CustomElevatedButton(
+                backgroundColor: theme.onPrimary.withAlpha(200),
+                onClick: () => CollectionMaterialsProvider.modState.act(ref).clearContents(),
+                shape: CircleBorder(),
+                child: Icon(HugeIconsStroke.cancelCircle, color: theme.primary),
               ),
             ),
 
-            CustomElevatedButton(
-              backgroundColor: theme.supportingText.withAlpha(20),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12),
-              borderRadius: ConstantSizing.borderRadiusCircle,
-              onClick: () async {
-                final contents = mcvp.selectedContents.toList();
-                mcvp.clearContents();
-
-                await ShareContentActions.shareContents(context, contents.map((e) => e.contentId).toList());
-              },
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                spacing: 4,
-                children: [
-                  Icon(HugeIconsSolid.share01, color: theme.onSurface),
-                  CustomText("Share", color: theme.onSurface),
-                ],
+            ...(_options.map(
+              (e) => Padding(
+                padding: EdgeInsets.only(right: 8),
+                child: _PlainOptionButton(
+                  color: (bgColor: plainBtnBgColor, onBgColor: plainBtnTextColor),
+                  title: e.title,
+                  iconData: e.iconData,
+                  onClick: () => e.onClick(context, mcvp),
+                ),
               ),
-            ),
-
-            CustomElevatedButton(
-              backgroundColor: theme.supportingText.withAlpha(20),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12),
-              borderRadius: ConstantSizing.borderRadiusCircle,
-              onClick: () async {
-                if (mcvp.selectedContents.isEmpty) return;
-                final anyContent = mcvp.selectedContents.firstWhereOrNull((c) => c.parentId.isNotEmpty);
-                if (anyContent == null) return;
-                final collection = await CourseCollectionRepo.getById(anyContent.parentId);
-                if (collection == null) return;
-                await collection.contents.load();
-                mcvp.selectAllContent(collection.contents.toList());
-              },
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                spacing: 4,
-                children: [
-                  Icon(HugeIconsSolid.listView, color: theme.onSurface),
-                  CustomText("Select All", color: theme.onSurface),
-                ],
-              ),
-            ),
-
-            CustomElevatedButton(
-              backgroundColor: Colors.red.withAlpha(100),
-              contentPadding: EdgeInsets.symmetric(horizontal: 12),
-              borderRadius: ConstantSizing.borderRadiusCircle,
-              onClick: () {
-                UiUtils.showCustomDialog(
-                  context,
-                  child: ConfirmDeletionDialog(
-                    content:
-                        "Are you sure you want to delete ${mcvp.selectedContents.length == 1 ? "this" : "${mcvp.selectedContents.length} item(s)"} from \"$collectionTitle\".",
-                    onPop: () {
-                      if (context.mounted) {
-                        UiUtils.hideDialog(context);
-                      } else {
-                        rootNavigatorKey.currentContext?.pop();
-                      }
-                    },
-                    onCancel: () {
-                      rootNavigatorKey.currentContext?.pop();
-                    },
-                    onDelete: () async {
-                      if (context.mounted) {
-                        UiUtils.hideDialog(context);
-                      } else {
-                        rootNavigatorKey.currentContext?.pop();
-                      }
-                      UiUtils.showLoadingDialog(context, message: "Removing contents", canPop: false);
-
-                      final String? outcome = (await Result.tryRunAsync(() async {
-                        String? outcome;
-                        for (final e in mcvp.selectedContents) {
-                          outcome = await ModifyContentCardActions.onDeleteContent(context, e, false);
-                        }
-                        return outcome;
-                      })).data;
-                      mcvp.clearContents();
-                      rootNavigatorKey.currentContext?.pop();
-                      if (context.mounted) {
-                        if (outcome == null) {
-                          UiUtils.showFlushBar(
-                            context,
-                            msg: "Successfully removed contents!",
-                            vibe: FlushbarVibe.success,
-                          );
-                        } else if (outcome.toLowerCase().contains("error")) {
-                          UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.error);
-                        } else {
-                          UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.warning);
-                        }
-                      }
-                    },
-                  ),
-                );
-              },
-              child: Row(
-                spacing: 4,
-                children: [
-                  Icon(Iconsax.trash, color: Colors.red),
-                  CustomText("Delete", color: Colors.red),
-                ],
-              ),
-            ),
-          ].map((e) => Padding(padding: EdgeInsets.only(right: 8), child: e)).toList(),
+            )),
+          ],
         ),
+      ),
+    );
+  }
+}
+
+class _PlainOptionButton extends StatelessWidget {
+  const _PlainOptionButton({required this.color, required this.title, required this.iconData, this.onClick});
+  final String title;
+  final IconData iconData;
+  final void Function()? onClick;
+  final ({Color bgColor, Color onBgColor}) color;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomElevatedButton(
+      backgroundColor: color.bgColor,
+      contentPadding: EdgeInsets.symmetric(horizontal: 12),
+      borderRadius: ConstantSizing.borderRadiusCircle,
+      onClick: onClick,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 4,
+        children: [
+          Icon(iconData, color: color.onBgColor.withValues(alpha: 200)),
+          CustomText(title, color: color.onBgColor),
+        ],
       ),
     );
   }

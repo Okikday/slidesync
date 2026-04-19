@@ -7,6 +7,7 @@ import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/collections_search_bar.dart';
 import 'package:slidesync/features/browse/course/providers/course_details_provider.dart';
+import 'package:slidesync/features/browse/course/ui/widgets/course_details_view/add_collection_fab.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/course_details_view/course_details_collection_section.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/course_details_view/course_details_header/course_details_header.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -31,6 +32,7 @@ class CourseDetailsView extends ConsumerWidget {
       child: AppScaffold(
         title: "",
         extendBody: true,
+        floatingActionButton: AddCollectionFab(courseId: courseId),
         body: NotificationListener(
           onNotification: (notification) {
             if (notification is ScrollUpdateNotification) {

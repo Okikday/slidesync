@@ -6,12 +6,14 @@ import 'package:go_router/go_router.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course/course.dart';
+import 'package:slidesync/data/models/course_collection/collection_metadata.dart';
 import 'package:slidesync/data/models/course_collection/course_collection.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/features/browse/shared/usecases/collections/modify_collection_uc.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
+import 'package:slidesync/shared/theme/src/app_palette.dart';
 
 class ModifyCollectionActions {
   /// Add collection to course
@@ -24,7 +26,11 @@ class ModifyCollectionActions {
     if (course.collections.length >= 30) {
       return "Collections under a course must be under 30";
     }
-    final newCollection = CourseCollection.create(parentId: course.courseId, collectionTitle: title);
+    final newCollection = CourseCollection.create(
+      parentId: course.courseId,
+      collectionTitle: title,
+      metadataJson: CollectionMetadata(color: AppPalette.getRandom()).toJson(),
+    );
     final String? result = await CourseCollectionRepo.addCollectionNoDuplicateTitle(newCollection);
     return result;
   }

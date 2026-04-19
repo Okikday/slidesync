@@ -10,7 +10,7 @@ import 'package:slidesync/data/models/course_collection/course_collection.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/main/ui/entities/explore_card_data.dart';
 import 'package:slidesync/features/main/ui/widgets/explore_tab_view/explore_card.dart';
-import 'package:slidesync/features/sync/logic/sync_service.dart';
+import 'package:slidesync/features/sync/providers/transfer_state_provider.dart';
 import 'package:slidesync/routes/routes.dart';
 
 /// ============================================================================
@@ -20,7 +20,7 @@ import 'package:slidesync/routes/routes.dart';
 /// Handles downloading items from Explore view:
 /// - Shows appropriate dialogs for course/collection/content
 /// - Handles merge vs new creation
-/// - Integrates with SyncService
+/// - Integrates with transfer state provider
 /// - Provides progress feedback
 /// ============================================================================
 
@@ -128,174 +128,50 @@ class ExploreDownloadHelper {
     );
 
     try {
-      final result = await SyncService.instance.downloadCourse(
-        ref,
-        remoteCourseId,
-        targetCourseId: targetCourseId,
-        onProgress: (progress, message) {
-          log('Download progress: $message');
-          // TODO: Update dialog with progress
-        },
+      // Create a transfer ID for this download
+      final transferId = '$remoteCourseId-${DateTime.now().millisecondsSinceEpoch}';
+      
+      // Add transfer to state
+      final transfer = TransferState(
+        id: transferId,
+        title: courseName,
+        type: TransferType.course,
+        direction: TransferDirection.download,
+        progress: 0.0,
+        uploadedBytes: 0,
+        totalBytes: 0,
+        startedAt: DateTime.now(),
+        status: TransferStatus.inProgress,
       );
+      
+      ref.read(transferStateProvider.notifier).upsertTransfer(transfer);
+      
+      // TODO: Call DioDownloadManager to start actual download
+      // For now, simulate success after a delay
+      await Future.delayed(const Duration(seconds: 2));
 
       if (!context.mounted) return;
 
       // Hide loading dialog
       Navigator.pop(context);
 
-      if (result.isSuccess) {
-        final course = result.data!;
-
-        // Show success message
-        UiUtils.showFlushBar(
-          context,
-          msg: targetCourseId != null
-              ? 'Successfully merged into "${course.courseTitle}"'
-              : 'Successfully downloaded "${course.courseTitle}"',
-          vibe: FlushbarVibe.success,
-        );
-
-        // Navigate to course
-        context.pushNamed(Routes.courseDetails.name, extra: course);
-      } else {
-        // Show error
-        UiUtils.showFlushBar(context, msg: result.message ?? 'Download failed', vibe: FlushbarVibe.error);
-      }
-    } catch (e) {
-      if (!context.mounted) return;
-      Navigator.pop(context);
-
-      UiUtils.showFlushBar(context, msg: 'Error: $e', vibe: FlushbarVibe.error);
-    }
-  }
-
-  // =========================================================================
-  // COLLECTION DOWNLOAD
-  // =========================================================================
-
-  Future<void> _downloadCollection(BuildContext context, WidgetRef ref, ExploreCardData data) async {
-    // Show course selection dialog
-    final selectedCourse = await _showCourseSelectionDialog(context);
-
-    if (selectedCourse == null || !context.mounted) return;
-
-    // Show loading dialog
-    UiUtils.showLoadingDialog(context, message: 'Downloading collection...', canPop: false);
-
-    try {
-      final result = await SyncService.instance.downloadCollection(
-        ref,
-        data.id,
-        selectedCourse.courseId,
-        onProgress: (progress, message) {
-          log('Download progress: $message');
-        },
+      // Show success message
+      UiUtils.showFlushBar(
+        context,
+        msg: targetCourseId != null
+            ? 'Successfully merged into "$courseName"'
+            : 'Successfully downloaded "$courseName"',
+        vibe: FlushbarVibe.success,
       );
 
-      if (!context.mounted) return;
-      Navigator.pop(context);
-
-      if (result.isSuccess) {
-        final collection = result.data!;
-
-        UiUtils.showFlushBar(
-          context,
-          msg: 'Successfully downloaded "${collection.collectionTitle}"',
-          vibe: FlushbarVibe.success,
-        );
-
-        // Navigate to collection
-        context.pushNamed(Routes.courseMaterials.name, extra: collection);
-      } else {
-        UiUtils.showFlushBar(context, msg: result.message ?? 'Download failed', vibe: FlushbarVibe.error);
-      }
-    } catch (e) {
-      if (!context.mounted) return;
-      Navigator.pop(context);
-
-      UiUtils.showFlushBar(context, msg: 'Error: $e', vibe: FlushbarVibe.error);
-    }
-  }
-
-  /// Shows dialog to select target course
-  Future<Course?> _showCourseSelectionDialog(BuildContext context) async {
-    final courses = await CourseRepo.getAllCourses();
-
-    if (!context.mounted) return null;
-
-    return await showDialog<Course>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Select Course'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: courses.isEmpty
-              ? const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text('No courses found. Please create a course first.'),
-                )
-              : ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: courses.length,
-                  itemBuilder: (context, index) {
-                    final course = courses[index];
-                    return ListTile(
-                      title: Text(course.courseTitle),
-                      subtitle: Text(course.description),
-                      onTap: () => Navigator.pop(context, course),
-                    );
-                  },
-                ),
-        ),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
-          if (courses.isEmpty)
-            TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                // TODO: Navigate to create course screen
-              },
-              child: const Text('Create Course'),
-            ),
-        ],
-      ),
-    );
-  }
-
-  // =========================================================================
-  // CONTENT DOWNLOAD
-  // =========================================================================
-
-  Future<void> _downloadContent(BuildContext context, WidgetRef ref, ExploreCardData data) async {
-    // Show collection selection dialog
-    final selectedCollection = await _showCollectionSelectionDialog(context);
-
-    if (selectedCollection == null || !context.mounted) return;
-
-    // Show loading dialog
-    UiUtils.showLoadingDialog(context, message: 'Downloading content...', canPop: false);
-
-    try {
-      final result = await SyncService.instance.downloadContents(
-        ref,
-        [data.id], // Single content hash
-        selectedCollection.collectionId,
-        onProgress: (progress, message) {
-          log('Download progress: $message');
-        },
+      // Update transfer state to completed
+      ref.read(transferStateProvider.notifier).updateStatus(
+        id: transferId,
+        status: TransferStatus.completed,
       );
 
-      if (!context.mounted) return;
-      Navigator.pop(context);
-
-      if (result.isSuccess) {
-        UiUtils.showFlushBar(context, msg: 'Successfully downloaded "${data.title}"', vibe: FlushbarVibe.success);
-
-        // Navigate to collection
-        context.pushNamed(Routes.courseMaterials.name, extra: selectedCollection);
-      } else {
-        UiUtils.showFlushBar(context, msg: result.message ?? 'Download failed', vibe: FlushbarVibe.error);
-      }
+      // TODO: Navigate to course after download completes
+      // For now, just show success
     } catch (e) {
       if (!context.mounted) return;
       Navigator.pop(context);
@@ -304,47 +180,214 @@ class ExploreDownloadHelper {
     }
   }
 
-  /// Shows dialog to select target collection
-  Future<CourseCollection?> _showCollectionSelectionDialog(BuildContext context) async {
-    final courses = await CourseRepo.getAllCourses();
+//   // =========================================================================
+//   // COLLECTION DOWNLOAD
+//   // =========================================================================
 
-    if (!context.mounted) return null;
+//   Future<void> _downloadCollection(BuildContext context, WidgetRef ref, ExploreCardData data) async {
+//     // Show course selection dialog
+//     final selectedCourse = await _showCourseSelectionDialog(context);
 
-    // First select course, then collection
-    final selectedCourse = await _showCourseSelectionDialog(context);
-    if (selectedCourse == null || !context.mounted) return null;
+//     if (selectedCourse == null || !context.mounted) return;
 
-    await selectedCourse.collections.load();
-    final collections = selectedCourse.collections.toList();
+//     // Show loading dialog
+//     UiUtils.showLoadingDialog(context, message: 'Downloading collection...', canPop: false);
 
-    if (!context.mounted) return null;
+//     try {
+//       // Create a transfer ID for this download
+//       final transferId = '${data.id}-${DateTime.now().millisecondsSinceEpoch}';
+      
+//       // Add transfer to state
+//       final transfer = TransferState(
+//         id: transferId,
+//         title: data.title,
+//         type: TransferType.collection,
+//         direction: TransferDirection.download,
+//         progress: 0.0,
+//         uploadedBytes: 0,
+//         totalBytes: 0,
+//         startedAt: DateTime.now(),
+//         status: TransferStatus.inProgress,
+//       );
+      
+//       ref.read(transferStateProvider.notifier).upsertTransfer(transfer);
+      
+//       // TODO: Call DioDownloadManager to start actual download
+//       // For now, simulate success after a delay
+//       await Future.delayed(const Duration(seconds: 2));
 
-    return await showDialog<CourseCollection>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Select Collection in ${selectedCourse.courseTitle}'),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: collections.isEmpty
-              ? const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Text('No collections found. Please create a collection first.'),
-                )
-              : ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: collections.length,
-                  itemBuilder: (context, index) {
-                    final collection = collections[index];
-                    return ListTile(
-                      title: Text(collection.collectionTitle),
-                      subtitle: Text(collection.description),
-                      onTap: () => Navigator.pop(context, collection),
-                    );
-                  },
-                ),
-        ),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel'))],
-      ),
-    );
-  }
-}
+//       if (!context.mounted) return;
+//       Navigator.pop(context);
+
+//       UiUtils.showFlushBar(context, msg: 'Successfully downloaded "${data.title}"', vibe: FlushbarVibe.success);
+
+//       // Update transfer state to completed
+//       ref.read(transferStateProvider.notifier).updateStatus(
+//         id: transferId,
+//         status: TransferStatus.completed,
+//       );
+
+//       // Navigate to collection
+//       context.pushNamed(Routes.courseMaterials.name, extra: selectedCourse);
+//     } catch (e) {
+//       if (!context.mounted) return;
+//       Navigator.pop(context);
+
+//       UiUtils.showFlushBar(context, msg: 'Error: $e', vibe: FlushbarVibe.error);
+//     }
+//   }
+//       }
+//     } catch (e) {
+//       if (!context.mounted) return;
+//       Navigator.pop(context);
+
+//       UiUtils.showFlushBar(context, msg: 'Error: $e', vibe: FlushbarVibe.error);
+//     }
+//   }
+
+//   /// Shows dialog to select target course
+//   Future<Course?> _showCourseSelectionDialog(BuildContext context) async {
+//     final courses = await CourseRepo.getAllCourses();
+
+//     if (!context.mounted) return null;
+
+//     return await showDialog<Course>(
+//       context: context,
+//       builder: (context) => AlertDialog(
+//         title: const Text('Select Course'),
+//         content: SizedBox(
+//           width: double.maxFinite,
+//           child: courses.isEmpty
+//               ? const Padding(
+//                   padding: EdgeInsets.all(16),
+//                   child: Text('No courses found. Please create a course first.'),
+//                 )
+//               : ListView.builder(
+//                   shrinkWrap: true,
+//                   itemCount: courses.length,
+//                   itemBuilder: (context, index) {
+//                     final course = courses[index];
+//                     return ListTile(
+//                       title: Text(course.courseTitle),
+//                       subtitle: Text(course.description),
+//                       onTap: () => Navigator.pop(context, course),
+//                     );
+//                   },
+//                 ),
+//         ),
+//         actions: [
+//           TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+//           if (courses.isEmpty)
+//             TextButton(
+//               onPressed: () {
+//                 Navigator.pop(context);
+//                 // TODO: Navigate to create course screen
+//               },
+//               child: const Text('Create Course'),
+//             ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   // =========================================================================
+//   // CONTENT DOWNLOAD
+//   // =========================================================================
+
+//   Future<void> _downloadContent(BuildContext context, WidgetRef ref, ExploreCardData data) async {
+//     // Show collection selection dialog
+//     final selectedCollection = await _showCollectionSelectionDialog(context);
+
+//     if (selectedCollection == null || !context.mounted) return;
+
+//     // Show loading dialog
+//     UiUtils.showLoadingDialog(context, message: 'Downloading content...', canPop: false);
+
+//     try {
+//       // Create a transfer ID for this download
+//       final transferId = '${data.id}-${DateTime.now().millisecondsSinceEpoch}';
+      
+//       // Add transfer to state
+//       final transfer = TransferState(
+//         id: transferId,
+//         title: data.title,
+//         type: TransferType.content,
+//         direction: TransferDirection.download,
+//         progress: 0.0,
+//         uploadedBytes: 0,
+//         totalBytes: 0,
+//         startedAt: DateTime.now(),
+//         status: TransferStatus.inProgress,
+//       );
+      
+//       ref.read(transferStateProvider.notifier).upsertTransfer(transfer);
+      
+//       // TODO: Call DioDownloadManager to start actual download
+//       // For now, simulate success after a delay
+//       await Future.delayed(const Duration(seconds: 2));
+
+//       if (!context.mounted) return;
+//       Navigator.pop(context);
+
+//       UiUtils.showFlushBar(context, msg: 'Successfully downloaded "${data.title}"', vibe: FlushbarVibe.success);
+
+//       // Update transfer state to completed
+//       ref.read(transferStateProvider.notifier).updateStatus(
+//         id: transferId,
+//         status: TransferStatus.completed,
+//       );
+
+//       // Navigate to collection
+//       context.pushNamed(Routes.courseMaterials.name, extra: selectedCollection);
+//     } catch (e) {
+//       if (!context.mounted) return;
+//       Navigator.pop(context);
+
+//       UiUtils.showFlushBar(context, msg: 'Error: $e', vibe: FlushbarVibe.error);
+//     }
+//   }
+
+//   /// Shows dialog to select target collection
+//   Future<CourseCollection?> _showCollectionSelectionDialog(BuildContext context) async {
+//     final courses = await CourseRepo.getAllCourses();
+
+//     if (!context.mounted) return null;
+
+//     // First select course, then collection
+//     final selectedCourse = await _showCourseSelectionDialog(context);
+//     if (selectedCourse == null || !context.mounted) return null;
+
+//     await selectedCourse.collections.load();
+//     final collections = selectedCourse.collections.toList();
+
+//     if (!context.mounted) return null;
+
+//     return await showDialog<CourseCollection>(
+//       context: context,
+//       builder: (context) => AlertDialog(
+//         title: Text('Select Collection in ${selectedCourse.courseTitle}'),
+//         content: SizedBox(
+//           width: double.maxFinite,
+//           child: collections.isEmpty
+//               ? const Padding(
+//                   padding: EdgeInsets.all(16),
+//                   child: Text('No collections found. Please create a collection first.'),
+//                 )
+//               : ListView.builder(
+//                   shrinkWrap: true,
+//                   itemCount: collections.length,
+//                   itemBuilder: (context, index) {
+//                     final collection = collections[index];
+//                     return ListTile(
+//                       title: Text(collection.collectionTitle),
+//                       subtitle: Text(collection.description),
+//                       onTap: () => Navigator.pop(context, collection),
+//                     );
+//                   },
+//                 ),
+//         ),
+//         actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel'))],
+//       ),
+//     );
+//   }
+// }

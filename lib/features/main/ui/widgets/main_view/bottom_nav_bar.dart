@@ -20,7 +20,7 @@ const List<({String label, String tooltip, IconData icon, IconData activeIcon})>
     icon: HugeIconsStroke.folder01,
     activeIcon: HugeIconsSolid.folder01,
   ),
-  // (label: "Explore", tooltip: "Explore courses", icon: HugeIconsStroke.compass01, activeIcon: HugeIconsSolid.compass01),
+  (label: "Sync", tooltip: "Sync details", icon: HugeIconsStroke.fileSync, activeIcon: HugeIconsSolid.fileSync),
 ];
 
 class BottomNavBar extends ConsumerWidget {
@@ -85,46 +85,51 @@ class BottomNavBar extends ConsumerWidget {
                 );
               },
             ),
-
-            Container(
-              width: 64,
-              height: 64,
-              margin: EdgeInsets.symmetric(horizontal: 12),
-              decoration: BoxDecoration(
-                color: theme.scaffoldBackgroundColor.withValues(alpha: 0.5),
-                border: Border.all(
-                  color: theme.onBackground.withValues(alpha: 0.15),
-                  strokeAlign: BorderSide.strokeAlignOutside,
-                ),
-                shape: BoxShape.circle,
-              ),
-
-              // padding: EdgeInsets.symmetric(horizontal: 4),
-              child: CustomElevatedButton(
-                fixedSize: Size.square(64),
-                shape: CircleBorder(),
-                backgroundColor: Colors.transparent,
-                onClick: () {
-                  Navigator.push(
-                    context,
-                    PageAnimation.pageRouteBuilder(
-                      const LibrarySearchView(),
-                      curve: CustomCurves.defaultIosSpring,
-                      duration: 700.inMs,
-                      type: TransitionType.combine(
-                        transitions: [
-                          TransitionType.scale(alignment: Alignment.bottomRight, from: 0.1),
-                          TransitionType.fadeIn,
-                        ],
-                      ),
-                    ),
-                  );
-                },
-                child: Icon(HugeIconsSolid.search02, color: theme.onBackground, size: 25),
-              ),
-            ),
+            _SearchNavItem(),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SearchNavItem extends ConsumerWidget {
+  const _SearchNavItem();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref;
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: theme.scaffoldBackgroundColor.withValues(alpha: 0.5),
+        border: Border.all(
+          color: theme.onBackground.withValues(alpha: 0.15),
+          strokeAlign: BorderSide.strokeAlignOutside,
+        ),
+        shape: BoxShape.circle,
+      ),
+      child: CustomElevatedButton(
+        fixedSize: Size.square(50),
+        shape: CircleBorder(),
+        backgroundColor: Colors.transparent,
+        onClick: () {
+          Navigator.push(
+            context,
+            PageAnimation.pageRouteBuilder(
+              const LibrarySearchView(),
+              curve: CustomCurves.defaultIosSpring,
+              duration: 700.inMs,
+              type: TransitionType.combine(
+                transitions: [
+                  TransitionType.scale(alignment: Alignment.bottomRight, from: 0.1),
+                  TransitionType.fadeIn,
+                ],
+              ),
+            ),
+          );
+        },
+        child: Icon(HugeIconsSolid.search02, color: theme.onBackground, size: 25),
       ),
     );
   }
@@ -153,7 +158,8 @@ class _BuildNavItem extends StatelessWidget {
       message: tooltip,
       child: CustomElevatedButton(
         onClick: onTap,
-        fixedSize: Size(90, 64),
+        fixedSize: Size(72, 64),
+        // minimumSize: Size(70, 64),
         borderRadius: 40,
         backgroundColor: Colors.transparent,
         child: Column(

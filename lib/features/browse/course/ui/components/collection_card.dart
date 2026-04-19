@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,7 +6,6 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_collection/course_collection.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/features/browse/course/ui/actions/modify_collection_actions.dart';
-import 'package:slidesync/features/browse/course/ui/widgets/course_details_view/course_details_header/animated_shape.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/shared/edit_collection_title_bottom_sheet.dart';
 import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -70,9 +67,14 @@ class _CollectionCardState extends ConsumerState<CollectionCard> {
                 clipBehavior: Clip.hardEdge,
                 padding: EdgeInsets.all(1),
                 decoration: BoxDecoration(
-                  color: ref.primary.withValues(alpha: 0.1),
+                  color: collection.metadata.color?.withValues(alpha: 0.1) ?? ref.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
-                  border: Border.fromBorderSide(BorderSide(color: ref.primary.withAlpha(40), width: 1.0)),
+                  border: Border.fromBorderSide(
+                    BorderSide(
+                      color: collection.metadata.color?.withAlpha(40) ?? ref.primary.withAlpha(40),
+                      width: 1.0,
+                    ),
+                  ),
                 ),
                 // child: Padding(
                 //   padding: const EdgeInsets.all(8.0),
@@ -86,7 +88,7 @@ class _CollectionCardState extends ConsumerState<CollectionCard> {
                   collection.collectionTitle.substring(0, 1).toUpperCase(),
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
-                  color: theme.primaryColor,
+                  color: collection.metadata.color ?? theme.primaryColor,
                 ),
               ),
               ConstantSizing.rowSpacingMedium,

@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/features/browse/course/ui/actions/modify_course_actions.dart';
+import 'package:slidesync/features/browse/course/ui/widgets/shared/edit_course_bottom_sheet.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
@@ -173,7 +175,7 @@ class CourseCardContextMenu extends ConsumerWidget {
                 padding: EdgeInsets.symmetric(vertical: 8),
                 clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
-                  color: theme.background.lightenColor(theme.isDarkMode ? 0.16 : 0.84).withValues(alpha: 0.7),
+                  color: theme.background.lightenColor(theme.isDarkMode ? 0.16 : 0.84).withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
                     BoxShadow(blurStyle: BlurStyle.outer, blurRadius: 1, offset: Offset(1, 1), color: Colors.black12),
@@ -186,31 +188,40 @@ class CourseCardContextMenu extends ConsumerWidget {
                   children: [
                     BuildExpandCardButton(
                       title: "Open",
-                      iconData: Iconsax.play,
+                      iconData: HugeIconsSolid.play,
                       onTap: () {
                         UiUtils.hideDialog(context);
                         context.pushNamed(Routes.courseDetails.name, extra: course.courseId);
                       },
                     ),
                     divider,
-                    // BuildExpandCardButton(title: "Pin", iconData: Icons.pin_rounded, onTap: () {}),
-                    // divider,
 
-                    // BuildExpandCardButton(
-                    //   title: "Edit course",
-                    //   iconData: Iconsax.grid_edit,
-                    //   onTap: () {
-                    //     UiUtils.hideDialog(context);
-                    //     context.pushNamed(Routes.courseDetails.name, extra: course.courseId);
-                    //   },
-                    // ),
+                    // BuildExpandCardButton(title: "Pin", iconData: HugeIconsSolid.pin, onTap: () {}),
                     // divider,
+                    BuildExpandCardButton(
+                      title: "Edit course",
+                      iconData: HugeIconsSolid.edit01,
+                      onTap: () async {
+                        UiUtils.hideDialog(context);
+                        await showModalBottomSheet(
+                          context: context,
+                          enableDrag: false,
+                          showDragHandle: false,
+                          isScrollControlled: true,
+                          builder: (context) => EditCourseBottomSheet(courseId: course.courseId),
+                        );
+                        // context.pushNamed(Routes.courseDetails.name, extra: course.courseId);
+                      },
+                    ),
+                    divider,
 
                     // BuildExpandCardButton(title: "Share", iconData: Icons.share_outlined, onTap: () {}),
                     // divider,
                     BuildExpandCardButton(
-                      title: "Remove",
-                      iconData: Iconsax.trash,
+                      title: "Delete",
+                      iconData: HugeIconsSolid.delete02,
+                      titleColor: Colors.redAccent,
+                      iconColor: Colors.redAccent,
                       onTap: () {
                         UiUtils.hideDialog(context);
                         if (rootNavigatorKey.currentContext != null && rootNavigatorKey.currentContext!.mounted) {
@@ -242,15 +253,25 @@ class CourseCardContextMenu extends ConsumerWidget {
 class BuildExpandCardButton extends ConsumerWidget {
   final String title;
   final IconData iconData;
+  final Color? titleColor;
+  final Color? iconColor;
   final void Function() onTap;
-  const BuildExpandCardButton({super.key, required this.title, required this.iconData, required this.onTap});
+  const BuildExpandCardButton({
+    super.key,
+    required this.title,
+    required this.iconData,
+    this.titleColor,
+    this.iconColor,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return BuildPlainActionButton(
       title: title,
-      icon: Icon(iconData, color: ref.supportingText),
+      icon: Icon(iconData, color: iconColor ?? ref.onBackground),
       contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      titleColor: titleColor,
       onTap: onTap,
     );
   }

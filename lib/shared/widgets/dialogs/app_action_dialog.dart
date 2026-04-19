@@ -8,11 +8,11 @@ import 'app_customizable_dialog.dart';
 
 class AppActionDialogModel {
   final String title;
-
+  final Color? titleColor;
   final Widget icon;
   final void Function() onTap;
 
-  AppActionDialogModel({required this.title, required this.icon, required this.onTap});
+  AppActionDialogModel({required this.title, this.titleColor, required this.icon, required this.onTap});
 
   AppActionDialogModel copyWith({String? title, Widget? icon, void Function()? onTap}) {
     return AppActionDialogModel(title: title ?? this.title, icon: icon ?? this.icon, onTap: onTap ?? this.onTap);
@@ -78,13 +78,23 @@ class AppActionDialog extends ConsumerWidget {
           final action = actions[index];
 
           if (index == actions.length - 1) {
-            return BuildPlainActionButton(title: action.title, icon: action.icon, onTap: action.onTap);
+            return BuildPlainActionButton(
+              title: action.title,
+              titleColor: action.titleColor,
+              icon: action.icon,
+              onTap: action.onTap,
+            );
           }
 
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              BuildPlainActionButton(title: action.title, icon: action.icon, onTap: action.onTap),
+              BuildPlainActionButton(
+                title: action.title,
+                titleColor: action.titleColor,
+                icon: action.icon,
+                onTap: action.onTap,
+              ),
               divider,
             ],
           );
@@ -97,6 +107,7 @@ class AppActionDialog extends ConsumerWidget {
 class BuildPlainActionButton extends ConsumerWidget {
   final String title;
   final Widget icon;
+  final Color? titleColor;
   final void Function()? onTap;
 
   final Color? backgroundColor;
@@ -105,6 +116,7 @@ class BuildPlainActionButton extends ConsumerWidget {
   const BuildPlainActionButton({
     super.key,
     required this.title,
+    this.titleColor,
     required this.icon,
     this.onTap,
     this.backgroundColor,
@@ -125,7 +137,12 @@ class BuildPlainActionButton extends ConsumerWidget {
         children: [
           icon,
           Expanded(
-            child: CustomText(title, color: ref.onBackground, style: textStyle),
+            child: CustomText(
+              title,
+              color: titleColor ?? ref.onBackground,
+              style: textStyle,
+              fontWeight: FontWeight.w500,
+            ),
           ),
         ],
       ),

@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_collection/course_collection.dart';
+import 'package:slidesync/features/browse/collection/ui/widgets/add_contents/add_link_bottom_sheet.dart';
 import 'package:slidesync/features/browse/shared/usecases/types/add_content_result.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/add_contents/loading_overlay.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/add_content/add_contents_uc.dart';
@@ -110,6 +111,15 @@ class AddContentsActions {
     required CourseContentType type,
     bool selectByFolder = false,
   }) async {
+    if (type == CourseContentType.link) {
+      UiUtils.hideDialog(context);
+      UiUtils.showCustomDialog(
+        context,
+        transitionType: TransitionType.fade,
+        child: AddLinkBottomSheet(collection: collection),
+      );
+      return;
+    }
     await _executeAddContentFlow(
       collection: collection,
       initialMessage: "Loading...",

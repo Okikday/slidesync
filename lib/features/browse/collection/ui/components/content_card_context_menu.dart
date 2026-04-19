@@ -12,6 +12,7 @@ import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
 import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
+import 'package:slidesync/shared/helpers/widget_helper.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
 import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
@@ -73,7 +74,13 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                               color: theme.onSurface.withAlpha(20),
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: BuildImagePathWidget(fileDetails: widget.content.thumbnailDetails),
+                            child: BuildImagePathWidget(
+                              fileDetails: widget.content.thumbnailDetails,
+                              fallbackWidget: Icon(
+                                WidgetHelper.resolveIconData(widget.content.courseContentType),
+                                size: 20,
+                              ),
+                            ),
                           ),
                           Expanded(
                             child: CustomText(widget.content.title, fontSize: 14, color: theme.onSurface, maxLines: 2),

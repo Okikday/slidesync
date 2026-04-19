@@ -1,5 +1,5 @@
 import 'package:flutter/widgets.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 
 class WidgetHelper {
@@ -8,21 +8,21 @@ class WidgetHelper {
       // case CourseContentType.audio:
       //   return isOutlined ? Iconsax.audio_square_copy : Iconsax.audio_square;
       case CourseContentType.document:
-        return isOutlined ? Iconsax.document_copy : Iconsax.document;
+        return isOutlined ? HugeIconsStroke.documentAttachment : HugeIconsSolid.documentAttachment;
       case CourseContentType.image:
-        return isOutlined ? Iconsax.image_copy : Iconsax.image;
+        return isOutlined ? HugeIconsStroke.image01 : HugeIconsSolid.image01;
       case CourseContentType.link:
-        return isOutlined ? Iconsax.link_copy : Iconsax.link;
+        return isOutlined ? HugeIconsStroke.link03 : HugeIconsSolid.link03;
       case CourseContentType.unknown:
-        return isOutlined ? Iconsax.info_circle_copy : Iconsax.info_circle;
+        return isOutlined ? HugeIconsStroke.fileUnknown : HugeIconsSolid.fileUnknown;
       // case CourseContentType.video:
       //   return isOutlined ? Iconsax.video_copy : Iconsax.video;
       case CourseContentType.note:
-        return isOutlined ? Iconsax.note_copy : Iconsax.note;
+        return isOutlined ? HugeIconsStroke.note : HugeIconsSolid.note;
       case CourseContentType.reference:
-        return isOutlined ? Iconsax.aave_aave : Iconsax.aave_aave_copy;
+        return isOutlined ? HugeIconsStroke.folderDetailsReference : HugeIconsSolid.folderDetailsReference;
       default:
-        return Iconsax.image;
+        return HugeIconsSolid.fileUnknown;
     }
   }
 }

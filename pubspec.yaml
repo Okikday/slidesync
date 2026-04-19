@@ -108,6 +108,7 @@ dependencies:
   googleapis: ^16.0.0
   googleapis_auth: ^2.0.0
   extension_google_sign_in_as_googleapis_auth: ^3.0.0
+  dio: ^5.9.2
 
 flutter_native_splash:
   android: true

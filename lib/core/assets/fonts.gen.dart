@@ -11,6 +11,6 @@
 class FontFamily {
   FontFamily._();
 
-  /// Font family: Nunito
-  static const String nunito = 'Nunito';
+  /// Font family: Raleway
+  static const String raleway = 'Raleway';
 }

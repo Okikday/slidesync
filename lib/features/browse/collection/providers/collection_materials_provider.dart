@@ -6,18 +6,10 @@ import 'package:slidesync/features/browse/collection/providers/src/mod_contents_
 import 'package:slidesync/shared/global/notifiers/common/course_sort_notifier.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
-import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/shared/global/notifiers/common/card_view_type_notifier.dart';
 import 'package:slidesync/features/browse/collection/providers/src/collection_materials_pagination.dart';
 
-final defaultContent = CourseContent.create(
-  contentHash: '_',
-  parentId: '_',
-  title: '_',
-  fileSize: 0,
-  path: const FileDetails(),
-  courseContentType: CourseContentType.unknown,
-);
+final _modState = NotifierProvider<ModContentsNotifier, int>(ModContentsNotifier.new, isAutoDispose: true);
 
 class CollectionMaterialsProvider {
   ///|
@@ -50,7 +42,7 @@ class CollectionMaterialsProvider {
   /// MODIFY CONTENTS STATE
   /// ===================================================================================================
 
-  static final modState = NotifierProvider<ModContentsNotifier, int>(ModContentsNotifier.new, isAutoDispose: true);
+  static final modState = _modState;
 
   ///|
   ///|

@@ -1,9 +1,14 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/features/sync/providers/transfer_state_provider.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 
 enum SyncType { done, course, collection, content }
 
-// Providers
+// ============================================================================
+// LEGACY: Queue-based providers (for backward compatibility)
+// ============================================================================
+
 final _downloadingProvider = AsyncNotifierProvider(
   () => HiveAsyncImpliedNotifierN<Map<String, String>>(HiveDataPathKey.downloads.name, defaultKey: <String, String>{}),
 );
@@ -17,7 +22,7 @@ class SyncProvider {
   static final instance = SyncProvider._();
 
   // =========================================================================
-  // Provider Accessors
+  // Provider Accessors (Legacy)
   // =========================================================================
 
   static AsyncNotifierProvider<HiveAsyncImpliedNotifierN<Map<String, String>>, Map<String, String>?>
@@ -27,7 +32,7 @@ class SyncProvider {
   get uploadingProvider => _uploadingProvider;
 
   // =========================================================================
-  // Download Operations
+  // Download Operations (Legacy)
   // =========================================================================
 
   bool isDownloading(WidgetRef ref) {
@@ -78,7 +83,7 @@ class SyncProvider {
   }
 
   // =========================================================================
-  // Upload Operations
+  // Upload Operations (Legacy)
   // =========================================================================
 
   bool isUploading(WidgetRef ref) {
@@ -129,7 +134,7 @@ class SyncProvider {
   }
 
   // =========================================================================
-  // Combined Operations
+  // Combined Operations (Legacy)
   // =========================================================================
 
   bool isSyncing(WidgetRef ref) {
