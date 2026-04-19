@@ -1,7 +1,8 @@
 import 'dart:io';
 import 'package:isar_community/isar.dart';
 import 'package:slidesync/core/apis/abstract/upload_download_base.dart';
-import 'package:slidesync/core/apis/abstract/dio_upload_manager.dart';
+import 'package:slidesync/core/sync/gdrive_manager.dart';
+import 'package:slidesync/core/sync/entities/drive_progress.dart';
 import 'package:slidesync/core/apis/api.dart';
 import 'package:slidesync/core/apis/entities/vault_entity.dart';
 import 'package:slidesync/core/apis/entities/source_entity.dart';
@@ -10,6 +11,7 @@ import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/models/course_collection/course_collection.dart';
 import 'package:slidesync/data/models/course_content/course_content.dart';
+import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/core/utils/result.dart';
 
 /// Upload sync result tracking
@@ -50,7 +52,7 @@ class SyncCoordinator {
   factory SyncCoordinator() => _instance;
   SyncCoordinator._();
 
-  final _uploadManager = DioUploadManager();
+  final _driveManager = GDriveManager.instance;
 
   /// Sync course and its collections to Firebase.
   ///
@@ -213,53 +215,69 @@ class SyncCoordinator {
   }) async {
     final metadata = content.metadata;
 
-    // Skip if not a local file
-    if (metadata.contentOrigin != ContentOrigin.local) {
+    // Skip if not uploadable: only upload local files or links
+    // Links (type=link) should be uploaded regardless of origin
+    if (content.courseContentType != CourseContentType.link && metadata.contentOrigin != ContentOrigin.local) {
       SyncLogger.info(
-        'Content ${content.contentId} is not local (${metadata.contentOrigin}), skipping upload',
+        'Content ${content.contentId} is not local or link (type=${content.courseContentType}, origin=${metadata.contentOrigin}), skipping upload',
         operation: userId,
       );
       return null;
     }
 
     // Check if content already in Firebase
-    final existing = await Api.instance.content.get(
-      courseId: courseId,
-      collectionId: collectionId,
-      contentHash: content.contentHash,
-    );
+    final existing = await Api.instance.content.get(content.contentHash);
 
-    if (existing.data != null) {
+    if (existing.isSuccess && existing.data != null) {
       SyncLogger.info('Content ${content.contentId} already in Firebase, skipping', operation: userId);
       return null;
     }
 
-    // Validate file
-    final file = File(content.path.replaceFirst(RegExp(r'^(file|link):'), ''));
+    // Validate file - parse content.path as FileDetails (it's stored as JSON)
+    final fileDetails = content.path.fileDetails;
+    final file = File(fileDetails.filePath.replaceFirst(RegExp(r'^(file|link):'), ''));
     if (!await file.exists()) {
       SyncLogger.warn('File not found: ${file.path}', operation: userId);
       return false;
     }
 
-    // Upload file
+    // Upload file using Google Drive resumable upload protocol
     try {
       SyncLogger.info('Uploading file: ${content.title}', operation: userId);
 
-      final uploadResult = await _uploadManager.uploadFile(
+      // Stream upload progress from GDriveManager
+      String? driveFileId;
+      await for (final progress in _driveManager.public.upload(
         file: file,
-        vaultLinks: vaultLinks,
+        institutionId: 'default', // Use default institution
+        courseId: courseId, // Organize by course
+        uploadedBy: userId,
         operationId: content.contentId,
-        onProgress: onProgress,
-        maxAttempts: 3,
-      );
+        fileName: content.title,
+      )) {
+        // Emit progress updates
+        if (onProgress != null) {
+          onProgress(progress.bytesTransferred, progress.totalBytes);
+        }
 
-      if (!uploadResult.data!.success) {
-        throw Exception('Upload failed: ${uploadResult.data!.error}');
+        // Log progress
+        if (progress.isDone) {
+          driveFileId = progress.driveFileId;
+          SyncLogger.info('Upload complete: ${progress.formattedProgress} → $driveFileId', operation: userId);
+        } else if (progress.isFailed) {
+          throw Exception(progress.error ?? 'Upload failed');
+        } else if (progress.progressPercent % 10 == 0) {
+          SyncLogger.info('Upload progress: ${progress.formattedProgress}', operation: userId);
+        }
+      }
+
+      if (driveFileId == null) {
+        throw Exception('Upload completed but no file ID returned');
       }
 
       // Log upload to vault
       await Api.instance.vault.logUploadWithSource(
-        linkId: vaultLinks.first, // Use first link as vault ID
+        linkId: driveFileId, // Use Drive file ID as link
         uploadInput: LogUploadInput(
           uploadedBy: userId,
           contentHash: content.contentHash,
@@ -267,7 +285,7 @@ class SyncCoordinator {
           fileSize: content.fileSize,
         ),
         sourceInput: CreateSourceInput(
-          url: uploadResult.data!.storagePath ?? '',
+          url: 'https://drive.google.com/file/d/$driveFileId/view',
           title: content.title,
           type: 'file',
           uploadedBy: userId,

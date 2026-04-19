@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:slidesync/core/apis/api.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course/course.dart';
@@ -138,30 +139,52 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
               final userIdResult = await UserDataFunctions().getUserId();
               if (!userIdResult.isSuccess || userIdResult.data == null) {
                 GlobalNav.withContext((c) => c.pop());
-                UiUtils.showFlushBar(context, msg: 'User not authenticated', vibe: FlushbarVibe.error);
+                GlobalNav.withContext(
+                  (context) => UiUtils.showFlushBar(context, msg: 'User not authenticated', vibe: FlushbarVibe.error),
+                );
                 return;
               }
+
+              // Fetch vault links (admin only)
+              final vaultResult = await Api.instance.vault.listVaults();
+              if (!vaultResult.isSuccess || vaultResult.data == null || vaultResult.data!.isEmpty) {
+                GlobalNav.withContext((c) => c.pop());
+                GlobalNav.withContext(
+                  (context) => UiUtils.showFlushBar(
+                    context,
+                    msg: 'No vault links available. Contact admin.',
+                    vibe: FlushbarVibe.error,
+                  ),
+                );
+                return;
+              }
+
+              // Extract URLs from vault entities
+              final vaultLinks = vaultResult.data!.map((vault) => vault.url).toList();
 
               // Use SyncCoordinator to upload the course
               final coordinator = SyncCoordinator();
               final result = await coordinator.syncCourse(
                 course: course,
                 userId: userIdResult.data!,
-                vaultLinks: [], // TODO: Get vault links from config
+                vaultLinks: vaultLinks,
               );
 
               // Close loading dialog
               GlobalNav.withContext((c) => c.pop());
-
-              if (result.data?.success ?? false) {
-                UiUtils.showFlushBar(context, msg: 'Course uploaded successfully!');
-              } else {
-                UiUtils.showFlushBar(context, msg: result.data?.error ?? 'Upload failed', vibe: FlushbarVibe.error);
-              }
+              GlobalNav.withContext((context) {
+                if (result.data?.success ?? false) {
+                  UiUtils.showFlushBar(context, msg: 'Course uploaded successfully!');
+                } else {
+                  UiUtils.showFlushBar(context, msg: result.data?.error ?? 'Upload failed', vibe: FlushbarVibe.error);
+                }
+              });
             } catch (e) {
               // Close loading dialog
               GlobalNav.withContext((c) => c.pop());
-              UiUtils.showFlushBar(context, msg: 'Upload failed: $e', vibe: FlushbarVibe.error);
+              GlobalNav.withContext(
+                (context) => UiUtils.showFlushBar(context, msg: 'Upload failed: $e', vibe: FlushbarVibe.error),
+              );
             }
           },
         ),

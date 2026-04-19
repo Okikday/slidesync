@@ -22,7 +22,7 @@ class AppRouter {
   static final GoRouter mainRouter = _router;
 
   static final GoRouter _router = GoRouter(
-    initialLocation: Routes.splash.path,
+    initialLocation: Routes.syncTest.path,
     navigatorKey: rootNavigatorKey,
     observers: [HeroineController()],
     routes: [

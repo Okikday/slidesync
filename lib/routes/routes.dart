@@ -33,9 +33,10 @@ enum Routes {
   settings,
 
   /// Sync screens
-  sync,
   downloads,
   uploads,
+  syncView,
+  syncTest,
 }
 
 extension RoutesExtension on Routes {

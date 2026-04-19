@@ -23,6 +23,7 @@ class AddContentInput {
 class ContentEntity {
   final String contentHash; // doc ID
   final String contentId;
+  final String collectionId;
   final String title;
   final String addedBy;
   final String courseContentType;
@@ -34,6 +35,7 @@ class ContentEntity {
   const ContentEntity({
     required this.contentHash,
     required this.contentId,
+    required this.collectionId,
     required this.title,
     required this.addedBy,
     required this.courseContentType,
@@ -43,49 +45,47 @@ class ContentEntity {
     required this.metadata,
   });
 
-  factory ContentEntity.fromFirestore(
-    DocumentSnapshot<Map<String, dynamic>> doc,
-    SnapshotOptions? _,
-  ) {
+  factory ContentEntity.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc, SnapshotOptions? _) {
     final d = doc.data()!;
     return ContentEntity(
       contentHash: doc.id,
       contentId: d['contentId'] as String,
+      collectionId: d['collectionId'] as String,
       title: d['title'] as String,
       addedBy: d['addedBy'] as String,
       courseContentType: d['courseContentType'] as String,
       fileSize: d['fileSize'] as int? ?? 0,
       description: d['description'] as String? ?? '',
       createdAt: (d['createdAt'] as Timestamp).toDate(),
-      metadata: ContentMetadata.fromMap(
-          d['metadata'] as Map<String, dynamic>? ?? {}),
+      metadata: ContentMetadata.fromMap(d['metadata'] as Map<String, dynamic>? ?? {}),
     );
   }
 
   Map<String, dynamic> toMap() => {
-        'contentHash': contentHash,
-        'contentId': contentId,
-        'title': title,
-        'addedBy': addedBy,
-        'courseContentType': courseContentType,
-        'fileSize': fileSize,
-        'description': description,
-        'createdAt': Timestamp.fromDate(createdAt),
-        'metadata': metadata.toMap(),
-      };
+    'contentHash': contentHash,
+    'contentId': contentId,
+    'collectionId': collectionId,
+    'title': title,
+    'addedBy': addedBy,
+    'courseContentType': courseContentType,
+    'fileSize': fileSize,
+    'description': description,
+    'createdAt': Timestamp.fromDate(createdAt),
+    'metadata': metadata.toMap(),
+  };
 
-  static Map<String, dynamic> createMap(
-      String contentHash, AddContentInput input) => {
-        'contentHash': contentHash,
-        'contentId': input.contentId,
-        'title': input.title,
-        'addedBy': input.addedBy,
-        'courseContentType': input.courseContentType,
-        'fileSize': input.fileSize,
-        'description': input.description,
-        'createdAt': FieldValue.serverTimestamp(),
-        'metadata': input.metadata.toMap(),
-      };
+  static Map<String, dynamic> createMap(String contentHash, String collectionId, AddContentInput input) => {
+    'contentHash': contentHash,
+    'contentId': input.contentId,
+    'collectionId': collectionId,
+    'title': input.title,
+    'addedBy': input.addedBy,
+    'courseContentType': input.courseContentType,
+    'fileSize': input.fileSize,
+    'description': input.description,
+    'createdAt': FieldValue.serverTimestamp(),
+    'metadata': input.metadata.toMap(),
+  };
 }
 
 class ContentMetadata {
@@ -94,24 +94,19 @@ class ContentMetadata {
   final String? author;
   final Map<String, dynamic> thumbnails;
 
-  const ContentMetadata({
-    this.originalFileName,
-    this.contentOrigin,
-    this.author,
-    this.thumbnails = const {},
-  });
+  const ContentMetadata({this.originalFileName, this.contentOrigin, this.author, this.thumbnails = const {}});
 
   factory ContentMetadata.fromMap(Map<String, dynamic> map) => ContentMetadata(
-        originalFileName: map['originalFileName'] as String?,
-        contentOrigin: map['contentOrigin'] as String?,
-        author: map['author'] as String?,
-        thumbnails: map['thumbnails'] as Map<String, dynamic>? ?? {},
-      );
+    originalFileName: map['originalFileName'] as String?,
+    contentOrigin: map['contentOrigin'] as String?,
+    author: map['author'] as String?,
+    thumbnails: map['thumbnails'] as Map<String, dynamic>? ?? {},
+  );
 
   Map<String, dynamic> toMap() => {
-        'originalFileName': originalFileName,
-        'contentOrigin': contentOrigin,
-        'author': author,
-        'thumbnails': thumbnails,
-      };
+    'originalFileName': originalFileName,
+    'contentOrigin': contentOrigin,
+    'author': author,
+    'thumbnails': thumbnails,
+  };
 }

@@ -23,7 +23,7 @@ class _PublicDrive {
   ///   - [DriveProgress.driveFileId] → Drive file ID
   ///   - Caller is responsible for the Firestore batch write via
   ///     [Api.instance.vault.logUploadWithSource()] — clean separation.
-  static Stream<DriveProgress> upload({
+  Stream<DriveProgress> upload({
     required File file,
     required String institutionId,
     required String courseId,
