@@ -36,7 +36,6 @@ enum Routes {
   downloads,
   uploads,
   syncView,
-  syncTest,
 }
 
 extension RoutesExtension on Routes {

@@ -63,11 +63,11 @@ class CollectionEntity {
     final d = doc.data()!;
     return CollectionEntity(
       collectionId: doc.id,
-      courseId: d['courseId'] as String,
-      collectionTitle: d['collectionTitle'] as String,
+      courseId: d['courseId'] as String? ?? '',
+      collectionTitle: d['collectionTitle'] as String? ?? 'Untitled',
       description: d['description'] as String? ?? '',
       order: d['order'] as int? ?? 0,
-      createdBy: d['createdBy'] as String,
+      createdBy: d['createdBy'] as String? ?? '',
       forkedFrom: d['forkedFrom'] as String?,
       flagCount: d['flagCount'] as int? ?? 0,
       createdAt: (d['createdAt'] as Timestamp).toDate(),

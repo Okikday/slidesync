@@ -45,14 +45,7 @@ class CourseCardContextMenu extends ConsumerWidget {
       clipBehavior: Clip.hardEdge,
       children: [
         Positioned.fill(
-          child: SizedBox.expand(
-            child: GestureDetector(
-              onTap: () {
-                log("Clicked outside");
-                UiUtils.hideDialog(context);
-              },
-            ),
-          ),
+          child: SizedBox.expand(child: GestureDetector(onTap: () => UiUtils.hideDialog(context))),
         ),
         Positioned(
           top: boundedOffset.dy - (kToolbarHeight + 4) - 12,
@@ -196,8 +189,14 @@ class CourseCardContextMenu extends ConsumerWidget {
                     ),
                     divider,
 
-                    // BuildExpandCardButton(title: "Pin", iconData: HugeIconsSolid.pin, onTap: () {}),
-                    // divider,
+                    BuildExpandCardButton(
+                      title: "Select",
+                      iconData: HugeIconsSolid.select01,
+                      onTap: () {
+                        UiUtils.hideDialog(context);
+                      },
+                    ),
+                    divider,
                     BuildExpandCardButton(
                       title: "Edit course",
                       iconData: HugeIconsSolid.edit01,

@@ -21,7 +21,7 @@ import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 final _searchTypeProvider = NotifierProvider.autoDispose(IntNotifier.new);
 const strCategories = ['Courses', 'Collections', 'Materials'];
 
-class LibraryTabViewSearchButton extends ConsumerWidget {
+class LibraryTabViewSearchButton extends ConsumerWidget with CourseCardActions {
   final Color? backgroundColor;
   const LibraryTabViewSearchButton({super.key, this.backgroundColor});
 
@@ -110,7 +110,7 @@ class LibraryTabViewSearchButton extends ConsumerWidget {
                         false,
                         onTap: (course) {
                           // controller.closeView("");
-                          CourseCardActions.of(ref).onTapCourseCard(course);
+                          onTapCourseCard(ref, course: course);
                         },
                       ),
                       1 => Padding(
@@ -127,7 +127,7 @@ class LibraryTabViewSearchButton extends ConsumerWidget {
                                 final curr = value;
                                 final parent = await CourseRepo.getCourseById(curr.parentId);
                                 if (parent == null) return;
-                                CourseCardActions.of(ref).onTapCourseCard(parent);
+                                onTapCourseCard(ref, course: parent);
                               },
                             );
                           },

@@ -1,24 +1,22 @@
-import 'package:slidesync/core/utils/device_utils.dart';
-
 class SettingsModel {
   /// Whether to automatically switch theme based on system brightness
-  bool useSystemBrightness;
+  final bool useSystemBrightness;
 
   /// Whether content copying is disabled (requires storage permission)
-  bool contentNotCopied;
+  final bool contentNotCopied;
 
   /// Whether to use the app’s built-in viewer instead of external apps
-  bool? useBuiltInViewer;
+  final bool? useBuiltInViewer;
 
   /// Whether the app should provide summarized reading suggestions
-  bool summarizedSuggestions;
+  final bool summarizedSuggestions;
 
   /// Allows multiple contents to open simultaneously (experimental feature)
-  bool allowMultipleContents;
+  final bool allowMultipleContents;
 
-  bool showMaterialsInFullScreen;
+  final bool showMaterialsInFullScreen;
 
-  SettingsModel({
+  const SettingsModel({
     this.useSystemBrightness = true,
     this.contentNotCopied = false,
     // this.useBuiltInViewer = true,

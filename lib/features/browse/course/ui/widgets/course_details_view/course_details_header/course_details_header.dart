@@ -15,6 +15,7 @@ import 'package:slidesync/shared/global/providers/course_providers.dart';
 import 'package:slidesync/shared/global/providers/course_track_providers.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
@@ -70,7 +71,6 @@ class CourseDetailsHeaderContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final topPadding = context.topPadding;
     final shapeSize = kToolbarHeight * 2;
     final courseDetail = ref.watch(
       CourseProviders.courseProvider(courseId).select(
@@ -80,8 +80,7 @@ class CourseDetailsHeaderContent extends ConsumerWidget {
       ),
     );
 
-    return Padding(
-      padding: EdgeInsets.only(top: topPadding),
+    return TopPadding(
       child: courseDetail.when(
         data: (data) {
           final courseTitle = data.title;

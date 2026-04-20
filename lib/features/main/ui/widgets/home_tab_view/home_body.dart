@@ -1,5 +1,6 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 import 'package:slidesync/data/models/course/course.dart';
@@ -27,6 +28,7 @@ class _HomeBodyState extends ConsumerState<HomeBody> with HomeTabActions {
 
   @override
   Widget build(BuildContext context) {
+    final tabIndex = MainProvider.state.select((s) => s.tabIndex).watch(ref);
     return SmoothCustomScrollView(
       physics: const BouncingScrollPhysics(),
       intensity: ScrollIntensity.slow,
@@ -45,13 +47,13 @@ class _HomeBodyState extends ConsumerState<HomeBody> with HomeTabActions {
                 data: (data) {
                   if (data != null) {
                     return HomeDashboard(
-                      courseName: data.title ?? "Unknown material",
-                      detail: '',
-                      progressValue: data.progress ?? 0.0,
-                      completed: data.progress == 1.0,
-                      isFirst: true,
-                      onReadingBtnTapped: () => onReadingButtonTapped(ref, data: data),
-                    );
+                          data: data,
+                          isFirst: true,
+                          onReadingBtnTapped: () => onReadingButtonTapped(ref, data: data),
+                        )
+                        .animate(target: tabIndex == 0 ? 1 : 0)
+                        .scaleXY(begin: 0.95, end: 1.0, duration: 400.inMs, curve: CustomCurves.decelerate)
+                        .fadeIn(duration: 400.inMs, curve: CustomCurves.decelerate);
                   }
                   return child!;
                 },

@@ -10,14 +10,9 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/course_card_context_menu.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
-class CourseCardActions {
-  final WidgetRef ref;
-  const CourseCardActions(this.ref);
-  static CourseCardActions of(WidgetRef ref) => CourseCardActions(ref);
-
-  BuildContext get context => ref.context;
-
-  void onTapCourseCard(Course course) async {
+mixin CourseCardActions {
+  void onTapCourseCard(WidgetRef ref, {required Course course}) async {
+    final context = ref.context;
     final libraryNotifier = MainProvider.library.act(ref);
     if (libraryNotifier.isAnyCardAnimating) return;
     libraryNotifier.isAnyCardAnimating = true; // Tell that a course is currently opened
@@ -33,7 +28,8 @@ class CourseCardActions {
     libraryNotifier.isAnyCardAnimating = false;
   }
 
-  void onHoldCourseCard(Course course) async {
+  void onHoldCourseCard(WidgetRef ref, {required Course course}) async {
+    final context = ref.context;
     final libraryNotifier = MainProvider.library.act(ref);
     final Offset? tapPosition = libraryNotifier.cardTapPositionDetails;
     if (tapPosition == null) return;
@@ -46,7 +42,7 @@ class CourseCardActions {
         course: course,
         onOpen: () {
           UiUtils.hideDialog(context);
-          onTapCourseCard(course);
+          onTapCourseCard(ref, course: course);
         },
       ),
     );

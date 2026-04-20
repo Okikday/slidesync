@@ -43,8 +43,7 @@ class AppHiveData {
     }
   }
 
-  Future<T?> getData<T>({required String key}) async =>
-      (await Result.tryRunAsync(() async => await _box.get(key))).data as T?;
+  Future<T?> getData<T>({required String key}) async => Result.tryRun(() => _box.get(key)).data as T?;
 
   Future<void> setData<T>({required String key, required T? value}) async =>
       await Result.tryRunAsync(() async => await _box.put(key, value));
@@ -56,9 +55,9 @@ class AppHiveData {
   }
 
   Stream<T?> watchData<T>({required String key}) async* {
-    yield (await getData(key: key)) as T?;
+    yield (getData(key: key)) as T?;
     yield* _box.watch(key: key).asyncMap((_) async {
-      return (await getData(key: key)) as T?;
+      return (getData(key: key)) as T?;
     });
   }
 

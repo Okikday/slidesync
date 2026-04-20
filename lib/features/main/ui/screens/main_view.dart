@@ -1,22 +1,18 @@
-import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/features/main/ui/actions/main_view_actions.dart';
+import 'package:slidesync/features/main/ui/entities/main_view_entity.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/library_floating_action_button.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_drawer.dart';
-import 'package:slidesync/features/main/ui/screens/library_tab_view.dart';
-import 'package:slidesync/features/sync/ui/screens/sync_view.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/decorations/back_soft_edge_blur.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:slidesync/shared/widgets/state/absorber.dart';
 import 'package:soft_edge_blur/soft_edge_blur.dart';
 
-import 'home_tab_view.dart';
-import '../widgets/main_view/bottom_nav_bar.dart';
-
-const _views = [HomeTabView(), LibraryTabView(), SyncView()];
+import '../widgets/main_view/bottom_nav_bar/bottom_nav_bar.dart';
 
 class MainView extends ConsumerStatefulWidget {
   final int tabIndex;
@@ -26,7 +22,7 @@ class MainView extends ConsumerStatefulWidget {
   ConsumerState createState() => _MainViewState();
 }
 
-class _MainViewState extends ConsumerState<MainView> {
+class _MainViewState extends ConsumerState<MainView> with MainViewActions {
   late final PageController pageController;
 
   @override
@@ -44,7 +40,7 @@ class _MainViewState extends ConsumerState<MainView> {
 
   @override
   Widget build(BuildContext context) {
-    final bottomPadding = context.bottomPadding;
+    final tabs = mainViewTabOptions.keys.toList();
     return AbsorberWatch(
       listenable: MainProvider.home.select((s) => s.isScrolled),
       builder: (_, isScrolled, ref, body) {
@@ -58,17 +54,9 @@ class _MainViewState extends ConsumerState<MainView> {
           body: body!,
           footer: BackSoftEdgeBlur(
             edgeType: EdgeType.bottomEdge,
-            height: 84 + bottomPadding,
+            height: 84 + context.bottomPadding,
             child: BottomNavBar(
-              onTap: (index) {
-                MainProvider.state.expand(ref, (r, v) {
-                  if (v.read(r).tabIndex != index) {
-                    v.act(r).setTabIndex(index);
-                    // pageController.animateToPage(index, duration: 700.inMs, curve: CustomCurves.defaultIosSpring);
-                    pageController.jumpToPage(index);
-                  }
-                });
-              },
+              onTap: (index) => onTapBottomNavBarItem(ref, index: index, pageController: pageController),
             ),
           ),
         );
@@ -76,20 +64,20 @@ class _MainViewState extends ConsumerState<MainView> {
       child: PageView(
         controller: pageController,
         onPageChanged: (index) => MainProvider.state.act(ref).setTabIndex(index),
-        children: _views,
+        children: tabs,
       ),
     );
   }
+}
 
-  SystemUiOverlayStyle _deriveSystemUiOverlayStyle(WidgetRef ref, bool isScrolled) {
-    final theme = ref;
-    final brightness = ref.brightness;
-    return SystemUiOverlayStyle(
-      statusBarColor: isScrolled ? theme.secondaryColor.withAlpha(100) : theme.background,
-      statusBarBrightness: brightness,
-      statusBarIconBrightness: brightness,
-      systemNavigationBarIconBrightness: brightness,
-      systemNavigationBarColor: ref.cardColor,
-    );
-  }
+SystemUiOverlayStyle _deriveSystemUiOverlayStyle(WidgetRef ref, bool isScrolled) {
+  final theme = ref;
+  final brightness = ref.brightness;
+  return SystemUiOverlayStyle(
+    statusBarColor: isScrolled ? theme.secondaryColor.withAlpha(100) : theme.background,
+    statusBarBrightness: brightness,
+    statusBarIconBrightness: brightness,
+    systemNavigationBarIconBrightness: brightness,
+    systemNavigationBarColor: ref.cardColor,
+  );
 }

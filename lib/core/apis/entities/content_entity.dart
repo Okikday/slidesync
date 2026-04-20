@@ -49,11 +49,11 @@ class ContentEntity {
     final d = doc.data()!;
     return ContentEntity(
       contentHash: doc.id,
-      contentId: d['contentId'] as String,
-      collectionId: d['collectionId'] as String,
-      title: d['title'] as String,
-      addedBy: d['addedBy'] as String,
-      courseContentType: d['courseContentType'] as String,
+      contentId: d['contentId'] as String? ?? '',
+      collectionId: d['collectionId'] as String? ?? '',
+      title: d['title'] as String? ?? 'Untitled',
+      addedBy: d['addedBy'] as String? ?? '',
+      courseContentType: d['courseContentType'] as String? ?? 'unknown',
       fileSize: d['fileSize'] as int? ?? 0,
       description: d['description'] as String? ?? '',
       createdAt: (d['createdAt'] as Timestamp).toDate(),

@@ -1,4 +1,3 @@
-import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/result.dart';
@@ -9,7 +8,6 @@ import 'package:slidesync/features/browse/collection/ui/components/mod_contents_
 import 'package:slidesync/features/browse/collection/ui/widgets/collection_materials_app_bar.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/add_contents/add_content_fab.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/materials_view.dart';
-import 'package:slidesync/features/browse/collection/ui/widgets/modify_contents/move_to_collection_bottom_sheet.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';

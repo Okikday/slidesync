@@ -1,71 +1,72 @@
 part of '../extensions.dart';
 
 extension AppProviderTheme on WidgetRef {
-  AppTheme get theme => watch(appThemeProvider);
-  bool get isDarkMode => watch(appThemeProvider.select((p) => p.isDarkTheme));
+  static final _p = appThemeProvider;
+  AppTheme get theme => watch(_p.select((s) => s.currentTheme));
+  bool get isDarkMode => watch(_p.select((p) => p.currentBrightness == Brightness.dark));
 
   // Core colors
-  Color get primary => watch(appThemeProvider.select((p) => p.primary));
-  Color get secondary => watch(appThemeProvider.select((p) => p.secondary));
-  Color get surface => watch(appThemeProvider.select((p) => p.surface));
-  Color get onSurface => watch(appThemeProvider.select((p) => p.onSurface));
-  Color get background => watch(appThemeProvider.select((p) => p.background));
-  Color get onBackground => watch(appThemeProvider.select((p) => p.onBackground));
-  Color get onPrimary => watch(appThemeProvider.select((p) => p.onPrimary));
-  Color get onSecondary => watch(appThemeProvider.select((p) => p.onSecondary));
-  Color get error => watch(appThemeProvider.select((p) => p.error));
-  Color get onError => watch(appThemeProvider.select((p) => p.onError));
-  Color get success => watch(appThemeProvider.select((p) => p.success));
-  Color get onSuccess => watch(appThemeProvider.select((p) => p.onSuccess));
-  Color get outline => watch(appThemeProvider.select((p) => p.outline));
-  Color get shadow => watch(appThemeProvider.select((p) => p.shadow));
-  Color get inverseSurface => watch(appThemeProvider.select((p) => p.inverseSurface));
-  Color get onInverseSurface => watch(appThemeProvider.select((p) => p.onInverseSurface));
+  Color get primary => watch(_p.select((p) => p.currentTheme.primary));
+  Color get secondary => watch(_p.select((p) => p.currentTheme.secondary));
+  Color get surface => watch(_p.select((p) => p.currentTheme.surface));
+  Color get onSurface => watch(_p.select((p) => p.currentTheme.onSurface));
+  Color get background => watch(_p.select((p) => p.currentTheme.background));
+  Color get onBackground => watch(_p.select((p) => p.currentTheme.onBackground));
+  Color get onPrimary => watch(_p.select((p) => p.currentTheme.onPrimary));
+  Color get onSecondary => watch(_p.select((p) => p.currentTheme.onSecondary));
+  Color get error => watch(_p.select((p) => p.currentTheme.error));
+  Color get onError => watch(_p.select((p) => p.currentTheme.onError));
+  Color get success => watch(_p.select((p) => p.currentTheme.success));
+  Color get onSuccess => watch(_p.select((p) => p.currentTheme.onSuccess));
+  Color get outline => watch(_p.select((p) => p.currentTheme.outline));
+  Color get shadow => watch(_p.select((p) => p.currentTheme.shadow));
+  Color get inverseSurface => watch(_p.select((p) => p.currentTheme.inverseSurface));
+  Color get onInverseSurface => watch(_p.select((p) => p.currentTheme.onInverseSurface));
 
   // Alt background colors
-  Color get altBackgroundPrimary => watch(appThemeProvider.select((p) => p.altBackgroundPrimary));
-  Color get altBackgroundSecondary => watch(appThemeProvider.select((p) => p.altBackgroundSecondary));
+  Color get altBackgroundPrimary => watch(_p.select((p) => p.currentTheme.altBackgroundPrimary));
+  Color get altBackgroundSecondary => watch(_p.select((p) => p.currentTheme.altBackgroundSecondary));
 
   // Supporting text colors
-  Color get supportingText => watch(appThemeProvider.select((p) => p.supportingText));
-  Color get backgroundSupportingText => watch(appThemeProvider.select((p) => p.backgroundSupportingText));
+  Color get supportingText => watch(_p.select((p) => p.currentTheme.supportingText));
+  Color get backgroundSupportingText => watch(_p.select((p) => p.currentTheme.backgroundSupportingText));
 
   // Remapped getters
-  Color get primaryColor => watch(appThemeProvider.select((p) => p.primaryColor));
-  Color get secondaryColor => watch(appThemeProvider.select((p) => p.secondaryColor));
-  Color get cardColor => watch(appThemeProvider.select((p) => p.cardColor));
-  Color get onCardColor => watch(appThemeProvider.select((p) => p.onCardColor));
-  Color get backgroundColor => watch(appThemeProvider.select((p) => p.backgroundColor));
-  Color get onBackgroundColor => watch(appThemeProvider.select((p) => p.onBackgroundColor));
-  Color get scaffoldBackgroundColor => watch(appThemeProvider.select((p) => p.scaffoldBackgroundColor));
-  Color get onScaffoldBackgroundColor => watch(appThemeProvider.select((p) => p.onScaffoldBackgroundColor));
-  Color get surfaceColor => watch(appThemeProvider.select((p) => p.surfaceColor));
-  Color get onSurfaceColor => watch(appThemeProvider.select((p) => p.onSurfaceColor));
-  Color get altSurfaceColor => watch(appThemeProvider.select((p) => p.altSurfaceColor));
-  Color get onAltSurfaceColor => watch(appThemeProvider.select((p) => p.onAltSurfaceColor));
-  Color get onPrimaryColor => watch(appThemeProvider.select((p) => p.onPrimaryColor));
-  Color get onSecondaryColor => watch(appThemeProvider.select((p) => p.onSecondaryColor));
-  Color get errorColor => watch(appThemeProvider.select((p) => p.errorColor));
-  Color get onErrorColor => watch(appThemeProvider.select((p) => p.onErrorColor));
-  Color get successColor => watch(appThemeProvider.select((p) => p.successColor));
-  Color get onSuccessColor => watch(appThemeProvider.select((p) => p.onSuccessColor));
-  Color get outlineColor => watch(appThemeProvider.select((p) => p.outlineColor));
-  Color get shadowColor => watch(appThemeProvider.select((p) => p.shadowColor));
-  Color get inverseSurfaceColor => watch(appThemeProvider.select((p) => p.inverseSurfaceColor));
-  Color get onInverseSurfaceColor => watch(appThemeProvider.select((p) => p.onInverseSurfaceColor));
+  Color get primaryColor => watch(_p.select((p) => p.currentTheme.primaryColor));
+  Color get secondaryColor => watch(_p.select((p) => p.currentTheme.secondaryColor));
+  Color get cardColor => watch(_p.select((p) => p.currentTheme.cardColor));
+  Color get onCardColor => watch(_p.select((p) => p.currentTheme.onCardColor));
+  Color get backgroundColor => watch(_p.select((p) => p.currentTheme.backgroundColor));
+  Color get onBackgroundColor => watch(_p.select((p) => p.currentTheme.onBackgroundColor));
+  Color get scaffoldBackgroundColor => watch(_p.select((p) => p.currentTheme.scaffoldBackgroundColor));
+  Color get onScaffoldBackgroundColor => watch(_p.select((p) => p.currentTheme.onScaffoldBackgroundColor));
+  Color get surfaceColor => watch(_p.select((p) => p.currentTheme.surfaceColor));
+  Color get onSurfaceColor => watch(_p.select((p) => p.currentTheme.onSurfaceColor));
+  Color get altSurfaceColor => watch(_p.select((p) => p.currentTheme.altSurfaceColor));
+  Color get onAltSurfaceColor => watch(_p.select((p) => p.currentTheme.onAltSurfaceColor));
+  Color get onPrimaryColor => watch(_p.select((p) => p.currentTheme.onPrimaryColor));
+  Color get onSecondaryColor => watch(_p.select((p) => p.currentTheme.onSecondaryColor));
+  Color get errorColor => watch(_p.select((p) => p.currentTheme.errorColor));
+  Color get onErrorColor => watch(_p.select((p) => p.currentTheme.onErrorColor));
+  Color get successColor => watch(_p.select((p) => p.currentTheme.successColor));
+  Color get onSuccessColor => watch(_p.select((p) => p.currentTheme.onSuccessColor));
+  Color get outlineColor => watch(_p.select((p) => p.currentTheme.outlineColor));
+  Color get shadowColor => watch(_p.select((p) => p.currentTheme.shadowColor));
+  Color get inverseSurfaceColor => watch(_p.select((p) => p.currentTheme.inverseSurfaceColor));
+  Color get onInverseSurfaceColor => watch(_p.select((p) => p.currentTheme.onInverseSurfaceColor));
 
   // Computed colors
-  Color get adjustBgAndPrimaryWithLerp => watch(appThemeProvider.select((p) => p.adjustBgAndPrimaryWithLerp));
-  Color get adjustBgAndPrimaryWithLerpExtra => watch(appThemeProvider.select((p) => p.adjustBgAndPrimaryWithLerpExtra));
-  Color get adjustBgAndSecondaryWithLerp => watch(appThemeProvider.select((p) => p.adjustBgAndSecondaryWithLerp));
+  Color get adjustBgAndPrimaryWithLerp => watch(_p.select((p) => p.currentTheme.adjustBgAndPrimaryWithLerp));
+  Color get adjustBgAndPrimaryWithLerpExtra => watch(_p.select((p) => p.currentTheme.adjustBgAndPrimaryWithLerpExtra));
+  Color get adjustBgAndSecondaryWithLerp => watch(_p.select((p) => p.currentTheme.adjustBgAndSecondaryWithLerp));
   Color get adjustBgAndSecondaryWithLerpExtra =>
-      watch(appThemeProvider.select((p) => p.adjustBgAndSecondaryWithLerpExtra));
+      watch(_p.select((p) => p.currentTheme.adjustBgAndSecondaryWithLerpExtra));
 
   // Gradient colors
-  List<Color> get backgroundGradientColors => watch(appThemeProvider.select((p) => p.backgroundGradientColors));
+  List<Color> get backgroundGradientColors => watch(_p.select((p) => p.currentTheme.backgroundGradientColors));
 
   // Theme properties
-  String get themeTitle => watch(appThemeProvider.select((p) => p.title));
-  String? get fontFamily => watch(appThemeProvider.select((p) => p.fontFamily));
-  Brightness get brightness => watch(appThemeProvider.select((p) => p.brightness));
+  String get themeTitle => watch(_p.select((p) => p.title));
+  String? get fontFamily => watch(_p.select((p) => p.fontFamily));
+  Brightness get brightness => watch(_p.select((p) => p.currentTheme.brightness));
 }

@@ -1,28 +1,25 @@
+import 'dart:convert';
+
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/core/assets/assets.dart';
+import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class HomeDashboard extends ConsumerWidget {
   const HomeDashboard({
     super.key,
-    required this.courseName,
-    required this.detail,
-    required this.progressValue,
-    this.completed,
+    required this.data,
     this.onReadingBtnTapped,
     this.onShareTapped,
     this.isFirst,
     this.buttonText,
   });
 
-  final String courseName;
-  final String detail;
-  final double progressValue;
-  final bool? completed;
+  final ContentTrack data;
   final String? buttonText;
   final void Function()? onReadingBtnTapped;
   final void Function()? onShareTapped;
@@ -32,6 +29,12 @@ class HomeDashboard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
+    final previewPath = jsonDecode(data.metadataJson)['previewPath'];
+    final isPreviewPathValid = previewPath != null && previewPath is String;
+    final title = data.title ?? "Unknown material";
+    final description = data.description ?? '';
+    final progressValue = data.progress ?? 0.0;
+    final completed = data.progress == null ? null : data.progress == 1.0;
     return Container(
       constraints: BoxConstraints(maxHeight: 160, maxWidth: 400),
       width: context.deviceWidth,
@@ -44,10 +47,14 @@ class HomeDashboard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(25),
         border: Border.all(width: 2, color: theme.adjustBgAndPrimaryWithLerpExtra),
         image: DecorationImage(
-          image: Assets.images.bookSparkleBg.asImageProvider,
+          image: previewPath != null && previewPath is String
+              ? previewPath.asImageProvider
+              : Assets.images.bookSparkleBg.asImageProvider,
           fit: BoxFit.cover,
           opacity: 0.05,
-          colorFilter: ColorFilter.mode(theme.primaryColor, BlendMode.srcIn),
+          colorFilter: isPreviewPathValid
+              ? ColorFilter.mode(theme.primaryColor.withValues(alpha: 0.05), BlendMode.difference)
+              : ColorFilter.mode(theme.primaryColor, BlendMode.srcIn),
         ),
       ),
       child: Column(
@@ -60,11 +67,11 @@ class HomeDashboard extends ConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.only(right: 8),
                 child: Tooltip(
-                  message: courseName,
+                  message: title,
                   triggerMode: TooltipTriggerMode.tap,
                   showDuration: 4.inSeconds,
                   child: CustomText(
-                    courseName,
+                    title,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: theme.onBackground,
@@ -74,8 +81,15 @@ class HomeDashboard extends ConsumerWidget {
               ),
             ),
           ),
-          if (detail.isNotEmpty) ConstantSizing.columnSpacingSmall,
-          if (detail.isNotEmpty) CustomText(detail, fontSize: 12, color: theme.supportingText.withValues(alpha: 0.5)),
+          if (description.isNotEmpty) ConstantSizing.columnSpacingSmall,
+          if (description.isNotEmpty)
+            CustomText(
+              description,
+              fontSize: 12,
+              color: theme.supportingText.withValues(alpha: 0.5),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+            ),
 
           ConstantSizing.columnSpacingLarge,
 
@@ -95,7 +109,7 @@ class HomeDashboard extends ConsumerWidget {
                     child: CustomText(
                       buttonText ??
                           (completed != null
-                              ? (completed! ? "Read next slide" : "Jump right back in")
+                              ? (completed ? "Read next slide" : "Jump right back in")
                               : "Start Reading"),
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
@@ -169,10 +183,14 @@ class HomeDashboard extends ConsumerWidget {
   }) {
     if (hasAnyCourse == null) {
       return HomeDashboard(
-        courseName: "Looking around",
-        detail: "...",
+        data: ContentTrack.create(
+          contentId: "_",
+          parentId: "_",
+          contentHash: "_",
+          title: "Looking around",
+          progress: 0.0,
+        ),
         buttonText: "",
-        progressValue: 0.0,
         isFirst: true,
         onReadingBtnTapped: () async {},
       );
@@ -180,20 +198,31 @@ class HomeDashboard extends ConsumerWidget {
 
     if (!hasAnyCourse) {
       return HomeDashboard(
-        courseName: "Add a course",
-        detail: "Let's add a course to get you started!",
+        data: ContentTrack.create(
+          contentId: "_",
+          parentId: "_",
+          contentHash: "_",
+          title: "Add a course",
+          description: "Let's add a course to get you started!",
+          progress: 0.0,
+        ),
+
         buttonText: "Get started!",
-        progressValue: 0.0,
         isFirst: true,
         onReadingBtnTapped: () async => context?.pushNamed(Routes.createCourse.name),
       );
     }
 
     return HomeDashboard(
-      courseName: "Start reading",
-      detail: "You haven't started reading, get started!",
+      data: ContentTrack.create(
+        contentId: "_",
+        parentId: "_",
+        contentHash: "_",
+        title: "Start reading",
+        description: "You haven't started reading, get started!",
+        progress: 0.0,
+      ),
       buttonText: "Take me there!",
-      progressValue: 0.0,
       isFirst: true,
       onReadingBtnTapped: onEmptyReadingButtonTapped,
     );

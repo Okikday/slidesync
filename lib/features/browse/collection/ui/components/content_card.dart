@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:heroine/heroine.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
@@ -16,8 +17,6 @@ import 'package:slidesync/features/browse/shared/usecases/contents/retrieve_cont
 import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
 import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
 
-import 'package:slidesync/routes/routes.dart';
-import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/content_card_actions.dart';
 
@@ -91,122 +90,133 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                 widget.select?.onSelect(content);
               }
             },
-            child: Container(
-              // curve: CustomCurves.defaultIosSpring,
-              // duration: Durations.extralong1,
-              constraints: BoxConstraints(maxHeight: 400, maxWidth: 700),
-              clipBehavior: Clip.antiAlias,
-              decoration: _getCardDecoration(theme),
-              child: Stack(
-                // clipBehavior: Clip.antiAlias,
-                fit: StackFit.expand,
-                children: [
-                  Column(
-                    children: [
-                      Expanded(
-                        child: SizedBox.expand(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(15),
-                              topRight: Radius.circular(15),
+            child: Heroine(
+              tag: widget.content.contentId,
+              child: Container(
+                // curve: CustomCurves.defaultIosSpring,
+                // duration: Durations.extralong1,
+                constraints: BoxConstraints(maxHeight: 400, maxWidth: 700),
+                clipBehavior: Clip.antiAlias,
+                decoration: _getCardDecoration(theme),
+                child: Stack(
+                  // clipBehavior: Clip.antiAlias,
+                  fit: StackFit.expand,
+                  children: [
+                    Column(
+                      children: [
+                        Expanded(
+                          child: SizedBox.expand(
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(15),
+                                topRight: Radius.circular(15),
+                              ),
+                              child:
+                                  ContentCardPreviewImage(content: content, previewDetailsFuture: previewDetailsFuture)
+                                      .animate(
+                                        key: ValueKey(content.contentId),
+                                        target: widget.select?.isSelected == true ? 0 : 1,
+                                      )
+                                      .fade(begin: isDarkMode ? 0.4 : 0.7, end: isDarkMode ? 0.6 : 1.0),
                             ),
-                            child: ContentCardPreviewImage(content: content, previewDetailsFuture: previewDetailsFuture)
-                                .animate(
-                                  key: ValueKey(content.contentId),
-                                  target: widget.select?.isSelected == true ? 0 : 1,
-                                )
-                                .fade(begin: isDarkMode ? 0.4 : 0.7, end: isDarkMode ? 0.6 : 1.0),
                           ),
                         ),
-                      ),
-                      StreamBuilder(
-                        stream: progressStream,
-                        builder: (context, asyncSnapshot) {
-                          return LinearProgressIndicator(
-                            value: asyncSnapshot.hasData && asyncSnapshot.data != null ? asyncSnapshot.data : 0.0,
-                            color: theme.primaryColor,
-                            backgroundColor: theme.background.lightenColor(isDarkMode ? 0.15 : 0.85).withAlpha(200),
-                          );
-                        },
-                      ),
+                        StreamBuilder(
+                          stream: progressStream,
+                          builder: (context, asyncSnapshot) {
+                            return LinearProgressIndicator(
+                              value: asyncSnapshot.hasData && asyncSnapshot.data != null ? asyncSnapshot.data : 0.0,
+                              color: theme.primaryColor,
+                              backgroundColor: theme.background.lightenColor(isDarkMode ? 0.15 : 0.85).withAlpha(200),
+                            );
+                          },
+                        ),
 
-                      Container(
-                        padding: EdgeInsets.fromLTRB(8, 8, 4, 8),
-                        decoration: BoxDecoration(
-                          color: theme.background.lightenColor(isDarkMode ? 0.15 : 0.85).withAlpha(200),
-                          borderRadius: BorderRadius.only(
-                            bottomLeft: const Radius.circular(16),
-                            bottomRight: const Radius.circular(16),
+                        Container(
+                          padding: EdgeInsets.fromLTRB(8, 8, 4, 8),
+                          decoration: BoxDecoration(
+                            color: theme.background.lightenColor(isDarkMode ? 0.15 : 0.85).withAlpha(200),
+                            borderRadius: BorderRadius.only(
+                              bottomLeft: const Radius.circular(16),
+                              bottomRight: const Radius.circular(16),
+                            ),
                           ),
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisSize: MainAxisSize.min,
-                                spacing: 2.5,
-                                children: [
-                                  Flexible(
-                                    child: ContentCardTitle(
-                                      content: content,
-                                      previewDetailsFuture: previewDetailsFuture,
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  spacing: 2.5,
+                                  children: [
+                                    Flexible(
+                                      child: ContentCardTitle(
+                                        content: content,
+                                        previewDetailsFuture: previewDetailsFuture,
+                                      ),
                                     ),
-                                  ),
-                                  StreamBuilder(
-                                    stream: progressStream,
-                                    builder: (context, asyncSnapshot) {
-                                      final progress = asyncSnapshot.hasData && asyncSnapshot.data != null
-                                          ? asyncSnapshot.data
-                                          : 0.0;
-                                      return CustomText(
-                                        progress == 0.0
-                                            ? "Start reading!"
-                                            : progress == 1.0
-                                            ? "Completed!"
-                                            : (progress != null && progress > .95)
-                                            ? "Almost done!"
-                                            : "${((progress?.clamp(0, 100) ?? 0.0) * 100.0).toInt()}% read",
-                                        fontSize: 10,
-                                        color: progress == 1.0 ? theme.primary : theme.supportingText,
+                                    StreamBuilder(
+                                      stream: progressStream,
+                                      builder: (context, asyncSnapshot) {
+                                        final progress = asyncSnapshot.hasData && asyncSnapshot.data != null
+                                            ? asyncSnapshot.data
+                                            : 0.0;
+                                        return CustomText(
+                                          progress == 0.0
+                                              ? "Start reading!"
+                                              : progress == 1.0
+                                              ? "Completed!"
+                                              : (progress != null && progress > .95)
+                                              ? "Almost done!"
+                                              : "${((progress?.clamp(0, 100) ?? 0.0) * 100.0).toInt()}% read",
+                                          fontSize: 10,
+                                          color: progress == 1.0 ? theme.primary : theme.supportingText,
+                                        );
+                                      },
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // ContentCardPopUpMenuButton(content: content, previewDetailsFuture: previewDetailsFuture),
+                              if (widget.select?.isSelected == null)
+                                Material(
+                                  type: MaterialType.transparency,
+                                  child: InkWell(
+                                    customBorder: const CircleBorder(),
+
+                                    overlayColor: WidgetStatePropertyAll(theme.onSurface),
+                                    onTap: () {
+                                      // UiUtils.showCustomDialog(context, child: ContentCardContextMenu(content: content));
+                                      Navigator.push(
+                                        context,
+                                        PageAnimation.pageRouteBuilder(
+                                          ContentCardContextMenu(content: content),
+                                          opaque: false,
+                                        ),
                                       );
                                     },
+                                    child: SizedBox.square(dimension: 36, child: Icon(HugeIconsSolid.moreHorizontal)),
                                   ),
-                                ],
-                              ),
-                            ),
-
-                            // ContentCardPopUpMenuButton(content: content, previewDetailsFuture: previewDetailsFuture),
-                            if (widget.select?.isSelected == null)
-                              InkWell(
-                                customBorder: const CircleBorder(),
-
-                                overlayColor: WidgetStatePropertyAll(theme.onSurface),
-                                onTap: () {
-                                  UiUtils.showCustomDialog(context, child: ContentCardContextMenu(content: content));
-                                },
-                                child: SizedBox.square(
-                                  dimension: 36,
-                                  child: Icon(HugeIconsSolid.moreHorizontalCircle01),
-                                ),
-                              )
-                            else
-                              () {
-                                return Icon(
-                                  widget.select?.isSelected == true ? Iconsax.tick_circle : Icons.circle,
-                                  color: widget.select?.isSelected == true
-                                      ? theme.primary
-                                      : theme.onPrimary.withAlpha(100),
-                                  size: 24,
-                                );
-                              }(),
-                          ],
+                                )
+                              else
+                                () {
+                                  return Icon(
+                                    widget.select?.isSelected == true ? Iconsax.tick_circle : Icons.circle,
+                                    color: widget.select?.isSelected == true
+                                        ? theme.primary
+                                        : theme.onPrimary.withAlpha(100),
+                                    size: 24,
+                                  );
+                                }(),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                  ContentTypeBadge(content: content),
-                ],
+                      ],
+                    ),
+                    ContentTypeBadge(content: content),
+                  ],
+                ),
               ),
             ),
           ),

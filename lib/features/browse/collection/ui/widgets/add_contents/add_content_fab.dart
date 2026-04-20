@@ -1,6 +1,7 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:slidesync/features/browse/collection/ui/widgets/materials_search_button.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/data/models/course_collection/course_collection.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/add_contents/add_contents_bottom_sheet.dart';
@@ -15,22 +16,30 @@ class AddContentFAB extends ConsumerWidget {
     final theme = ref;
     // final isScrolled = scrollOffsetProvider == null ? false : ref.watch(scrollOffsetProvider!) < 100.0;
 
-    return FloatingActionButton(
-      backgroundColor: theme.secondary,
-      shape: CircleBorder(),
-      tooltip: "Add Materials",
-      onPressed: () {
-        CustomDialog.show(
-          context,
-          transitionType: TransitionType.cupertinoDialog,
-          transitionDuration: Durations.medium1,
-          reverseTransitionDuration: Durations.short1,
-          barrierColor: Colors.black45,
-          blurSigma: Offset(2, 2),
-          child: AddContentsBottomSheet(collection: collection),
-        );
-      },
-      child: Icon(Iconsax.add_copy, color: theme.onSecondary),
+    return Row(
+      spacing: 8,
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        MaterialsSearchButton(collectionId: collection.collectionId, backgroundColor: theme.secondary.withAlpha(50)),
+        FloatingActionButton(
+          backgroundColor: theme.secondary,
+          shape: CircleBorder(),
+          tooltip: "Add Materials",
+          onPressed: () {
+            CustomDialog.show(
+              context,
+              transitionType: TransitionType.cupertinoDialog,
+              transitionDuration: Durations.medium1,
+              reverseTransitionDuration: Durations.short1,
+              barrierColor: Colors.black45,
+              blurSigma: Offset(2, 2),
+              child: AddContentsBottomSheet(collection: collection),
+            );
+          },
+          child: Icon(Iconsax.add_copy, color: theme.onSecondary),
+        ),
+      ],
     );
   }
 }

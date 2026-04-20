@@ -1,17 +1,16 @@
+import 'dart:developer';
+
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/app.dart';
-import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
-import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
-import 'package:slidesync/features/settings/logic/models/settings_model.dart';
 import 'package:slidesync/features/settings/providers/settings_provider.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
-import 'package:slidesync/shared/theme/src/app_theme.dart';
 import 'package:slidesync/shared/theme/src/built_in_themes.dart';
+import 'package:slidesync/shared/theme/theme.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_customizable_dialog.dart';
+import 'package:slidesync/shared/widgets/state/absorber.dart';
 
 class SettingsAppearanceDialog extends ConsumerStatefulWidget {
   const SettingsAppearanceDialog({super.key});
@@ -21,20 +20,14 @@ class SettingsAppearanceDialog extends ConsumerStatefulWidget {
 }
 
 class _SettingsAppearanceDialogState extends ConsumerState<SettingsAppearanceDialog> {
-  // bool followSystem = false;
-  bool? isDarkSelected;
-
   List<ThemePair> _buildPairsFromUnified(List<UnifiedThemeModel> models) {
     return models.map((unified) => ThemePair.fromUnified(unified)).toList();
   }
 
-  // Brightness? _resolveForceBrightness() {
-  //   return followSystem ? null : forcedBrightness;
-  // }
-
   @override
   Widget build(BuildContext context) {
     final pairs = _buildPairsFromUnified(defaultUnifiedThemeModels);
+    final isNotAdaptiveDarkTheme = ref.brightness == Brightness.dark;
 
     return AppCustomizableDialog(
       blurSigma: const Offset(2, 2),
@@ -43,41 +36,73 @@ class _SettingsAppearanceDialogState extends ConsumerState<SettingsAppearanceDia
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: SingleChildScrollView(
           scrollDirection: Axis.vertical,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ConstantSizing.columnSpacingMedium,
-
-              Wrap(
-                spacing: 8,
-                crossAxisAlignment: WrapCrossAlignment.center,
+          child: AbsorberWatch(
+            listenable: SettingsProvider.settingsProvider.select((s) => s.whenData((cb) => cb.useSystemBrightness)),
+            builder: (context, usb, ref, child) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Consumer(
-                    builder: (context, ref, child) {
-                      final AsyncValue<bool> usbp = ref.watch(
-                        SettingsProvider.settingsProvider.select(
-                          (s) => s.whenData((cb) => SettingsModel.fromMap(cb).useSystemBrightness),
-                        ),
-                      );
-                      final isDarkMode = isDarkSelected ?? context.isDarkMode;
-                      return usbp.when(
-                        data: (data) {
-                          if (data) return const SizedBox();
-                          return ToggleButtons(
-                            isSelected: [!isDarkMode, isDarkMode],
-                            onPressed: (index) {
-                              if (data) return;
+                  ConstantSizing.columnSpacingMedium,
 
-                              setState(() {
-                                isDarkSelected = !isDarkMode;
-                              });
+                  Wrap(
+                    spacing: 8,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    children: [
+                      Consumer(
+                        builder: (context, ref, child) {
+                          return usb.when(
+                            data: (data) {
+                              if (data) return const SizedBox();
+                              return ToggleButtons(
+                                isSelected: [!isNotAdaptiveDarkTheme, isNotAdaptiveDarkTheme],
+                                onPressed: (index) {
+                                  if (data) return;
+                                  final curr = ref.read(appThemeProvider);
+                                  ref
+                                      .read(appThemeProvider.notifier)
+                                      .set(
+                                        curr.copyWith(
+                                          currentBrightness: index == 0 ? Brightness.light : Brightness.dark,
+                                        ),
+                                      );
+                                },
+                                borderRadius: BorderRadius.circular(8),
+                                children: const [
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    child: Text('Light'),
+                                  ),
+                                  Padding(
+                                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                    child: Text('Dark'),
+                                  ),
+                                ],
+                              );
                             },
-                            borderRadius: BorderRadius.circular(8),
-                            children: const [
-                              Padding(padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8), child: Text('Light')),
-                              Padding(padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8), child: Text('Dark')),
-                            ],
+                            error: (e, st) => Icon(Icons.error),
+                            loading: () => const SizedBox.square(dimension: 40),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+
+                  ConstantSizing.columnSpacingSmall,
+
+                  Builder(
+                    builder: (context) {
+                      return usb.when(
+                        data: (data) {
+                          return ThemePairPicker(
+                            pairs: pairs,
+                            forceBrightness: data ? null : (context.mediaQuery.platformBrightness),
+                            crossAxisCount: DeviceUtils.isDesktop() ? ((context.deviceWidth ~/ 200).clamp(1, 100)) : 2,
+                            spacing: 12,
+                            onSelected: (pair, chosen) {
+                              final curr = ref.read(appThemeProvider);
+                              ref.read(appThemeProvider.notifier).set(curr.copyWith(currentBrightness: chosen));
+                            },
                           );
                         },
                         error: (e, st) => Icon(Icons.error),
@@ -85,43 +110,11 @@ class _SettingsAppearanceDialogState extends ConsumerState<SettingsAppearanceDia
                       );
                     },
                   ),
+
+                  ConstantSizing.columnSpacingMedium,
                 ],
-              ),
-
-              ConstantSizing.columnSpacingSmall,
-
-              Consumer(
-                builder: (context, ref, child) {
-                  final AsyncValue<bool> usbp = ref.watch(
-                    SettingsProvider.settingsProvider.select(
-                      (s) => s.whenData((cb) => SettingsModel.fromMap(cb).useSystemBrightness),
-                    ),
-                  );
-                  return usbp.when(
-                    data: (data) {
-                      return ThemePairPicker(
-                        pairs: pairs,
-                        forceBrightness: data ? null : (context.mediaQuery.platformBrightness),
-                        crossAxisCount: DeviceUtils.isDesktop() ? ((context.deviceWidth ~/ 200).clamp(1, 100)) : 2,
-                        spacing: 12,
-                        onSelected: (pair, chosen) {
-                          ref
-                              .read(appThemeProvider.notifier)
-                              .update(
-                                ((isDarkSelected ?? context.isDarkMode) ? Brightness.dark : Brightness.light),
-                                pair.unifiedModel,
-                              );
-                        },
-                      );
-                    },
-                    error: (e, st) => Icon(Icons.error),
-                    loading: () => const SizedBox.square(dimension: 40),
-                  );
-                },
-              ),
-
-              ConstantSizing.columnSpacingMedium,
-            ],
+              );
+            },
           ),
         ),
       ),
@@ -145,15 +138,12 @@ class ThemePair {
   });
 
   factory ThemePair.fromUnified(UnifiedThemeModel unified) {
-    final light = AppTheme.of(unified, Brightness.light);
-    final dark = AppTheme.of(unified, Brightness.dark);
-
     return ThemePair(
       id: unified.title,
       title: unified.title,
       unifiedModel: unified,
-      lightModel: light,
-      darkModel: dark,
+      lightModel: unified.theme,
+      darkModel: unified.darkTheme,
     );
   }
 }
@@ -174,22 +164,11 @@ class ThemePairPicker extends ConsumerWidget {
     this.spacing = 12.0,
   });
 
-  Brightness _resolveBrightness(BuildContext context, Brightness? forced) {
-    if (forced != null) return forced;
-    return Theme.of(context).brightness;
-  }
-
   Future<void> _applyPair(BuildContext context, WidgetRef ref, ThemePair pair, Brightness chosen) async {
     try {
-      ref.read(appThemeProvider.notifier).update(chosen, pair.unifiedModel);
+      ref.read(appThemeProvider.notifier).set(pair.unifiedModel.copyWith(currentBrightness: chosen));
     } catch (_) {
-      debugPrint('Failed to update theme provider');
-    }
-
-    try {
-      await AppHiveData.instance.setData(key: HiveDataPathKey.appTheme.name, value: pair.unifiedModel.toJson());
-    } catch (e) {
-      debugPrint('Failed to save theme to Hive: $e');
+      log('Failed to update theme provider');
     }
 
     if (onSelected != null) onSelected!(pair, chosen);
@@ -276,11 +255,10 @@ class ThemePairPicker extends ConsumerWidget {
           constraints: BoxConstraints(maxHeight: 300, maxWidth: 350),
           child: GestureDetector(
             onTap: () async {
-              final chosen = _resolveBrightness(context, forceBrightness);
-              await _applyPair(context, ref, pair, chosen);
+              await _applyPair(context, ref, pair, currentTheme.currentBrightness);
             },
             child: Material(
-              color: Theme.of(context).colorScheme.surface,
+              color: currentTheme.currentTheme.surface,
               clipBehavior: Clip.hardEdge,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
               elevation: isSelected ? 4 : 2,
@@ -289,7 +267,7 @@ class ThemePairPicker extends ConsumerWidget {
 
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(14),
-                  border: isSelected ? Border.all(color: currentTheme.primary, width: 2.5) : null,
+                  border: isSelected ? Border.all(color: currentTheme.currentTheme.primary, width: 2.5) : null,
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(12.0),
@@ -304,7 +282,7 @@ class ThemePairPicker extends ConsumerWidget {
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
-                          color: isSelected ? currentTheme.primary : null,
+                          color: isSelected ? currentTheme.currentTheme.primary : currentTheme.currentTheme.onSurface,
                         ),
                       ),
                       const SizedBox(height: 6),

@@ -6,20 +6,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
-import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
-import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/modify_contents/move_to_collection_bottom_sheet.dart';
-import 'package:slidesync/features/settings/providers/settings_provider.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/theme/theme.dart';
-
-final NotifierProvider<AppThemeProvider, AppTheme> appThemeProvider = NotifierProvider(AppThemeProvider.new);
 
 class App extends ConsumerStatefulWidget {
   const App({super.key});
@@ -32,22 +27,6 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   StreamSubscription? _intentSub;
   final _sharedFiles = <SharedMediaFile>[];
 
-  Future<void> _loadThemeFromHive() async {
-    await Result.tryRunAsync(() async {
-      final String? hiveTheme = (await AppHiveData.instance.getData<String>(key: HiveDataPathKey.appTheme.name));
-      if (hiveTheme == null) {
-        // ref.read(appThemeProvider.notifier).update(Brightness.dark, defaultUnifiedThemeModels[0]);
-        return;
-      }
-      final UnifiedThemeModel unifiedTheme = UnifiedThemeModel.fromJson(hiveTheme);
-
-      if (mounted) {
-        final currentBrightness = MediaQuery.platformBrightnessOf(context);
-        ref.read(appThemeProvider.notifier).update(currentBrightness, unifiedTheme);
-      }
-    });
-  }
-
   @override
   bool handleStartBackGesture(PredictiveBackEvent backEvent) {
     return true;
@@ -56,12 +35,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   @override
   void didChangePlatformBrightness() async {
     _enforceImmersiveMode();
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final isAdaptiveBrightness = (await ref.readSettings).useSystemBrightness;
-      if (isAdaptiveBrightness) {
-        _loadThemeFromHive();
-      }
-    });
+    WidgetsBinding.instance.addPostFrameCallback((_) async => notifyThemeOnBrightnessChanged(ref));
     super.didChangePlatformBrightness();
   }
 
@@ -123,7 +97,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-      await _loadThemeFromHive();
+      await notifyThemeOnBrightnessChanged(ref);
     });
   }
 

@@ -9,7 +9,7 @@ import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
 
-class CourseCard extends ConsumerWidget {
+class CourseCard extends ConsumerWidget with CourseCardActions {
   final Course course;
   final bool isGrid;
   final void Function(Course course)? onTap;
@@ -30,26 +30,26 @@ class CourseCard extends ConsumerWidget {
           updateTapDownDetailsProvider(ref, details.globalPosition);
         },
         onLongPress: () {
-          CourseCardActions.of(ref).onHoldCourseCard(course);
+          onHoldCourseCard(ref, course: course);
         },
         onTap: () {
           if (onTap != null) {
             onTap!(course);
             return;
           }
-          CourseCardActions.of(ref).onTapCourseCard(course);
+          onTapCourseCard(ref, course: course);
         },
         child: isGrid
             ? GridCourseCard(
                 course,
                 onTapIcon: () {
-                  CourseCardActions.of(ref).onHoldCourseCard(course);
+                  onHoldCourseCard(ref, course: course);
                 },
               )
             : ListCourseCard(
                 course,
                 onTapIcon: () {
-                  CourseCardActions.of(ref).onHoldCourseCard(course);
+                  onHoldCourseCard(ref, course: course);
                 },
               ),
       ),

@@ -12,7 +12,6 @@ import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/main/providers/entities/course_pagination_state.dart';
-import 'package:slidesync/shared/global/notifiers/common/course_sort_notifier.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
@@ -30,7 +29,7 @@ class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
   bool _fetching = false;
   bool isUpdating = false;
   int count = -1;
-  final int limit = 20;
+  static const int limit = 20;
 
   /// ===================================================================================================
   /// LIFECYCLE (Build & Dispose)
@@ -212,8 +211,7 @@ class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
 
   Future<List<Course>> _doFetch(int pageKey, int limit, CourseSortOption sortOption) async {
     final offset = (pageKey - 1) * limit;
-    final isar = await CourseRepo.isar;
-    final query = isar.courses.where();
+    final query = (await CourseRepo.isar).courses.where();
 
     return switch (sortOption) {
       CourseSortOption.nameAsc => await query.sortByCourseTitle().offset(offset).limit(limit).findAll(),
@@ -230,8 +228,21 @@ class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
 /// ===================================================================================================
 /// EXTRA PROVIDERS
 /// ===================================================================================================
-final _coursesFilterProvider = AsyncNotifierProvider.autoDispose<CourseSortNotifier, CourseSortOption>(
-  () => CourseSortNotifier(HiveDataPathKey.libraryCourseSortOption.name),
+// final _coursesFilterProvider = AsyncNotifierProvider.autoDispose<CourseSortNotifier, CourseSortOption>(
+//   () => CourseSortNotifier(HiveDataPathKey.libraryCourseSortOption.name),
+// );
+
+final _coursesFilterProvider = AsyncNotifierProvider(
+  () => HiveAsyncImpliedNotifier<int, CourseSortOption>(
+    HiveDataPathKey.libraryCourseSortOption.name,
+    CourseSortOption.dateModifiedDesc,
+    transformer: (raw) => raw.index,
+    builder: (data) async {
+      final options = CourseSortOption.values;
+      final option = options[data?.clamp(0, options.length - 1) ?? CourseSortOption.dateModifiedDesc.index];
+      return option;
+    },
+  ),
 );
 
 final _coursesUpdateStream = StreamNotifierProvider(

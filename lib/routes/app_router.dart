@@ -12,6 +12,7 @@ import 'package:slidesync/routes/src/settings_route.dart';
 import 'package:slidesync/routes/src/sync_route.dart';
 import 'package:slidesync/routes/src/auth_route.dart';
 import 'package:slidesync/routes/src/onboarding_route.dart';
+import 'package:slidesync/routes/src/test_routes.dart';
 import 'package:slidesync/splash_view.dart';
 
 import 'routes.dart';
@@ -22,8 +23,9 @@ class AppRouter {
   static final GoRouter mainRouter = _router;
 
   static final GoRouter _router = GoRouter(
-    initialLocation: Routes.syncTest.path,
+    initialLocation: Routes.splash.path,
     navigatorKey: rootNavigatorKey,
+    debugLogDiagnostics: true,
     observers: [HeroineController()],
     routes: [
       splashRoute,
@@ -45,6 +47,7 @@ class AppRouter {
 
       settingsRoute,
       syncRoute,
+      ...testRoutes,
     ],
   );
 }

@@ -10,16 +10,17 @@ class CourseSortNotifier extends AsyncNotifier<CourseSortOption> {
   CourseSortNotifier(this.path, [this._defaultKey = CourseSortOption.dateModifiedDesc]);
   @override
   FutureOr<CourseSortOption> build() async {
-    final data = await AppHiveData.instance.getData<int>(key: path);
     final options = CourseSortOption.values;
-    final option = options[data?.clamp(0, options.length - 1) ?? _defaultKey.index];
+    final option =
+        options[(await AppHiveData.instance.getData<int>(key: path))?.clamp(0, options.length - 1) ??
+            _defaultKey.index];
     return option;
   }
 
   Future<void> set(CourseSortOption value) async {
     if (state.value == value) return;
     state = AsyncData(value);
-    await Result.tryRunAsync(() async => await AppHiveData.instance.setData(key: path, value: value.index));
+    await AppHiveData.instance.setData(key: path, value: value.index);
   }
 
   // Future<void> updateSort(CourseSortOption value) async {

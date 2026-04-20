@@ -8,12 +8,7 @@ class CreateVaultInput {
   final String type; // drive, s3, ftp, etc.
   final String addedBy;
 
-  const CreateVaultInput({
-    required this.label,
-    required this.url,
-    required this.type,
-    required this.addedBy,
-  });
+  const CreateVaultInput({required this.label, required this.url, required this.type, required this.addedBy});
 }
 
 class UpdateVaultInput {
@@ -24,10 +19,10 @@ class UpdateVaultInput {
   const UpdateVaultInput({this.label, this.url, this.type});
 
   Map<String, dynamic> toMap() => {
-        if (label != null) 'label': label,
-        if (url != null) 'url': url,
-        if (type != null) 'type': type,
-      };
+    if (label != null) 'label': label,
+    if (url != null) 'url': url,
+    if (type != null) 'type': type,
+  };
 }
 
 class LogUploadInput {
@@ -65,37 +60,34 @@ class VaultEntity {
     required this.createdAt,
   });
 
-  factory VaultEntity.fromFirestore(
-    DocumentSnapshot<Map<String, dynamic>> doc,
-    SnapshotOptions? _,
-  ) {
+  factory VaultEntity.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc, SnapshotOptions? _) {
     final d = doc.data()!;
     return VaultEntity(
       linkId: doc.id,
-      label: d['label'] as String,
-      url: d['url'] as String,
-      type: d['type'] as String,
-      addedBy: d['addedBy'] as String,
+      label: d['label'] as String? ?? 'Untitled',
+      url: d['url'] as String? ?? '',
+      type: d['type'] as String? ?? 'unknown',
+      addedBy: d['addedBy'] as String? ?? '',
       createdAt: (d['createdAt'] as Timestamp).toDate(),
     );
   }
 
   Map<String, dynamic> toMap() => {
-        'label': label,
-        'url': url,
-        'type': type,
-        'addedBy': addedBy,
-        'createdAt': Timestamp.fromDate(createdAt),
-      };
+    'label': label,
+    'url': url,
+    'type': type,
+    'addedBy': addedBy,
+    'createdAt': Timestamp.fromDate(createdAt),
+  };
 
   static Map<String, dynamic> createMap(String linkId, CreateVaultInput input) => {
-        'linkId': linkId,
-        'label': input.label,
-        'url': input.url,
-        'type': input.type,
-        'addedBy': input.addedBy,
-        'createdAt': FieldValue.serverTimestamp(),
-      };
+    'linkId': linkId,
+    'label': input.label,
+    'url': input.url,
+    'type': input.type,
+    'addedBy': input.addedBy,
+    'createdAt': FieldValue.serverTimestamp(),
+  };
 }
 
 class VaultUploadEntity {
@@ -117,16 +109,13 @@ class VaultUploadEntity {
     required this.notes,
   });
 
-  factory VaultUploadEntity.fromFirestore(
-    DocumentSnapshot<Map<String, dynamic>> doc,
-    SnapshotOptions? _,
-  ) {
+  factory VaultUploadEntity.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc, SnapshotOptions? _) {
     final d = doc.data()!;
     return VaultUploadEntity(
       uploadId: doc.id,
-      uploadedBy: d['uploadedBy'] as String,
-      contentHash: d['contentHash'] as String,
-      fileName: d['fileName'] as String,
+      uploadedBy: d['uploadedBy'] as String? ?? '',
+      contentHash: d['contentHash'] as String? ?? '',
+      fileName: d['fileName'] as String? ?? 'unknown',
       fileSize: d['fileSize'] as int? ?? 0,
       uploadedAt: (d['uploadedAt'] as Timestamp).toDate(),
       notes: d['notes'] as String? ?? '',
@@ -134,23 +123,23 @@ class VaultUploadEntity {
   }
 
   Map<String, dynamic> toMap() => {
-        'uploadedBy': uploadedBy,
-        'contentHash': contentHash,
-        'fileName': fileName,
-        'fileSize': fileSize,
-        'uploadedAt': Timestamp.fromDate(uploadedAt),
-        'notes': notes,
-      };
+    'uploadedBy': uploadedBy,
+    'contentHash': contentHash,
+    'fileName': fileName,
+    'fileSize': fileSize,
+    'uploadedAt': Timestamp.fromDate(uploadedAt),
+    'notes': notes,
+  };
 
   static Map<String, dynamic> createMap(String uploadId, LogUploadInput input) => {
-        'uploadId': uploadId,
-        // Immutable fields — never updatable after creation
-        'uploadedBy': input.uploadedBy,
-        'contentHash': input.contentHash,
-        'uploadedAt': FieldValue.serverTimestamp(),
-        // Mutable
-        'fileName': input.fileName,
-        'fileSize': input.fileSize,
-        'notes': input.notes,
-      };
+    'uploadId': uploadId,
+    // Immutable fields — never updatable after creation
+    'uploadedBy': input.uploadedBy,
+    'contentHash': input.contentHash,
+    'uploadedAt': FieldValue.serverTimestamp(),
+    // Mutable
+    'fileName': input.fileName,
+    'fileSize': input.fileSize,
+    'notes': input.notes,
+  };
 }

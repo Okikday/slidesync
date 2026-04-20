@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:math' as math;
 import 'dart:ui';
 
@@ -46,9 +45,9 @@ class LibraryTabViewHeaderText extends ConsumerWidget {
                 child: AnimatedContainer(
                   duration: 100.inMs,
                   curve: Curves.decelerate,
-                  constraints: BoxConstraints(maxHeight: 48),
+                  constraints: const BoxConstraints(maxHeight: 48),
                   clipBehavior: Clip.hardEdge,
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
                     color: bgColor.withValues(alpha: lerpDouble(0.0, 0.75, percentScroll)),
                     border: Border.fromBorderSide(

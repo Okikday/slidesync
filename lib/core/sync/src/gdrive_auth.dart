@@ -5,9 +5,12 @@ part of '../gdrive_manager.dart';
 /// Private ops use [driveFileScope] — only files the app created.
 /// Public/admin ops use [driveScope]  — full drive access (admin-gated by Firestore rules).
 class GDriveAuth {
-  GDriveAuth._();
+  GDriveAuth._() {
+    Future.microtask(() => _initializeGoogleAuth());
+  }
 
   final GoogleSignIn _googleAuth = GoogleSignIn.instance;
+  bool isInitialized = false;
   static const _defaultScopes = ['email', 'profile', 'openid'];
   static const _privateSignInScopes = [..._defaultScopes, drive.DriveApi.driveFileScope];
 
@@ -20,8 +23,11 @@ class GDriveAuth {
   static void setApiKey(String key) => _apiKey = key;
   static String get apiKey => _apiKey;
 
-  Future<void> _initializeGoogleAuth() async =>
-      await _googleAuth.initialize(serverClientId: dotenv.env['SERVER_CLIENT_ID']);
+  Future<void> _initializeGoogleAuth() async {
+    if (isInitialized) return;
+    await _googleAuth.initialize(serverClientId: dotenv.env['SERVER_CLIENT_ID']);
+    isInitialized = true;
+  }
 
   // ── Private sign-in (personal backup, driveFile scope) ────────────────────
 
@@ -66,6 +72,7 @@ class GDriveAuth {
   /// Returns an authenticated HTTP client scoped for private file ops.
   /// Returns null if the user is not signed in.
   Future<AuthClient?> privateClient() async {
+    _initializeGoogleAuth();
     final account = await _googleAuth.attemptLightweightAuthentication() ?? await signInPrivate();
     if (account == null) return null;
     final authorization = await account.authorizationClient.authorizeScopes(_privateSignInScopes);
@@ -74,6 +81,7 @@ class GDriveAuth {
 
   /// Returns an authenticated HTTP client scoped for admin/full drive ops.
   Future<AuthClient?> adminClient() async {
+    _initializeGoogleAuth();
     final account = await _googleAuth.attemptLightweightAuthentication() ?? await signInAdmin();
     if (account == null) return null;
     final authorization = await account.authorizationClient.authorizeScopes(_adminSignInScopes);

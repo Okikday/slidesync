@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
 import 'package:slidesync/core/assets/assets.gen.dart';
@@ -14,15 +15,16 @@ import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 
 import 'recent_list_tile.dart';
 
-class RecentsSectionBody extends ConsumerWidget {
+class RecentsSectionBody extends ConsumerWidget with RecentDialogActions {
   const RecentsSectionBody({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
+    final tabIndex = MainProvider.state.select((s) => s.tabIndex).watch(ref);
+
     final asyncProgressTrackValues = MainProvider.home.link(ref).recentContentsTrack(10).watch(ref);
 
-    final rda = RecentDialogActions();
     return asyncProgressTrackValues.when(
       data: (data) {
         if (data.isEmpty) {
@@ -34,30 +36,38 @@ class RecentsSectionBody extends ConsumerWidget {
             final content = data[index];
             final previewPath = jsonDecode(content.metadataJson)['previewPath'];
             return RecentListTile(
-              dataModel: RecentListTileModel(
-                title: content.title ?? "No title",
-                subtitle: content.pages.isEmpty ? "" : "Page ${content.pages.last}",
-                // extraContent: DummySlides.dummySlides[index]['extraContent'] as String? ?? "",
-                previewPath: previewPath,
-                progressLevel: ProgressLevel.neutral,
-                isStarred: false,
-                progress: content.progress?.clamp(0, 1.0),
-                onTapTile: () async {
-                  await rda.onContinueReading(ref, content.contentId);
-                },
-                onLongTapTile: () {
-                  UiUtils.showCustomDialog(
-                    context,
-                    canPop: true,
-                    transitionType: TransitionType.cupertinoDialog,
-                    barrierColor: Colors.black.withValues(alpha: 0.6),
-                    transitionDuration: Durations.short4,
-                    reverseTransitionDuration: Durations.short4,
-                    child: RecentDialog(contentTrack: content),
-                  );
-                },
-              ),
-            );
+                  dataModel: RecentListTileModel(
+                    title: content.title ?? "No title",
+                    subtitle: content.pages.isEmpty ? "" : "Page ${content.pages.last}",
+                    // extraContent: DummySlides.dummySlides[index]['extraContent'] as String? ?? "",
+                    previewPath: previewPath,
+                    progressLevel: ProgressLevel.neutral,
+                    isStarred: false,
+                    progress: content.progress?.clamp(0, 1.0),
+                    onTapTile: () async {
+                      await onContinueReading(ref, content.contentId);
+                    },
+                    onLongTapTile: () {
+                      UiUtils.showCustomDialog(
+                        context,
+                        canPop: true,
+                        transitionType: TransitionType.cupertinoDialog,
+                        barrierColor: Colors.black.withValues(alpha: 0.6),
+                        transitionDuration: Durations.short4,
+                        reverseTransitionDuration: Durations.short4,
+                        child: RecentDialog(contentTrack: content),
+                      );
+                    },
+                  ),
+                )
+                .animate(target: tabIndex == 0 ? 1 : 0)
+                .slideX(
+                  begin: 0.1 * (1 - index / 10),
+                  end: 0.0,
+                  duration: 500.inMs,
+                  curve: CustomCurves.defaultIosSpring,
+                )
+                .fadeIn(duration: 500.inMs, curve: CustomCurves.decelerate);
           },
         );
       },

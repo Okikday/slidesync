@@ -1,6 +1,9 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
+import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/shared/global/providers/course_providers.dart';
 import 'package:slidesync/data/models/course/course.dart';
@@ -32,7 +35,7 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
   void initState() {
     super.initState();
     canExitProvider = NotifierProvider<BoolNotifier, bool>(BoolNotifier.new, isAutoDispose: true);
-    courseNameTextController = TextEditingController();
+    courseNameTextController = TextEditingController(text: defaultCourse.courseName);
     descriptionTextController = TextEditingController();
     courseCodeController = TextEditingController();
     isCourseCodeFieldVisible = NotifierProvider<BoolNotifier, bool>(BoolNotifier.new, isAutoDispose: true);
@@ -42,19 +45,27 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
     WidgetsBinding.instance.addPostFrameCallback((_) => initPostFrame());
   }
 
-  void initPostFrame() {
-    final readCourse = ref.watch(CourseProviders.courseProvider(widget.courseId)).value ?? defaultCourse;
-    courseNameTextController.text = readCourse.courseName;
-    if (readCourse.courseCode.isNotEmpty) courseCodeController.text = readCourse.courseCode;
+  void initPostFrame() async {
+    if (mounted) UiUtils.showLoadingDialog(context, canPop: false, message: "Loading course details...");
+    try {
+      final readCourse = await ref.read(CourseProviders.courseProvider(widget.courseId).future);
 
-    if (readCourse.description.isNotEmpty) {
-      descriptionTextController.text = readCourse.description;
-      descriptionTextController.selection = TextSelection(
-        baseOffset: 0,
-        extentOffset: descriptionTextController.text.length,
-      );
+      courseNameTextController.text = readCourse.courseName;
+      if (readCourse.courseCode.isNotEmpty) courseCodeController.text = readCourse.courseCode;
+
+      if (readCourse.description.isNotEmpty) {
+        descriptionTextController.text = readCourse.description;
+        descriptionTextController.selection = TextSelection(
+          baseOffset: 0,
+          extentOffset: descriptionTextController.text.length,
+        );
+      }
+      if (widget.isEditingDescription) descriptionFocusNode.requestFocus();
+    } catch (e) {
+      log(" Error loading course details for editing: $e");
+    } finally {
+      if (mounted) UiUtils.hideDialog(context);
     }
-    if (widget.isEditingDescription) descriptionFocusNode.requestFocus();
   }
 
   @override

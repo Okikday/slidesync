@@ -60,11 +60,10 @@ enum HiveDataPathKey {
 
 extension HiveDataPathKeyStringExtension on String {
   /// Sets the Hive data for the current path key
-  Future<void> setHiveData<T>({required T value}) async =>
-      await AppHiveData.instance.setData<T>(key: this, value: value);
+  Future<void> setHiveData<T>({required T value}) async => await AppHiveData.instance.setData(key: this, value: value);
 
   /// Gets the Hive data for the current path key
-  Future<T?> getHiveData<T>() async => await AppHiveData.instance.getData<T>(key: this);
+  Future<T?> getHiveData<T>() async => await AppHiveData.instance.getData(key: this);
 
   /// Deletes the Hive data for the current path key
   Future<void> deleteHiveData() async => await AppHiveData.instance.deleteData(key: this);

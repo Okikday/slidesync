@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:collection';
+import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
@@ -172,33 +173,42 @@ class StreamedNotifier<T> extends StreamNotifier<T> {
 // HiveAsyncImpliedNotifier - With Hive persistence
 // ============================================================================
 
-class HiveAsyncImpliedNotifier<T> extends AsyncNotifier<T> {
+class HiveAsyncImpliedNotifier<In, Out> extends AsyncNotifier<Out> {
   final String _hiveKey;
-  final T _defaultKey;
+  final Out _defaultKey;
   final bool? isUpdateNotifying;
-  final FutureOr<T?> Function(dynamic data)? resolveData;
+  final FutureOr<Out?> Function(In? data)? builder;
+  final FutureOr<In> Function(Out raw)? transformer;
 
   final Queue<Completer<void>> _updateQueue = Queue<Completer<void>>();
   bool _isProcessingQueue = false;
 
-  HiveAsyncImpliedNotifier(this._hiveKey, this._defaultKey, [this.isUpdateNotifying, this.resolveData]);
+  HiveAsyncImpliedNotifier(this._hiveKey, this._defaultKey, {this.isUpdateNotifying, this.builder, this.transformer});
 
   @override
-  Future<T> build() async {
+  Future<Out> build() async {
     return (await Result.tryRunAsync(() async {
-          final data = await AppHiveData.instance.getData(key: _hiveKey);
-          return resolveData != null ? await resolveData!(data) : data as T? ?? _defaultKey;
-        })).data ??
+          final data = await AppHiveData.instance.getData<In>(key: _hiveKey);
+          return builder != null ? (await builder!(data) ?? data as Out?) : data as Out? ?? _defaultKey;
+        })).onError((e, [st]) => log("Try using resolveData params")).data ??
         _defaultKey;
   }
 
-  Future<void> set(T value) async {
+  Future<void> set(Out value) async {
     state = AsyncData(value);
-    await AppHiveData.instance.setData(key: _hiveKey, value: value);
+    final transform = transformer == null ? value : transformer!(value);
+    await AppHiveData.instance
+        .setData(key: _hiveKey, value: transform)
+        .onError((e, st) => log("Try using transformer params: $e"));
+  }
+
+  Future<void> updateIfNotEqual(Out value) async {
+    if (value == state.value) return;
+    await set(value);
   }
 
   /// Schedule an update to be processed sequentially
-  Future<void> scheduleUpdating(T value) async {
+  Future<void> scheduleUpdating(Out value) async {
     final completer = Completer<void>();
     _updateQueue.add(completer);
 
@@ -237,8 +247,94 @@ class HiveAsyncImpliedNotifier<T> extends AsyncNotifier<T> {
   }
 
   @override
-  bool updateShouldNotify(AsyncValue<T> previous, AsyncValue<T> next) =>
+  bool updateShouldNotify(AsyncValue<Out> previous, AsyncValue<Out> next) =>
       isUpdateNotifying ?? super.updateShouldNotify(previous, next);
+}
+
+class HiveImpliedNotifier<In, Out> extends Notifier<Out> {
+  final String _hiveKey;
+  final Out _defaultKey;
+
+  final FutureOr<Out?> Function(In? data)? builder;
+  final FutureOr<In> Function(Out raw)? transformer;
+
+  final Queue<_HiveWriteTask<Out>> _updateQueue = Queue<_HiveWriteTask<Out>>();
+  bool _isProcessingQueue = false;
+
+  HiveImpliedNotifier(this._hiveKey, this._defaultKey, {this.builder, this.transformer});
+
+  @override
+  Out build() {
+    Future.microtask(_hydrateFromHive);
+    return _defaultKey;
+  }
+
+  Future<void> _hydrateFromHive() async {
+    final result = await Result.tryRunAsync(() async {
+      final data = await AppHiveData.instance.getData<In>(key: _hiveKey);
+      return builder != null ? (await builder!(data) ?? data as Out?) : data as Out?;
+    });
+
+    result.onError((e, [st]) => log("Try using builder params: $e"));
+
+    final resolved = result.data;
+    if (resolved != null && resolved != state) {
+      state = resolved;
+    }
+  }
+
+  Future<void> set(Out value, {bool persist = true}) async {
+    state = value;
+    if (!persist) return;
+
+    final payload = transformer == null ? value : await transformer!(value);
+    await AppHiveData.instance
+        .setData(key: _hiveKey, value: payload)
+        .onError((e, st) => log("Try using transformer params: $e"));
+  }
+
+  Future<void> updateIfNotEqual(Out value, {bool persist = true}) async {
+    if (value == state) return;
+    await set(value, persist: persist);
+  }
+
+  /// Schedule persistence sequentially while updating state immediately.
+  Future<void> scheduleUpdating(Out value) async {
+    state = value;
+
+    final completer = Completer<void>();
+    _updateQueue.add(_HiveWriteTask<Out>(value, completer));
+
+    if (!_isProcessingQueue) {
+      _processQueue();
+    }
+
+    await completer.future;
+  }
+
+  Future<void> _processQueue() async {
+    if (_isProcessingQueue) return;
+    _isProcessingQueue = true;
+
+    while (_updateQueue.isNotEmpty) {
+      final task = _updateQueue.removeFirst();
+      try {
+        final payload = transformer == null ? task.value : await transformer!(task.value);
+        await AppHiveData.instance.setData(key: _hiveKey, value: payload);
+        task.completer.complete();
+      } catch (e) {
+        task.completer.completeError(e);
+      }
+    }
+
+    _isProcessingQueue = false;
+  }
+}
+
+class _HiveWriteTask<T> {
+  final T value;
+  final Completer<void> completer;
+  _HiveWriteTask(this.value, this.completer);
 }
 
 // ============================================================================

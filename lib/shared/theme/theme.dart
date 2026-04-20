@@ -1,26 +1,48 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
+import 'package:slidesync/core/utils/result.dart';
+import 'package:slidesync/features/settings/providers/settings_provider.dart';
+import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
+import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/theme/src/app_theme.dart';
 import 'package:slidesync/shared/theme/src/built_in_themes.dart';
 
 export 'package:slidesync/shared/theme/src/app_theme.dart';
 
-class AppThemeProvider extends Notifier<AppTheme> {
-  @override
-  AppTheme build() {
-    return AppTheme.of(defaultUnifiedThemeModels[0], Brightness.dark);
-  }
+final appThemeProvider = NotifierProvider(
+  () => HiveImpliedNotifier<Map, UnifiedThemeModel>(
+    HiveDataPathKey.appTheme.name,
+    defaultUnifiedThemeModels[0],
+    transformer: (raw) => raw.toMap(),
+    builder: (data) => data == null ? null : UnifiedThemeModel.fromMap(Map.castFrom(data)),
+  ),
+);
 
-  void update(Brightness brightness, [UnifiedThemeModel? theme]) {
-    log("Updating ThemeData");
-    if (theme == null) return;
-    final AppTheme newTheme = AppTheme.of(theme, brightness);
-    if (state == newTheme) return;
-    state = newTheme;
-  }
+Future<void> notifyThemeOnBrightnessChanged(WidgetRef ref) async {
+  final context = ref.context;
+  await Result.tryRunAsync(() async {
+    final isAdaptiveBrightness = await SettingsProvider.settingsProvider
+        .selectAsync((s) => s.useSystemBrightness)
+        .read(ref);
+    if (isAdaptiveBrightness) {
+      GlobalNav.withContext(
+        (c) => appThemeProvider.expand(
+          ref,
+          (ref, s) => s
+              .act(ref)
+              .set(
+                appThemeProvider
+                    .read(ref)
+                    .copyWith(currentBrightness: (context.mounted ? context : c).platformBrightness),
+              ),
+        ),
+      );
+    }
+  });
 }
 
 ThemeData resolveThemeData(AppTheme theme) {

@@ -2,6 +2,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:isar_community/isar.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
@@ -10,7 +11,6 @@ import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/features/browse/collection/ui/components/material_list_card.dart';
 import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
-import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class MaterialsSearchButton extends ConsumerWidget {
@@ -26,11 +26,11 @@ class MaterialsSearchButton extends ConsumerWidget {
       dividerColor: theme.supportingText.withAlpha(40),
 
       builder: (context, controller) => BuildButton(
-        size: DeviceUtils.isDesktop() ? Size.square(40) : null,
+        size: DeviceUtils.isDesktop() ? Size.square(48) : null,
         onTap: () {
           controller.openView();
         },
-        iconData: Iconsax.search_normal_copy,
+        iconData: HugeIconsStroke.search02,
         // backgroundColor: backgroundColor,
       ),
       suggestionsBuilder: (context, controller) async {

@@ -3,23 +3,18 @@ import 'package:slidesync/features/settings/logic/models/settings_model.dart';
 import 'package:slidesync/features/settings/providers/settings_state.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 
-final _settingsProvider =
-    AsyncNotifierProvider.autoDispose<HiveAsyncImpliedNotifier<Map<String, dynamic>>, Map<String, dynamic>>(
-      () => HiveAsyncImpliedNotifier<Map<String, dynamic>>(
-        HiveDataPathKey.isBuiltInViewer.name,
-        SettingsModel().toMap(),
-        true,
-        (data) {
-          if (data == null) return SettingsModel().toMap();
-          final newData = Map<String, dynamic>.from(data);
-          return newData;
-        },
-      ),
-    );
+final _settingsProvider = AsyncNotifierProvider.autoDispose(
+  () => HiveAsyncImpliedNotifier<Map, SettingsModel>(
+    HiveDataPathKey.isBuiltInViewer.name,
+    const SettingsModel(),
+    isUpdateNotifying: true,
+    transformer: (p0) => p0.toMap(),
+    builder: (data) => data == null ? const SettingsModel() : SettingsModel.fromMap(Map.castFrom(data)),
+  ),
+);
 
 class SettingsProvider {
-  static AsyncNotifierProvider<HiveAsyncImpliedNotifier<Map<String, dynamic>>, Map<String, dynamic>>
-  get settingsProvider => _settingsProvider;
+  static final settingsProvider = _settingsProvider;
 
   static final state = NotifierProvider<SettingsRevealNotifier, SettingsRevealState>(
     SettingsRevealNotifier.new,
@@ -28,5 +23,5 @@ class SettingsProvider {
 }
 
 extension SettingsModelExtension on WidgetRef {
-  Future<SettingsModel> get readSettings async => SettingsModel.fromMap((await read(_settingsProvider.future)));
+  Future<SettingsModel> get readSettings async => await read(_settingsProvider.future);
 }

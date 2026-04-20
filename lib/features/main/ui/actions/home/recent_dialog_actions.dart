@@ -12,7 +12,7 @@ import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.da
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 
-mixin class RecentDialogActions {
+mixin RecentDialogActions {
   //==============================================================================
   // Option actions
   //==============================================================================

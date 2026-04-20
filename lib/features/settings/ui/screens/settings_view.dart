@@ -12,6 +12,7 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/settings/logic/models/settings_model.dart';
 import 'package:slidesync/features/settings/providers/settings_provider.dart';
 import 'package:slidesync/features/settings/ui/components/settings_appearance_dialog.dart';
+import 'package:slidesync/shared/theme/theme.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/layout/app_padding.dart';
@@ -35,9 +36,7 @@ class SettingsView extends ConsumerWidget {
           child: Consumer(
             builder: (context, ref, child) {
               final settingsModelProvider = ref.watch(SettingsProvider.settingsProvider);
-              final settingsModel = settingsModelProvider.value == null
-                  ? SettingsModel()
-                  : SettingsModel.fromMap(settingsModelProvider.value!);
+              final settingsModel = settingsModelProvider.value ?? SettingsModel();
 
               return SmoothListView(
                 padding: const EdgeInsets.fromLTRB(20, 60, 20, 8),
@@ -78,10 +77,13 @@ class SettingsView extends ConsumerWidget {
                         ref
                             .read(SettingsProvider.settingsProvider.notifier)
                             .set(
-                              SettingsModel.fromMap(
-                                (await ref.read(SettingsProvider.settingsProvider.future)),
-                              ).copyWith(useSystemBrightness: p).toMap(),
+                              await ref.read(
+                                SettingsProvider.settingsProvider.selectAsync(
+                                  (s) => s.copyWith(useSystemBrightness: p),
+                                ),
+                              ),
                             );
+                        notifyThemeOnBrightnessChanged(ref);
                       },
                     ),
                   ),
@@ -121,11 +123,11 @@ class SettingsView extends ConsumerWidget {
                       value: settingsModel.useBuiltInViewer ?? !DeviceUtils.isDesktop(),
                       onChanged: (p) async {
                         log("p: $p");
-                        final newValue = SettingsModel.fromMap(
-                          (await ref.read(SettingsProvider.settingsProvider.future)),
-                        ).copyWith(useBuiltInViewer: p).toMap();
+                        final newValue = (await ref.read(
+                          SettingsProvider.settingsProvider.selectAsync((s) => s.copyWith(useBuiltInViewer: p)),
+                        ));
                         log("prev:${settingsModel.useBuiltInViewer}");
-                        log("next: ${newValue['useBuiltInViewer']}");
+                        log("next: ${newValue.useBuiltInViewer}");
                         ref.read(SettingsProvider.settingsProvider.notifier).set(newValue);
                       },
                     ),
@@ -144,9 +146,9 @@ class SettingsView extends ConsumerWidget {
                           ref
                               .read(SettingsProvider.settingsProvider.notifier)
                               .set(
-                                SettingsModel.fromMap(
-                                  (await ref.read(SettingsProvider.settingsProvider.future)),
-                                ).copyWith(showMaterialsInFullScreen: p).toMap(),
+                                await SettingsProvider.settingsProvider
+                                    .selectAsync((s) => s.copyWith(showMaterialsInFullScreen: p))
+                                    .read(ref),
                               );
                         },
                       ),

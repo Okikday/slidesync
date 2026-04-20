@@ -6,12 +6,7 @@ class CreateSourceInput {
   final String type; // pdf, video, slides, link
   final String uploadedBy;
 
-  const CreateSourceInput({
-    required this.url,
-    required this.title,
-    required this.type,
-    required this.uploadedBy,
-  });
+  const CreateSourceInput({required this.url, required this.title, required this.type, required this.uploadedBy});
 }
 
 class UpdateSourceInput {
@@ -22,11 +17,11 @@ class UpdateSourceInput {
   const UpdateSourceInput({this.url, this.title, this.type});
 
   Map<String, dynamic> toMap() => {
-        // Only these three fields are owner-updatable (rules enforce the rest)
-        if (url != null) 'url': url,
-        if (title != null) 'title': title,
-        if (type != null) 'type': type,
-      };
+    // Only these three fields are owner-updatable (rules enforce the rest)
+    if (url != null) 'url': url,
+    if (title != null) 'title': title,
+    if (type != null) 'type': type,
+  };
 }
 
 class SourceEntity {
@@ -50,42 +45,39 @@ class SourceEntity {
     required this.createdAt,
   });
 
-  factory SourceEntity.fromFirestore(
-    DocumentSnapshot<Map<String, dynamic>> doc,
-    SnapshotOptions? _,
-  ) {
+  factory SourceEntity.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc, SnapshotOptions? _) {
     final d = doc.data()!;
     return SourceEntity(
       userId: doc.id,
-      url: d['url'] as String,
-      title: d['title'] as String,
-      type: d['type'] as String,
+      url: d['url'] as String? ?? '',
+      title: d['title'] as String? ?? 'Untitled',
+      type: d['type'] as String? ?? 'unknown',
       flagCount: d['flagCount'] as int? ?? 0,
       flagged: d['flagged'] as bool? ?? false,
-      uploadedBy: d['uploadedBy'] as String,
+      uploadedBy: d['uploadedBy'] as String? ?? '',
       createdAt: (d['createdAt'] as Timestamp).toDate(),
     );
   }
 
   Map<String, dynamic> toMap() => {
-        'url': url,
-        'title': title,
-        'type': type,
-        'flagCount': flagCount,
-        'flagged': flagged,
-        'uploadedBy': uploadedBy,
-        'createdAt': Timestamp.fromDate(createdAt),
-      };
+    'url': url,
+    'title': title,
+    'type': type,
+    'flagCount': flagCount,
+    'flagged': flagged,
+    'uploadedBy': uploadedBy,
+    'createdAt': Timestamp.fromDate(createdAt),
+  };
 
   static Map<String, dynamic> createMap(CreateSourceInput input) => {
-        'url': input.url,
-        'title': input.title,
-        'type': input.type,
-        'flagCount': 0,
-        'flagged': false,
-        'uploadedBy': input.uploadedBy,
-        'createdAt': FieldValue.serverTimestamp(),
-      };
+    'url': input.url,
+    'title': input.title,
+    'type': input.type,
+    'flagCount': 0,
+    'flagged': false,
+    'uploadedBy': input.uploadedBy,
+    'createdAt': FieldValue.serverTimestamp(),
+  };
 }
 
 /// Winner from resolution logic:

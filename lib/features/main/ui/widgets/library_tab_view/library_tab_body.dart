@@ -12,7 +12,7 @@ class LibraryTabBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return SmoothCustomScrollView(
       intensity: ScrollIntensity.slow,
-      // physics: const BouncingScrollPhysics(),
+      physics: const BouncingScrollPhysics(),
       slivers: [
         const SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
 

@@ -4,6 +4,7 @@ extension ExtensionOnContext on BuildContext {
   BuildContext get context => this;
   ThemeData get theme => Theme.of(context);
   Color get scaffoldBackgroundColor => Theme.of(this).scaffoldBackgroundColor;
+  Brightness get platformBrightness => MediaQuery.platformBrightnessOf(this);
   bool get isDarkMode => Theme.of(this).brightness == Brightness.dark;
   MediaQueryData get mediaQuery => MediaQuery.of(context);
   Size get screenSize => MediaQuery.of(this).size;

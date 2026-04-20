@@ -49,20 +49,14 @@ class LibraryNotifier extends Notifier<LibraryState> {
 }
 
 ///|
-/// ===================================================================================================
-/// EXTRA PROVIDERS
-/// ===================================================================================================
-
-final _scrollOffsetNotifier = NotifierProvider.autoDispose(() => DoubleNotifier());
-final _coursesPaginationNotifier = NotifierProvider.autoDispose<CoursesPaginationNotifier, CoursePaginationState>(
-  CoursesPaginationNotifier.new,
-);
-
-///|
 ///|
 /// ===================================================================================================
 /// OTHERS
 /// ===================================================================================================
+final _scrollOffsetNotifier = NotifierProvider.autoDispose(() => DoubleNotifier());
+final _coursesPaginationNotifier = NotifierProvider.autoDispose<CoursesPaginationNotifier, CoursePaginationState>(
+  CoursesPaginationNotifier.new,
+);
 
 final _cardViewTypeProvider = AsyncNotifierProvider.autoDispose<CardViewTypeNotifier, int>(
   () => CardViewTypeNotifier(HiveDataPathKey.libraryTabCardViewType.name, 2),

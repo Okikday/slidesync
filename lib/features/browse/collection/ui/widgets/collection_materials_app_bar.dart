@@ -2,6 +2,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
@@ -10,6 +11,7 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/features/browse/collection/providers/collection_materials_provider.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/materials_search_button.dart';
+import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
@@ -42,13 +44,22 @@ class CollectionMaterialsAppBar extends ConsumerWidget {
             contentPadding: EdgeInsets.zero,
             shape: CircleBorder(side: BorderSide(color: theme.altBackgroundSecondary.withValues(alpha: 0.4))),
             backgroundColor: Colors.transparent,
-            child: Icon(Iconsax.crop, color: theme.supportingText, size: 14),
+            child: Icon(HugeIconsSolid.crop, color: theme.supportingText, size: 14),
           ),
           ConstantSizing.rowSpacingSmall,
         ],
-        MaterialsSearchButton(collectionId: collectionId, backgroundColor: theme.secondary.withAlpha(50)),
+        // MaterialsSearchButton(collectionId: collectionId, backgroundColor: theme.secondary.withAlpha(50)),
         AppPopupMenuButton(
           menuPadding: EdgeInsets.only(right: 16),
+          buttonStyle: ButtonStyle(
+            padding: WidgetStateProperty.all(EdgeInsets.all(6)),
+            shape: WidgetStateProperty.all(
+              CircleBorder(side: BorderSide(color: theme.altBackgroundSecondary.withValues(alpha: 0.4))),
+            ),
+            overlayColor: WidgetStateProperty.all(theme.secondary.withAlpha(40)),
+            backgroundColor: WidgetStateProperty.all(Colors.transparent),
+          ),
+          icon: HugeIconsSolid.more,
           actions: [
             ref
                 .watch(CollectionMaterialsProvider.cardViewType)
@@ -61,7 +72,9 @@ class CollectionMaterialsAppBar extends ConsumerWidget {
                         : null;
                     return PopupMenuAction(
                       title: "View",
-                      iconData: isGrid != null ? (isGrid ? Iconsax.grid_1 : Iconsax.arrange_square) : Icons.list,
+                      iconData: isGrid != null
+                          ? (isGrid ? HugeIconsStroke.grid : HugeIconsStroke.listView)
+                          : Icons.list,
                       onTap: () {
                         ref.read(CollectionMaterialsProvider.cardViewType.notifier).toggle();
                       },
@@ -72,7 +85,7 @@ class CollectionMaterialsAppBar extends ConsumerWidget {
                 ),
             PopupMenuAction(
               title: "Sort",
-              iconData: Iconsax.arrange_circle,
+              iconData: HugeIconsStroke.arrange,
               onTap: () {
                 UiUtils.showCustomDialog(
                   context,
@@ -143,7 +156,7 @@ class CollectionMaterialsAppBar extends ConsumerWidget {
             if (!DeviceUtils.isDesktop())
               PopupMenuAction(
                 title: "Go back to Course Details",
-                iconData: Icons.arrow_back,
+                iconData: HugeIconsStroke.arrowLeft01,
                 onTap: () async {
                   final collection = await CourseCollectionRepo.getById(collectionId);
                   if (collection == null) return;

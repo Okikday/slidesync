@@ -7,16 +7,9 @@ class UserEntity {
   final int courseCount;
   final bool verified;
 
-  const UserEntity({
-    required this.uid,
-    required this.courseCount,
-    required this.verified,
-  });
+  const UserEntity({required this.uid, required this.courseCount, required this.verified});
 
-  factory UserEntity.fromFirestore(
-    DocumentSnapshot<Map<String, dynamic>> doc,
-    SnapshotOptions? _,
-  ) {
+  factory UserEntity.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc, SnapshotOptions? _) {
     final d = doc.data()!;
     return UserEntity(
       uid: doc.id,
@@ -25,10 +18,7 @@ class UserEntity {
     );
   }
 
-  Map<String, dynamic> toMap() => {
-        'courseCount': courseCount,
-        'verified': verified,
-      };
+  Map<String, dynamic> toMap() => {'courseCount': courseCount, 'verified': verified};
 }
 
 // ── Institution ────────────────────────────────────────────────────────────
@@ -48,26 +38,23 @@ class InstitutionEntity {
     required this.createdAt,
   });
 
-  factory InstitutionEntity.fromFirestore(
-    DocumentSnapshot<Map<String, dynamic>> doc,
-    SnapshotOptions? _,
-  ) {
+  factory InstitutionEntity.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc, SnapshotOptions? _) {
     final d = doc.data()!;
     return InstitutionEntity(
       institutionId: doc.id,
-      name: d['name'] as String,
-      shortName: d['shortName'] as String,
-      country: d['country'] as String,
+      name: d['name'] as String? ?? 'Unknown',
+      shortName: d['shortName'] as String? ?? 'N/A',
+      country: d['country'] as String? ?? '',
       createdAt: (d['createdAt'] as Timestamp).toDate(),
     );
   }
 
   Map<String, dynamic> toMap() => {
-        'name': name,
-        'shortName': shortName,
-        'country': country,
-        'createdAt': Timestamp.fromDate(createdAt),
-      };
+    'name': name,
+    'shortName': shortName,
+    'country': country,
+    'createdAt': Timestamp.fromDate(createdAt),
+  };
 }
 
 // ── Catalog ────────────────────────────────────────────────────────────────
@@ -85,22 +72,15 @@ class CatalogEntity {
     required this.department,
   });
 
-  factory CatalogEntity.fromFirestore(
-    DocumentSnapshot<Map<String, dynamic>> doc,
-    SnapshotOptions? _,
-  ) {
+  factory CatalogEntity.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc, SnapshotOptions? _) {
     final d = doc.data()!;
     return CatalogEntity(
       catalogId: doc.id,
-      title: d['title'] as String,
-      institutionId: d['institutionId'] as String,
-      department: d['department'] as String,
+      title: d['title'] as String? ?? 'Untitled',
+      institutionId: d['institutionId'] as String? ?? '',
+      department: d['department'] as String? ?? '',
     );
   }
 
-  Map<String, dynamic> toMap() => {
-        'title': title,
-        'institutionId': institutionId,
-        'department': department,
-      };
+  Map<String, dynamic> toMap() => {'title': title, 'institutionId': institutionId, 'department': department};
 }
