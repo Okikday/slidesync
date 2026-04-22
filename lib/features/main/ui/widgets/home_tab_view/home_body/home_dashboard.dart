@@ -29,8 +29,8 @@ class HomeDashboard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    final previewPath = jsonDecode(data.metadataJson)['previewPath'];
-    final isPreviewPathValid = previewPath != null && previewPath is String;
+    // final previewPath = jsonDecode(data.metadataJson)['previewPath'];
+    // final isPreviewPathValid = previewPath != null && previewPath is String;
     final title = data.title ?? "Unknown material";
     final description = data.description ?? '';
     final progressValue = data.progress ?? 0.0;
@@ -47,14 +47,18 @@ class HomeDashboard extends ConsumerWidget {
         borderRadius: BorderRadius.circular(25),
         border: Border.all(width: 2, color: theme.adjustBgAndPrimaryWithLerpExtra),
         image: DecorationImage(
-          image: previewPath != null && previewPath is String
-              ? previewPath.asImageProvider
-              : Assets.images.bookSparkleBg.asImageProvider,
+          image:
+              // previewPath != null && previewPath is String
+              //     ? previewPath.asImageProvider
+              //     :
+              Assets.images.bookSparkleBg.asImageProvider,
           fit: BoxFit.cover,
           opacity: 0.05,
-          colorFilter: isPreviewPathValid
-              ? ColorFilter.mode(theme.primaryColor.withValues(alpha: 0.05), BlendMode.difference)
-              : ColorFilter.mode(theme.primaryColor, BlendMode.srcIn),
+          colorFilter:
+              // isPreviewPathValid
+              //     ? ColorFilter.mode(theme.primaryColor.withValues(alpha: 0.05), BlendMode.difference)
+              //     :
+              ColorFilter.mode(theme.primaryColor, BlendMode.srcIn),
         ),
       ),
       child: Column(

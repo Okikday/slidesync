@@ -11,17 +11,22 @@ class SelectionOptionsBar extends ConsumerWidget {
   final List<AppActionDialogModel> actions;
   final List<String> selectedIds;
   final void Function(List<String> selectedIds) onDelete;
-  const SelectionOptionsBar({super.key, this.actions = const [], this.selectedIds = const [], required this.onDelete});
+  final String deleteTitle;
+  final Widget deleteIcon;
+  const SelectionOptionsBar({
+    super.key,
+    this.actions = const [],
+    this.selectedIds = const [],
+    required this.onDelete,
+    this.deleteTitle = 'Delete',
+    this.deleteIcon = const Icon(Iconsax.box_remove, color: Colors.redAccent),
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final actions = <AppActionDialogModel>[
       ...this.actions,
-      AppActionDialogModel(
-        title: "Delete",
-        icon: const Icon(Iconsax.box_remove, color: Colors.redAccent),
-        onTap: () => onDelete(selectedIds),
-      ),
+      AppActionDialogModel(title: deleteTitle, icon: deleteIcon, onTap: () => onDelete(selectedIds)),
     ];
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20),
@@ -36,25 +41,39 @@ class SelectionOptionsBar extends ConsumerWidget {
           child: Padding(
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: SmoothListView.builder(
+              scrollDirection: Axis.horizontal,
+              shrinkWrap: true,
+              physics: const BouncingScrollPhysics(),
               itemCount: actions.length,
               itemBuilder: (context, index) {
                 final action = actions[index];
-                return ScaleClickWrapper(
-                  onTap: action.onTap,
-                  child: SizedBox(
-                    height: 48,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(48),
-                        color: ref.onSecondary.withAlpha(100),
-                      ),
-
-                      child: Row(
-                        children: [
-                          action.icon,
-                          ConstantSizing.rowSpacingMedium,
-                          CustomText(action.title, color: ref.onBackground, fontSize: 14, fontWeight: FontWeight.w600),
-                        ],
+                return Padding(
+                  padding: EdgeInsets.only(right: index == actions.length - 1 ? 0 : 8),
+                  child: ScaleClickWrapper(
+                    onTap: action.onTap,
+                    child: SizedBox(
+                      height: 48,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(48),
+                          color: ref.onSecondary.withAlpha(100),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 14),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              action.icon,
+                              ConstantSizing.rowSpacingMedium,
+                              CustomText(
+                                action.title,
+                                color: ref.onBackground,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
                     ),
                   ),

@@ -13,6 +13,14 @@ class NotificationService {
     const settings = InitializationSettings(android: android, iOS: ios);
 
     await _notifications.initialize(settings);
+
+    await _notifications
+        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        ?.requestNotificationsPermission();
+    await _notifications
+        .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
+        ?.requestPermissions(alert: true, badge: true, sound: true);
+
     log('NotificationService initialized');
   }
 

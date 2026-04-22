@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'entities/sync_type.dart';
+export 'entities/sync_type.dart';
 import 'package:slidesync/features/sync/providers/transfer_state_provider.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
-
-enum SyncType { done, course, collection, content }
 
 // ============================================================================
 // LEGACY: Queue-based providers (for backward compatibility)

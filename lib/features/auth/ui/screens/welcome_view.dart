@@ -47,7 +47,14 @@ class WelcomeView extends ConsumerWidget {
               ),
             ),
 
-            Positioned(top: 0, bottom: 0, child: CircleAvatar(radius: 140, backgroundColor: Color(0xFFEAEAEA))),
+            Positioned(
+              top: 0,
+              bottom: 0,
+              child: CircleAvatar(
+                radius: 140,
+                backgroundColor: theme.background.lightenColor(theme.isDarkMode ? 0.1 : 0.9),
+              ),
+            ),
 
             // Positioned(
             //   top: 0,

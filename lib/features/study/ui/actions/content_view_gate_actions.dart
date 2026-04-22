@@ -1,9 +1,5 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'dart:developer';
-import 'dart:io';
-
-import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/experimental/mutation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:open_filex/open_filex.dart';
@@ -11,6 +7,7 @@ import 'package:path/path.dart' as p;
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/study/logic/usecases/content_progress_tracker.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import 'package:slidesync/core/constants/src/enums.dart';
@@ -30,12 +27,13 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_alert_dialog.dart';
 
 class ContentViewGateActions {
-  static Future<void> redirectToViewer(WidgetRef ref, CourseContent content, {bool? openOutsideApp}) async {
-    final context = ref.context;
+  ///
+  static Future<void> redirectToViewer(MutationTarget ref, CourseContent content, {bool? openOutsideApp}) async {
+    final refCon = ref.container;
 
     // Handle explicit external opening
     if (openOutsideApp == true) {
-      await _openExternally(context, content);
+      await _openExternally(content);
       return;
     }
 
@@ -43,21 +41,20 @@ class ContentViewGateActions {
     final shouldUseBuiltInViewer = await _shouldUseBuiltInViewer(ref, content, openOutsideApp);
 
     if (!shouldUseBuiltInViewer && content.courseContentType != CourseContentType.link) {
-      await _openExternally(context, content);
+      await _openExternally(content);
       return;
     }
 
-    // Route to appropriate viewer
-    if (!context.mounted) return;
-    await _routeToViewer(ref, context, content);
+    if (ref is WidgetRef && !ref.context.mounted) return;
+    await _routeToViewer(refCon, content);
   }
 
   // ==================== Private Helper Methods ====================
 
-  static Future<void> _openExternally(BuildContext context, CourseContent content) async {
-    if (content.courseContentType == CourseContentType.link) {
+  static Future<void> _openExternally(CourseContent content) async {
+    final isLink = content.courseContentType == CourseContentType.link;
+    if (isLink) {
       await launchUrl(Uri.parse(content.path.urlPath));
-      UiUtils.showFlushBar(context, msg: "Opening link outside app");
     } else {
       ContentProgressTracker().registerContentAccess(content.contentId);
       // Launching outside application
@@ -69,14 +66,19 @@ class ContentViewGateActions {
       );
 
       await OpenFilex.open(toOpen);
-      UiUtils.showFlushBar(context, msg: "Opening with external application...");
     }
+    GlobalNav.withContext(
+      (context) => UiUtils.showFlushBar(
+        context,
+        msg: isLink ? "Opening link outside app" : "Opening with external application...",
+      ),
+    );
   }
 
-  static Future<bool> _shouldUseBuiltInViewer(WidgetRef ref, CourseContent content, bool? openOutsideApp) async {
+  static Future<bool> _shouldUseBuiltInViewer(MutationTarget ref, CourseContent content, bool? openOutsideApp) async {
     if (openOutsideApp != null) return !openOutsideApp;
 
-    final settings = await ref.readSettings;
+    final settings = await ref.container.read(SettingsProvider.settingsProvider.future);
     final userPreference = settings.useBuiltInViewer;
 
     // Default behavior based on content type and platform
@@ -85,29 +87,29 @@ class ContentViewGateActions {
     return userPreference ?? defaultBehavior;
   }
 
-  static Future<void> _routeToViewer(WidgetRef ref, BuildContext context, CourseContent content) async {
+  static Future<void> _routeToViewer(MutationTarget ref, CourseContent content) async {
     switch (content.courseContentType) {
       case CourseContentType.document:
-        await _handleDocument(ref, context, content);
+        await _handleDocument(ref, content);
         break;
 
       case CourseContentType.image:
-        await _handleImage(context, content);
+        await _handleImage(content);
         break;
 
       case CourseContentType.link:
-        await _handleLink(context, content);
+        await _handleLink(content);
         break;
 
       default:
-        await _handleUnknownType(context, content);
+        await _handleUnknownType(content);
         break;
     }
   }
 
   // ==================== Content Type Handlers ====================
 
-  static Future<void> _handleDocument(WidgetRef ref, BuildContext context, CourseContent content) async {
+  static Future<void> _handleDocument(MutationTarget ref, CourseContent content) async {
     final filePath = content.path.filePath;
     final urlPath = content.path.urlPath;
     final isPdf =
@@ -115,36 +117,37 @@ class ContentViewGateActions {
 
     if (isPdf) {
       await _stopPaginationIfNeeded(ref, content);
-      _navigateTo(context, Routes.pdfDocumentViewer, content);
+      _navigateTo(Routes.pdfDocumentViewer, content);
       return;
     }
 
     // Non-PDF documents open externally
     await OpenFilex.open(filePath);
-    UiUtils.showFlushBar(context, msg: "Opening with external application...");
+    GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "Opening with external application..."));
   }
 
-  static Future<void> _handleImage(BuildContext context, CourseContent content) async {
-    _navigateTo(context, Routes.imageViewer, content);
-  }
+  static Future<void> _handleImage(CourseContent content) async => _navigateTo(Routes.imageViewer, content);
 
-  static Future<void> _handleLink(BuildContext context, CourseContent content) async {
+  static Future<void> _handleLink(CourseContent content) async {
     final urlPath = content.path.urlPath;
     final isUnresolvedDriveLink =
         content.metadataJson.decodeJson['resolved'] != true && DriveBrowser.isGoogleDriveLink(urlPath);
 
     if (isUnresolvedDriveLink) {
-      _navigateTo(context, Routes.driveLinkViewer, content);
+      _navigateTo(Routes.driveLinkViewer, content);
       return;
     }
     final launchResult = (await Result.tryRunAsync(() async => await launchUrl(Uri.parse(urlPath)))).data ?? false;
 
-    if (!launchResult && context.mounted) {
-      UiUtils.showFlushBar(context, msg: "Unable to open link. Invalid link or try connecting to the internet");
+    if (!launchResult) {
+      GlobalNav.withContext(
+        (context) =>
+            UiUtils.showFlushBar(context, msg: "Unable to open link. Invalid link or try connecting to the internet"),
+      );
     }
   }
 
-  static Future<void> _handleUnknownType(BuildContext context, CourseContent content) async {
+  static Future<void> _handleUnknownType(CourseContent content) async {
     final filePath = content.path.filePath;
     final file = File(filePath);
 
@@ -156,7 +159,7 @@ class ContentViewGateActions {
 
     // Fall back to external app
     await OpenFilex.open(filePath);
-    UiUtils.showFlushBar(context, msg: "Opening with external application...");
+    GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "Opening with external application..."));
   }
 
   // ==================== Archive Handling ====================
@@ -221,13 +224,13 @@ class ContentViewGateActions {
 
   // ==================== Navigation Helpers ====================
 
-  static void _navigateTo(BuildContext context, Routes route, CourseContent content) {
-    context.pushNamed(route.name, extra: content);
+  static void _navigateTo(Routes route, CourseContent content) {
+    GlobalNav.withContext((context) => context.pushNamed(route.name, extra: content));
   }
 
-  static Future<void> _stopPaginationIfNeeded(WidgetRef ref, CourseContent content) async {
+  static Future<void> _stopPaginationIfNeeded(MutationTarget ref, CourseContent content) async {
     Result.tryRun(() async {
-      final pageProvider = await ref.read(
+      final pageProvider = await ref.container.read(
         CollectionMaterialsProvider.contentPaginationProvider(content.parentId).future,
       );
       if (!pageProvider.isUpdating) return;

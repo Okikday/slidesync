@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
 
@@ -27,6 +28,7 @@ class DriveFile {
   final String? iconLink;
   final String? thumbnailLink;
   final String? md5Checksum;
+  final ShortcutDetails? shortcutDetails;
 
   // Owner information
   final String? ownerDisplayName;
@@ -62,6 +64,7 @@ class DriveFile {
     this.iconLink,
     this.thumbnailLink,
     this.md5Checksum,
+    this.shortcutDetails,
     this.ownerDisplayName,
     this.ownerEmail,
     this.ownerPhotoLink,
@@ -79,6 +82,7 @@ class DriveFile {
     final firstOwner = owners?.isNotEmpty == true ? owners!.first as Map<String, dynamic>? : null;
 
     final lastModifyingUser = j['lastModifyingUser'] as Map<String, dynamic>?;
+    final shortcutDetailsJson = j['shortcutDetails'] as Map<String, dynamic>?;
 
     return DriveFile(
       id: j['id'] as String?,
@@ -98,6 +102,7 @@ class DriveFile {
       iconLink: j['iconLink'] as String?,
       thumbnailLink: j['thumbnailLink'] as String?,
       md5Checksum: j['md5Checksum'] as String?,
+      shortcutDetails: shortcutDetailsJson != null ? ShortcutDetails.fromJson(shortcutDetailsJson) : null,
       ownerDisplayName: firstOwner?['displayName'] as String?,
       ownerEmail: firstOwner?['emailAddress'] as String?,
       ownerPhotoLink: firstOwner?['photoLink'] as String?,
@@ -129,6 +134,7 @@ class DriveFile {
     'iconLink': iconLink,
     'thumbnailLink': thumbnailLink,
     'md5Checksum': md5Checksum,
+    if (shortcutDetails != null) 'shortcutDetails': shortcutDetails!.toJson(),
     'ownerDisplayName': ownerDisplayName,
     'ownerEmail': ownerEmail,
     'ownerPhotoLink': ownerPhotoLink,
@@ -155,8 +161,55 @@ class DriveFile {
 
   /// Helper to check if this is a Google native file type
   bool get isGoogleNative {
-    return mimeType?.startsWith('application/vnd.google-apps.') ?? false;
+    final mt = (mimeType ?? '').toLowerCase();
+    return mt.startsWith('application/vnd.google-apps.') && mt != 'application/vnd.google-apps.shortcut';
   }
+
+  bool get isShortcut {
+    return (mimeType ?? '').toLowerCase() == 'application/vnd.google-apps.shortcut';
+  }
+
+  bool get isFolderLike {
+    final mt = (mimeType ?? '').toLowerCase();
+    if (mt == 'application/vnd.google-apps.folder') return true;
+    if (isShortcut) {
+      return shortcutTargetMimeType?.toLowerCase() == 'application/vnd.google-apps.folder';
+    }
+    return false;
+  }
+
+  bool get isShortcutToFolder {
+    return isShortcut && shortcutTargetMimeType?.toLowerCase() == 'application/vnd.google-apps.folder';
+  }
+
+  String? get shortcutTargetId {
+    return shortcutDetails?.targetId;
+  }
+
+  String? get shortcutTargetMimeType {
+    return shortcutDetails?.targetMimeType;
+  }
+
+  String? get navigationTargetId {
+    if (isShortcut) return shortcutTargetId;
+    return id;
+  }
+}
+
+class ShortcutDetails {
+  final String? targetId;
+  final String? targetMimeType;
+
+  const ShortcutDetails({this.targetId, this.targetMimeType});
+
+  factory ShortcutDetails.fromJson(Map<String, dynamic> json) {
+    return ShortcutDetails(targetId: json['targetId'] as String?, targetMimeType: json['targetMimeType'] as String?);
+  }
+
+  Map<String, dynamic> toJson() => {
+    if (targetId != null) 'targetId': targetId,
+    if (targetMimeType != null) 'targetMimeType': targetMimeType,
+  };
 }
 
 /// Single unified resource result: either a file (metadata) or a folder with children metadata.
@@ -166,6 +219,8 @@ class DriveResource {
   final List<DriveFile>? children; // present for folders (one-level listing)
 
   DriveResource({required this.type, this.file, this.children});
+
+  bool get isFolder => type == DriveResourceType.folder;
 }
 
 /// Streamlined DriveBrowser focusing on resource fetching and downloading.
@@ -182,6 +237,33 @@ class DriveBrowser {
   /// Create a new HTTP client for each request (isolate-friendly)
   static http.Client _createHttpClient() {
     return http.Client();
+  }
+
+  static Future<http.Response> _readResponseBytes(
+    http.StreamedResponse response, {
+    void Function(int receivedBytes, int? totalBytes)? onProgress,
+  }) async {
+    final bytesBuilder = BytesBuilder(copy: false);
+    final totalBytes = (response.contentLength ?? 0) > 0 ? response.contentLength : null;
+    var receivedBytes = 0;
+
+    await for (final chunk in response.stream) {
+      bytesBuilder.add(chunk);
+      receivedBytes += chunk.length;
+      if (onProgress != null) {
+        onProgress(receivedBytes, totalBytes);
+      }
+    }
+
+    return http.Response.bytes(
+      bytesBuilder.takeBytes(),
+      response.statusCode,
+      headers: response.headers,
+      request: response.request,
+      isRedirect: response.isRedirect,
+      persistentConnection: response.persistentConnection,
+      reasonPhrase: response.reasonPhrase,
+    );
   }
 
   /// ID extraction helper
@@ -203,7 +285,7 @@ class DriveBrowser {
   static const String _fileFields =
       'id,name,mimeType,size,modifiedTime,createdTime,'
       'webViewLink,webContentLink,parents,description,fileExtension,originalFilename,'
-      'starred,trashed,iconLink,thumbnailLink,md5Checksum,owners,shared,viewedByMe,'
+      'starred,trashed,iconLink,thumbnailLink,md5Checksum,shortcutDetails(targetId,targetMimeType),owners,shared,viewedByMe,'
       'lastModifyingUser,version,hasAugmentedPermissions,isAppAuthorized';
 
   /// Fetch enhanced metadata for a file by id using API key.
@@ -274,8 +356,9 @@ class DriveBrowser {
     final meta = await getFileMetadata(id, apiKey: apiKey);
     final mt = (meta.mimeType ?? '').toLowerCase();
 
-    if (mt == 'application/vnd.google-apps.folder') {
-      final children = await listFolderContents(id, apiKey: apiKey);
+    if (meta.isFolderLike) {
+      final folderId = meta.navigationTargetId ?? id;
+      final children = await listFolderContents(folderId, apiKey: apiKey);
       return DriveResource(type: DriveResourceType.folder, file: meta, children: children);
     }
 
@@ -297,7 +380,11 @@ class DriveBrowser {
 
   /// Download a Drive file with multiple fallback strategies.
   /// Returns the HTTP response - caller should check statusCode == 200 and use resp.bodyBytes.
-  static Future<http.Response> downloadDriveFile({required String fileId, required String apiKey}) async {
+  static Future<http.Response> downloadDriveFile({
+    required String fileId,
+    required String apiKey,
+    void Function(int receivedBytes, int? totalBytes)? onProgress,
+  }) async {
     final client = _createHttpClient();
     try {
       if (apiKey.isEmpty) throw ArgumentError('API key is required');
@@ -307,8 +394,12 @@ class DriveBrowser {
         final url = Uri.parse(
           'https://www.googleapis.com/drive/v3/files/$fileId?alt=media&key=${Uri.encodeComponent(apiKey)}',
         );
-        final r = await client.get(url);
-        if (r.statusCode == 200) return r;
+        final streamed = await client.send(http.Request('GET', url));
+        final contentType = (streamed.headers['content-type'] ?? '').toLowerCase();
+        if (streamed.statusCode == 200 && !contentType.contains('text/html')) {
+          return await _readResponseBytes(streamed, onProgress: onProgress);
+        }
+        await _readResponseBytes(streamed);
       } catch (_) {
         // Continue to fallback
       }
@@ -316,14 +407,12 @@ class DriveBrowser {
       // 2) Try direct uc?export=download (works for many publicly-shared items)
       try {
         final direct = Uri.parse('https://drive.google.com/uc?export=download&id=$fileId');
-        final r2 = await client.get(direct);
-        if (r2.statusCode == 200) {
-          final contentType = r2.headers['content-type'] ?? '';
-          // Crude heuristic: if not HTML, return as file bytes
-          if (!contentType.toLowerCase().contains('text/html')) {
-            return r2;
-          }
+        final streamed = await client.send(http.Request('GET', direct));
+        final contentType = (streamed.headers['content-type'] ?? '').toLowerCase();
+        if (streamed.statusCode == 200 && !contentType.contains('text/html')) {
+          return await _readResponseBytes(streamed, onProgress: onProgress);
         }
+        await _readResponseBytes(streamed);
       } catch (_) {
         // Continue to error
       }
@@ -344,24 +433,101 @@ class DriveBrowser {
     required String fileId,
     required String mimeType,
     required String apiKey,
+    void Function(int receivedBytes, int? totalBytes)? onProgress,
   }) async {
     final client = _createHttpClient();
     try {
       if (apiKey.isEmpty) throw ArgumentError('API key is required');
 
-      final url = Uri.parse(
-        'https://www.googleapis.com/drive/v3/files/$fileId/export?mimeType=${Uri.encodeComponent(mimeType)}&key=${Uri.encodeComponent(apiKey)}',
-      );
+      final metadata = await getFileMetadata(fileId, apiKey: apiKey);
+      final exportMimeTypes = _exportMimeTypesFor(metadata.mimeType, requestedMimeType: mimeType);
 
-      final r = await client.get(url);
-      if (r.statusCode == 200) {
-        return r;
-      } else {
-        throw HttpException('Failed to export file (status ${r.statusCode}): ${r.body}', uri: url);
+      if (exportMimeTypes.isEmpty) {
+        throw HttpException(
+          'The requested conversion is not supported for this Drive file.',
+          uri: Uri.parse('https://www.googleapis.com/drive/v3/files/$fileId/export'),
+        );
       }
+
+      HttpException? lastUnsupportedError;
+
+      for (final exportMimeType in exportMimeTypes) {
+        final url = Uri.parse(
+          'https://www.googleapis.com/drive/v3/files/$fileId/export?mimeType=${Uri.encodeComponent(exportMimeType)}&key=${Uri.encodeComponent(apiKey)}',
+        );
+
+        final streamed = await client.send(http.Request('GET', url));
+        final contentType = (streamed.headers['content-type'] ?? '').toLowerCase();
+
+        if (streamed.statusCode == 200 && !contentType.contains('text/html')) {
+          return await _readResponseBytes(streamed, onProgress: onProgress);
+        }
+
+        final response = await _readResponseBytes(streamed);
+
+        if (response.statusCode == 400 && _isUnsupportedConversionResponse(response.body)) {
+          lastUnsupportedError = HttpException(
+            'Failed to export file (status ${response.statusCode}): ${response.body}',
+            uri: url,
+          );
+          continue;
+        }
+
+        if (response.statusCode == 200 && contentType.contains('text/html')) {
+          continue;
+        }
+
+        throw HttpException('Failed to export file (status ${response.statusCode}): ${response.body}', uri: url);
+      }
+
+      throw lastUnsupportedError ??
+          HttpException(
+            'The requested conversion is not supported for this Drive file.',
+            uri: Uri.parse('https://www.googleapis.com/drive/v3/files/$fileId/export'),
+          );
     } finally {
       client.close();
     }
+  }
+
+  static List<String> _exportMimeTypesFor(String? sourceMimeType, {required String requestedMimeType}) {
+    final source = (sourceMimeType ?? '').toLowerCase();
+    final candidates = <String>[];
+
+    void add(String candidate) {
+      if (!candidates.contains(candidate)) {
+        candidates.add(candidate);
+      }
+    }
+
+    add(requestedMimeType);
+
+    if (source.contains('document')) {
+      add('application/pdf');
+      add('application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+      add('text/plain');
+      add('application/rtf');
+    } else if (source.contains('spreadsheet')) {
+      add('application/pdf');
+      add('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      add('text/csv');
+    } else if (source.contains('presentation')) {
+      add('application/pdf');
+      add('application/vnd.openxmlformats-officedocument.presentationml.presentation');
+    } else if (source.contains('drawing')) {
+      add('application/pdf');
+      add('image/png');
+      add('image/jpeg');
+      add('image/svg+xml');
+    }
+
+    return candidates;
+  }
+
+  static bool _isUnsupportedConversionResponse(String body) {
+    final normalized = body.toLowerCase();
+    return normalized.contains('requested conversion is not supported') ||
+        (normalized.contains('badrequest') && normalized.contains('convertto'));
   }
 
   /// Check if a file is publicly accessible with the current API key.

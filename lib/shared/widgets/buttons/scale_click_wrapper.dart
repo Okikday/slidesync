@@ -119,6 +119,7 @@ class InnerScaleClickWrapper extends ConsumerWidget {
         },
         onTapUp: (details) async {
           await Future.delayed(delayReverseDuration ?? Durations.short1);
+          if (!context.mounted) return;
           updateScaleClickNotifier(false);
           if (onTapUp != null) onTapUp!(details);
         },
@@ -134,6 +135,7 @@ class InnerScaleClickWrapper extends ConsumerWidget {
         },
         onSecondaryTapUp: (details) async {
           await Future.delayed(delayReverseDuration ?? Durations.short1);
+          if (!context.mounted) return;
           updateScaleClickNotifier(false);
           if (onTapUp != null) onTapUp!(details);
         },

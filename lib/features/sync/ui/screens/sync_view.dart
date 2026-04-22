@@ -1,13 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/features/sync/ui/widgets/sync_view/downloads_tab_view.dart';
 import 'package:slidesync/features/sync/ui/widgets/sync_view/uploads_tab_view.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
-import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/widgets/layout/app_padding.dart';
-import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 
 class SyncView extends ConsumerStatefulWidget {
   const SyncView({super.key});
@@ -28,32 +24,48 @@ class _SyncViewState extends ConsumerState<SyncView> with SingleTickerProviderSt
   @override
   Widget build(BuildContext context) {
     final theme = ref;
-    return TopPadding(
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(100),
-              child: ColoredBox(
-                color: theme.adjustBgAndPrimaryWithLerp,
-                child: TabBar(
-                  controller: tabController,
-                  indicator: BoxDecoration(color: theme.altBackgroundPrimary, borderRadius: BorderRadius.circular(100)),
-                  tabAlignment: TabAlignment.fill,
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  tabs: [
-                    Tab(text: "Downloads"),
-                    Tab(text: "Uploads"),
-                  ],
+    return Scaffold(
+      body: TopPadding(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: theme.scaffoldBackgroundColor.withValues(alpha: 0.5),
+                  borderRadius: BorderRadius.circular(40),
+                  border: Border.all(
+                    color: theme.onBackground.withValues(alpha: 0.15),
+                    strokeAlign: BorderSide.strokeAlignOutside,
+                  ),
+                ),
+                padding: const EdgeInsets.all(4),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(100),
+                  child: ColoredBox(
+                    color: Colors.transparent,
+                    child: TabBar(
+                      controller: tabController,
+                      indicator: BoxDecoration(
+                        color: theme.altBackgroundPrimary,
+                        borderRadius: BorderRadius.circular(100),
+                      ),
+                      tabAlignment: TabAlignment.fill,
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      tabs: const [
+                        Tab(text: 'Downloads'),
+                        Tab(text: 'Uploads'),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),
-          ),
-          Expanded(
-            child: TabBarView(controller: tabController, children: [DownloadsTabView(), UploadsTabView()]),
-          ),
-        ],
+            Expanded(
+              child: TabBarView(controller: tabController, children: [DownloadsTabView(), UploadsTabView()]),
+            ),
+          ],
+        ),
       ),
     );
   }

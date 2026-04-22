@@ -151,6 +151,14 @@ class CourseCollectionRepo {
     return "An error occured while adding collection";
   }
 
+  static Future<CourseCollection?> getByTitleAndParentId({required String title, required String parentId}) async {
+    return await (await _isar).courseCollections
+        .filter()
+        .collectionTitleEqualTo(title)
+        .parentIdEqualTo(parentId)
+        .findFirst();
+  }
+
   static Future<void> addContentToAppCollection(AppCourseCollections type, {required CourseContent content}) async {
     final collection = await getById(type.name);
     if (collection == null) return;

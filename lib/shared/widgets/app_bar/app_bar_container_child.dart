@@ -16,6 +16,7 @@ class AppBarContainerChild extends ConsumerWidget {
     this.subtitleStyle,
     this.tooltipMessage,
     this.onBackButtonClicked,
+    this.titleWidget,
     this.trailing,
     this.padding,
   });
@@ -27,6 +28,7 @@ class AppBarContainerChild extends ConsumerWidget {
   final TextStyle? subtitleStyle;
   final String? tooltipMessage;
   final void Function()? onBackButtonClicked;
+  final Widget? titleWidget;
   final Widget? trailing;
   final EdgeInsets? padding;
 
@@ -55,36 +57,38 @@ class AppBarContainerChild extends ConsumerWidget {
                         border: Border.fromBorderSide(BorderSide(color: theme.onBackground.withValues(alpha: 0.04))),
                         borderRadius: BorderRadius.circular(40),
                       ),
-                      child: (subtitle != null || (subtitle != null && subtitle!.isNotEmpty))
-                          ? Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              spacing: 2.5,
-                              children: [
-                                CustomText(
+                      child:
+                          titleWidget ??
+                          ((subtitle != null || (subtitle != null && subtitle!.isNotEmpty))
+                              ? Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  spacing: 2.5,
+                                  children: [
+                                    CustomText(
+                                      title,
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.bold,
+                                      overflow: TextOverflow.ellipsis,
+                                      color: theme.onBackground,
+                                    ),
+                                    CustomText(
+                                      subtitle!,
+                                      fontSize: 12,
+                                      color: theme.background.lightenColor(theme.isDarkMode ? .4 : .6),
+                                      overflow: TextOverflow.ellipsis,
+                                      style: subtitleStyle,
+                                    ),
+                                  ],
+                                )
+                              : CustomText(
                                   title,
                                   fontSize: 17,
                                   fontWeight: FontWeight.bold,
                                   overflow: TextOverflow.ellipsis,
+                                  style: titleStyle,
                                   color: theme.onBackground,
-                                ),
-                                CustomText(
-                                  subtitle!,
-                                  fontSize: 12,
-                                  color: theme.background.lightenColor(theme.isDarkMode ? .4 : .6),
-                                  overflow: TextOverflow.ellipsis,
-                                  style: subtitleStyle,
-                                ),
-                              ],
-                            )
-                          : CustomText(
-                              title,
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                              overflow: TextOverflow.ellipsis,
-                              style: titleStyle,
-                              color: theme.onBackground,
-                            ),
+                                )),
                     ),
                   ),
                 ],

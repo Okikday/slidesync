@@ -1,11 +1,14 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:heroine/heroine.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
+import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course_content/course_content.dart';
+import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/browse/collection/providers/collection_materials_provider.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/modify_content_card_actions.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/modify_contents_action.dart';
@@ -111,14 +114,28 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                                 ContentViewGateActions.redirectToViewer(ref, widget.content, openOutsideApp: false);
                               },
                             ),
-                            _buildLeadingMenuOption(
-                              "Launch",
-                              iconData: HugeIconsStroke.sendToMobile,
-                              onTap: () {
-                                Navigator.pop(context);
-                                ContentViewGateActions.redirectToViewer(ref, widget.content, openOutsideApp: true);
-                              },
-                            ),
+                            widget.content.courseContentType == CourseContentType.link
+                                ? _buildLeadingMenuOption(
+                                    "Copy",
+                                    iconData: HugeIconsStroke.copyLink,
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      Clipboard.setData(ClipboardData(text: widget.content.path.fileDetails.urlPath));
+                                      UiUtils.showFlushBar(context, msg: "Link copied to clipboard");
+                                    },
+                                  )
+                                : _buildLeadingMenuOption(
+                                    "Launch",
+                                    iconData: HugeIconsStroke.sendToMobile,
+                                    onTap: () {
+                                      Navigator.pop(context);
+                                      ContentViewGateActions.redirectToViewer(
+                                        ref,
+                                        widget.content,
+                                        openOutsideApp: true,
+                                      );
+                                    },
+                                  ),
                             _buildLeadingMenuOption(
                               "Share",
                               iconData: HugeIconsStroke.share01,

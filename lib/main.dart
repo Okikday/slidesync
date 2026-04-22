@@ -20,6 +20,7 @@ import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/course_collection/course_collection.dart';
 import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
 import 'package:slidesync/firebase_options.dart';
+import 'package:slidesync/features/sync/logic/notification_service.dart';
 import 'package:window_manager/window_manager.dart';
 
 // import 'dev/provider_observer.dart';
@@ -51,6 +52,7 @@ Future<void> _initialize() async {
   await dotenv.load();
   await Hive.initFlutter();
   await AppHiveData.instance.initialize();
+  await NotificationService.instance.initialize();
 
   if (!kIsWeb) await IsarData.initializeDefault();
   pdfrxFlutterInitialize();

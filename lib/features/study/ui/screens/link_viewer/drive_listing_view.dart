@@ -1,148 +1,69 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/constants/src/enums.dart';
-import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/features/study/logic/services/drive_browser.dart';
-import 'package:slidesync/features/study/logic/services/drive_result_extractor.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hugeicons_pro/hugeicons.dart';
+import 'package:slidesync/features/study/ui/screens/link_viewer/src/drive_listing_controller.dart';
+import 'package:slidesync/features/study/ui/screens/link_viewer/src/drive_listing_state.dart';
+import 'package:slidesync/features/study/ui/screens/link_viewer/src/drive_listing_widgets.dart';
+import 'package:slidesync/features/sync/providers/selection_provider.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
-import 'package:slidesync/shared/helpers/global_nav.dart';
+import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/widgets/dialogs/app_alert_dialog.dart';
+import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 
-class DriveListingNavState {
-  final List<String> navigationHistory;
-  final String? currentFolderId;
-
-  const DriveListingNavState({this.navigationHistory = const [], this.currentFolderId});
-
-  DriveListingNavState copyWith({List<String>? navigationHistory, String? currentFolderId}) {
-    return DriveListingNavState(
-      navigationHistory: navigationHistory ?? this.navigationHistory,
-      currentFolderId: currentFolderId ?? this.currentFolderId,
-    );
-  }
-
-  @override
-  bool operator ==(covariant DriveListingNavState other) {
-    if (identical(this, other)) return true;
-
-    return other.navigationHistory == navigationHistory && other.currentFolderId == currentFolderId;
-  }
-
-  @override
-  int get hashCode => Object.hash(navigationHistory, currentFolderId);
-}
-
-class DriveListingNavNotifier extends Notifier<DriveListingNavState> {
-  @override
-  DriveListingNavState build() => const DriveListingNavState();
-
-  void navigateBack() {
-    if (state.navigationHistory.isEmpty) return;
-    final updated = List<String>.from(state.navigationHistory);
-    final previousFolderId = updated.removeLast();
-    state = state.copyWith(navigationHistory: updated, currentFolderId: previousFolderId);
-  }
-
-  void navigateToFolder(String folderId) {
-    final currentId = state.currentFolderId;
-    state = state.copyWith(
-      navigationHistory: currentId == null ? state.navigationHistory : [...state.navigationHistory, currentId],
-      currentFolderId: folderId,
-    );
-  }
-
-  void setCurrentFolder(String? folderId) {
-    state = state.copyWith(currentFolderId: folderId);
-  }
-}
-
-final driveListingNavProvider = NotifierProvider<DriveListingNavNotifier, DriveListingNavState>(
-  DriveListingNavNotifier.new,
-  isAutoDispose: true,
-);
-
-/// Drive resource provider with proper caching
-final driveResourceProvider = FutureProvider.autoDispose.family<DriveResource, String?>((ref, folderId) async {
-  if (folderId == null) throw ArgumentError('Folder ID cannot be null');
-
-  final apiKey = dotenv.env['DRIVE_API_KEY'] ?? '';
-  String linkToFetch;
-
-  if (folderId.startsWith('http')) {
-    linkToFetch = folderId;
-  } else {
-    try {
-      final metadata = await DriveBrowser.getFileMetadata(folderId, apiKey: apiKey);
-      final mimeType = metadata.mimeType ?? '';
-
-      if (mimeType == 'application/vnd.google-apps.folder') {
-        linkToFetch = 'https://drive.google.com/drive/folders/$folderId';
-      } else {
-        return DriveResource(type: _getResourceTypeFromMimeType(mimeType), file: metadata);
-      }
-    } catch (e) {
-      linkToFetch = 'https://drive.google.com/drive/folders/$folderId';
-    }
-  }
-
-  return DriveBrowser.fetchResourceFromLink(linkToFetch, apiKey: apiKey);
-});
-
-DriveResourceType _getResourceTypeFromMimeType(String mimeType) {
-  final mt = mimeType.toLowerCase();
-  if (mt == 'application/vnd.google-apps.folder') return DriveResourceType.folder;
-  if (mt.startsWith('application/vnd.google-apps.document')) return DriveResourceType.googleDoc;
-  if (mt.startsWith('application/vnd.google-apps.spreadsheet')) return DriveResourceType.googleSheet;
-  if (mt.startsWith('application/vnd.google-apps.presentation')) return DriveResourceType.googleSlide;
-  if (mt == 'application/vnd.google-apps.shortcut') return DriveResourceType.shortcut;
-  return DriveResourceType.file;
-}
-
-class DriveListingView extends ConsumerWidget {
+class DriveListingView extends ConsumerStatefulWidget {
   final String? initialFolderId;
   final String collectionId;
 
-  const DriveListingView({super.key, this.initialFolderId, required this.collectionId});
+  const DriveListingView({super.key, required this.collectionId, this.initialFolderId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
-    final navState = ref.watch(driveListingNavProvider);
-    final currentFolderId = navState.currentFolderId ?? initialFolderId;
-    final navigationHistory = navState.navigationHistory;
+  ConsumerState<DriveListingView> createState() => _DriveListingViewState();
+}
 
-    if (navState.currentFolderId == null && initialFolderId != null) {
-      Future.microtask(() => ref.read(driveListingNavProvider.notifier).setCurrentFolder(initialFolderId));
+class _DriveListingViewState extends ConsumerState<DriveListingView> {
+  String? _currentFolderLabel;
+
+  @override
+  void initState() {
+    super.initState();
+    final initialFolderId = widget.initialFolderId;
+    if (initialFolderId != null && initialFolderId.trim().isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        ref.read(driveListingNavProvider.notifier).initializeRoot(initialFolderId, rootLabel: 'Root');
+      });
     }
+  }
 
-    final resourceAsync = currentFolderId != null ? ref.watch(driveResourceProvider(currentFolderId)) : null;
+  @override
+  Widget build(BuildContext context) {
+    final theme = ref;
+    final controller = ref.watch(driveListingControllerProvider(widget.collectionId));
 
-    return PopScope(
-      canPop: navigationHistory.isEmpty,
-      onPopInvokedWithResult: (didPop, result) {
-        if (!didPop && navigationHistory.isNotEmpty) {
-          _navigateBack(ref);
+    final navState = ref.watch(driveListingNavProvider);
+    final currentFolderId = navState.currentFolderId ?? widget.initialFolderId;
+    final resourceAsync = ref.watch(driveResourceProvider(currentFolderId));
+    final selection = ref.watch(driveSelectionProvider);
+
+    return AppScaffold(
+      title: 'Drive Listing',
+      canPop: navState.navigationHistory.isEmpty,
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop && navState.navigationHistory.isNotEmpty) {
+          _navigateBack();
         }
       },
-      child: AppScaffold(
-        title: "",
-        backgroundColor: theme.scaffoldBackgroundColor,
-        appBar: AppBar(
-          elevation: 0,
-          backgroundColor: theme.surfaceColor,
-          foregroundColor: theme.onSurfaceColor,
-          leading: navigationHistory.isNotEmpty
-              ? IconButton(
-                  icon: Icon(Icons.arrow_back, color: theme.onSurfaceColor),
-                  onPressed: () => _navigateBack(ref),
-                )
-              : null,
-          title: resourceAsync?.when(
+      extendBodyBehindAppBar: true,
+      appBar: AppBarContainer(
+        child: AppBarContainerChild(
+          ref.isDarkMode,
+          title: "Drive files",
+          titleWidget: resourceAsync.when(
             data: (resource) => CustomText(
-              resource.file?.name ?? 'Drive Files',
+              resource?.file?.name ?? 'Drive Files',
               fontSize: 18,
               fontWeight: FontWeight.w600,
               color: theme.onSurfaceColor,
@@ -150,389 +71,193 @@ class DriveListingView extends ConsumerWidget {
             loading: () => CustomText('Loading...', fontSize: 18, color: theme.onSurfaceColor),
             error: (_, _) => CustomText('Drive Files', fontSize: 18, color: theme.onSurfaceColor),
           ),
-          actions: [
-            if (resourceAsync?.hasValue == true &&
-                resourceAsync!.value!.type == DriveResourceType.folder &&
-                resourceAsync.value!.children != null &&
-                resourceAsync.value!.children!.isNotEmpty)
-              IconButton(
-                icon: Icon(Icons.download, color: theme.primaryColor),
-                tooltip: 'Import All',
-                onPressed: () => _handleImportAll(context, ref, resourceAsync.value!),
-              ),
-            const SizedBox(width: 8),
-          ],
-        ),
-        body: currentFolderId == null
-            ? _EmptyState()
-            : resourceAsync?.when(
-                    data: (resource) => _DriveContent(
-                      resource: resource,
-                      onFolderNavigate: (folderId) => _navigateToFolder(ref, folderId),
-                    ),
-                    loading: () => _LoadingState(),
-                    error: (error, _) =>
-                        _ErrorState(error: error, onRetry: () => ref.refresh(driveResourceProvider(currentFolderId))),
-                  ) ??
-                  _EmptyState(),
-      ),
-    );
-  }
-
-  void _navigateBack(WidgetRef ref) {
-    ref.read(driveListingNavProvider.notifier).navigateBack();
-  }
-
-  void _navigateToFolder(WidgetRef ref, String folderId) {
-    ref.read(driveListingNavProvider.notifier).navigateToFolder(folderId);
-  }
-
-  Future<void> _handleImportAll(BuildContext context, WidgetRef ref, DriveResource resource) async {
-    if (resource.file?.id == null) return;
-
-    final folderLink = 'https://drive.google.com/drive/folders/${resource.file!.id}';
-    final result = await extractAndAddDriveResources(
-      driveLink: folderLink,
-      collectionId: collectionId,
-      apiKey: dotenv.env['DRIVE_API_KEY'] ?? '',
-      showProgress: true,
-      contentType: CourseContentType.link,
-    );
-
-    // Show result message
-    if (context.mounted) {
-      final message = result.success
-          ? 'Successfully added ${result.addedFiles} file(s)'
-          : result.error ?? 'Failed to add files';
-
-      GlobalNav.withContext((context) {
-        UiUtils.showFlushBar(context, msg: message, vibe: result.success ? FlushbarVibe.success : FlushbarVibe.error);
-      });
-    }
-  }
-}
-
-class _DriveContent extends ConsumerWidget {
-  final DriveResource resource;
-  final Function(String folderId)? onFolderNavigate;
-
-  const _DriveContent({required this.resource, this.onFolderNavigate});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (resource.type == DriveResourceType.folder) {
-      final children = resource.children ?? [];
-
-      if (children.isEmpty) {
-        return _EmptyFolderState();
-      }
-
-      return ListView.builder(
-        padding: const EdgeInsets.all(16),
-        itemCount: children.length,
-        itemBuilder: (context, index) {
-          final file = children[index];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: _DriveItemTile(
-              file: file,
-              onTap: () {
-                if (file.mimeType == 'application/vnd.google-apps.folder') {
-                  onFolderNavigate?.call(file.id!);
-                }
-              },
-            ),
-          );
-        },
-      );
-    }
-
-    // Single file - shouldn't happen in folder browsing but handle it
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: _DriveItemTile(file: resource.file!),
-      ),
-    );
-  }
-}
-
-class _DriveItemTile extends ConsumerWidget {
-  final DriveFile file;
-  final VoidCallback? onTap;
-
-  const _DriveItemTile({required this.file, this.onTap});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
-    final isFolder = file.mimeType == 'application/vnd.google-apps.folder';
-
-    return CustomElevatedButton(
-      backgroundColor: theme.cardColor,
-      borderRadius: 12,
-      elevation: 0,
-      onClick: isFolder ? onTap : null,
-      contentPadding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          _FileIcon(file: file),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CustomText(
-                  file.name ?? 'Unnamed',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: theme.onCardColor,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+          trailing: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (selection.count > 0)
+                IconButton(
+                  icon: Icon(HugeIconsSolid.downloadCircle01, color: theme.primaryColor),
+                  tooltip: 'Download Selected',
+                  onPressed: resourceAsync.hasValue == true
+                      ? () {
+                          final selectedIdsSnapshot = Set<String>.from(selection.selectedIds);
+                          ref.read(driveSelectionProvider.notifier).clearSelection();
+                          controller.downloadSelectedItems(
+                            resourceAsync.value!,
+                            selectedIdsSnapshot: selectedIdsSnapshot,
+                            selectionAlreadyCleared: true,
+                          );
+                        }
+                      : null,
                 ),
-                const SizedBox(height: 4),
-                CustomText(_getFileDescription(file), fontSize: 12, color: theme.supportingText),
-              ],
-            ),
+              if (resourceAsync.hasValue == true &&
+                  selection.count == 0 &&
+                  resourceAsync.value!.isFolder &&
+                  resourceAsync.value!.children != null &&
+                  resourceAsync.value!.children!.isNotEmpty)
+                IconButton(
+                  icon: Icon(HugeIconsSolid.fileDownload, color: theme.primaryColor),
+                  tooltip: 'Import All',
+                  onPressed: () {
+                    CustomDialog.show(
+                      context,
+                      child: AppAlertDialog(
+                        title: "Import all",
+                        content: "Are you sure you want to import all files in this folder?",
+                        onCancel: () => context.pop(),
+                        onConfirm: () {
+                          context.pop();
+                          controller.importAll(resourceAsync.value!);
+                        },
+                      ),
+                    );
+                  },
+                ),
+              const SizedBox(width: 8),
+            ],
           ),
-          if (isFolder) Icon(Icons.chevron_right, color: theme.supportingText),
-        ],
-      ),
-    );
-  }
-
-  String _getFileDescription(DriveFile file) {
-    final parts = <String>[];
-    final mimeType = file.mimeType ?? '';
-
-    if (mimeType == 'application/vnd.google-apps.folder') {
-      parts.add('Folder');
-    } else if (mimeType.startsWith('application/vnd.google-apps.document')) {
-      parts.add('Google Docs');
-    } else if (mimeType.startsWith('application/vnd.google-apps.spreadsheet')) {
-      parts.add('Google Sheets');
-    } else if (mimeType.startsWith('application/vnd.google-apps.presentation')) {
-      parts.add('Google Slides');
-    } else if (file.fileExtension != null) {
-      parts.add(file.fileExtension!.toUpperCase());
-    }
-
-    if (file.size != null && !file.isGoogleNative) {
-      parts.add(file.formattedSize);
-    }
-
-    return parts.join(' • ');
-  }
-}
-
-class _FileIcon extends ConsumerWidget {
-  final DriveFile file;
-
-  const _FileIcon({required this.file});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
-    final mimeType = file.mimeType ?? '';
-
-    // Use thumbnail for images if available
-    if (file.thumbnailLink != null && mimeType.startsWith('image/')) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: CachedNetworkImage(
-          imageUrl: file.thumbnailLink!,
-          width: 48,
-          height: 48,
-          fit: BoxFit.cover,
-          placeholder: (_, _) => _buildIconContainer(Icons.image, Colors.purple, theme),
-          errorWidget: (_, _, _) => _buildIcon(mimeType, theme),
-        ),
-      );
-    }
-
-    return _buildIcon(mimeType, theme);
-  }
-
-  Widget _buildIcon(String mimeType, WidgetRef theme) {
-    IconData iconData;
-    Color iconColor;
-
-    if (mimeType == 'application/vnd.google-apps.folder') {
-      iconData = Icons.folder;
-      iconColor = theme.primaryColor;
-    } else if (mimeType.startsWith('application/vnd.google-apps.document')) {
-      iconData = Icons.description;
-      iconColor = Colors.blue;
-    } else if (mimeType.startsWith('application/vnd.google-apps.spreadsheet')) {
-      iconData = Icons.table_chart;
-      iconColor = Colors.green;
-    } else if (mimeType.startsWith('application/vnd.google-apps.presentation')) {
-      iconData = Icons.slideshow;
-      iconColor = Colors.orange;
-    } else if (mimeType.startsWith('image/')) {
-      iconData = Icons.image;
-      iconColor = Colors.purple;
-    } else if (mimeType.startsWith('video/')) {
-      iconData = Icons.video_file;
-      iconColor = Colors.red;
-    } else if (mimeType.startsWith('audio/')) {
-      iconData = Icons.audio_file;
-      iconColor = Colors.indigo;
-    } else if (mimeType.contains('pdf')) {
-      iconData = Icons.picture_as_pdf;
-      iconColor = Colors.red.shade700;
-    } else {
-      iconData = Icons.insert_drive_file;
-      iconColor = theme.supportingText;
-    }
-
-    return _buildIconContainer(iconData, iconColor, theme);
-  }
-
-  Widget _buildIconContainer(IconData icon, Color color, WidgetRef theme) {
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(color: color.withAlpha(25), borderRadius: BorderRadius.circular(8)),
-      child: Icon(icon, color: color, size: 24),
-    );
-  }
-}
-
-class _LoadingState extends ConsumerWidget {
-  const _LoadingState();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
-
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          CircularProgressIndicator(color: theme.primaryColor),
-          const SizedBox(height: 16),
-          CustomText('Loading files...', fontSize: 14, color: theme.supportingText),
-        ],
-      ),
-    );
-  }
-}
-
-class _ErrorState extends ConsumerWidget {
-  final Object error;
-  final VoidCallback onRetry;
-
-  const _ErrorState({required this.error, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 64, color: Colors.red.withAlpha(200)),
-            const SizedBox(height: 16),
-            CustomText(
-              'Error loading files',
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: theme.onSurfaceColor,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            CustomText(
-              error.toString(),
-              fontSize: 14,
-              color: theme.supportingText,
-              textAlign: TextAlign.center,
-              maxLines: 3,
-            ),
-            const SizedBox(height: 24),
-            CustomElevatedButton(
-              backgroundColor: theme.primaryColor,
-              onClick: onRetry,
-              child: CustomText('Try Again', color: theme.onPrimaryColor, fontSize: 14, fontWeight: FontWeight.w500),
-            ),
-          ],
         ),
       ),
+      viewPadding: EdgeInsets.symmetric(horizontal: 16),
+      body: currentFolderId == null
+          ? const DriveEmptyState()
+          : resourceAsync.when(
+              data: (resource) {
+                if (resource == null) {
+                  return const DriveEmptyState();
+                }
+
+                if ((resource.file?.name ?? '').trim().isNotEmpty) {
+                  _currentFolderLabel = resource.file!.name!.trim();
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    if (!mounted) return;
+                    ref.read(driveListingNavProvider.notifier).setFolderLabel(currentFolderId, _currentFolderLabel!);
+                  });
+                }
+
+                final breadcrumbs = [
+                  for (final folderId in navState.navigationHistory)
+                    (folderId: folderId, label: navState.folderLabels[folderId] ?? folderId),
+                  (
+                    folderId: currentFolderId,
+                    label: (resource.file?.name ?? navState.folderLabels[currentFolderId] ?? 'Root'),
+                  ),
+                ];
+
+                return CustomScrollView(
+                  slivers: [
+                    const PinnedHeaderSliver(child: TopPadding(withHeight: kToolbarHeight + 4)),
+                    if (selection.count <= 0)
+                      PinnedHeaderSliver(
+                        child: Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: theme.background.lightenColor(theme.isDarkMode ? 0.08 : 0.92),
+                              borderRadius: BorderRadius.circular(100),
+                              border: Border.all(color: theme.onBackground.withValues(alpha: 0.1)),
+                            ),
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  for (var index = 0; index < breadcrumbs.length; index++) ...[
+                                    if (index > 0)
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                                        child: CustomText(
+                                          '>',
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w700,
+                                          color: theme.supportingText.withValues(alpha: 0.9),
+                                        ),
+                                      ),
+                                    TextButton(
+                                      style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8)),
+                                      onPressed: index == breadcrumbs.length - 1
+                                          ? null
+                                          : () {
+                                              ref.read(driveSelectionProvider.notifier).clearSelection();
+                                              ref.read(driveListingNavProvider.notifier).jumpToBreadcrumb(index);
+                                            },
+                                      child: CustomText(
+                                        breadcrumbs[index].label,
+                                        fontSize: 12,
+                                        fontWeight: index == breadcrumbs.length - 1 ? FontWeight.w800 : FontWeight.w600,
+                                        color: index == breadcrumbs.length - 1
+                                            ? theme.primaryColor
+                                            : theme.onBackground.withAlpha(200),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (selection.count > 0)
+                      PinnedHeaderSliver(
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 12, 0, 8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                            decoration: BoxDecoration(
+                              color: theme.scaffoldBackgroundColor.withValues(alpha: 0.6),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(color: theme.onBackground.withValues(alpha: 0.12)),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(Icons.check_circle_outline, color: theme.primaryColor, size: 18),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: CustomText(
+                                    '${selection.count} selected',
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    color: theme.onBackground,
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () => ref.read(driveSelectionProvider.notifier).clearSelection(),
+                                  child: const CustomText('Clear', fontSize: 12),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    DriveContent(
+                      resource: resource,
+                      selection: selection,
+                      onFolderNavigate: (folderId, folderName) => _navigateToFolder(folderId, folderName: folderName),
+                      onFileOpen: (file) {
+                        controller.showFileOpenOptions(file, onNavigateToFolder: _navigateToFolder);
+                      },
+                      onSelectToggle: (id) => ref.read(driveSelectionProvider.notifier).toggleSelect(id),
+                    ),
+                    const SliverToBoxAdapter(child: BottomPadding()),
+                  ],
+                );
+              },
+              loading: () => const DriveLoadingState(),
+              error: (error, _) =>
+                  DriveErrorState(error: error, onRetry: () => ref.refresh(driveResourceProvider(currentFolderId))),
+            ),
     );
   }
-}
 
-class _EmptyState extends ConsumerWidget {
-  const _EmptyState();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.folder_open, size: 64, color: theme.supportingText.withAlpha(100)),
-            const SizedBox(height: 16),
-            CustomText(
-              'No folder selected',
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: theme.supportingText,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            CustomText(
-              'Select a Drive folder to browse',
-              fontSize: 14,
-              color: theme.supportingText.withAlpha(125),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
+  void _navigateBack() {
+    ref.read(driveListingNavProvider.notifier).navigateBack();
+    ref.read(driveSelectionProvider.notifier).clearSelection();
   }
-}
 
-class _EmptyFolderState extends ConsumerWidget {
-  const _EmptyFolderState();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
-
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.folder_open, size: 64, color: theme.supportingText.withAlpha(100)),
-            const SizedBox(height: 16),
-            CustomText(
-              'Empty folder',
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: theme.supportingText,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 8),
-            CustomText(
-              'This folder contains no files',
-              fontSize: 14,
-              color: theme.supportingText.withAlpha(125),
-              textAlign: TextAlign.center,
-            ),
-          ],
-        ),
-      ),
-    );
+  void _navigateToFolder(String folderId, {String? folderName}) {
+    ref
+        .read(driveListingNavProvider.notifier)
+        .navigateToFolder(folderId, folderName: folderName, currentFolderName: _currentFolderLabel);
+    ref.read(driveSelectionProvider.notifier).clearSelection();
   }
 }
