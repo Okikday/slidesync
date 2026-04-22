@@ -1,8 +1,8 @@
 import 'dart:io';
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:typed_data';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,7 +11,7 @@ import 'package:saf_util/saf_util.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course/course.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/browse/course/ui/components/collection_card.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -21,6 +21,14 @@ import 'package:saf_stream/saf_stream.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
+
+typedef ExportFolderPicker = Future<String?> Function();
+typedef CourseExporter =
+    Future<Result<String?>> Function(
+      Course course,
+      String exportFolder,
+      ValueNotifier<ExportProgress> progressNotifier,
+    );
 
 /// Export progress state
 class ExportProgress {
@@ -72,38 +80,27 @@ class FileExportResult {
   FileExportResult({required this.originalName, required this.success, this.error});
 }
 
-/// Main class for managing course exports with SAF
-class CourseFolderExportManager {
-  static final SafUtil _safUtil = SafUtil();
-  static final SafStream _safStream = SafStream();
+class _CollectionExportContext {
+  final String courseFolderName;
+  final String collectionFolderName;
 
-  /// Pick a folder for export using SAF
-  static Future<String?> pickExportFolder() async {
-    try {
-      final String? treeUri = (await _safUtil.pickDirectory())?.uri;
+  _CollectionExportContext({required this.courseFolderName, required this.collectionFolderName});
+}
 
-      if (treeUri != null) {
-        log('📂 Selected export folder URI: $treeUri');
-        return treeUri;
-      }
-
-      return null;
-    } catch (e) {
-      log('❌ Error picking export folder: $e');
-      return null;
-    }
-  }
-
-  /// Show the export screen for a course
-  static Future<void> showExportScreen(BuildContext context, String courseId) async {
+class _CourseExportShared {
+  static Future<void> showExportScreen(
+    BuildContext context,
+    String courseId, {
+    required ExportFolderPicker pickExportFolder,
+    required CourseExporter exportCourse,
+    required bool extendBodyBehindAppBar,
+  }) async {
     log('🎯 Opening export screen for course: $courseId');
 
-    // Show loading while fetching course
     GlobalNav.withContext((c) => UiUtils.showLoadingDialog(c, message: 'Loading course...'));
 
     final course = await CourseRepo.getCourseById(courseId);
 
-    // Hide loading
     GlobalNav.popGlobal();
 
     if (course == null) {
@@ -114,7 +111,6 @@ class CourseFolderExportManager {
       return;
     }
 
-    // Load collections
     await course.collections.load();
 
     if (course.collections.isEmpty) {
@@ -128,19 +124,29 @@ class CourseFolderExportManager {
     log('✅ Course loaded with ${course.collections.length} collections. Opening export screen...');
 
     if (context.mounted) {
-      await Navigator.of(
-        context,
-      ).push(PageAnimation.pageRouteBuilder(_ExportScreen(course: course), type: TransitionType.rightToLeft));
+      await Navigator.of(context).push(
+        PageAnimation.pageRouteBuilder(
+          _ExportScreen(
+            course: course,
+            pickExportFolder: pickExportFolder,
+            exportCourse: exportCourse,
+            extendBodyBehindAppBar: extendBodyBehindAppBar,
+          ),
+          type: TransitionType.rightToLeft,
+        ),
+      );
     }
   }
 
   static Future<Result<String?>> exportCourse(
     Course course,
-    String exportFolderUri,
-    ValueNotifier<ExportProgress> progressNotifier,
-  ) async {
+    ValueNotifier<ExportProgress> progressNotifier, {
+    required Future<_CollectionExportContext> Function(String courseTitle, String collectionTitle)
+    createCollectionExportContext,
+    required Future<FileExportResult> Function(ModuleContent content, _CollectionExportContext context) exportFile,
+  }) async {
     return await Result.tryRunAsync(() async {
-      log('🚀 Starting export process for course: ${course.courseTitle}');
+      log('🚀 Starting export process for course: ${course.title}');
 
       progressNotifier.value = ExportProgress(message: 'Preparing export...');
 
@@ -157,9 +163,6 @@ class CourseFolderExportManager {
       int failCount = 0;
       int totalFiles = 0;
 
-      // Course folder name
-      final courseFolderName = _sanitizeFolderName(course.courseTitle);
-
       for (int i = 0; i < collections.length; i++) {
         final collection = collections[i];
 
@@ -167,27 +170,25 @@ class CourseFolderExportManager {
           message: 'Exporting collection...',
           currentCollection: i + 1,
           totalCollections: collections.length,
-          currentCollectionName: collection.collectionTitle,
+          currentCollectionName: collection.title,
           successCount: successCount,
           failCount: failCount,
         );
 
-        log('📂 Processing collection ${i + 1}/${collections.length}: ${collection.collectionTitle}');
+        log('📂 Processing collection ${i + 1}/${collections.length}: ${collection.title}');
 
         await collection.contents.load();
         final contents = collection.contents.toList();
 
         if (contents.isEmpty) {
-          log('⚠️ Collection "${collection.collectionTitle}" has no contents, skipping');
+          log('⚠️ Collection "${collection.title}" has no contents, skipping');
           continue;
         }
 
         totalFiles += contents.length;
 
-        // Collection folder name
-        final collectionFolderName = _sanitizeFolderName(collection.collectionTitle);
+        final collectionContext = await createCollectionExportContext(course.title, collection.title);
 
-        // Export files in this collection
         for (int j = 0; j < contents.length; j++) {
           final content = contents[j];
 
@@ -195,13 +196,12 @@ class CourseFolderExportManager {
             message: 'Exporting file ${j + 1}/${contents.length}...',
             currentCollection: i + 1,
             totalCollections: collections.length,
-            currentCollectionName: collection.collectionTitle,
+            currentCollectionName: collection.title,
             successCount: successCount,
             failCount: failCount,
           );
 
-          // Build path: CourseName/CollectionName/filename.ext
-          final result = await _exportFile(content, exportFolderUri, courseFolderName, collectionFolderName);
+          final result = await exportFile(content, collectionContext);
 
           if (result.success) {
             successCount++;
@@ -230,42 +230,106 @@ class CourseFolderExportManager {
     });
   }
 
+  static String sanitizeFolderName(String name) {
+    return name.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_').replaceAll(RegExp(r'\s+'), ' ').trim();
+  }
+
+  static String sanitizeFileName(String name) {
+    return name.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_').replaceAll(RegExp(r'\s+'), ' ').trim();
+  }
+
+  static String resolveOriginalFileName(ModuleContent content) {
+    final metadata = content.metadata;
+    String originalFilename = metadata.originalFileName ?? content.title;
+
+    if (!p.extension(originalFilename).isNotEmpty) {
+      if (content.path.local.isNotEmpty) {
+        final storedPath = content.path.local;
+        final ext = p.extension(storedPath);
+        if (ext.isNotEmpty) {
+          originalFilename = '$originalFilename$ext';
+        }
+      }
+    }
+
+    return sanitizeFileName(originalFilename);
+  }
+}
+
+/// Main class for managing course exports with SAF
+class CourseFolderExportManager {
+  static final SafUtil _safUtil = SafUtil();
+  static final SafStream _safStream = SafStream();
+
+  /// Pick a folder for export using SAF
+  static Future<String?> pickExportFolder() async {
+    try {
+      final String? treeUri = (await _safUtil.pickDirectory())?.uri;
+
+      if (treeUri != null) {
+        log('📂 Selected export folder URI: $treeUri');
+        return treeUri;
+      }
+
+      return null;
+    } catch (e) {
+      log('❌ Error picking export folder: $e');
+      return null;
+    }
+  }
+
+  /// Show the export screen for a course
+  static Future<void> showExportScreen(BuildContext context, String courseId) async {
+    await _CourseExportShared.showExportScreen(
+      context,
+      courseId,
+      pickExportFolder: pickExportFolder,
+      exportCourse: exportCourse,
+      extendBodyBehindAppBar: true,
+    );
+  }
+
+  static Future<Result<String?>> exportCourse(
+    Course course,
+    String exportFolderUri,
+    ValueNotifier<ExportProgress> progressNotifier,
+  ) async {
+    return await _CourseExportShared.exportCourse(
+      course,
+      progressNotifier,
+      createCollectionExportContext: (courseTitle, collectionTitle) async {
+        return _CollectionExportContext(
+          courseFolderName: _CourseExportShared.sanitizeFolderName(courseTitle),
+          collectionFolderName: _CourseExportShared.sanitizeFolderName(collectionTitle),
+        );
+      },
+      exportFile: (content, exportContext) {
+        return _exportFile(
+          content,
+          exportFolderUri,
+          exportContext.courseFolderName,
+          exportContext.collectionFolderName,
+        );
+      },
+    );
+  }
+
   static Future<FileExportResult> _exportFile(
-    CourseContent content,
+    ModuleContent content,
     String baseUri,
     String courseFolderName,
     String collectionFolderName,
   ) async {
     try {
-      // Get original filename
-      final metadata = content.metadata;
-      String originalFilename = metadata.originalFileName ?? content.title;
+      final originalFilename = _CourseExportShared.resolveOriginalFileName(content);
 
-      if (!p.extension(originalFilename).isNotEmpty) {
-        final pathDetails = content.path;
-        if (pathDetails.isNotEmpty) {
-          final storedPath = jsonDecode(pathDetails)['filePath'] as String?;
-          if (storedPath != null) {
-            final ext = p.extension(storedPath);
-            if (ext.isNotEmpty) {
-              originalFilename = '$originalFilename$ext';
-            }
-          }
-        }
-      }
-
-      originalFilename = _sanitizeFileName(originalFilename);
-
-      // Get file path
-      final pathDetails = content.path;
-      if (pathDetails.isEmpty) {
+      if (content.path.local.isEmpty) {
         return FileExportResult(originalName: originalFilename, success: false, error: 'No file path found');
       }
 
-      final filePathJson = jsonDecode(pathDetails);
-      final storedFilePath = filePathJson['filePath'] as String?;
+      final storedFilePath = content.path.local;
 
-      if (storedFilePath == null || storedFilePath.isEmpty) {
+      if (storedFilePath.isEmpty) {
         return FileExportResult(originalName: originalFilename, success: false, error: 'Invalid file path');
       }
 
@@ -304,18 +368,6 @@ class CourseFolderExportManager {
       log('❌ Error exporting file: $e\n$stackTrace');
       return FileExportResult(originalName: content.title, success: false, error: e.toString());
     }
-  }
-
-  /// Sanitize folder name (remove invalid characters)
-  static String _sanitizeFolderName(String name) {
-    // Remove invalid characters for folder names
-    return name.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_').replaceAll(RegExp(r'\s+'), ' ').trim();
-  }
-
-  /// Sanitize file name (remove invalid characters)
-  static String _sanitizeFileName(String name) {
-    // Remove invalid characters for file names
-    return name.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_').replaceAll(RegExp(r'\s+'), ' ').trim();
   }
 
   /// Get MIME type from file extension
@@ -372,11 +424,131 @@ class CourseFolderExportManager {
   }
 }
 
+/// Main class for managing course exports on Windows
+class CourseFolderExportManagerWindows {
+  /// Pick a folder for export using file_picker
+  static Future<String?> pickExportFolder() async {
+    try {
+      final String? selectedPath = await FilePicker.platform.getDirectoryPath(dialogTitle: 'Select Export Folder');
+
+      if (selectedPath != null) {
+        log('📂 Selected export folder path: $selectedPath');
+        return selectedPath;
+      }
+
+      return null;
+    } catch (e) {
+      log('❌ Error picking export folder: $e');
+      return null;
+    }
+  }
+
+  /// Show the export screen for a course
+  static Future<void> showExportScreen(BuildContext context, String courseId) async {
+    await _CourseExportShared.showExportScreen(
+      context,
+      courseId,
+      pickExportFolder: pickExportFolder,
+      exportCourse: exportCourse,
+      extendBodyBehindAppBar: false,
+    );
+  }
+
+  static Future<Result<String?>> exportCourse(
+    Course course,
+    String exportFolderPath,
+    ValueNotifier<ExportProgress> progressNotifier,
+  ) async {
+    return await _CourseExportShared.exportCourse(
+      course,
+      progressNotifier,
+      createCollectionExportContext: (courseTitle, collectionTitle) async {
+        final courseFolderName = _CourseExportShared.sanitizeFolderName(courseTitle);
+        final collectionFolderName = _CourseExportShared.sanitizeFolderName(collectionTitle);
+
+        final courseFolderPath = p.join(exportFolderPath, courseFolderName);
+        final collectionFolderPath = p.join(courseFolderPath, collectionFolderName);
+
+        final courseFolder = Directory(courseFolderPath);
+        if (!await courseFolder.exists()) {
+          await courseFolder.create(recursive: true);
+          log('📁 Created course folder: $courseFolderPath');
+        }
+
+        final collectionFolder = Directory(collectionFolderPath);
+        if (!await collectionFolder.exists()) {
+          await collectionFolder.create(recursive: true);
+          log('📁 Created collection folder: $collectionFolderPath');
+        }
+
+        return _CollectionExportContext(courseFolderName: courseFolderName, collectionFolderName: collectionFolderName);
+      },
+      exportFile: (content, exportContext) {
+        final destinationFolderPath = p.join(
+          exportFolderPath,
+          exportContext.courseFolderName,
+          exportContext.collectionFolderName,
+        );
+        return _exportFile(content, destinationFolderPath);
+      },
+    );
+  }
+
+  static Future<FileExportResult> _exportFile(ModuleContent content, String destinationFolderPath) async {
+    try {
+      final originalFilename = _CourseExportShared.resolveOriginalFileName(content);
+
+      if (content.path.local.isEmpty) {
+        return FileExportResult(originalName: originalFilename, success: false, error: 'No file path found');
+      }
+
+      final storedFilePath = content.path.local;
+
+      if (storedFilePath.isEmpty) {
+        return FileExportResult(originalName: originalFilename, success: false, error: 'Invalid file path');
+      }
+
+      final sourceFile = File(storedFilePath);
+
+      if (!await sourceFile.exists()) {
+        return FileExportResult(originalName: originalFilename, success: false, error: 'File does not exist');
+      }
+
+      final destinationPath = p.join(destinationFolderPath, originalFilename);
+
+      String finalPath = destinationPath;
+      int counter = 1;
+      while (await File(finalPath).exists()) {
+        final nameWithoutExt = p.basenameWithoutExtension(originalFilename);
+        final ext = p.extension(originalFilename);
+        final newName = '${nameWithoutExt}_$counter$ext';
+        finalPath = p.join(destinationFolderPath, newName);
+        counter++;
+      }
+
+      await sourceFile.copy(finalPath);
+
+      return FileExportResult(originalName: originalFilename, success: true);
+    } catch (e, stackTrace) {
+      log('❌ Error exporting file: $e\n$stackTrace');
+      return FileExportResult(originalName: content.title, success: false, error: e.toString());
+    }
+  }
+}
+
 /// Export screen widget
 class _ExportScreen extends ConsumerStatefulWidget {
   final Course course;
+  final ExportFolderPicker pickExportFolder;
+  final CourseExporter exportCourse;
+  final bool extendBodyBehindAppBar;
 
-  const _ExportScreen({required this.course});
+  const _ExportScreen({
+    required this.course,
+    required this.pickExportFolder,
+    required this.exportCourse,
+    required this.extendBodyBehindAppBar,
+  });
 
   @override
   ConsumerState<_ExportScreen> createState() => _ExportScreenState();
@@ -399,7 +571,7 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
     for (final collection in widget.course.collections) {
       await collection.contents.load();
       final fileCount = collection.contents.length;
-      counts[collection.collectionTitle] = fileCount;
+      counts[collection.title] = fileCount;
       total += fileCount;
     }
 
@@ -417,8 +589,9 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
     return AppScaffold(
       title: "",
       backgroundColor: theme.background,
+      extendBodyBehindAppBar: widget.extendBodyBehindAppBar,
       appBar: AppBarContainer(
-        child: AppBarContainerChild(isDarkMode, title: "Export Course", subtitle: widget.course.courseTitle),
+        child: AppBarContainerChild(isDarkMode, title: "Export Course", subtitle: widget.course.title),
       ),
       body: Stack(
         fit: StackFit.expand,
@@ -500,7 +673,7 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
                 separatorBuilder: (context, index) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
                   final collection = widget.course.collections.elementAt(index);
-                  final fileCount = collectionFileCounts[collection.collectionTitle] ?? 0;
+                  // final fileCount = collectionFileCounts[collection.title] ?? 0;
 
                   return Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
@@ -615,10 +788,9 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
   Future<void> _startExport() async {
     log('🚀 Starting export...');
 
-    // Pick export folder
-    final exportFolderUri = await CourseFolderExportManager.pickExportFolder();
+    final exportFolderPath = await widget.pickExportFolder();
 
-    if (exportFolderUri == null) {
+    if (exportFolderPath == null) {
       log('❌ No export folder selected');
       return;
     }
@@ -633,7 +805,7 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
       builder: (context) => _ExportProgressDialog(progressNotifier: progressNotifier),
     );
 
-    final result = await CourseFolderExportManager.exportCourse(widget.course, exportFolderUri, progressNotifier);
+    final result = await widget.exportCourse(widget.course, exportFolderPath, progressNotifier);
 
     if (mounted) {
       context.pop(); // Close progress dialog

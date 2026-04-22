@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
-import 'package:slidesync/core/utils/result.dart';
 
 class CourseSortNotifier extends AsyncNotifier<CourseSortOption> {
   final CourseSortOption _defaultKey;

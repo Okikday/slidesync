@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/data/models/course/course.dart';
-import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/models/file_path.dart';
 import 'package:slidesync/data/models/progress_track_models/course_track.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -111,7 +111,7 @@ class GridCourseCardStackedCard extends ConsumerWidget {
                                     child: BuildImagePathWidget(
                                       width: 40,
                                       height: 40,
-                                      fileDetails: FileDetails(filePath: course.thumbnailPath),
+                                      fileDetails: FilePath(local: course.thumbnailPath),
                                       fallbackWidget: Icon(
                                         Iconsax.star,
                                         size: 16,
@@ -143,10 +143,7 @@ class GridCourseCardStackedCard extends ConsumerWidget {
                                           color: theme.secondary,
                                         ),
                                       ),
-                                    GridCourseCardProgressIndicator(
-                                      courseId: course.courseId,
-                                      color: course.metadata.color,
-                                    ),
+                                    GridCourseCardProgressIndicator(courseId: course.uid, color: course.metadata.color),
                                   ],
                                 ),
                               ),

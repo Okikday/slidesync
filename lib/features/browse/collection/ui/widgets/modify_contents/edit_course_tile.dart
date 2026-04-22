@@ -2,7 +2,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/models/file_path.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
@@ -56,7 +56,7 @@ class EditCourseTile extends ConsumerWidget {
                   child: ClipOval(
                     child: SizedBox.square(
                       dimension: 44,
-                      child: BuildImagePathWidget(fileDetails: FileDetails(filePath: imgFilePath)),
+                      child: BuildImagePathWidget(fileDetails: FilePath(local: imgFilePath)),
                     ),
                   ),
                 ),

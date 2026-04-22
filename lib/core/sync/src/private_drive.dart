@@ -8,27 +8,38 @@ part of '../gdrive_manager.dart';
 class _PrivateDrive {
   _PrivateDrive._();
 
+  static AuthClient? _cachedPrivateClient;
+
+  static Future<AuthClient?> _privateClient({bool forceRefreshAuth = false}) async {
+    if (forceRefreshAuth) {
+      _cachedPrivateClient = null;
+    }
+    _cachedPrivateClient ??= await GDriveManager.instance.auth.privateClient();
+    return _cachedPrivateClient;
+  }
+
   // ── Folder resolution ──────────────────────────────────────────────────────
 
   /// Resolves (creating if needed) the Drive folder ID for a given path.
   /// [segments] = ['MaterialsRepo', 'private', uid, courseId, collectionId]
-  static Future<Result<String?>> resolveFolderPath(List<String> segments) => Result.tryRunAsync(() async {
-    final client = await GDriveManager.instance.auth.privateClient();
-    if (client == null) throw StateError('Not signed in');
+  static Future<Result<String?>> resolveFolderPath(List<String> segments, {bool forceRefreshAuth = false}) =>
+      Result.tryRunAsync(() async {
+        final client = await _privateClient(forceRefreshAuth: forceRefreshAuth);
+        if (client == null) throw StateError('Not signed in');
 
-    String? parentId; // null = My Drive root
-    for (final name in segments) {
-      parentId = await _findOrCreateFolder(client, name, parentId);
-    }
-    return parentId;
-  });
+        String? parentId; // null = My Drive root
+        for (final name in segments) {
+          parentId = await _findOrCreateFolder(client, name, parentId);
+        }
+        return parentId;
+      });
 
   // ── Upload ─────────────────────────────────────────────────────────────────
 
   /// Upload a local file to the user's private Drive folder.
   ///
   /// [uid], [courseId], [collectionId] define the folder path.
-  /// [operationId] is a caller-provided stable key (e.g. contentHash) used
+  /// [operationId] is a caller-provided stable key (e.g. xxh3Hash) used
   /// to resume interrupted uploads.
   ///
   /// Streams [DriveProgress]. Check [DriveProgress.driveFileId] on completion.
@@ -40,9 +51,10 @@ class _PrivateDrive {
     required String operationId,
     String? fileName,
     String? mimeType,
+    bool forceRefreshAuth = false,
   }) async* {
     try {
-      final client = await GDriveManager.instance.auth.privateClient();
+      final client = await _privateClient(forceRefreshAuth: forceRefreshAuth);
       if (client == null) {
         yield DriveProgress.failed('Not signed in');
         return;
@@ -78,9 +90,10 @@ class _PrivateDrive {
     required String destPath,
     required String operationId,
     int? knownSize,
+    bool forceRefreshAuth = false,
   }) async* {
     try {
-      final client = await GDriveManager.instance.auth.privateClient();
+      final client = await _privateClient(forceRefreshAuth: forceRefreshAuth);
       if (client == null) {
         yield DriveProgress.failed('Not signed in');
         return;
@@ -116,8 +129,9 @@ class _PrivateDrive {
     required String collectionId,
     int pageSize = 50,
     String? pageToken,
+    bool forceRefreshAuth = false,
   }) => Result.tryRunAsync(() async {
-    final client = await GDriveManager.instance.auth.privateClient();
+    final client = await _privateClient(forceRefreshAuth: forceRefreshAuth);
     if (client == null) throw StateError('Not signed in');
 
     // Resolve folder ID (don't create — list only)

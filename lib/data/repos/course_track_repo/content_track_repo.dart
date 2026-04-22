@@ -16,15 +16,13 @@ class ContentTrackRepo {
   static Future<QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>> _queryByContentId(
     String contentId,
   ) async {
-    return (await _isarData.query<ContentTrack>((q) => q.idGreaterThan(0))).filter().contentIdEqualTo(contentId);
+    return (await _isarData.query<ContentTrack>((q) => q.idGreaterThan(0))).filter().uidEqualTo(contentId);
   }
 
   static Future<int> add(ContentTrack contentTrack) async {
-    final existingContentTrack = await (await ContentTrackRepo.filter)
-        .contentIdEqualTo(contentTrack.contentId)
-        .findFirst();
+    final existingContentTrack = await (await ContentTrackRepo.filter).uidEqualTo(contentTrack.contentId).findFirst();
     if (existingContentTrack == null) {
-      final courseTrack = await (await CourseTrackRepo.filter).courseIdEqualTo(contentTrack.parentId).findFirst();
+      final courseTrack = await (await CourseTrackRepo.filter).uidEqualTo(contentTrack.parentId).findFirst();
       if (courseTrack == null) return -1;
       await courseTrack.contentTracks.load();
       courseTrack.contentTracks.add(contentTrack);
@@ -39,13 +37,13 @@ class ContentTrackRepo {
   }
 
   static Future<ContentTrack?> getByContentId(String contentId) async {
-    return await (await _isar).contentTracks.filter().contentIdEqualTo(contentId).findFirst();
+    return await (await _isar).contentTracks.filter().uidEqualTo(contentId).findFirst();
   }
 
   static Stream<ContentTrack?> watchByContentId(String contentId) async* {
     yield* (await _isar).contentTracks
         .filter()
-        .contentIdEqualTo(contentId)
+        .uidEqualTo(contentId)
         .watch(fireImmediately: true)
         .map((list) => list.firstOrNull);
   }

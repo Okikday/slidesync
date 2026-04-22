@@ -5,8 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:isar_community/isar.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
-import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
+import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/features/browse/collection/ui/components/material_list_card.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/decorations/back_soft_edge_blur.dart';
@@ -27,7 +27,7 @@ class LibrarySearchView extends ConsumerStatefulWidget {
 class _LibrarySearchViewState extends ConsumerState<LibrarySearchView> {
   late final TextEditingController searchTextController;
   dynamic filter;
-  late final ValueNotifier<Future<List<CourseContent>>?> futureContentsNotifier;
+  late final ValueNotifier<Future<List<ModuleContent>>?> futureContentsNotifier;
 
   @override
   void initState() {
@@ -126,7 +126,7 @@ class _LibrarySearchViewState extends ConsumerState<LibrarySearchView> {
                           }
                         } else {
                           futureContentsNotifier.value =
-                              (filter as QueryBuilder<CourseContent, CourseContent, QFilterCondition>)
+                              (filter as QueryBuilder<ModuleContent, ModuleContent, QFilterCondition>)
                                   .titleContains(searchTextController.text, caseSensitive: false)
                                   .findAll();
                         }

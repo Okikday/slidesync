@@ -1,7 +1,6 @@
 import 'package:path/path.dart' as p;
 import 'package:slidesync/core/constants/src/enums.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
-import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
 
 class ContentCardActions {
   // static void onMoreOptions(BuildContext context, {required CourseContent content}) async {
@@ -15,11 +14,11 @@ class ContentCardActions {
   //   );
   // }
   // static Future<FileDetails> resolvePreviewPath(CourseContent content) async {
-  //   switch (content.courseContentType) {
+  //   switch (content.type) {
   //     case CourseContentType.link:
   //       final String? previewUrl = jsonDecode(content.metadataJson)['previewUrl'] as String?;
   //       if (previewUrl == null || previewUrl.isEmpty) {
-  //         final args = <String, dynamic>{'url': content.path.urlPath, 'driveApiKey': dotenv.env['DRIVE_API_KEY']};
+  //         final args = <String, dynamic>{'url': content.path.url, 'driveApiKey': dotenv.env['DRIVE_API_KEY']};
   //         final Map<String, String?>? previewMap = await compute(_fetchPreviewWorker, args);
   //         log("After checking internet: $previewMap");
   //         if (previewMap == null) return FileDetails();
@@ -32,7 +31,7 @@ class ContentCardActions {
   //           return FileDetails();
   //         }
   //         await AddLinkActions.onAddLinkContent(
-  //           content.path.urlPath,
+  //           content.path.url,
   //           parentId: content.parentId,
   //           previewLinkDetails: previewLinkDetails,
   //         );
@@ -42,7 +41,7 @@ class ContentCardActions {
   //         return FileDetails(urlPath: previewUrl);
   //       }
   //     default:
-  //       return FileDetails(filePath: content.previewPath ?? '', urlPath: content.path.urlPath);
+  //       return FileDetails(filePath: content.previewPath ?? '', urlPath: content.path.url);
   //   }
   // }
 
@@ -68,14 +67,14 @@ class ContentCardActions {
   //   return {'title': data.title, 'description': data.description, 'previewUrl': data.previewUrl};
   // }
 
-  static String resolveExtension(CourseContent content) {
-    final res = p.extension(content.path.filePath).replaceAll('.', '').toUpperCase();
-    switch (content.courseContentType) {
-      case CourseContentType.image:
+  static String resolveExtension(ModuleContent content) {
+    final res = p.extension(content.path.local).replaceAll('.', '').toUpperCase();
+    switch (content.type) {
+      case ModuleContentType.image:
         return res;
-      case CourseContentType.document:
+      case ModuleContentType.document:
         return res;
-      case CourseContentType.link:
+      case ModuleContentType.link:
         return "link";
       default:
         return '';

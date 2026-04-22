@@ -9,9 +9,9 @@ import 'package:slidesync/core/apis/entities/source_entity.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/data/models/course/course.dart';
-import 'package:slidesync/data/models/course_collection/course_collection.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
-import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/models/module/module.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
+import 'package:slidesync/data/models/file_path.dart';
 import 'package:slidesync/core/utils/result.dart';
 
 /// Upload sync result tracking
@@ -64,14 +64,14 @@ class SyncCoordinator {
     required List<String> vaultLinks,
     OnUploadProgress? onProgress,
   }) => Result.tryRunAsync(() async {
-    final courseId = course.courseId;
+    final courseId = course.uid;
 
     SyncLogger.info('Syncing course: $courseId', operation: userId);
 
     try {
       // Fetch collections for this course (parentId = courseId)
       final isar = await IsarData.isarFuture;
-      final collections = await isar.collection<CourseCollection>().where().parentIdEqualTo(courseId).findAll();
+      final collections = await isar.collection<Module>().where().parentIdEqualTo(courseId).findAll();
 
       if (collections.isEmpty) {
         SyncLogger.warn('Course is empty (no collections), skipping upload', operation: userId);
@@ -105,9 +105,9 @@ class SyncCoordinator {
           totalFailed += result.failedCount;
           failedIds.addAll(result.failedContentIds);
         } catch (e) {
-          SyncLogger.error('Collection ${collection.collectionId} sync failed', e, operation: userId);
+          SyncLogger.error('Collection ${collection.uid} sync failed', e, operation: userId);
           totalFailed += 1;
-          failedIds.add(collection.collectionId);
+          failedIds.add(collection.uid);
         }
       }
 
@@ -131,22 +131,69 @@ class SyncCoordinator {
     }
   });
 
+  /// Sync a single content item to Firebase + storage vault.
+  Future<Result<SyncResult?>> syncContent({
+    required ModuleContent content,
+    required String courseId,
+    required String collectionId,
+    required String userId,
+    required List<String> vaultLinks,
+    OnUploadProgress? onProgress,
+  }) => Result.tryRunAsync(() async {
+    final uploaded = await _uploadContentIfNeeded(
+      content: content,
+      courseId: courseId,
+      collectionId: collectionId,
+      userId: userId,
+      vaultLinks: vaultLinks,
+      onProgress: onProgress,
+    );
+
+    if (uploaded == null) {
+      return const SyncResult(
+        totalContents: 1,
+        uploadedCount: 0,
+        skippedCount: 1,
+        failedCount: 0,
+        failedContentIds: [],
+      );
+    }
+
+    if (uploaded) {
+      return const SyncResult(
+        totalContents: 1,
+        uploadedCount: 1,
+        skippedCount: 0,
+        failedCount: 0,
+        failedContentIds: [],
+      );
+    }
+
+    return SyncResult(
+      totalContents: 1,
+      uploadedCount: 0,
+      skippedCount: 0,
+      failedCount: 1,
+      failedContentIds: [content.uid],
+    );
+  });
+
   /// Sync a single collection and its contents.
   /// Does NOT upload empty collections.
   Future<SyncResult> _syncCollection({
     required String courseId,
-    required CourseCollection collection,
+    required Module collection,
     required String userId,
     required List<String> vaultLinks,
     OnUploadProgress? onProgress,
   }) async {
-    final collectionId = collection.collectionId;
+    final collectionId = collection.uid;
 
     SyncLogger.info('Syncing collection: $collectionId', operation: userId);
 
     // Fetch contents
     final isar = await IsarData.isarFuture;
-    final contents = await isar.collection<CourseContent>().where().parentIdEqualTo(collectionId).findAll();
+    final contents = await isar.collection<ModuleContent>().where().parentIdEqualTo(collectionId).findAll();
 
     if (contents.isEmpty) {
       SyncLogger.info('Collection is empty, skipping', operation: userId);
@@ -164,29 +211,127 @@ class SyncCoordinator {
     int failedCount = 0;
     final failedIds = <String>[];
 
+    final candidates = <_PendingPublicUpload>[];
+
     for (final content in contents) {
       try {
-        final uploaded = await _uploadContentIfNeeded(
-          content: content,
-          courseId: courseId,
-          collectionId: collectionId,
-          userId: userId,
-          vaultLinks: vaultLinks,
-          onProgress: onProgress,
-        );
+        final metadata = content.metadata;
 
-        if (uploaded == null) {
+        if (content.type != ModuleContentType.link && metadata.contentOrigin != ContentOrigin.local) {
+          SyncLogger.info(
+            'Content ${content.uid} is not local or link (type=${content.type}, origin=${metadata.contentOrigin}), skipping upload',
+            operation: userId,
+          );
           skippedCount++;
-        } else if (uploaded) {
-          uploadedCount++;
-        } else {
-          failedCount++;
-          failedIds.add(content.contentId);
+          continue;
         }
+
+        final existing = await Api.instance.content.get(content.xxh3Hash);
+        if (existing.isSuccess && existing.data != null) {
+          SyncLogger.info('Content ${content.uid} already in Firebase, skipping', operation: userId);
+          skippedCount++;
+          continue;
+        }
+
+        final fileDetails = content.path;
+        final file = File(fileDetails.local.replaceFirst(RegExp(r'^(file|link):'), ''));
+        if (!await file.exists()) {
+          SyncLogger.warn('File not found: ${file.path}', operation: userId);
+          failedCount++;
+          failedIds.add(content.uid);
+          continue;
+        }
+
+        candidates.add(_PendingPublicUpload(content: content, file: file));
       } catch (e) {
-        SyncLogger.error('Content ${content.contentId} sync failed', e, operation: userId);
+        SyncLogger.error('Content ${content.uid} preparation failed', e, operation: userId);
         failedCount++;
-        failedIds.add(content.contentId);
+        failedIds.add(content.uid);
+      }
+    }
+
+    if (candidates.isNotEmpty) {
+      final byOperationId = {for (final item in candidates) item.content.uid: item};
+      final processed = <String>{};
+
+      await for (final event in _driveManager.public.uploadMultiple(
+        objects: [
+          for (final item in candidates)
+            PublicUploadObject(file: item.file, operationId: item.content.uid, fileName: item.content.title),
+        ],
+        institutionId: 'default',
+        courseId: courseId,
+        uploadedBy: userId,
+      )) {
+        final pending = byOperationId[event.operationId];
+        if (pending == null) continue;
+
+        final progress = event.progress;
+        if (onProgress != null) {
+          onProgress(progress.bytesTransferred, progress.totalBytes);
+        }
+
+        if (progress.isDone && !processed.contains(event.operationId)) {
+          processed.add(event.operationId);
+          final driveFileId = progress.driveFileId;
+          if (driveFileId == null) {
+            failedCount++;
+            failedIds.add(pending.content.uid);
+            continue;
+          }
+
+          try {
+            final verify = await _driveManager.public.verifyUploadedFileExists(driveFileId, forceRefreshAuth: true);
+            if (!verify.isSuccess || verify.data != true) {
+              SyncLogger.error(
+                'Drive file verification failed after upload',
+                verify.message ?? 'Could not confirm file $driveFileId on Drive',
+                operation: userId,
+              );
+              failedCount++;
+              failedIds.add(pending.content.uid);
+              continue;
+            }
+
+            final logResult = await Api.instance.vault.logUploadWithSource(
+              linkId: driveFileId,
+              uploadInput: LogUploadInput(
+                uploadedBy: userId,
+                xxh3Hash: pending.content.xxh3Hash,
+                fileName: pending.content.title,
+                fileSize: pending.content.fileSizeInBytes,
+              ),
+              sourceInput: CreateSourceInput(
+                url: 'https://drive.google.com/file/d/$driveFileId/view',
+                title: pending.content.title,
+                type: 'file',
+                uploadedBy: userId,
+              ),
+            );
+
+            if (!logResult.isSuccess) {
+              SyncLogger.error(
+                'File upload log failed',
+                logResult.message ?? 'Unknown vault log error',
+                operation: userId,
+              );
+              failedCount++;
+              failedIds.add(pending.content.uid);
+              continue;
+            }
+
+            uploadedCount++;
+          } catch (e) {
+            SyncLogger.error('File upload log failed', e, operation: userId);
+            failedCount++;
+            failedIds.add(pending.content.uid);
+          }
+        } else if (progress.isFailed && !processed.contains(event.operationId)) {
+          processed.add(event.operationId);
+          SyncLogger.error('File upload failed', progress.error ?? 'Unknown error', operation: userId);
+          failedCount++;
+          failedIds.add(pending.content.uid);
+        }
       }
     }
 
@@ -206,7 +351,7 @@ class SyncCoordinator {
   /// - `false` if upload failed
   /// - `null` if skipped (not a file or already exists)
   Future<bool?> _uploadContentIfNeeded({
-    required CourseContent content,
+    required ModuleContent content,
     required String courseId,
     required String collectionId,
     required String userId,
@@ -217,25 +362,25 @@ class SyncCoordinator {
 
     // Skip if not uploadable: only upload local files or links
     // Links (type=link) should be uploaded regardless of origin
-    if (content.courseContentType != CourseContentType.link && metadata.contentOrigin != ContentOrigin.local) {
+    if (content.type != ModuleContentType.link && metadata.contentOrigin != ContentOrigin.local) {
       SyncLogger.info(
-        'Content ${content.contentId} is not local or link (type=${content.courseContentType}, origin=${metadata.contentOrigin}), skipping upload',
+        'Content ${content.uid} is not local or link (type=${content.type}, origin=${metadata.contentOrigin}), skipping upload',
         operation: userId,
       );
       return null;
     }
 
     // Check if content already in Firebase
-    final existing = await Api.instance.content.get(content.contentHash);
+    final existing = await Api.instance.content.get(content.xxh3Hash);
 
     if (existing.isSuccess && existing.data != null) {
-      SyncLogger.info('Content ${content.contentId} already in Firebase, skipping', operation: userId);
+      SyncLogger.info('Content ${content.uid} already in Firebase, skipping', operation: userId);
       return null;
     }
 
     // Validate file - parse content.path as FileDetails (it's stored as JSON)
-    final fileDetails = content.path.fileDetails;
-    final file = File(fileDetails.filePath.replaceFirst(RegExp(r'^(file|link):'), ''));
+    final fileDetails = content.path;
+    final file = File(fileDetails.local.replaceFirst(RegExp(r'^(file|link):'), ''));
     if (!await file.exists()) {
       SyncLogger.warn('File not found: ${file.path}', operation: userId);
       return false;
@@ -252,7 +397,7 @@ class SyncCoordinator {
         institutionId: 'default', // Use default institution
         courseId: courseId, // Organize by course
         uploadedBy: userId,
-        operationId: content.contentId,
+        operationId: content.uid,
         fileName: content.title,
       )) {
         // Emit progress updates
@@ -275,14 +420,19 @@ class SyncCoordinator {
         throw Exception('Upload completed but no file ID returned');
       }
 
+      final verify = await _driveManager.public.verifyUploadedFileExists(driveFileId, forceRefreshAuth: true);
+      if (!verify.isSuccess || verify.data != true) {
+        throw Exception('Drive file verification failed for $driveFileId');
+      }
+
       // Log upload to vault
-      await Api.instance.vault.logUploadWithSource(
+      final logResult = await Api.instance.vault.logUploadWithSource(
         linkId: driveFileId, // Use Drive file ID as link
         uploadInput: LogUploadInput(
           uploadedBy: userId,
-          contentHash: content.contentHash,
+          xxh3Hash: content.xxh3Hash,
           fileName: content.title,
-          fileSize: content.fileSize,
+          fileSize: content.fileSizeInBytes,
         ),
         sourceInput: CreateSourceInput(
           url: 'https://drive.google.com/file/d/$driveFileId/view',
@@ -292,6 +442,10 @@ class SyncCoordinator {
         ),
       );
 
+      if (!logResult.isSuccess) {
+        throw Exception(logResult.message ?? 'Failed to log upload metadata');
+      }
+
       SyncLogger.info('File uploaded successfully', operation: userId);
 
       return true;
@@ -300,4 +454,11 @@ class SyncCoordinator {
       return false;
     }
   }
+}
+
+class _PendingPublicUpload {
+  final ModuleContent content;
+  final File file;
+
+  const _PendingPublicUpload({required this.content, required this.file});
 }

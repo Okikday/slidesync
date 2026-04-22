@@ -13,7 +13,7 @@ class CourseRepo {
   static Future<QueryBuilder<Course, Course, QFilterCondition>> get filter async => (await _isar).courses.filter();
 
   // static Future<QueryBuilder<Course, Course, QAfterFilterCondition>> _queryById(String courseId) async {
-  //   return (await _isarData.query<Course>((q) => q.idGreaterThan(0))).filter().courseIdEqualTo(courseId);
+  //   return (await _isarData.query<Course>((q) => q.idGreaterThan(0))).filter().uidEqualTo(courseId);
   // }
 
   // static Future<void> deleteCourseByDbId(int dbId) async => await _isarData.deleteById(dbId);
@@ -23,16 +23,15 @@ class CourseRepo {
   static Stream<Course?> watchCourseByDbId(int dbId) => _isarData.watchById(dbId);
 
   static Future<int> addCourse(Course course) async {
-    if (course.courseId.trim().isEmpty || course.courseId == "_") return -1;
-    final existingCourseTrack = await (await CourseTrackRepo.filter).courseIdEqualTo(course.courseId).findFirst();
+    if (course.uid.trim().isEmpty || course.uid == "_") return -1;
+    final existingCourseTrack = await (await CourseTrackRepo.filter).uidEqualTo(course.uid).findFirst();
     if (existingCourseTrack == null) {
       final newCourseTrack = CourseTrack.create(
-        courseId: course.courseId,
-        title: course.courseTitle,
+        courseId: course.uid,
+        title: course.title,
         description: course.description,
       );
-      final storeTrackRes = await CourseTrackRepo.isarData.store(newCourseTrack);
-      // log("STored courseTrack: ${(await _isar).courseTracks.get(storeTrackRes)}");
+      return await CourseTrackRepo.isarData.store(newCourseTrack);
     }
 
     return await _isarData.store(course);
@@ -47,13 +46,13 @@ class CourseRepo {
   // static Future<Stream<List<Course>>> watchAllCoursesLazily() async => await _isarData.watchAllLazily();
 
   static Future<Course?> getCourseById(String courseId) async {
-    return await (await _isar).courses.filter().courseIdEqualTo(courseId).findFirst();
+    return await (await _isar).courses.filter().uidEqualTo(courseId).findFirst();
   }
 
   static Stream<Course?> watchCourseById(String courseId) async* {
     yield* (await _isar).courses
         .filter()
-        .courseIdEqualTo(courseId)
+        .uidEqualTo(courseId)
         .watch(fireImmediately: true)
         .map((list) => list.firstOrNull);
   }
@@ -63,9 +62,9 @@ class CourseRepo {
     final Course? course = await getCourseById(courseId);
     return await isar.writeTxn<Course?>(() async {
       if (course != null) {
-        final idQuery = (await filter).courseIdEqualTo(courseId);
+        final idQuery = (await filter).uidEqualTo(courseId);
         await idQuery.deleteFirst();
-        await (await CourseTrackRepo.filter).courseIdEqualTo(courseId).deleteFirst();
+        await (await CourseTrackRepo.filter).uidEqualTo(courseId).deleteFirst();
       }
       return course;
     });

@@ -8,7 +8,7 @@ class ContentQuestions {
   Id id = Isar.autoIncrement;
 
   @Index()
-  late String contentHash;
+  late String xxh3Hash;
 
   @Index(unique: true)
   late String contentId;
@@ -24,14 +24,14 @@ class ContentQuestions {
   ContentQuestions();
 
   factory ContentQuestions.create({
-    required String contentHash,
+    required String xxh3Hash,
     required String contentId,
     required String title,
     List<String>? questions,
     String metadataJson = '{}',
   }) {
     final content = ContentQuestions()
-      ..contentHash = contentHash
+      ..xxh3Hash = xxh3Hash
       ..contentId = contentId
       ..title = title
       ..questions = questions ?? []
@@ -42,7 +42,7 @@ class ContentQuestions {
   Map<String, dynamic> toMap() {
     return {
       'id': id,
-      'contentHash': contentHash,
+      'xxh3Hash': xxh3Hash,
       'contentId': contentId,
       'title': title,
       'questions': questions,
@@ -53,7 +53,7 @@ class ContentQuestions {
   factory ContentQuestions.fromMap(Map<String, dynamic> map) {
     return ContentQuestions()
       ..id = map['id'] ?? Isar.autoIncrement
-      ..contentHash = map['contentHash'] ?? ''
+      ..xxh3Hash = map['xxh3Hash'] ?? ''
       ..contentId = map['contentId'] ?? ''
       ..title = map['title'] ?? ''
       ..questions = List<String>.from(map['questions'] ?? [])
@@ -69,7 +69,7 @@ class ContentQuestions {
     if (identical(this, other)) return true;
 
     return other.id == id &&
-        other.contentHash == contentHash &&
+        other.xxh3Hash == xxh3Hash &&
         other.contentId == contentId &&
         other.title == title &&
         _listEquals(other.questions, questions) &&
@@ -79,7 +79,7 @@ class ContentQuestions {
   @override
   int get hashCode {
     return id.hashCode ^
-        contentHash.hashCode ^
+        xxh3Hash.hashCode ^
         contentId.hashCode ^
         title.hashCode ^
         questions.hashCode ^
@@ -88,7 +88,7 @@ class ContentQuestions {
 
   @override
   String toString() {
-    return 'ContentQuestions(id: $id, contentHash: $contentHash, contentId: $contentId, title: $title, questions: ${questions.length} items, metadataJson: $metadataJson)';
+    return 'ContentQuestions(id: $id, xxh3Hash: $xxh3Hash, contentId: $contentId, title: $title, questions: ${questions.length} items, metadata: $metadataJson)';
   }
 
   bool _listEquals<T>(List<T>? a, List<T>? b) {
@@ -103,14 +103,14 @@ class ContentQuestions {
 
 extension ContentQuestionsExtension on ContentQuestions {
   ContentQuestions copyWith({
-    String? contentHash,
+    String? xxh3Hash,
     String? contentId,
     String? title,
     List<String>? questions,
     String? metadataJson,
   }) {
     return this
-      ..contentHash = contentHash ?? this.contentHash
+      ..xxh3Hash = xxh3Hash ?? this.xxh3Hash
       ..contentId = contentId ?? this.contentId
       ..title = title ?? this.title
       ..questions = questions ?? this.questions

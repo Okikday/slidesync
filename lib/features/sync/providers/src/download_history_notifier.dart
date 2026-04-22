@@ -5,12 +5,12 @@ import 'package:slidesync/features/sync/providers/entities/download_history_entr
 import 'package:slidesync/features/sync/providers/entities/sync_type.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 
-class DownloadHistoryNotifier extends HiveAsyncImpliedNotifierN<List<Map<String, dynamic>>> {
+class DownloadHistoryNotifier extends HiveAsyncImpliedNotifierN<List<dynamic>, List<Map<String, dynamic>>> {
   DownloadHistoryNotifier()
     : super(
         HiveDataPathKey.downloadHistory.name,
         defaultKey: const [],
-        resolveData: (data) {
+        builder: (data) {
           if (data is List) {
             return data.whereType<Map>().map((entry) => Map<String, dynamic>.from(entry)).toList(growable: false);
           }

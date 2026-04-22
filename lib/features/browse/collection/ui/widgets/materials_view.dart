@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/features/browse/collection/providers/collection_materials_provider.dart';
 import 'package:slidesync/features/browse/collection/ui/components/content_card.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/modify_contents/empty_contents_view.dart';
@@ -58,7 +58,7 @@ class MaterialsView extends ConsumerWidget {
 }
 
 class PagedSliverContentView extends ConsumerWidget {
-  final PagingState<int, CourseContent> state;
+  final PagingState<int, ModuleContent> state;
   final VoidCallback fetchNextPage;
   final PagingController pagingController;
   final String collectionId;
@@ -98,7 +98,7 @@ class PagedSliverContentView extends ConsumerWidget {
         final modState = ref.read(CollectionMaterialsProvider.modState.notifier);
         return Builder(
           builder: (context) {
-            ({bool isSelected, void Function(CourseContent item) onSelect})? select(CourseContent item) =>
+            ({bool isSelected, void Function(ModuleContent item) onSelect})? select(ModuleContent item) =>
                 modState.isEmpty
                 ? null
                 : (
@@ -112,7 +112,7 @@ class PagedSliverContentView extends ConsumerWidget {
                     },
                   );
             if (isGrid == true) {
-              return PagedSliverGrid<int, CourseContent>(
+              return PagedSliverGrid<int, ModuleContent>(
                 state: state,
                 fetchNextPage: fetchNextPage,
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
@@ -135,7 +135,7 @@ class PagedSliverContentView extends ConsumerWidget {
                 ),
               );
             } else {
-              return PagedSliverList<int, CourseContent>(
+              return PagedSliverList<int, ModuleContent>(
                 state: state,
                 itemExtent: isFullScreen ? 400 : 200,
                 fetchNextPage: fetchNextPage,

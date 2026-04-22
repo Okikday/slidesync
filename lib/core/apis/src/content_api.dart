@@ -28,23 +28,20 @@ class _ContentApi {
     );
   });
 
-  /// Doc ID = contentHash → deduplication at DB level.
+  /// Doc ID = xxh3Hash → deduplication at DB level.
   /// Uses raw ref to safely write FieldValue.serverTimestamp.
-  Future<Result<void>> add({
-    required String collectionId,
-    required String contentHash,
-    required AddContentInput input,
-  }) => Result.tryRunAsync(() async {
-    final ref = ApiPaths.content(contentHash);
-    // Use raw (non-converter) ref for the write to support FieldValue
-    await FirebaseFirestore.instance
-        .collection('contents')
-        .doc(contentHash)
-        .set(ContentEntity.createMap(contentHash, collectionId, input), SetOptions(merge: false));
-    // If the doc already existed (same hash already in this collection),
-    // the above is a no-op conflict — the merge:false ensures idempotency.
-    ref;
-  });
+  Future<Result<void>> add({required String collectionId, required String xxh3Hash, required AddContentInput input}) =>
+      Result.tryRunAsync(() async {
+        final ref = ApiPaths.content(xxh3Hash);
+        // Use raw (non-converter) ref for the write to support FieldValue
+        await FirebaseFirestore.instance
+            .collection('contents')
+            .doc(xxh3Hash)
+            .set(ContentEntity.createMap(xxh3Hash, collectionId, input), SetOptions(merge: false));
+        // If the doc already existed (same hash already in this collection),
+        // the above is a no-op conflict — the merge:false ensures idempotency.
+        ref;
+      });
 
   /// Content pointers are immutable — no update method exposed.
   Future<Result<void>> delete({required String contentId}) =>
@@ -54,10 +51,10 @@ class _ContentApi {
 
   /// Register hash in the global registry. Immutable after first write.
   /// Rules enforce no update/delete — safe to call without checking existence.
-  Future<Result<void>> registerHash(String contentHash) => Result.tryRunAsync(
+  Future<Result<void>> registerHash(String xxh3Hash) => Result.tryRunAsync(
     () => ApiPaths.contentLookupEntry(
-      contentHash,
-    ).set({'contentHash': contentHash, 'createdAt': FieldValue.serverTimestamp()}, SetOptions(merge: false)),
+      xxh3Hash,
+    ).set({'xxh3Hash': xxh3Hash, 'createdAt': FieldValue.serverTimestamp()}, SetOptions(merge: false)),
   );
 
   // ── Private variants ──────────────────────────────────────────────────────
@@ -67,13 +64,13 @@ class _ContentApi {
 
   Future<Result<void>> addPrivate({
     required String collectionId,
-    required String contentHash,
+    required String xxh3Hash,
     required AddContentInput input,
   }) => Result.tryRunAsync(
     () => FirebaseFirestore.instance
         .collection('privateContents')
-        .doc(contentHash)
-        .set(ContentEntity.createMap(contentHash, collectionId, input), SetOptions(merge: false)),
+        .doc(xxh3Hash)
+        .set(ContentEntity.createMap(xxh3Hash, collectionId, input), SetOptions(merge: false)),
   );
 
   Future<Result<void>> deletePrivate({required String contentId}) =>

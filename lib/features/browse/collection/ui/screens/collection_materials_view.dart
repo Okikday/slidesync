@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_collection/course_collection.dart';
+import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/features/browse/collection/providers/collection_materials_provider.dart';
 import 'package:slidesync/features/browse/collection/ui/components/mod_contents_options.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/collection_materials_app_bar.dart';
@@ -16,7 +16,7 @@ import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 
 class CollectionMaterialsView extends ConsumerStatefulWidget {
-  final CourseCollection collection;
+  final Module collection;
   final bool isFullScreen;
   const CollectionMaterialsView({super.key, required this.collection, required this.isFullScreen});
 
@@ -67,11 +67,8 @@ class _CollectionMaterialsViewState extends ConsumerState<CollectionMaterialsVie
         appBar: AppBarContainer(
           child: AppBarContainerChild(
             context.isDarkMode,
-            title: widget.collection.collectionTitle,
-            trailing: CollectionMaterialsAppBar(
-              collectionId: widget.collection.collectionId,
-              isFullScreen: widget.isFullScreen,
-            ),
+            title: widget.collection.title,
+            trailing: CollectionMaterialsAppBar(collectionId: widget.collection.uid, isFullScreen: widget.isFullScreen),
           ),
         ),
         extendBodyBehindAppBar: true,
@@ -84,7 +81,7 @@ class _CollectionMaterialsViewState extends ConsumerState<CollectionMaterialsVie
         body: RefreshIndicator(
           onRefresh: () async {
             (await ref.read(
-              CollectionMaterialsProvider.contentPaginationProvider(widget.collection.collectionId).future,
+              CollectionMaterialsProvider.contentPaginationProvider(widget.collection.uid).future,
             )).pagingController.refresh();
           },
           child: SmoothCustomScrollView(
@@ -92,8 +89,8 @@ class _CollectionMaterialsViewState extends ConsumerState<CollectionMaterialsVie
             physics: const BouncingScrollPhysics(),
             slivers: [
               SliverToBoxAdapter(child: TopPadding(withHeight: 72)),
-              ModContentsOptions(collectionTitle: widget.collection.collectionTitle, collectionLength: 5),
-              MaterialsView(collectionId: widget.collection.collectionId, isFullScreen: widget.isFullScreen),
+              ModContentsOptions(collectionTitle: widget.collection.title, collectionLength: 5),
+              MaterialsView(collectionId: widget.collection.uid, isFullScreen: widget.isFullScreen),
               SliverToBoxAdapter(child: BottomPadding(withHeight: 64)),
             ],
           ),

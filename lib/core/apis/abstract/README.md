@@ -13,13 +13,13 @@ All APIs in `core/apis` now follow the Firebase security rules provided:
 /catalog/{catalogId}
 /courses/{courseId}
   ├── collections/{collectionId}
-  │   └── contents/{contentHash}
+  │   └── contents/{xxh3Hash}
 /privateX/{uid}/courses/{courseId}
   ├── collections/{collectionId}
-  │   └── contents/{contentHash}
+  │   └── contents/{xxh3Hash}
 /courseVotes/{courseId}/votes/{userId}
 /courseFlags/{courseId}/flags/{userId}
-/content-lookup/{contentHash}
+/content-lookup/{xxh3Hash}
   ├── sources/{userId}
   │   ├── votes/{voterId}
   │   └── flags/{flaggerId}

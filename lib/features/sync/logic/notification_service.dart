@@ -6,6 +6,11 @@ class NotificationService {
   NotificationService._();
 
   final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
+  static const int _maxAndroidNotificationId = 0x7fffffff;
+
+  int _normalizeNotificationId(int raw) => raw & _maxAndroidNotificationId;
+
+  int _idFromString(String seed) => _normalizeNotificationId(seed.hashCode);
 
   Future<void> initialize() async {
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -31,6 +36,10 @@ class NotificationService {
     required int progress,
     required int maxProgress,
   }) async {
+    final safeMax = maxProgress <= 0 ? 100 : maxProgress;
+    final safeProgress = progress.clamp(0, safeMax);
+    final percent = ((safeProgress / safeMax) * 100).toInt();
+
     final androidDetails = AndroidNotificationDetails(
       'upload_channel',
       'Uploads',
@@ -38,16 +47,16 @@ class NotificationService {
       importance: Importance.low,
       priority: Priority.low,
       showProgress: true,
-      maxProgress: maxProgress,
-      progress: progress,
+      maxProgress: safeMax,
+      progress: safeProgress,
       ongoing: true,
       onlyAlertOnce: true,
     );
 
     await _notifications.show(
-      id.hashCode,
+      _idFromString('upload:$id'),
       title,
-      'Uploading... ${(progress / maxProgress * 100).toInt()}%',
+      'Uploading... $percent%',
       NotificationDetails(android: androidDetails),
     );
   }
@@ -59,6 +68,10 @@ class NotificationService {
     required int progress,
     required int maxProgress,
   }) async {
+    final safeMax = maxProgress <= 0 ? 100 : maxProgress;
+    final safeProgress = progress.clamp(0, safeMax);
+    final percent = ((safeProgress / safeMax) * 100).toInt();
+
     final androidDetails = AndroidNotificationDetails(
       'download_channel',
       'Downloads',
@@ -66,16 +79,16 @@ class NotificationService {
       importance: Importance.low,
       priority: Priority.low,
       showProgress: true,
-      maxProgress: maxProgress,
-      progress: progress,
+      maxProgress: safeMax,
+      progress: safeProgress,
       ongoing: true,
       onlyAlertOnce: true,
     );
 
     await _notifications.show(
-      id.hashCode,
+      _idFromString('download:$id'),
       title,
-      'Downloading... ${(progress / maxProgress * 100).toInt()}%',
+      'Downloading... $percent%',
       NotificationDetails(android: androidDetails),
     );
   }
@@ -91,7 +104,7 @@ class NotificationService {
     );
 
     await _notifications.show(
-      DateTime.now().millisecondsSinceEpoch,
+      _normalizeNotificationId(DateTime.now().microsecondsSinceEpoch),
       title,
       body,
       const NotificationDetails(android: androidDetails),
@@ -100,6 +113,6 @@ class NotificationService {
 
   // Cancel notification
   Future<void> cancel(String id) async {
-    await _notifications.cancel(id.hashCode);
+    await _notifications.cancel(_idFromString('download:$id'));
   }
 }

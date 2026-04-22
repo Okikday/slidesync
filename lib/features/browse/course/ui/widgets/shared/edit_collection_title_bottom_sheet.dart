@@ -4,13 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_collection/course_collection.dart';
-import 'package:slidesync/features/browse/course/ui/actions/edit_collection_actions.dart';
+import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/features/browse/course/ui/actions/modify_collection_actions.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class EditCollectionTitleBottomSheet extends ConsumerStatefulWidget {
-  final CourseCollection collection;
+  final Module collection;
   const EditCollectionTitleBottomSheet({super.key, required this.collection});
 
   @override
@@ -64,12 +63,12 @@ class _EditCollectionTitleBottomSheetState extends ConsumerState<EditCollectionT
                 CustomTextfield(
                   autoDispose: false,
                   hint: "Edit Collection name",
-                  defaultText: collection.collectionTitle,
+                  defaultText: collection.title,
                   focusNode: focusNode,
                   selectionHandleColor: theme.primaryColor,
                   // onTapOutside: () {},
                   onSubmitted: (text) async {
-                    final collectionTitle = collection.collectionTitle;
+                    final collectionTitle = collection.title;
                     final isValid = await ModifyCollectionActions().validateCollectionTitle(
                       context,
                       text: text,

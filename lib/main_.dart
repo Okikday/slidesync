@@ -29,15 +29,15 @@ Future<void> _appLaunchRoutine() async {
 Future<void> _firstAppLaunch() async {
   final isFirstLaunch = (await AppHiveData.instance.getData(key: HiveDataPathKey.isFirstLaunch.name)) as bool?;
   if (isFirstLaunch == null) {
-    final referenceCollection = CourseCollection.create(
+    final referenceCollection = Module.create(
       parentId: AppCourseCollections.references.name,
-      collectionId: AppCourseCollections.references.name,
+      uid: AppCourseCollections.references.name,
       collectionTitle: "References",
       description: "This is the Default App Reference collections",
     );
-    final bookMarkCollection = CourseCollection.create(
+    final bookMarkCollection = Module.create(
       parentId: AppCourseCollections.bookmarks.name,
-      collectionId: AppCourseCollections.bookmarks.name,
+      uid: AppCourseCollections.bookmarks.name,
       collectionTitle: "Bookmarks",
       description: "This is the Default App Bookmark collections",
     );

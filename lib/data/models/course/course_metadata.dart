@@ -1,18 +1,32 @@
 import 'dart:convert';
 
 import 'package:flutter/painting.dart';
+import 'package:isar_community/isar.dart';
 import 'package:slidesync/core/utils/theme_utils.dart';
-import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/models/file_path.dart';
 
+part 'course_metadata.g.dart';
+
+@embedded
 class CourseMetadata {
-  final String? author;
-  final Map<String, dynamic>? thumbnails;
-  final Color? color;
-  final Map<String, dynamic>? fields; // For any additional metadata
+  String? author;
+  FilePath? thumbnails;
+  String? rawColor;
 
-  FileDetails get thumbnailsDetails => FileDetails.fromMap(thumbnails ?? {});
+  @ignore
+  Color? get color => rawColor != null && rawColor!.isNotEmpty ? ThemeUtils.hexToColor(rawColor!) : null;
 
-  CourseMetadata({this.author, this.thumbnails, this.color, this.fields});
+  FilePath get thumbnailsDetails => thumbnails ?? FilePath();
+
+  CourseMetadata();
+
+  factory CourseMetadata.create({String? author, FilePath? thumbnails, Color? color, String? rawColor}) {
+    final resolvedColor = rawColor ?? (color != null ? ThemeUtils.colorToHex(color) : null);
+    return CourseMetadata()
+      ..author = author
+      ..thumbnails = thumbnails
+      ..rawColor = resolvedColor;
+  }
 
   // Create empty metadata
   factory CourseMetadata.empty() => CourseMetadata();
@@ -24,53 +38,49 @@ class CourseMetadata {
   Map<String, dynamic> toMap() {
     return {
       if (author != null) 'author': author,
-      if (thumbnails != null) 'thumbnails': thumbnails,
-      if (color != null) 'color': color != null ? ThemeUtils.colorToHex(color!) : null,
-      if (fields != null) ...fields!,
+      if (thumbnails != null) 'thumbnails': thumbnails!.toJson(),
+      if (rawColor != null) 'color': rawColor,
     };
   }
 
   // Create from JSON string
   factory CourseMetadata.fromJson(String source) {
+    if (source.isEmpty) return CourseMetadata.empty();
     try {
       return CourseMetadata.fromMap(jsonDecode(source));
-    } catch (e) {
+    } catch (_) {
       return CourseMetadata.empty();
     }
   }
 
   // Create from Map
   factory CourseMetadata.fromMap(Map<String, dynamic> map) {
-    // Extract known fields
-    final knownFields = {'author', 'thumbnails', 'color'};
-    final fields = Map<String, dynamic>.from(map)..removeWhere((key, value) => knownFields.contains(key));
+    final rawThumbnail = map['thumbnails'];
+    final resolvedThumbnail = switch (rawThumbnail) {
+      String value => FilePath.fromJson(value),
+      Map value => FilePath.fromMap(Map<String, dynamic>.from(value)),
+      _ => null,
+    };
 
-    return CourseMetadata(
+    return CourseMetadata.create(
       author: map['author'] as String?,
-      thumbnails: map['thumbnails'] as Map<String, dynamic>?,
-      color: map['color'] != null ? ThemeUtils.hexToColor(map['color'] as String) : null,
-      fields: fields.isNotEmpty ? fields : null,
+      thumbnails: resolvedThumbnail,
+      rawColor: map['color'] as String?,
     );
   }
 
   // Create a copy with updated fields
-  CourseMetadata copyWith({
-    String? author,
-    Map<String, String>? thumbnails,
-    Color? color,
-    Map<String, dynamic>? fields,
-  }) {
-    return CourseMetadata(
+  CourseMetadata copyWith({String? author, FilePath? thumbnails, Color? color}) {
+    return CourseMetadata.create(
       author: author ?? this.author,
       thumbnails: thumbnails ?? this.thumbnails,
-      color: color ?? this.color,
-      fields: fields ?? this.fields,
+      rawColor: color != null ? ThemeUtils.colorToHex(color) : rawColor,
     );
   }
 
   @override
   String toString() {
-    return 'CourseMetadata(author: $author, thumbnails: $thumbnails, color: $color, fields: $fields)';
+    return 'CourseMetadata(author: $author, thumbnails: $thumbnails, color: $rawColor)';
   }
 
   @override
@@ -80,23 +90,11 @@ class CourseMetadata {
     return other is CourseMetadata &&
         other.author == author &&
         other.thumbnails == thumbnails &&
-        other.color == color &&
-        _mapsEqual(other.fields, fields);
+        other.rawColor == rawColor;
   }
 
   @override
   int get hashCode {
-    return author.hashCode ^ thumbnails.hashCode ^ color.hashCode ^ fields.hashCode;
-  }
-
-  // Helper method to compare maps
-  bool _mapsEqual(Map<String, dynamic>? a, Map<String, dynamic>? b) {
-    if (a == null && b == null) return true;
-    if (a == null || b == null) return false;
-    if (a.length != b.length) return false;
-    for (var key in a.keys) {
-      if (!b.containsKey(key) || a[key] != b[key]) return false;
-    }
-    return true;
+    return author.hashCode ^ thumbnails.hashCode ^ rawColor.hashCode;
   }
 }

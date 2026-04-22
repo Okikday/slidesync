@@ -8,11 +8,11 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/models/file_path.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class BuildImagePathWidget extends ConsumerStatefulWidget {
-  final FileDetails fileDetails;
+  final FilePath fileDetails;
   final Widget fallbackWidget;
   final BoxFit fit;
   final double? width;
@@ -84,7 +84,7 @@ class _BuildImagePathWidgetState extends ConsumerState<BuildImagePathWidget> {
 
     if (!fileDetails.containsFilePath) return fallbackWidget;
 
-    if (fileDetails.filePath.isNotEmpty) {
+    if (fileDetails.local.isNotEmpty) {
       // && imageBytes != null
       return ImageFromFile(
         fileDetails: fileDetails,
@@ -94,7 +94,7 @@ class _BuildImagePathWidgetState extends ConsumerState<BuildImagePathWidget> {
         fallbackWidget: fallbackWidget,
         ref: ref,
       ).animate().fadeIn();
-    } else if (fileDetails.urlPath.isNotEmpty) {
+    } else if (fileDetails.url.isNotEmpty) {
       return ImageFromNetwork(
         fileDetails: fileDetails,
         fit: fit,
@@ -119,7 +119,7 @@ class ImageFromFile extends StatelessWidget {
     required this.ref,
   });
 
-  final FileDetails fileDetails;
+  final FilePath fileDetails;
   final BoxFit fit;
   final double? width;
   final double? height;
@@ -129,7 +129,7 @@ class ImageFromFile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Image.file(
-      File(fileDetails.filePath),
+      File(fileDetails.local),
       fit: fit,
       width: width,
       height: height,
@@ -160,7 +160,7 @@ class ImageFromNetwork extends StatelessWidget {
     required this.fallbackWidget,
   });
 
-  final FileDetails fileDetails;
+  final FilePath fileDetails;
   final BoxFit fit;
   final double? width;
   final double? height;
@@ -169,7 +169,7 @@ class ImageFromNetwork extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CachedNetworkImage(
-      imageUrl: fileDetails.urlPath,
+      imageUrl: fileDetails.url,
       fit: fit,
       width: width,
       height: height,

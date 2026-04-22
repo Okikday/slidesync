@@ -1,6 +1,6 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/data/models/course_collection/course_collection.dart';
+import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/features/browse/course/ui/screens/collections_view.dart';
 import 'package:slidesync/features/browse/course/ui/screens/course_details_view.dart';
 import 'package:slidesync/routes/routes.dart';
@@ -29,8 +29,7 @@ final courseNavRoutes = [
         //   outgoing: TransitionType.fade,
         //   child: CollectionMaterialsView(collection: state.extra as CourseCollection, isFullScreen: false),
         // ),
-        builder: (context, state) =>
-            CollectionMaterialsView(collection: state.extra as CourseCollection, isFullScreen: false),
+        builder: (context, state) => CollectionMaterialsView(collection: state.extra as Module, isFullScreen: false),
       ),
     ],
   ),

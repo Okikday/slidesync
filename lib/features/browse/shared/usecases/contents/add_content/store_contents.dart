@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:collection';
+import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
@@ -9,21 +12,21 @@ import 'package:slidesync/core/storage/isar_data/isar_schemas.dart';
 import 'package:slidesync/core/storage/native/app_paths.dart';
 import 'package:slidesync/core/utils/smart_isolate.dart';
 import 'package:slidesync/core/utils/string_utils.dart';
-import 'package:slidesync/data/models/course_collection/course_collection.dart';
-import 'package:slidesync/data/models/course_content/content_metadata.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
-import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/models/module/module.dart';
+import 'package:slidesync/data/models/module_content/module_content_metadata.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
+import 'package:slidesync/data/models/file_path.dart';
 import 'package:slidesync/core/utils/crypto_utils.dart';
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
-import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/data/repos/course_repo/module_repo.dart';
+import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/features/browse/shared/allowed_file_extensions.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/add_content/content_thumbnail_creator.dart';
 import 'package:slidesync/features/browse/shared/usecases/types/add_content_result.dart';
 import 'package:slidesync/features/browse/shared/usecases/types/store_content_args.dart';
 
-CourseCollection collectionFromJson(String source) => CourseCollection.fromJson(source);
+Module collectionFromJson(String source) => Module.fromJson(source);
 
 Future<List<Map<String, dynamic>>> storeContents(
   Map<String, dynamic> arg, [
@@ -38,10 +41,10 @@ Future<List<Map<String, dynamic>>> storeContents(
         BackgroundIsolateBinaryMessenger.ensureInitialized(args.token);
         await IsarData.initialize(collectionSchemas: isarSchemas, inspector: false);
 
-        final List<CourseContent> contentsToAdd = [];
+        final List<ModuleContent> contentsToAdd = [];
         final Set<String> seenHashesSet = <String>{};
 
-        CourseCollection? collection = await CourseCollectionRepo.getById(args.collectionId);
+        Module? collection = await CourseCollectionRepo.getById(args.collectionId);
         if (collection == null) return "Unable to load collection";
 
         final contentPathsLength = args.filePaths.length;
@@ -64,12 +67,12 @@ Future<List<Map<String, dynamic>>> storeContents(
             continue;
           }
 
-          final CourseContentType contentType = AllowedFileExtensions.checkContentType(fileName);
+          final ModuleContentType contentType = AllowedFileExtensions.checkContentType(fileName);
           final uuid = args.uuids[i];
           final newFileName = "$hash${p.extension(filePath)}";
 
           final Result<String?> addContentResult = await Result.tryRunAsync(() async {
-            final CourseContent? sameHashedContent = await CourseContentRepo.getByHash(hash);
+            final ModuleContent? sameHashedContent = await CourseContentRepo.getByHash(hash);
             if (sameHashedContent == null) {
               final File storedAt = File(
                 await FileUtils.storeFile(
@@ -82,50 +85,50 @@ Future<List<Map<String, dynamic>>> storeContents(
               // totalFilesSizeSum += fileSize;
               final previewPath = await ContentThumbnailCreator.createThumbnailForContent(
                 storedAt.path,
-                courseContentType: contentType,
+                type: contentType,
                 dirToStoreAt: AppPaths.contentsThumbnailsFolder,
                 filename: p.basenameWithoutExtension(newFileName),
               );
               log("previewPath: $previewPath");
 
-              final CourseContent content = CourseContent.create(
-                contentHash: hash,
+              final ModuleContent content = ModuleContent.create(
+                xxh3Hash: hash,
                 contentId: uuid,
                 title: fileNameWithoutExt,
-                parentId: collection.collectionId,
-                path: FileDetails(filePath: storedAt.path),
-                fileSize: fileSize,
-                courseContentType: contentType,
-                metadata: ContentMetadata(
+                parentId: collection.uid,
+                path: FilePath(local: storedAt.path),
+                fileSizeInBytes: fileSize,
+                type: contentType,
+                metadata: ModuleContentMetadata.create(
                   originalFileName: p.basename(filePath),
                   contentOrigin: ContentOrigin.local,
-                  thumbnails: FileDetails(filePath: previewPath ?? ''),
+                  thumbnails: FilePath(local: previewPath ?? ''),
                 ),
               );
 
               contentsToAdd.add(content);
               seenHashesSet.add(hash);
-              return content.contentId;
+              return content.uid;
             } else {
-              final CourseContent? sameHashedContentInColl = await CourseContentRepo.findFirstDuplicateContentByHash(
+              final ModuleContent? sameHashedContentInColl = await CourseContentRepo.findFirstDuplicateContentByHash(
                 collection,
                 hash,
               );
               if (sameHashedContentInColl == null) {
                 final metadata = sameHashedContent.metadata;
-                final CourseContent content = CourseContent.create(
+                final ModuleContent content = ModuleContent.create(
                   contentId: uuid,
-                  contentHash: hash,
+                  xxh3Hash: hash,
                   title: fileNameWithoutExt,
-                  parentId: collection.collectionId,
-                  path: sameHashedContent.path.fileDetails,
-                  fileSize: fileSize,
-                  courseContentType: contentType,
+                  parentId: collection.uid,
+                  path: sameHashedContent.path,
+                  fileSizeInBytes: fileSize,
+                  type: contentType,
                   metadata: metadata.copyWith(originalFileName: fileName),
                 );
                 contentsToAdd.add(content);
                 seenHashesSet.add(hash);
-                return content.contentId;
+                return content.uid;
               } else {
                 log("A duplicate exists!");
                 return '';
@@ -152,10 +155,21 @@ Future<List<Map<String, dynamic>>> storeContents(
               ),
             );
           }
+          try {
+            // Future.microtask(() => aggregateFileSizeToStorage(fileSize));
+            final completer = Completer<void>();
+            _storageSizeUpdateQueue.add(completer);
+            aggregateFileSizeToStorage(fileSize).then((_) {
+              _storageSizeUpdateQueue.removeFirst();
+              completer.complete();
+            });
+          } catch (e) {
+            log("Error updating storage usage: $e");
+          }
         }
 
         if (contentsToAdd.isNotEmpty) {
-          await CourseContentRepo.addMultipleContents(collection.collectionId, contentsToAdd);
+          await CourseContentRepo.addMultipleContents(collection.uid, contentsToAdd);
         }
         if (args.deleteCache) await FileUtils.deleteFiles(args.filePaths); // Delete the cache
 
@@ -173,4 +187,41 @@ Future<List<Map<String, dynamic>>> storeContents(
     },
   );
   return result;
+}
+
+final Queue<Completer> _storageSizeUpdateQueue = Queue<Completer>();
+Future<Result> aggregateFileSizeToStorage(int addSize) async => Result.tryRunAsync(() async {
+  final file = File(p.join(AppPaths.rootFolder, "storage_usage.json"));
+  int totalSize = 0;
+
+  if (file.existsSync()) {
+    final content = file.readAsStringSync();
+    if (content.isNotEmpty) {
+      final data = jsonDecode(content);
+      if (data != null && data is Map<String, dynamic> && data.containsKey("totalSize")) {
+        totalSize = data["totalSize"] as int? ?? 0;
+      }
+    }
+  } else {
+    await file.create(recursive: true);
+  }
+
+  totalSize += addSize;
+  final updatedData = {"totalSize": totalSize};
+  await file.writeAsString(jsonEncode(updatedData));
+});
+
+Future<int> getTotalStorageUsed() async {
+  final file = File(p.join(AppPaths.rootFolder, "storage_usage.json"));
+  if (file.existsSync()) {
+    final content = file.readAsStringSync();
+    if (content.isNotEmpty) {
+      final data = jsonDecode(content);
+      if (data != null && data is Map<String, dynamic> && data.containsKey("totalSize")) {
+        final totalSize = data["totalSize"] as int? ?? 0;
+        return totalSize;
+      }
+    }
+  }
+  return 0;
 }

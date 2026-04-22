@@ -8,10 +8,10 @@ import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/storage/native/app_paths.dart';
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 
-import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/models/file_path.dart';
 import 'package:slidesync/core/utils/image_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:image/image.dart';
 import 'package:slidesync/main.dart';
 
@@ -20,15 +20,15 @@ import 'package:slidesync/main.dart';
 class ContentThumbnailCreator {
   static Future<String?> createThumbnailForContent(
     String path, {
-    required CourseContentType courseContentType,
+    required ModuleContentType type,
     required String filename,
     String? dirToStoreAt,
   }) async {
     final storeAtDir = dirToStoreAt ?? AppPaths.contentsThumbnailsFolder;
-    switch (courseContentType) {
-      case CourseContentType.image:
+    switch (type) {
+      case ModuleContentType.image:
         return await _createForTypeImage(path, storeAtDir, filename);
-      case CourseContentType.document:
+      case ModuleContentType.document:
         return await _createForTypeDocument(path, storeAtDir, filename);
 
       default:
@@ -40,7 +40,7 @@ class ContentThumbnailCreator {
       await createThumbnailForContent(
         path,
         filename: filename,
-        courseContentType: CourseContentType.image,
+        type: ModuleContentType.image,
         dirToStoreAt: AppPaths.coursesThumbnailsFolder,
       );
 
@@ -63,8 +63,8 @@ class ContentThumbnailCreator {
   //   }
   // }
 
-  static FileDetails fileDetailsFromJson(String source) => FileDetails.fromJson(source);
-  static CourseContent courseContentFromJson(String source) => CourseContent.fromJson(source);
+  static FilePath fileDetailsFromJson(String source) => FilePath.fromJson(source);
+  static ModuleContent courseContentFromJson(String source) => ModuleContent.fromJson(source);
 
   /// error
   // /// Adding lots of contents image preview in Background/Isolate
@@ -90,7 +90,7 @@ class ContentThumbnailCreator {
   //         } else {
   //           log("Creating preview image");
 
-  //           await createThumbnailForContent(path, courseContentType: content.courseContentType, filePath: previewPath);
+  //           await createThumbnailForContent(path, type: content.type, filePath: previewPath);
   //         }
   //       }
   //     }
@@ -212,10 +212,10 @@ class ContentThumbnailCreator {
 
   void createForTypeLink() {}
 
-  // static Future<List<CourseContent>> filterContentsWithoutPreview(List<CourseContent> courseContents) async {
+  // static Future<List<CourseContent>> filterContentsWithoutPreview(List<CourseContent> moduleContents) async {
   //   final List<CourseContent> nonExistingPreviewCourseContents = [];
-  //   for (final content in courseContents) {
-  //     final previewPath = _genRelativePreviewPath(filePath: content.path.filePath);
+  //   for (final content in moduleContents) {
+  //     final previewPath = _genRelativePreviewPath(filePath: content.path.local);
   //     if (previewPath == null || previewPath.isEmpty) continue;
   //     if (!(await File(previewPath).exists())) {
   //       nonExistingPreviewCourseContents.add(content);

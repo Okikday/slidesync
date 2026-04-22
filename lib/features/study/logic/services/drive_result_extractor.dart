@@ -2,10 +2,10 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_content/content_metadata.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
-import 'package:slidesync/data/models/file_details.dart';
-import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/data/models/module_content/module_content_metadata.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
+import 'package:slidesync/data/models/file_path.dart';
+import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/features/study/logic/services/drive_browser.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 
@@ -38,9 +38,9 @@ Future<DriveExtractionResult> extractAndAddDriveResources({
   required String collectionId,
   required String apiKey,
   bool showProgress = true,
-  CourseContentType contentType = CourseContentType.unknown,
+  ModuleContentType contentType = ModuleContentType.unknown,
 }) async {
-  List<CourseContent> contentsToAdd = [];
+  List<ModuleContent> contentsToAdd = [];
   List<String> failedFiles = [];
   int totalFiles = 0;
 
@@ -158,10 +158,10 @@ Future<DriveExtractionResult> extractAndAddDriveResources({
 }
 
 /// Creates a CourseContent from a DriveFile
-Future<CourseContent?> _createCourseContentFromDriveFile(
+Future<ModuleContent?> _createCourseContentFromDriveFile(
   DriveFile driveFile,
   String collectionId,
-  CourseContentType contentType,
+  ModuleContentType contentType,
 ) async {
   if (driveFile.id == null || driveFile.name == null) {
     return null;
@@ -187,13 +187,13 @@ Future<CourseContent?> _createCourseContentFromDriveFile(
   }
 
   // Create FileDetails with the Drive URL
-  final fileDetails = FileDetails(
-    urlPath: driveFile.webViewLink ?? 'https://drive.google.com/file/d/${driveFile.id}/view',
-    filePath: '', // No local file path for Drive files
+  final fileDetails = FilePath(
+    url: driveFile.webViewLink ?? 'https://drive.google.com/file/d/${driveFile.id}/view',
+    local: '', // No local file path for Drive files
   );
 
   // Generate content hash from file ID and name
-  final contentHash = '${driveFile.id}_$fileName'.hashCode.toString();
+  final xxh3Hash = '${driveFile.id}_$fileName'.hashCode.toString();
 
   // Create metadata JSON with Drive file information
   final metadata = {
@@ -211,22 +211,22 @@ Future<CourseContent?> _createCourseContentFromDriveFile(
   };
 
   // Determine the appropriate CourseContentType based on MIME type
-  CourseContentType determinedType = mimeType.contains('pdf') || mimeType.contains('image')
+  ModuleContentType determinedType = mimeType.contains('pdf') || mimeType.contains('image')
       ? _determineCourseContentType(mimeType)
-      : CourseContentType.link;
+      : ModuleContentType.link;
 
-  return CourseContent.create(
-    contentHash: contentHash,
+  return ModuleContent.create(
+    xxh3Hash: xxh3Hash,
     parentId: collectionId,
     title: fileName,
     path: fileDetails,
-    fileSize: 0,
+    fileSizeInBytes: 0,
     createdAt: driveFile.createdTime != null ? DateTime.tryParse(driveFile.createdTime!) : DateTime.now(),
     lastModified: driveFile.modifiedTime != null ? DateTime.tryParse(driveFile.modifiedTime!) : DateTime.now(),
-    courseContentType: determinedType,
+    type: determinedType,
     description: driveFile.description ?? '',
-    metadata: ContentMetadata(
-      thumbnails: FileDetails(urlPath: metadata['thumbnailLink'] as String? ?? ''),
+    metadata: ModuleContentMetadata.create(
+      thumbnails: FilePath(url: metadata['thumbnailLink'] as String? ?? ''),
       fields: {'previewUrl': metadata['thumbnailLink'], 'resolved': true, 'size': driveFile.size},
     ),
   );
@@ -243,7 +243,7 @@ String? _getExtensionForGoogleFile(String mimeType) {
 }
 
 /// Determines CourseContentType based on MIME type
-CourseContentType _determineCourseContentType(String mimeType) {
+ModuleContentType _determineCourseContentType(String mimeType) {
   // // Video types
   // if (mimeType.contains('video')) {
   //   return CourseContentType.video;
@@ -251,7 +251,7 @@ CourseContentType _determineCourseContentType(String mimeType) {
 
   // Image types
   if (mimeType.contains('image')) {
-    return CourseContentType.image;
+    return ModuleContentType.image;
   }
 
   // // Audio types
@@ -264,20 +264,20 @@ CourseContentType _determineCourseContentType(String mimeType) {
       mimeType.contains('document') ||
       mimeType.contains('word') ||
       mimeType.contains('text')) {
-    return CourseContentType.document;
+    return ModuleContentType.document;
   }
 
   // Presentation types
   if (mimeType.contains('presentation') || mimeType.contains('powerpoint') || mimeType.contains('slides')) {
-    return CourseContentType.document;
+    return ModuleContentType.document;
   }
 
   // Spreadsheet types
   if (mimeType.contains('spreadsheet') || mimeType.contains('excel') || mimeType.contains('sheet')) {
-    return CourseContentType.document;
+    return ModuleContentType.document;
   }
 
-  return CourseContentType.unknown;
+  return ModuleContentType.unknown;
 }
 
 /// Extension to help with displaying results

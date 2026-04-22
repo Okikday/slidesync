@@ -1,12 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
-import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
+import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 
-final _contentsByParentId = StreamProvider.autoDispose.family<List<CourseContent>, String>((ref, arg) async* {
+final _contentsByParentId = StreamProvider.autoDispose.family<List<ModuleContent>, String>((ref, arg) async* {
   yield* (await CourseContentRepo.filter).parentIdEqualTo(arg).watch(fireImmediately: true);
 });
 
 class CollectionsProviders {
-  static StreamProvider<List<CourseContent>> contentsProvider(String parentId) => _contentsByParentId(parentId);
+  static StreamProvider<List<ModuleContent>> contentsProvider(String parentId) => _contentsByParentId(parentId);
 }

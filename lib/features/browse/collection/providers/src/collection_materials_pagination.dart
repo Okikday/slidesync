@@ -11,14 +11,14 @@ import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/core/storage/isar_data/isar_schemas.dart';
 import 'package:slidesync/core/base/leak_prevention.dart';
 import 'package:slidesync/core/utils/smart_isolate.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
-import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
+import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 const int limit = 20;
 
 class CollectionMaterialsPagination extends LeakPrevention {
-  late final PagingController<int, CourseContent> pagingController;
+  late final PagingController<int, ModuleContent> pagingController;
   CourseSortOption sortOption;
   final String parentId;
 
@@ -29,7 +29,7 @@ class CollectionMaterialsPagination extends LeakPrevention {
   int count = -1;
   bool isUpdating = false;
 
-  final Queue<Completer<List<CourseContent>>> _waitingQueue = Queue();
+  final Queue<Completer<List<ModuleContent>>> _waitingQueue = Queue();
   SmartIsolateContinuous<Map<String, dynamic>, List<Map<String, dynamic>>>? _isolate;
   Completer<SmartIsolateContinuous<Map<String, dynamic>, List<Map<String, dynamic>>>>? _initCompleter;
   bool _disposed = false;
@@ -90,7 +90,7 @@ class CollectionMaterialsPagination extends LeakPrevention {
     }
   }
 
-  Future<List<CourseContent>> fetchPage(int pageKey, int limit) async {
+  Future<List<ModuleContent>> fetchPage(int pageKey, int limit) async {
     if (isFirstTime || _isolate == null) {
       if (isFirstTime) {
         log("isFirstTime");
@@ -109,7 +109,7 @@ class CollectionMaterialsPagination extends LeakPrevention {
 
     if (isFirstTime) isFirstTime = false;
     if (_fetching) {
-      final completer = Completer<List<CourseContent>>();
+      final completer = Completer<List<ModuleContent>>();
       _waitingQueue.add(completer);
       return completer.future;
     }
@@ -119,7 +119,7 @@ class CollectionMaterialsPagination extends LeakPrevention {
       final resultFromIsolate = await _isolate?.execute(
         DoFetchInIsolateArgs(parentId, pageKey, limit, sortOption, RootIsolateToken.instance!).toMap(),
       );
-      final result = resultFromIsolate?.map((e) => CourseContent.fromMap(e)).toList();
+      final result = resultFromIsolate?.map((e) => ModuleContent.fromMap(e)).toList();
 
       while (_waitingQueue.isNotEmpty) {
         _waitingQueue.removeFirst().complete(result);
@@ -136,7 +136,7 @@ class CollectionMaterialsPagination extends LeakPrevention {
     }
   }
 
-  static int? getNextPageKey(PagingState<int, CourseContent> state) {
+  static int? getNextPageKey(PagingState<int, ModuleContent> state) {
     return state.lastPageIsEmpty ? null : state.nextIntPageKey;
   }
 
@@ -237,8 +237,8 @@ Future<List<Map<String, dynamic>>> doFetchInIsolate(Map<String, dynamic> arg) as
   return jsonList;
 }
 
-Future<List<CourseContent>> _doFetch(String parentId, int pageKey, int limit, CourseSortOption sortOption) async {
-  final List<CourseContent> result;
+Future<List<ModuleContent>> _doFetch(String parentId, int pageKey, int limit, CourseSortOption sortOption) async {
+  final List<ModuleContent> result;
 
   switch (sortOption) {
     case CourseSortOption.nameAsc:
@@ -264,7 +264,7 @@ Future<List<CourseContent>> _doFetch(String parentId, int pageKey, int limit, Co
   return result;
 }
 
-Future<List<CourseContent>> _doFetchByTitle(String parentId, int pageKey, int limit, [bool ascending = true]) async {
+Future<List<ModuleContent>> _doFetchByTitle(String parentId, int pageKey, int limit, [bool ascending = true]) async {
   final offset = (pageKey - 1) * limit;
   final query = (await CourseContentRepo.filter).parentIdEqualTo(parentId);
   return await (ascending
@@ -272,7 +272,7 @@ Future<List<CourseContent>> _doFetchByTitle(String parentId, int pageKey, int li
       : query.sortByTitleDesc().offset(offset).limit(limit).findAll());
 }
 
-Future<List<CourseContent>> _doFetchByDateCreated(
+Future<List<ModuleContent>> _doFetchByDateCreated(
   String parentId,
   int pageKey,
   int limit, [
@@ -285,7 +285,7 @@ Future<List<CourseContent>> _doFetchByDateCreated(
       : query.sortByCreatedAtDesc().offset(offset).limit(limit).findAll());
 }
 
-Future<List<CourseContent>> _doFetchByDateModified(
+Future<List<ModuleContent>> _doFetchByDateModified(
   String parentId,
   int pageKey,
   int limit, [
@@ -299,7 +299,7 @@ Future<List<CourseContent>> _doFetchByDateModified(
 }
 
 Future<void> compareContentAndUpdate(CollectionMaterialsPagination cmp) async {
-  final presentCount = await (await CourseContentRepo.isar).courseContents
+  final presentCount = await (await CourseContentRepo.isar).moduleContents
       .filter()
       .parentIdEqualTo(cmp.parentId)
       .count();
@@ -318,7 +318,7 @@ Future<void> compareContentAndUpdate(CollectionMaterialsPagination cmp) async {
   }
 
   int contentOnPagesCount = 0;
-  final List<List<CourseContent>>? contentOnPagesList = cmp.pagingController.value.pages;
+  final List<List<ModuleContent>>? contentOnPagesList = cmp.pagingController.value.pages;
 
   if (contentOnPagesList == null) {
     cmp.isUpdating = false;
@@ -333,36 +333,36 @@ Future<void> compareContentAndUpdate(CollectionMaterialsPagination cmp) async {
 
   if (presentCount == contentOnPagesCount) {
     // Same count - check for modifications
-    final List<CourseContent> contentLoadedOnPages = contentOnPagesList.reduce((value, element) {
+    final List<ModuleContent> contentLoadedOnPages = contentOnPagesList.reduce((value, element) {
       return value + element;
     });
 
-    final Map<String, CourseContent> contentOnPagesMap = {
-      for (final content in contentLoadedOnPages) content.contentId: content,
+    final Map<String, ModuleContent> contentOnPagesMap = {
+      for (final content in contentLoadedOnPages) content.uid: content,
     };
 
     // log("currentlyLoadedContentPages: $contentLoadedOnPages");
 
-    final List<CourseContent> contentLoadedOnPagesFromIsar = await (await CourseContentRepo.filter)
+    final List<ModuleContent> contentLoadedOnPagesFromIsar = await (await CourseContentRepo.filter)
         .parentIdEqualTo(cmp.parentId)
-        .anyOf(contentLoadedOnPages, (query, content) => query.contentIdEqualTo(content.contentId))
+        .anyOf(contentLoadedOnPages, (query, content) => query.uidEqualTo(content.uid))
         .findAll();
 
-    final Map<String, CourseContent> modifiedContentMap = {};
+    final Map<String, ModuleContent> modifiedContentMap = {};
 
     for (final isarContent in contentLoadedOnPagesFromIsar) {
-      final pageContent = contentOnPagesMap[isarContent.contentId];
+      final pageContent = contentOnPagesMap[isarContent.uid];
       if (pageContent != null && isarContent != pageContent) {
-        modifiedContentMap[isarContent.contentId] = isarContent;
+        modifiedContentMap[isarContent.uid] = isarContent;
       }
     }
 
     if (modifiedContentMap.isNotEmpty) {
       log("Found ${modifiedContentMap.length} modified content items");
 
-      final List<List<CourseContent>> updatedPagesList = contentOnPagesList.map((page) {
+      final List<List<ModuleContent>> updatedPagesList = contentOnPagesList.map((page) {
         return page.map((content) {
-          return modifiedContentMap[content.contentId] ?? content;
+          return modifiedContentMap[content.uid] ?? content;
         }).toList();
       }).toList();
 
@@ -392,7 +392,7 @@ Future<void> compareContentAndUpdate(CollectionMaterialsPagination cmp) async {
       pagesToFetch = math.max((presentCount / limit).ceil(), 1);
     }
 
-    final List<List<CourseContent>> newPagesList = [];
+    final List<List<ModuleContent>> newPagesList = [];
     final List<int> newKeysList = [];
 
     // Fetch pages based on current sort option
@@ -403,7 +403,7 @@ Future<void> compareContentAndUpdate(CollectionMaterialsPagination cmp) async {
         DoFetchInIsolateArgs(cmp.parentId, pageKey, limit, cmp.sortOption, RootIsolateToken.instance!).toMap(),
       );
 
-      final fetchedPage = resultFromIsolate?.map((e) => CourseContent.fromMap(e)).toList() ?? [];
+      final fetchedPage = resultFromIsolate?.map((e) => ModuleContent.fromMap(e)).toList() ?? [];
 
       if (fetchedPage.isEmpty) {
         break;

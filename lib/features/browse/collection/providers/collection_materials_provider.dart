@@ -1,7 +1,7 @@
 import 'package:isar_community/isar.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
-import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
+import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/features/browse/collection/providers/src/mod_contents_state.dart';
 import 'package:slidesync/shared/global/notifiers/common/course_sort_notifier.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';

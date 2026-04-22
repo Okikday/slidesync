@@ -4,24 +4,23 @@ import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/data/models/course_collection/course_collection.dart';
-import 'package:slidesync/data/models/file_details.dart';
-import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
-import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/data/models/module/module.dart';
+import 'package:slidesync/data/repos/course_repo/module_repo.dart';
+import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 
 class ModifyCollectionUc {
-  Future<String?> deleteCollection(CourseCollection collection) async {
+  Future<String?> deleteCollection(Module collection) async {
     await collection.contents.load();
     int fileSum = 0;
     for (final item in collection.contents) {
-      final bool dupHashExists = await CourseContentRepo.doesDuplicateHashExists(item.contentHash);
+      final bool dupHashExists = await CourseContentRepo.doesDuplicateHashExists(item.xxh3Hash);
       if (!dupHashExists) {
-        final filePath = item.path.filePath;
+        final filePath = item.path.local;
         await FileUtils.deleteFileAtPath(filePath);
 
-        final previewPath = item.metadata.thumbnails?.filePath;
+        final previewPath = item.metadata.thumbnails?.local;
         if (previewPath != null && previewPath.isNotEmpty) await FileUtils.deleteFileAtPath(previewPath);
-        fileSum += item.fileSize;
+        fileSum += item.fileSizeInBytes;
       }
     }
     // await CourseCollectionRepo.deleteMultipleContents(collection.contents.toList(), collection);

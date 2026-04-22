@@ -187,13 +187,7 @@ class HomeDashboard extends ConsumerWidget {
   }) {
     if (hasAnyCourse == null) {
       return HomeDashboard(
-        data: ContentTrack.create(
-          contentId: "_",
-          parentId: "_",
-          contentHash: "_",
-          title: "Looking around",
-          progress: 0.0,
-        ),
+        data: ContentTrack.create(contentId: "_", parentId: "_", xxh3Hash: "_", title: "Looking around", progress: 0.0),
         buttonText: "",
         isFirst: true,
         onReadingBtnTapped: () async {},
@@ -205,7 +199,7 @@ class HomeDashboard extends ConsumerWidget {
         data: ContentTrack.create(
           contentId: "_",
           parentId: "_",
-          contentHash: "_",
+          xxh3Hash: "_",
           title: "Add a course",
           description: "Let's add a course to get you started!",
           progress: 0.0,
@@ -221,7 +215,7 @@ class HomeDashboard extends ConsumerWidget {
       data: ContentTrack.create(
         contentId: "_",
         parentId: "_",
-        contentHash: "_",
+        xxh3Hash: "_",
         title: "Start reading",
         description: "You haven't started reading, get started!",
         progress: 0.0,

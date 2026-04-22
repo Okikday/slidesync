@@ -7,7 +7,6 @@ import 'package:intl/intl.dart';
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
-import 'package:slidesync/shared/widgets/app_bar/app_bar_container_child.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 
 class FileManagerPage extends ConsumerStatefulWidget {
@@ -73,7 +72,7 @@ class _FileManagerPageState extends ConsumerState<FileManagerPage> {
   @override
   Widget build(BuildContext context) {
     final theme = ref;
-    final dirName = _currentDir?.path.split(Platform.pathSeparator).last ?? '';
+    // final dirName = _currentDir?.path.split(Platform.pathSeparator).last ?? '';
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (_, _) {

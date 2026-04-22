@@ -1,10 +1,11 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_collection/course_collection.dart';
-import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/data/models/module/module.dart';
+import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/features/browse/course/ui/actions/modify_collection_actions.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/shared/edit_collection_title_bottom_sheet.dart';
 import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
@@ -15,7 +16,7 @@ import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
 import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 
 class CollectionCard extends ConsumerStatefulWidget {
-  final CourseCollection collection;
+  final Module collection;
   final void Function() onTap;
   final ({bool? selected, void Function() onSelected})? select;
   final bool showSelectOption;
@@ -85,7 +86,7 @@ class _CollectionCardState extends ConsumerState<CollectionCard> {
                 // ),
                 alignment: Alignment.center,
                 child: CustomText(
-                  collection.collectionTitle.substring(0, 1).toUpperCase(),
+                  collection.title.substring(0, 1).toUpperCase(),
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
                   color: collection.metadata.color ?? theme.primaryColor,
@@ -99,7 +100,7 @@ class _CollectionCardState extends ConsumerState<CollectionCard> {
                   spacing: 4.0,
                   children: [
                     CustomText(
-                      collection.collectionTitle,
+                      collection.title,
                       fontSize: 15,
                       color: theme.onBackground,
                       fontWeight: FontWeight.w600,
@@ -130,18 +131,18 @@ class _CollectionCardState extends ConsumerState<CollectionCard> {
 
                     PopupMenuAction(
                       title: "Share",
-                      iconData: Iconsax.send_2,
+                      iconData: HugeIconsSolid.share01,
                       onTap: () async {
-                        await ShareContentActions.shareCollection(context, collection.collectionId);
+                        await ShareContentActions.shareCollection(context, collection.uid);
                       },
                     ),
 
                     PopupMenuAction(
                       title: "Rename",
-                      iconData: Iconsax.edit,
+                      iconData: HugeIconsSolid.edit01,
                       onTap: () async {
                         CustomDialog.hide(context);
-                        final coll = await CourseCollectionRepo.getById(collection.collectionId);
+                        final coll = await CourseCollectionRepo.getById(collection.uid);
                         if (coll == null) return;
                         GlobalNav.withContext(
                           (c) => UiUtils.showCustomDialog(
@@ -154,7 +155,7 @@ class _CollectionCardState extends ConsumerState<CollectionCard> {
 
                     PopupMenuAction(
                       title: "Remove",
-                      iconData: Iconsax.trash,
+                      iconData: HugeIconsSolid.delete02,
                       onTap: () async {
                         if (context.mounted) {
                           CustomDialog.show(
@@ -165,7 +166,7 @@ class _CollectionCardState extends ConsumerState<CollectionCard> {
                             transitionDuration: Durations.medium2,
                             child: ConfirmDeletionDialog(
                               content:
-                                  "This will delete \"${collection.collectionTitle}\"."
+                                  "This will delete \"${collection.title}\"."
                                   "\n\nAre you sure you want to delete this collection?",
                               onPop: () {
                                 GlobalNav.popGlobal();

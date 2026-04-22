@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/models/file_path.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/features/main/ui/actions/home/recent_dialog_actions.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recent_dialog/recent_dialog_selection_options.dart';
@@ -71,8 +71,8 @@ class _RecentDialogState extends ConsumerState<RecentDialog> with RecentDialogAc
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: BuildImagePathWidget(
-                                  fileDetails: FileDetails(
-                                    filePath: jsonDecode(widget.contentTrack.metadataJson)['previewPath'] ?? '',
+                                  fileDetails: FilePath(
+                                    local: jsonDecode(widget.contentTrack.metadataJson)['previewPath'] ?? '',
                                   ),
                                   fallbackWidget: Icon(Iconsax.document_1, size: 26, color: ref.onBackground),
                                 ),

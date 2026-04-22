@@ -2,7 +2,6 @@ import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/features/study/providers/src/pdf_doc_viewer_state/pdf_doc_search_state.dart';
 import 'package:slidesync/features/study/providers/src/pdf_doc_viewer_state/pdf_doc_viewer_state.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
-import 'package:pdfrx/pdfrx.dart';
 import '../../../shared/global/notifiers/toggle_notifier.dart';
 
 class PdfDocViewerProvider {
@@ -10,7 +9,7 @@ class PdfDocViewerProvider {
     final pdvs = PdfDocViewerState(ref, arg);
     pdvs.updateScrollOffset(0.0);
     ref.onDispose(pdvs.dispose);
-    PdfrxEntryFunctions.instance.stopBackgroundWorker();
+    // PdfrxEntryFunctions.instance.stopBackgroundWorker();
     return pdvs;
   });
 

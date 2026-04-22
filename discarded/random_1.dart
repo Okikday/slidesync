@@ -51,18 +51,18 @@
   //         final fileNameWithoutExt = p.basenameWithoutExtension(fileName);
   //         final contentType = checkContentType(filePath);
   //         final CourseContent content = CourseContent.create(
-  //           contentHash: hash,
+  //           xxh3Hash: hash,
   //           contentId: uuid,
   //           title: fileNameWithoutExt,
   //           parentId: collection.collectionId,
   //           fileSize: await FileUtils.getFileSize(filePath),
   //           path: FileDetails(filePath: filePath),
-  //           courseContentType: contentType,
-  //           metadataJson: jsonEncode(<String, dynamic>{'filename': fileName}),
+  //           type: contentType,
+  //           metadata: jsonEncode(<String, dynamic>{'filename': fileName}),
   //         );
   //         await CreateContentPreviewImage.createPreviewImageForContent(
   //           filePath,
-  //           courseContentType: contentType,
+  //           type: contentType,
   //           filePath: filePath,
   //         );
   //         contentsToAdd.add(content);

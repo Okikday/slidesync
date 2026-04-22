@@ -2,30 +2,29 @@ import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
-import 'package:slidesync/data/models/course_collection/course_collection.dart';
-import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/data/models/module/module.dart';
+import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 
-final defaultCollection = CourseCollection.create(parentId: '_', collectionTitle: "_");
-final _collectionById = StreamNotifierProvider.autoDispose.family<CollectionNotifier, CourseCollection, String>(
+final defaultCollection = Module.create(parentId: '_', collectionTitle: "_");
+final _collectionById = StreamNotifierProvider.autoDispose.family<CollectionNotifier, Module, String>(
   (collectionId) => CollectionNotifier(collectionId),
 );
-final _collectionsByParentId = StreamProvider.autoDispose.family<List<CourseCollection>, String>((ref, arg) async* {
-  yield* (await CourseCollectionRepo.filter).parentIdEqualTo(arg).sortByCollectionTitle().watch(fireImmediately: true);
+final _collectionsByParentId = StreamProvider.autoDispose.family<List<Module>, String>((ref, arg) async* {
+  yield* (await CourseCollectionRepo.filter).parentIdEqualTo(arg).sortByTitle().watch(fireImmediately: true);
 });
 
 class CollectionsProviders {
-  static StreamProvider<List<CourseCollection>> collectionsProvider(String parentId) =>
-      _collectionsByParentId(parentId);
+  static StreamProvider<List<Module>> collectionsProvider(String parentId) => _collectionsByParentId(parentId);
 
-  static StreamNotifierProvider<CollectionNotifier, CourseCollection> collectionProvider(String collectionId) =>
+  static StreamNotifierProvider<CollectionNotifier, Module> collectionProvider(String collectionId) =>
       _collectionById(collectionId);
 }
 
-class CollectionNotifier extends StreamNotifier<CourseCollection> {
+class CollectionNotifier extends StreamNotifier<Module> {
   final String collectionId;
   CollectionNotifier(this.collectionId);
   @override
-  Stream<CourseCollection> build() {
+  Stream<Module> build() {
     return CourseCollectionRepo.watchCollectionById(collectionId).map((c) {
       log("detect collection change");
       return c ?? defaultCollection;
@@ -33,5 +32,5 @@ class CollectionNotifier extends StreamNotifier<CourseCollection> {
   }
 
   @override
-  bool updateShouldNotify(AsyncValue<CourseCollection> previous, AsyncValue<CourseCollection> next) => true;
+  bool updateShouldNotify(AsyncValue<Module> previous, AsyncValue<Module> next) => true;
 }

@@ -9,18 +9,18 @@ import 'package:slidesync/core/constants/src/enums.dart';
 /// Use this class to pick various content types and copy them into the app's cache directory.
 class SelectContentsUc {
   /// Picks files based on the [type] and returns a list of cached [File]s.
-  Future<List<File>?> referToAddContents(CourseContentType type, {bool selectByFolder = false}) async {
+  Future<List<File>?> referToAddContents(ModuleContentType type, {bool selectByFolder = false}) async {
     if (selectByFolder) {
       return await _selectFolder();
     }
     switch (type) {
-      case CourseContentType.unknown:
+      case ModuleContentType.unknown:
         return await _selectFiles();
 
-      case CourseContentType.document:
+      case ModuleContentType.document:
         return await _selectDocuments();
 
-      case CourseContentType.image:
+      case ModuleContentType.image:
         return await _selectImages();
 
       // case CourseContentType.video:

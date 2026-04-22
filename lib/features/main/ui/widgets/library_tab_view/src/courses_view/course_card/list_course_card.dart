@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/data/models/course/course.dart';
-import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/models/file_path.dart';
 import 'package:slidesync/data/models/progress_track_models/course_track.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 
@@ -125,15 +125,15 @@ class _ListCourseCardIconState extends ConsumerState<ListCourseCardIcon> {
   @override
   void initState() {
     super.initState();
-    _courseTrackStream = CourseTrackRepo.watchByCourseId(widget.course.courseId);
+    _courseTrackStream = CourseTrackRepo.watchByCourseId(widget.course.uid);
   }
 
   @override
   void didUpdateWidget(covariant ListCourseCardIcon oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.course.courseId != widget.course.courseId) {
+    if (oldWidget.course.uid != widget.course.uid) {
       setState(() {
-        _courseTrackStream = CourseTrackRepo.watchByCourseId(widget.course.courseId);
+        _courseTrackStream = CourseTrackRepo.watchByCourseId(widget.course.uid);
       });
     }
   }
@@ -169,7 +169,7 @@ class _ListCourseCardIconState extends ConsumerState<ListCourseCardIcon> {
                 child: BuildImagePathWidget(
                   height: 64,
                   width: 64,
-                  fileDetails: FileDetails(filePath: widget.course.thumbnailPath),
+                  fileDetails: FilePath(local: widget.course.thumbnailPath),
                   fallbackWidget: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Center(

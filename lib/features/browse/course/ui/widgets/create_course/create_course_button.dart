@@ -78,9 +78,9 @@ class CreateCourseButton extends ConsumerWidget {
                 context.pop();
                 log("${context.mounted}");
                 if (DeviceUtils.isDesktop()) {
-                  context.pushReplacementNamed(Routes.courseDetails.name, extra: value.courseId);
+                  context.pushReplacementNamed(Routes.courseDetails.name, extra: value.uid);
                 } else {
-                  context.pushNamed(Routes.courseDetails.name, extra: value.courseId);
+                  context.pushNamed(Routes.courseDetails.name, extra: value.uid);
                 }
                 await Future.delayed(Durations.short4);
                 if (rootNavigatorKey.currentContext != null && rootNavigatorKey.currentContext!.mounted) {

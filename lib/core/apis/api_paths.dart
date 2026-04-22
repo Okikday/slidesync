@@ -76,32 +76,32 @@ class ApiPaths {
 
   // ── Content Lookup ─────────────────────────────────────────────────────────
 
-  static DocumentReference<Map<String, dynamic>> contentLookupEntry(String contentHash) =>
-      _db.collection('content-lookup').doc(contentHash);
+  static DocumentReference<Map<String, dynamic>> contentLookupEntry(String xxh3Hash) =>
+      _db.collection('content-lookup').doc(xxh3Hash);
 
-  static CollectionReference<SourceEntity> sources(String contentHash) => _db
+  static CollectionReference<SourceEntity> sources(String xxh3Hash) => _db
       .collection('content-lookup')
-      .doc(contentHash)
+      .doc(xxh3Hash)
       .collection('sources')
       .withConverter(fromFirestore: SourceEntity.fromFirestore, toFirestore: (e, _) => e.toMap());
 
-  static DocumentReference<SourceEntity> source(String contentHash, String userId) => sources(contentHash).doc(userId);
+  static DocumentReference<SourceEntity> source(String xxh3Hash, String userId) => sources(xxh3Hash).doc(userId);
 
-  static CollectionReference<SourceEntity> privateSources(String contentHash) => _db
+  static CollectionReference<SourceEntity> privateSources(String xxh3Hash) => _db
       .collection('content-lookup')
-      .doc(contentHash)
+      .doc(xxh3Hash)
       .collection('privateSources')
       .withConverter(fromFirestore: SourceEntity.fromFirestore, toFirestore: (e, _) => e.toMap());
 
-  static DocumentReference<SourceEntity> privateSource(String contentHash, String userId) =>
-      privateSources(contentHash).doc(userId);
+  static DocumentReference<SourceEntity> privateSource(String xxh3Hash, String userId) =>
+      privateSources(xxh3Hash).doc(userId);
 
   // ── Source Votes (nested under sources) ────────────────────────────────────
 
-  static DocumentReference<Map<String, dynamic>> sourceVote(String contentHash, String sourceOwnerId, String voterId) =>
+  static DocumentReference<Map<String, dynamic>> sourceVote(String xxh3Hash, String sourceOwnerId, String voterId) =>
       _db
           .collection('content-lookup')
-          .doc(contentHash)
+          .doc(xxh3Hash)
           .collection('sources')
           .doc(sourceOwnerId)
           .collection('votes')
@@ -109,17 +109,14 @@ class ApiPaths {
 
   // ── Source Flags (nested under sources) ────────────────────────────────────
 
-  static DocumentReference<Map<String, dynamic>> sourceFlag(
-    String contentHash,
-    String sourceOwnerId,
-    String flaggerId,
-  ) => _db
-      .collection('content-lookup')
-      .doc(contentHash)
-      .collection('sources')
-      .doc(sourceOwnerId)
-      .collection('flags')
-      .doc(flaggerId);
+  static DocumentReference<Map<String, dynamic>> sourceFlag(String xxh3Hash, String sourceOwnerId, String flaggerId) =>
+      _db
+          .collection('content-lookup')
+          .doc(xxh3Hash)
+          .collection('sources')
+          .doc(sourceOwnerId)
+          .collection('flags')
+          .doc(flaggerId);
 
   // ── Private Courses (FLAT) ─────────────────────────────────────────────────
 

@@ -54,7 +54,7 @@ class CourseDetailsCollectionSection extends ConsumerWidget {
               builder: (context, value, child) {
                 if (value.isNotEmpty) {
                   final filteredCollection = collections
-                      .where((c) => c.collectionTitle.toLowerCase().contains(value.toLowerCase()))
+                      .where((c) => c.title.toLowerCase().contains(value.toLowerCase()))
                       .toList();
                   return SliverList.builder(
                     itemCount: filteredCollection.length,

@@ -10,14 +10,14 @@ import 'package:heroine/heroine.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/features/browse/collection/ui/components/content_card_context_menu.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/retrieve_content_uc.dart';
 import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
 import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
 
-import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/models/file_path.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/content_card_actions.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -30,8 +30,8 @@ import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 class ContentCard extends ConsumerStatefulWidget {
   const ContentCard({super.key, required this.content, this.select});
 
-  final CourseContent content;
-  final ({bool isSelected, void Function(CourseContent content) onSelect})? select;
+  final ModuleContent content;
+  final ({bool isSelected, void Function(ModuleContent content) onSelect})? select;
 
   @override
   ConsumerState<ContentCard> createState() => _ContentCardState();
@@ -49,11 +49,11 @@ class _ContentCardState extends ConsumerState<ContentCard> {
 
   void _initializeData() {
     progressStream = ContentTrackRepo.watchByContentId(
-      widget.content.contentId,
+      widget.content.uid,
     ).map((c) => c?.progress ?? 0.0).asBroadcastStream();
 
-    if (widget.content.courseContentType == CourseContentType.link) {
-      previewDetailsFuture = RetriveContentUc.getLinkPreviewData(widget.content.path.urlPath);
+    if (widget.content.type == ModuleContentType.link) {
+      previewDetailsFuture = RetriveContentUc.getLinkPreviewData(widget.content.path.url);
     } else {
       previewDetailsFuture = null;
     }
@@ -91,7 +91,7 @@ class _ContentCardState extends ConsumerState<ContentCard> {
               }
             },
             child: Heroine(
-              tag: widget.content.contentId,
+              tag: widget.content.uid,
               child: Container(
                 // curve: CustomCurves.defaultIosSpring,
                 // duration: Durations.extralong1,
@@ -114,7 +114,7 @@ class _ContentCardState extends ConsumerState<ContentCard> {
                               child:
                                   ContentCardPreviewImage(content: content, previewDetailsFuture: previewDetailsFuture)
                                       .animate(
-                                        key: ValueKey(content.contentId),
+                                        key: ValueKey(content.uid),
                                         target: widget.select?.isSelected == true ? 0 : 1,
                                       )
                                       .fade(begin: isDarkMode ? 0.4 : 0.7, end: isDarkMode ? 0.6 : 1.0),
@@ -275,7 +275,7 @@ class _ContentCardState extends ConsumerState<ContentCard> {
 class ContentCardTitle extends ConsumerWidget {
   const ContentCardTitle({super.key, required this.content, required this.previewDetailsFuture});
 
-  final CourseContent content;
+  final ModuleContent content;
   final Future<PreviewLinkDetails?>? previewDetailsFuture;
 
   @override
@@ -284,9 +284,8 @@ class ContentCardTitle extends ConsumerWidget {
     return FutureBuilder(
       future: previewDetailsFuture,
       builder: (context, asyncSnapshot) {
-        final resolveUrl =
-            content.courseContentType == CourseContentType.link && content.title.toLowerCase() == "unknown"
-            ? content.path.urlPath
+        final resolveUrl = content.type == ModuleContentType.link && content.title.toLowerCase() == "unknown"
+            ? content.path.url
             : content.title;
         final resolveTitle = previewDetailsFuture == null
             ? content.title
@@ -326,13 +325,13 @@ class ContentCardTitle extends ConsumerWidget {
 //         icon: Iconsax.more_copy,
 //         actions: [
 //           PopupMenuAction(
-//             title: content.courseContentType == CourseContentType.link ? "Open link" : "Open",
+//             title: content.type == CourseContentType.link ? "Open link" : "Open",
 //             iconData: Iconsax.play,
 //             onTap: () {
 //               //context.pushNamed(Routes.contentGate.name, extra: content); // Use the actions
 //             },
 //           ),
-//           if (content.courseContentType != CourseContentType.link)
+//           if (content.type != CourseContentType.link)
 //             ...(() {
 //               final settingsModelProvider = ref.watch(SettingsProvider.settingsProvider);
 //               final settingsModel = settingsModelProvider.value == null
@@ -358,7 +357,7 @@ class ContentCardTitle extends ConsumerWidget {
 //               ];
 //             }()),
 
-//           if (content.courseContentType == CourseContentType.link)
+//           if (content.type == CourseContentType.link)
 //             PopupMenuAction(
 //               title: "View link",
 //               iconData: Icons.remove_red_eye_outlined,
@@ -370,12 +369,12 @@ class ContentCardTitle extends ConsumerWidget {
 //               },
 //             ),
 
-//           if (content.courseContentType == CourseContentType.link)
+//           if (content.type == CourseContentType.link)
 //             PopupMenuAction(
 //               title: "Copy",
 //               iconData: Iconsax.copy_copy,
 //               onTap: () {
-//                 Clipboard.setData(ClipboardData(text: content.path.fileDetails.urlPath));
+//                 Clipboard.setData(ClipboardData(text: content.path.url));
 //               },
 //             ),
 //           PopupMenuAction(
@@ -393,7 +392,7 @@ class ContentCardTitle extends ConsumerWidget {
 //             },
 //           ),
 //           PopupMenuAction(
-//             title: content.courseContentType == CourseContentType.link ? "Remove" : "Delete",
+//             title: content.type == CourseContentType.link ? "Remove" : "Delete",
 //             iconData: Iconsax.trash_copy,
 //             onTap: () async {
 //               UiUtils.showCustomDialog(
@@ -444,7 +443,7 @@ class PreviewLinkTypeDialog extends ConsumerWidget {
   const PreviewLinkTypeDialog({super.key, required this.previewDetailsFuture, required this.content});
 
   final Future<PreviewLinkDetails?>? previewDetailsFuture;
-  final CourseContent content;
+  final ModuleContent content;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -495,7 +494,7 @@ class PreviewLinkTypeDialog extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       spacing: 4,
                       children: [
-                        CustomText(content.path.urlPath, fontWeight: FontWeight.bold, color: theme.secondary),
+                        CustomText(content.path.url, fontWeight: FontWeight.bold, color: theme.secondary),
                         Flexible(
                           child: Tooltip(
                             message: content.description.trim().isEmpty ? "No description" : content.description,
@@ -526,7 +525,7 @@ class PreviewLinkTypeDialog extends ConsumerWidget {
                 Flexible(
                   child: CustomElevatedButton(
                     onClick: () async {
-                      await Clipboard.setData(ClipboardData(text: content.path.fileDetails.urlPath));
+                      await Clipboard.setData(ClipboardData(text: content.path.url));
                     },
                     pixelHeight: 44,
                     borderRadius: 44,
@@ -547,7 +546,7 @@ class PreviewLinkTypeDialog extends ConsumerWidget {
                   child: CustomElevatedButton(
                     onClick: () {
                       context.pop();
-                      ShareContentActions.shareContent(context, content.contentId);
+                      ShareContentActions.shareContent(context, content.uid);
                     },
                     pixelHeight: 44,
                     borderRadius: 44,
@@ -577,7 +576,7 @@ class PreviewLinkTypeDialog extends ConsumerWidget {
 class ContentCardPreviewImage extends StatelessWidget {
   const ContentCardPreviewImage({super.key, required this.content, this.previewDetailsFuture});
 
-  final CourseContent content;
+  final ModuleContent content;
   final Future<PreviewLinkDetails?>? previewDetailsFuture;
 
   @override
@@ -586,11 +585,11 @@ class ContentCardPreviewImage extends StatelessWidget {
       return ImageFiltered(
         imageFilter: ColorFilter.mode(Colors.black.withAlpha(10), BlendMode.color),
         child: BuildImagePathWidget(
-          fileDetails: content.courseContentType == CourseContentType.link
-              ? FileDetails(urlPath: content.previewPath)
-              : FileDetails(filePath: content.previewPath),
+          fileDetails: content.type == ModuleContentType.link
+              ? FilePath(url: content.previewPath)
+              : FilePath(local: content.previewPath),
           fit: BoxFit.cover,
-          fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, false), size: 36),
+          fallbackWidget: Icon(WidgetHelper.resolveIconData(content.type, false), size: 36),
         ),
       );
     }
@@ -602,15 +601,15 @@ class ContentCardPreviewImage extends StatelessWidget {
           return ImageFiltered(
             imageFilter: ColorFilter.mode(Colors.black.withAlpha(10), BlendMode.color),
             child: BuildImagePathWidget(
-              fileDetails: previewUrl != null ? FileDetails(urlPath: previewUrl) : FileDetails(),
+              fileDetails: previewUrl != null ? FilePath(url: previewUrl) : FilePath(),
               fit: BoxFit.cover,
-              fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, false), size: 36),
+              fallbackWidget: Icon(WidgetHelper.resolveIconData(content.type, false), size: 36),
             ),
           );
         } else if (dataSnapshot.hasError) {
           return BuildImagePathWidget(
-            fileDetails: FileDetails(),
-            fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, false), size: 36),
+            fileDetails: FilePath(),
+            fallbackWidget: Icon(WidgetHelper.resolveIconData(content.type, false), size: 36),
           );
         } else {
           return const AppCircularLoadingIndicator();
@@ -623,7 +622,7 @@ class ContentCardPreviewImage extends StatelessWidget {
 class ContentTypeBadge extends ConsumerWidget {
   const ContentTypeBadge({super.key, required this.content});
 
-  final CourseContent content;
+  final ModuleContent content;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

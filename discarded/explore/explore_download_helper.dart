@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course/course.dart';
-import 'package:slidesync/data/models/course_collection/course_collection.dart';
+import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'explore_card.dart';
 import 'package:slidesync/features/sync/providers/transfer_state_provider.dart';
@@ -79,7 +79,7 @@ class ExploreDownloadHelper {
           children: [
             Text('A course with ID "${data.id}" already exists locally.', style: TextStyle(fontSize: 14)),
             const SizedBox(height: 16),
-            Text('Local: ${existingCourse.courseTitle}', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text('Local: ${existingCourse.title}', style: TextStyle(fontWeight: FontWeight.bold)),
             Text('Remote: ${data.title}', style: TextStyle(fontWeight: FontWeight.bold)),
             const SizedBox(height: 16),
             const Text(
@@ -101,7 +101,7 @@ class ExploreDownloadHelper {
         ref: ref,
         remoteCourseId: data.id,
         courseName: data.title,
-        targetCourseId: existingCourse.courseId, // Merge into existing
+        targetCourseId: existingCourse.uid, // Merge into existing
       );
     }
   }
@@ -252,7 +252,7 @@ class ExploreDownloadHelper {
                   itemBuilder: (context, index) {
                     final course = courses[index];
                     return ListTile(
-                      title: Text(course.courseTitle),
+                      title: Text(course.title),
                       subtitle: Text(course.description),
                       onTap: () => Navigator.pop(context, course),
                     );
@@ -329,7 +329,7 @@ class ExploreDownloadHelper {
   }
 
   /// Shows dialog to select target collection
-  Future<CourseCollection?> _showCollectionSelectionDialog(BuildContext context) async {
+  Future<Module?> _showCollectionSelectionDialog(BuildContext context) async {
     final courses = await CourseRepo.getAllCourses();
 
     if (!context.mounted) return null;
@@ -343,10 +343,10 @@ class ExploreDownloadHelper {
 
     if (!context.mounted) return null;
 
-    return await showDialog<CourseCollection>(
+    return await showDialog<Module>(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Select Collection in ${selectedCourse.courseTitle}'),
+        title: Text('Select Collection in ${selectedCourse.title}'),
         content: SizedBox(
           width: double.maxFinite,
           child: collections.isEmpty
@@ -360,7 +360,7 @@ class ExploreDownloadHelper {
                   itemBuilder: (context, index) {
                     final collection = collections[index];
                     return ListTile(
-                      title: Text(collection.collectionTitle),
+                      title: Text(collection.title),
                       subtitle: Text(collection.description),
                       onTap: () => Navigator.pop(context, collection),
                     );

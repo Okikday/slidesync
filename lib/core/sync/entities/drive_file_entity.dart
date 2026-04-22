@@ -66,8 +66,7 @@ class DriveFileEntity {
 
   factory DriveFileEntity.fromJson(Map<String, dynamic> j) {
     final owners = j['owners'] as List<dynamic>?;
-    final firstOwner =
-        owners?.isNotEmpty == true ? owners!.first as Map<String, dynamic>? : null;
+    final firstOwner = owners?.isNotEmpty == true ? owners!.first as Map<String, dynamic>? : null;
     final lastModifier = j['lastModifyingUser'] as Map<String, dynamic>?;
 
     return DriveFileEntity(
@@ -95,43 +94,41 @@ class DriveFileEntity {
       viewedByMe: j['viewedByMe'] as bool?,
       lastModifyingUserDisplayName: lastModifier?['displayName'] as String?,
       lastModifyingUserEmail: lastModifier?['emailAddress'] as String?,
-      version: j['version'] is String
-          ? int.tryParse(j['version'] as String)
-          : j['version'] as int?,
+      version: j['version'] is String ? int.tryParse(j['version'] as String) : j['version'] as int?,
       hasAugmentedPermissions: j['hasAugmentedPermissions'] as bool?,
       isAppAuthorized: j['isAppAuthorized'] as bool?,
     );
   }
 
   Map<String, dynamic> toJson() => {
-        'id': id,
-        'name': name,
-        'mimeType': mimeType,
-        'size': size,
-        'webViewLink': webViewLink,
-        'webContentLink': webContentLink,
-        'parents': parents,
-        'modifiedTime': modifiedTime,
-        'createdTime': createdTime,
-        'description': description,
-        'fileExtension': fileExtension,
-        'originalFilename': originalFilename,
-        'starred': starred,
-        'trashed': trashed,
-        'iconLink': iconLink,
-        'thumbnailLink': thumbnailLink,
-        'md5Checksum': md5Checksum,
-        'ownerDisplayName': ownerDisplayName,
-        'ownerEmail': ownerEmail,
-        'ownerPhotoLink': ownerPhotoLink,
-        'shared': shared,
-        'viewedByMe': viewedByMe,
-        'lastModifyingUserDisplayName': lastModifyingUserDisplayName,
-        'lastModifyingUserEmail': lastModifyingUserEmail,
-        'version': version,
-        'hasAugmentedPermissions': hasAugmentedPermissions,
-        'isAppAuthorized': isAppAuthorized,
-      };
+    'id': id,
+    'name': name,
+    'mimeType': mimeType,
+    'size': size,
+    'webViewLink': webViewLink,
+    'webContentLink': webContentLink,
+    'parents': parents,
+    'modifiedTime': modifiedTime,
+    'createdTime': createdTime,
+    'description': description,
+    'fileExtension': fileExtension,
+    'originalFilename': originalFilename,
+    'starred': starred,
+    'trashed': trashed,
+    'iconLink': iconLink,
+    'thumbnailLink': thumbnailLink,
+    'md5Checksum': md5Checksum,
+    'ownerDisplayName': ownerDisplayName,
+    'ownerEmail': ownerEmail,
+    'ownerPhotoLink': ownerPhotoLink,
+    'shared': shared,
+    'viewedByMe': viewedByMe,
+    'lastModifyingUserDisplayName': lastModifyingUserDisplayName,
+    'lastModifyingUserEmail': lastModifyingUserEmail,
+    'version': version,
+    'hasAugmentedPermissions': hasAugmentedPermissions,
+    'isAppAuthorized': isAppAuthorized,
+  };
 
   // ── Derived helpers ────────────────────────────────────────────────────────
 
@@ -164,7 +161,7 @@ class DriveFileEntity {
 
   /// Best available content hash — md5 from Drive if present, null otherwise.
   /// Caller should fall back to xxh3 of downloaded bytes when this is null.
-  String? get contentHash => md5Checksum;
+  String? get xxh3Hash => md5Checksum;
 
   /// Resolved display name including extension for Google-native files.
   String get displayName {
@@ -184,24 +181,14 @@ class DriveFileEntity {
     return null;
   }
 
-  DateTime? get createdAt =>
-      createdTime != null ? DateTime.tryParse(createdTime!) : null;
+  DateTime? get createdAt => createdTime != null ? DateTime.tryParse(createdTime!) : null;
 
-  DateTime? get modifiedAt =>
-      modifiedTime != null ? DateTime.tryParse(modifiedTime!) : null;
+  DateTime? get modifiedAt => modifiedTime != null ? DateTime.tryParse(modifiedTime!) : null;
 }
 
 // ── Supporting types ───────────────────────────────────────────────────────
 
-enum DriveResourceType {
-  file,
-  folder,
-  googleDoc,
-  googleSheet,
-  googleSlide,
-  shortcut,
-  unknown,
-}
+enum DriveResourceType { file, folder, googleDoc, googleSheet, googleSlide, shortcut, unknown }
 
 /// Result of resolving a Drive link — either a single file or a folder with children.
 class DriveResource {
@@ -209,11 +196,7 @@ class DriveResource {
   final DriveFileEntity file; // always present — the resolved item itself
   final List<DriveFileEntity> children; // populated when type == folder
 
-  const DriveResource({
-    required this.type,
-    required this.file,
-    this.children = const [],
-  });
+  const DriveResource({required this.type, required this.file, this.children = const []});
 
   bool get isFolder => type == DriveResourceType.folder;
 }

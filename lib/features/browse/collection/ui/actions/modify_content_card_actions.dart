@@ -1,16 +1,15 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:go_router/go_router.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/modify_contents_action.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/modify_content_uc.dart';
 import 'package:slidesync/shared/widgets/bottom_sheets/input_text_bottom_sheet.dart';
 
 class ModifyContentCardActions {
-  static void onRenameContent(BuildContext context, CourseContent content) {
+  static void onRenameContent(BuildContext context, ModuleContent content) {
     UiUtils.showCustomDialog(
       context,
       child:
@@ -34,7 +33,7 @@ class ModifyContentCardActions {
 
   static Future<String?> onDeleteContent(
     BuildContext context,
-    CourseContent content, [
+    ModuleContent content, [
     bool showFlushbar = true,
   ]) async {
     final outcome = (await Result.tryRunAsync(() async => await ModifyContentUc().deleteContent(content))).data;

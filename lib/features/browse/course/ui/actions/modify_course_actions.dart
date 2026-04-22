@@ -7,8 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:slidesync/core/storage/native/app_paths.dart';
-import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/models/file_path.dart';
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
@@ -16,7 +15,6 @@ import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/browse/shared/usecases/collections/modify_collection_uc.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/add_content/content_thumbnail_creator.dart';
-import 'package:slidesync/features/browse/shared/usecases/courses/create_course_uc.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/shared/course_description_dialog.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/shared/edit_course_bottom_sheet.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/shared/preview_modify_course_image_dialog.dart';
@@ -43,14 +41,14 @@ class ModifyCourseActions {
       Course? course = await CourseRepo.getCourseByDbId(id);
       if (course == null) return false;
 
-      await FileUtils.deleteFileAtPath(course.metadata.thumbnailsDetails.filePath);
+      await FileUtils.deleteFileAtPath(course.metadata.thumbnailsDetails.local);
       final String? newPath = await ContentThumbnailCreator.createThumbnailForCourse(
         newImageFile.path,
-        filename: course.courseId,
+        filename: course.uid,
       );
       if (newPath != null) {
         final newCourse = course.copyWith(
-          metadataJson: course.metadata.copyWith(thumbnails: FileDetails(filePath: newPath).toMap()).toJson(),
+          metadata: course.metadata.copyWith(thumbnails: FilePath(local: newPath)),
         );
         log("New course thumbnail path: ${newCourse.metadata}");
         await CourseRepo.addCourse(newCourse);
@@ -72,9 +70,7 @@ class ModifyCourseActions {
     if (course == null) return false;
     final thumbnailPath = course.thumbnailPath;
     if (course.metadata.thumbnailsDetails.containsFilePath) {
-      await CourseRepo.addCourse(
-        course.copyWith(metadataJson: course.metadata.copyWith(thumbnails: FileDetails().toMap()).toJson()),
-      );
+      await CourseRepo.addCourse(course.copyWith(metadata: course.metadata.copyWith(thumbnails: FilePath())));
       await FileUtils.deleteFileAtPath(thumbnailPath);
       return true;
     }

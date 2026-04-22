@@ -81,7 +81,7 @@ class EditCourseActions {
     }
     final String courseTitle = Formatter.joinCodeToTitle(courseCode, courseName);
     final Course? currCourse = await (ref.read(modifyCourseProvider.future));
-    final Course? updatedCourse = currCourse?.copyWith(courseTitle: courseTitle, description: description);
+    final Course? updatedCourse = currCourse?.copyWith(title: courseTitle, description: description);
     if (updatedCourse != null) {
       await CourseRepo.addCourse(updatedCourse);
     }

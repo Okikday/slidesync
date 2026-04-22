@@ -11,12 +11,12 @@ import 'package:slidesync/core/storage/native/app_paths.dart';
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course/course.dart';
-import 'package:slidesync/data/models/course_collection/course_collection.dart';
-import 'package:slidesync/data/models/course_content/content_metadata.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
-import 'package:slidesync/data/models/file_details.dart';
-import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
-import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/data/models/module/module.dart';
+import 'package:slidesync/data/models/module_content/module_content_metadata.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
+import 'package:slidesync/data/models/file_path.dart';
+import 'package:slidesync/data/repos/course_repo/module_repo.dart';
+import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/add_content/store_contents.dart';
 import 'package:slidesync/features/browse/shared/usecases/types/add_content_result.dart';
@@ -77,7 +77,6 @@ class DriveListingController {
       );
 
       final outcome = await _importDriveSelection(resource: resource, selectedFiles: files, apiKey: apiKey);
-      await _recordDriveImportHistory(outcome, resource, files);
       _showDriveOperationFeedback(outcome: outcome, successLabel: 'Imported');
     } finally {
       _onOperationEnd?.call();
@@ -119,8 +118,6 @@ class DriveListingController {
       );
 
       final outcome = await _importDriveSelection(resource: resource, selectedFiles: selectedFiles, apiKey: apiKey);
-
-      await _recordDriveImportHistory(outcome, resource, selectedFiles);
       _showDriveOperationFeedback(outcome: outcome, successLabel: 'Downloaded');
     } finally {
       _onOperationEnd?.call();
@@ -187,7 +184,7 @@ class DriveListingController {
     }
 
     final collectionTitle = _resolveDriveRootName(resource, selectedFiles);
-    final destination = await _resolveOrCreateImportCollection(course.courseId, collectionTitle);
+    final destination = await _resolveOrCreateImportCollection(course.uid, collectionTitle);
     if (destination == null) {
       return DriveImportOutcome(
         collectionId: collectionId,
@@ -204,7 +201,7 @@ class DriveListingController {
         (await FileUtils.getAppDocumentsDirectory()).path,
         AppPaths.operationsCacheFolder,
         'drive_imports',
-        destination.collectionId,
+        destination.uid,
       ),
     ).create(recursive: true);
 
@@ -254,8 +251,8 @@ class DriveListingController {
 
     if (cachedEntries.isEmpty) {
       return DriveImportOutcome(
-        collectionId: destination.collectionId,
-        title: destination.collectionTitle,
+        collectionId: destination.uid,
+        title: destination.title,
         type: _resolveHistoryType(resource),
         itemCount: 0,
         totalBytes: 0,
@@ -266,8 +263,8 @@ class DriveListingController {
     final rootIsolateToken = RootIsolateToken.instance;
     if (rootIsolateToken == null) {
       return DriveImportOutcome(
-        collectionId: destination.collectionId,
-        title: destination.collectionTitle,
+        collectionId: destination.uid,
+        title: destination.title,
         type: _resolveHistoryType(resource),
         itemCount: 0,
         totalBytes: 0,
@@ -277,7 +274,7 @@ class DriveListingController {
 
     final addArgs = StoreContentArgs(
       token: rootIsolateToken,
-      collectionId: destination.collectionId,
+      collectionId: destination.uid,
       filePaths: cachedEntries.map((entry) => entry.path).toList(),
       uuids: cachedEntries.map((entry) => entry.uuid).toList(),
       deleteCache: false,
@@ -297,6 +294,11 @@ class DriveListingController {
       );
 
       await _annotateImportedDriveContents(entries: cachedEntries, results: addResults);
+      await _recordImportedDownloadHistory(
+        destinationCollectionId: destination.uid,
+        entries: cachedEntries,
+        addResults: addResults,
+      );
 
       final notes = <String>[...encounteredNotes];
       if (duplicateCount > 0) {
@@ -307,8 +309,8 @@ class DriveListingController {
       }
 
       return DriveImportOutcome(
-        collectionId: destination.collectionId,
-        title: destination.collectionTitle,
+        collectionId: destination.uid,
+        title: destination.title,
         type: _resolveHistoryType(resource),
         itemCount: successCount,
         totalBytes: storedBytes,
@@ -330,11 +332,48 @@ class DriveListingController {
     }
   }
 
+  Future<void> _recordImportedDownloadHistory({
+    required String destinationCollectionId,
+    required List<DriveCacheEntry> entries,
+    required List<AddContentResult> addResults,
+  }) async {
+    final historyNotifier = ref.read(downloadHistoryProvider.notifier);
+    final itemCount = entries.length < addResults.length ? entries.length : addResults.length;
+
+    for (var i = 0; i < itemCount; i++) {
+      final result = addResults[i];
+      final entry = entries[i];
+
+      if (!result.isSuccess || result.contentId == null || result.contentId!.isEmpty) {
+        continue;
+      }
+
+      final source = entry.sourceFile;
+      final title = source.name ?? result.fileName;
+
+      await historyNotifier.addEntry(
+        DownloadHistoryEntry(
+          id: result.contentId!,
+          title: title,
+          type: _resolveHistoryTypeFromFile(source),
+          collectionId: destinationCollectionId,
+          contentId: result.contentId,
+          driveId: source.id,
+          sourceName: source.name,
+          itemCount: 1,
+          totalBytes: result.fileSize ?? entry.bytes,
+          createdAt: DateTime.now(),
+          note: entry.reusedExistingPath ? 'Opened from existing local copy' : 'Imported from Drive',
+        ),
+      );
+    }
+  }
+
   Future<DriveCacheEntry> _downloadAndCacheDriveFileEntry({
     required drive_service.DriveFile file,
     required String apiKey,
     required Directory cacheDir,
-    required List<CourseContent> existingContents,
+    required List<ModuleContent> existingContents,
     required Set<String> seenSourceKeys,
   }) async {
     final transferNotifier = ref.read(transferStateProvider.notifier);
@@ -380,11 +419,11 @@ class DriveListingController {
 
     final existingContent = await _findExistingDriveContent(effectiveFile, existingContents);
     if (existingContent != null) {
-      final existingPath = existingContent.path.fileDetails.filePath;
+      final existingPath = existingContent.path.local;
       if (existingPath.isNotEmpty && await File(existingPath).exists()) {
         final fileLabel = effectiveFile.name ?? file.name ?? 'file';
-        final existingSize = existingContent.fileSize > 0
-            ? existingContent.fileSize
+        final existingSize = existingContent.fileSizeInBytes > 0
+            ? existingContent.fileSizeInBytes
             : await File(existingPath).length();
 
         return DriveCacheEntry(
@@ -604,7 +643,7 @@ class DriveListingController {
     required drive_service.DriveFile folder,
     required String apiKey,
     required Directory cacheDir,
-    required List<CourseContent> existingContents,
+    required List<ModuleContent> existingContents,
     required Set<String> seenSourceKeys,
   }) async {
     final folderId = folder.navigationTargetId ?? folder.id;
@@ -643,9 +682,9 @@ class DriveListingController {
     return (entries: entries, notes: notes);
   }
 
-  Future<CourseContent?> _findExistingDriveContent(
+  Future<ModuleContent?> _findExistingDriveContent(
     drive_service.DriveFile file,
-    List<CourseContent> existingContents,
+    List<ModuleContent> existingContents,
   ) async {
     final fingerprint = DriveSourceFingerprint.fromFile(file);
     for (final content in existingContents) {
@@ -691,36 +730,8 @@ class DriveListingController {
         continue;
       }
 
-      await CourseContentRepo.add(content.copyWith(contentHash: content.contentHash, metadataJson: metadata.toJson()));
+      await CourseContentRepo.add(content.copyWith(xxh3Hash: content.xxh3Hash, metadata: metadata));
     }
-  }
-
-  Future<void> _recordDriveImportHistory(
-    DriveImportOutcome outcome,
-    drive_service.DriveResource resource,
-    List<drive_service.DriveFile> selectedFiles,
-  ) async {
-    if (outcome.collectionId.isEmpty) {
-      return;
-    }
-
-    await ref
-        .read(downloadHistoryProvider.notifier)
-        .addEntry(
-          DownloadHistoryEntry(
-            id: outcome.primaryContentId ?? '${DateTime.now().millisecondsSinceEpoch}',
-            title: outcome.title,
-            type: outcome.type,
-            collectionId: outcome.collectionId,
-            contentId: outcome.primaryContentId,
-            driveId: resource.file?.navigationTargetId ?? resource.file?.id,
-            sourceName: resource.file?.name ?? _resolveDriveRootName(resource, selectedFiles),
-            itemCount: outcome.itemCount,
-            totalBytes: outcome.totalBytes,
-            createdAt: DateTime.now(),
-            note: outcome.note ?? 'Imported from Drive',
-          ),
-        );
   }
 
   void _showDriveOperationFeedback({required DriveImportOutcome outcome, required String successLabel}) {
@@ -729,11 +740,16 @@ class DriveListingController {
       final message = outcome.itemCount > 0
           ? '$successLabel $countLabel with warnings. ${outcome.note!}'
           : outcome.note!;
+      _showCompletionNotification(
+        title: outcome.itemCount > 0 ? 'Download completed with warnings' : 'Download failed',
+        body: '${outcome.title}: $message',
+      );
       _showDriveMessage(message, outcome.itemCount > 0 ? FlushbarVibe.warning : FlushbarVibe.error);
       return;
     }
 
     final countLabel = outcome.itemCount == 1 ? '1 item' : '${outcome.itemCount} items';
+    _showCompletionNotification(title: 'Download completed', body: '${outcome.title}: $successLabel $countLabel');
     _showDriveMessage('$successLabel $countLabel', FlushbarVibe.success);
   }
 
@@ -746,17 +762,13 @@ class DriveListingController {
     return await CourseRepo.getCourseById(collection.parentId);
   }
 
-  Future<CourseCollection?> _resolveOrCreateImportCollection(String courseId, String title) async {
+  Future<Module?> _resolveOrCreateImportCollection(String courseId, String title) async {
     final existing = await CourseCollectionRepo.getByTitleAndParentId(title: title, parentId: courseId);
     if (existing != null) {
       return existing;
     }
 
-    final collection = CourseCollection.create(
-      parentId: courseId,
-      collectionTitle: title,
-      description: 'Imported from Drive',
-    );
+    final collection = Module.create(parentId: courseId, collectionTitle: title, description: 'Imported from Drive');
 
     final result = await CourseCollectionRepo.addCollectionNoDuplicateTitle(collection);
     if (result != null) {
@@ -837,23 +849,23 @@ class DriveListingController {
     }
   }
 
-  CourseContent _buildTemporaryCourseContent(drive_service.DriveFile file, String localPath, int fileSize) {
+  ModuleContent _buildTemporaryCourseContent(drive_service.DriveFile file, String localPath, int fileSize) {
     final resolvedType = _resolveContentType(file);
     final originalName = file.name ?? p.basename(localPath);
 
-    return CourseContent.create(
-      contentHash: file.md5Checksum ?? file.id ?? localPath,
+    return ModuleContent.create(
+      xxh3Hash: file.md5Checksum ?? file.id ?? localPath,
       contentId: file.id ?? 'drive_${DateTime.now().millisecondsSinceEpoch}',
       parentId: collectionId,
       title: p.basenameWithoutExtension(originalName),
-      path: FileDetails(filePath: localPath, urlPath: file.webViewLink ?? _driveLinkForFile(file)),
-      fileSize: fileSize,
-      courseContentType: resolvedType,
+      path: FilePath(local: localPath, url: file.webViewLink ?? _driveLinkForFile(file)),
+      fileSizeInBytes: fileSize,
+      type: resolvedType,
       description: file.description ?? '',
-      metadata: ContentMetadata(
+      metadata: ModuleContentMetadata.create(
         originalFileName: originalName,
         contentOrigin: ContentOrigin.local,
-        thumbnails: file.thumbnailLink != null ? FileDetails(urlPath: file.thumbnailLink!) : null,
+        thumbnails: file.thumbnailLink != null ? FilePath(url: file.thumbnailLink!) : FilePath(),
         fields: {
           'resolved': true,
           'driveId': file.id,
@@ -938,14 +950,14 @@ class DriveListingController {
     return TransferType.content;
   }
 
-  CourseContentType _resolveContentType(drive_service.DriveFile file) {
+  ModuleContentType _resolveContentType(drive_service.DriveFile file) {
     final mimeType = (file.mimeType ?? '').toLowerCase();
 
     if (file.isFolderLike) {
-      return CourseContentType.reference;
+      return ModuleContentType.reference;
     }
     if (mimeType.startsWith('image/')) {
-      return CourseContentType.image;
+      return ModuleContentType.image;
     }
     if (mimeType.contains('pdf') ||
         mimeType.contains('document') ||
@@ -953,10 +965,10 @@ class DriveListingController {
         mimeType.contains('spreadsheet') ||
         mimeType.contains('presentation') ||
         mimeType.startsWith('text/')) {
-      return CourseContentType.document;
+      return ModuleContentType.document;
     }
 
-    return CourseContentType.unknown;
+    return ModuleContentType.unknown;
   }
 
   String _downloadFileName(drive_service.DriveFile file) {

@@ -8,9 +8,8 @@ import 'package:path/path.dart' as p;
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
-import 'package:slidesync/data/models/file_details.dart';
-import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
+import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/features/browse/collection/ui/components/content_card.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/retrieve_content_uc.dart';
@@ -28,7 +27,7 @@ import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 class MaterialListCard extends ConsumerStatefulWidget {
-  final CourseContent content;
+  final ModuleContent content;
   final void Function()? onTapCard;
   final void Function()? onLongPressed;
   final bool showGoToCollection;
@@ -69,7 +68,7 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
       ),
     );
     progressStream = ContentTrackRepo.watchByContentId(
-      widget.content.contentId,
+      widget.content.uid,
     ).map((c) => c?.progress ?? 0.0).asBroadcastStream();
   }
 
@@ -88,7 +87,7 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
 
   @override
   Widget build(BuildContext context) {
-    final CourseContent content = widget.content;
+    final ModuleContent content = widget.content;
     List<CourseMaterialListCardActionModel> courseMaterialListCardActionModels = [
       CourseMaterialListCardActionModel(
         label: "Open",
@@ -97,7 +96,7 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
           ContentViewGateActions.redirectToViewer(ref, content);
         },
       ),
-      if (content.courseContentType != CourseContentType.link)
+      if (content.type != ModuleContentType.link)
         CourseMaterialListCardActionModel(
           label: "Open Outside app",
           icon: Icons.send_to_mobile_outlined,
@@ -105,13 +104,13 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
             ContentViewGateActions.redirectToViewer(ref, content, openOutsideApp: true);
           },
         ),
-      if (content.courseContentType == CourseContentType.link)
+      if (content.type == ModuleContentType.link)
         CourseMaterialListCardActionModel(
           label: "View link",
           icon: Icons.remove_red_eye_outlined,
           onTap: () {
-            final previewDetailsFuture = widget.content.courseContentType == CourseContentType.link
-                ? RetriveContentUc.getLinkPreviewData(widget.content.path.urlPath)
+            final previewDetailsFuture = widget.content.type == ModuleContentType.link
+                ? RetriveContentUc.getLinkPreviewData(widget.content.path.url)
                 : null;
 
             UiUtils.showCustomDialog(
@@ -121,12 +120,12 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
           },
         ),
 
-      if (content.courseContentType == CourseContentType.link)
+      if (content.type == ModuleContentType.link)
         CourseMaterialListCardActionModel(
           label: "Copy",
           icon: Icons.copy,
           onTap: () {
-            Clipboard.setData(ClipboardData(text: content.path.fileDetails.urlPath));
+            Clipboard.setData(ClipboardData(text: content.path.url));
           },
         ),
 
@@ -175,7 +174,7 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
                 if (context.mounted) {
                   UiUtils.showLoadingDialog(context, message: "Removing content");
                 }
-                final outcome = await ModifyContentsAction().onDeleteContent(content.contentId);
+                final outcome = await ModifyContentsAction().onDeleteContent(content.uid);
 
                 GlobalNav.popGlobal();
 
@@ -197,7 +196,7 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
         label: DeviceUtils.isDesktop() ? "Copy file" : "Share",
         icon: Iconsax.share_copy,
         onTap: () {
-          ShareContentActions.shareContent(context, content.contentId);
+          ShareContentActions.shareContent(context, content.uid);
         },
       ),
     ];
@@ -250,7 +249,7 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
                         ),
                         child: BuildImagePathWidget(
                           fileDetails: content.thumbnailDetails,
-                          fallbackWidget: Icon(WidgetHelper.resolveIconData(content.courseContentType, true), size: 20),
+                          fallbackWidget: Icon(WidgetHelper.resolveIconData(content.type, true), size: 20),
                         ),
                       ),
                       ConstantSizing.rowSpacingMedium,
@@ -263,9 +262,9 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
                             children: [
                               Flexible(
                                 child: CustomText(
-                                  content.courseContentType == CourseContentType.link
-                                      ? content.path.urlPath
-                                      : content.title + p.extension(content.path.filePath),
+                                  content.type == ModuleContentType.link
+                                      ? content.path.url
+                                      : content.title + p.extension(content.path.local),
                                   fontSize: 13,
                                   color: theme.onBackground,
                                   fontWeight: FontWeight.w600,
@@ -274,7 +273,7 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
                               ),
                               // ConstantSizing.columnSpacing(2),
                               CustomText(
-                                Formatter.formatEnumName(content.courseContentType.name),
+                                Formatter.formatEnumName(content.type.name),
                                 fontSize: 11,
                                 color: theme.supportingText,
                               ),

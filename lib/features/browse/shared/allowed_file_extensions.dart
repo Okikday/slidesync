@@ -42,7 +42,7 @@ class AllowedFileExtensions {
 
   /// Returns the CourseContentType for a file extension or path.
   /// E.g. `.md`, `file.txt`, `/path/to/image.jpg`
-  static CourseContentType checkContentType(String pathOrExt) {
+  static ModuleContentType checkContentType(String pathOrExt) {
     // Remove any leading dots and path parts
     String ext = pathOrExt.trim().toLowerCase();
 
@@ -54,21 +54,21 @@ class AllowedFileExtensions {
     }
 
     if (AllowedFileExtensions.allowedImageExtensions.contains(ext)) {
-      return CourseContentType.image;
+      return ModuleContentType.image;
     }
     // else if (AllowedFileExtensions.allowedVideoExtensions.contains(ext)) {
     //   return CourseContentType.video;
     // }
     else if (AllowedFileExtensions.allowedDocumentExtensions.contains(ext)) {
-      return CourseContentType.document;
+      return ModuleContentType.document;
     }
     // else if (AllowedFileExtensions.allowedAudioExtensions.contains(ext)) {
     //   return CourseContentType.audio;
     // }
     else if (['txt', 'md'].contains(ext)) {
-      return CourseContentType.note;
+      return ModuleContentType.note;
     } else {
-      return CourseContentType.unknown;
+      return ModuleContentType.unknown;
     }
   }
 }

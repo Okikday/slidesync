@@ -214,12 +214,12 @@ class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
     final query = (await CourseRepo.isar).courses.where();
 
     return switch (sortOption) {
-      CourseSortOption.nameAsc => await query.sortByCourseTitle().offset(offset).limit(limit).findAll(),
-      CourseSortOption.nameDesc => await query.sortByCourseTitleDesc().offset(offset).limit(limit).findAll(),
+      CourseSortOption.nameAsc => await query.sortByTitle().offset(offset).limit(limit).findAll(),
+      CourseSortOption.nameDesc => await query.sortByTitleDesc().offset(offset).limit(limit).findAll(),
       CourseSortOption.dateCreatedAsc => await query.sortByCreatedAt().offset(offset).limit(limit).findAll(),
       CourseSortOption.dateCreatedDesc => await query.sortByCreatedAtDesc().offset(offset).limit(limit).findAll(),
-      CourseSortOption.dateModifiedAsc => await query.sortByLastUpdated().offset(offset).limit(limit).findAll(),
-      CourseSortOption.dateModifiedDesc => await query.sortByLastUpdatedDesc().offset(offset).limit(limit).findAll(),
+      CourseSortOption.dateModifiedAsc => await query.sortByLastModified().offset(offset).limit(limit).findAll(),
+      CourseSortOption.dateModifiedDesc => await query.sortByLastModifiedDesc().offset(offset).limit(limit).findAll(),
     };
   }
 }

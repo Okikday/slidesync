@@ -164,13 +164,13 @@
 //         // Upload contents for this collection
 //         final collectionContents = contents.where((c) => c.parentId == collection.collectionId);
 //         for (final content in collectionContents) {
-//           final contentRef = collectionRef.collection('contents').doc(content.contentHash);
+//           final contentRef = collectionRef.collection('contents').doc(content.xxh3Hash);
 //           final contentData = {...content.toMap(), 'submittedBy': user.userID};
 //           batch.set(contentRef, contentData);
 
 //           // Update content lookup index
 //           await _updateContentLookup(
-//             contentHash: content.contentHash,
+//             xxh3Hash: content.xxh3Hash,
 //             courseId: course.courseId,
 //             title: content.title,
 //             fileSize: content.fileSize,
@@ -429,9 +429,9 @@
 //   // ==================== CONTENT LOOKUP OPERATIONS ====================
 
 //   /// Find content by hash
-//   Future<Result<ContentLookupResult?>> findContentByHash(String contentHash) async {
+//   Future<Result<ContentLookupResult?>> findContentByHash(String xxh3Hash) async {
 //     return Result.tryRunAsync(() async {
-//       final doc = await _firestore.collection('content-lookup').doc(contentHash).get();
+//       final doc = await _firestore.collection('content-lookup').doc(xxh3Hash).get();
 
 //       if (!doc.exists || doc.data() == null) {
 //         return null;
@@ -439,11 +439,11 @@
 
 //       final data = doc.data()!;
 //       return ContentLookupResult(
-//         contentHash: contentHash,
+//         xxh3Hash: xxh3Hash,
 //         topTitle: data['topTitle'] as String? ?? '',
 //         fileSize: data['fileSize'] as int? ?? 0,
 //         courseIds: List<String>.from(data['courseIds'] ?? []),
-//         lastUpdated: (data['lastUpdated'] as Timestamp?)?.toDate() ?? DateTime.now(),
+//         lastModified: (data['lastModified'] as Timestamp?)?.toDate() ?? DateTime.now(),
 //         titleVotes: Map<String, int>.from(data['titleVotes'] ?? {}),
 //         totalSubmissions: data['totalSubmissions'] as int? ?? 0,
 //       );
@@ -451,9 +451,9 @@
 //   }
 
 //   /// Stream content lookup by hash
-//   Stream<Result<ContentLookupResult?>> streamContentByHash(String contentHash) {
+//   Stream<Result<ContentLookupResult?>> streamContentByHash(String xxh3Hash) {
 //     try {
-//       return _firestore.collection('content-lookup').doc(contentHash).snapshots().map((doc) {
+//       return _firestore.collection('content-lookup').doc(xxh3Hash).snapshots().map((doc) {
 //         if (!doc.exists || doc.data() == null) {
 //           return Result.success(null);
 //         }
@@ -462,11 +462,11 @@
 //           final data = doc.data()!;
 //           return Result.success(
 //             ContentLookupResult(
-//               contentHash: contentHash,
+//               xxh3Hash: xxh3Hash,
 //               topTitle: data['topTitle'] as String? ?? '',
 //               fileSize: data['fileSize'] as int? ?? 0,
 //               courseIds: List<String>.from(data['courseIds'] ?? []),
-//               lastUpdated: (data['lastUpdated'] as Timestamp?)?.toDate() ?? DateTime.now(),
+//               lastModified: (data['lastModified'] as Timestamp?)?.toDate() ?? DateTime.now(),
 //               titleVotes: Map<String, int>.from(data['titleVotes'] ?? {}),
 //               totalSubmissions: data['totalSubmissions'] as int? ?? 0,
 //             ),
@@ -481,9 +481,9 @@
 //   }
 
 //   /// Get suggested title for a content hash
-//   Future<Future<Result<String?>>> getSuggestedTitle(String contentHash) async {
+//   Future<Future<Result<String?>>> getSuggestedTitle(String xxh3Hash) async {
 //     return Result.tryRunAsync(() async {
-//       final result = await findContentByHash(contentHash);
+//       final result = await findContentByHash(xxh3Hash);
 //       if (result.isError || result.data == null) {
 //         throw Exception('Content not found');
 //       }
@@ -508,11 +508,11 @@
 //           if (doc.exists && doc.data() != null) {
 //             final data = doc.data()!;
 //             results[batchHashes[j]] = ContentLookupResult(
-//               contentHash: batchHashes[j],
+//               xxh3Hash: batchHashes[j],
 //               topTitle: data['topTitle'] as String? ?? '',
 //               fileSize: data['fileSize'] as int? ?? 0,
 //               courseIds: List<String>.from(data['courseIds'] ?? []),
-//               lastUpdated: (data['lastUpdated'] as Timestamp?)?.toDate() ?? DateTime.now(),
+//               lastModified: (data['lastModified'] as Timestamp?)?.toDate() ?? DateTime.now(),
 //               titleVotes: Map<String, int>.from(data['titleVotes'] ?? {}),
 //               totalSubmissions: data['totalSubmissions'] as int? ?? 0,
 //             );
@@ -525,9 +525,9 @@
 //   }
 
 //   /// Find all courses containing a specific content hash
-//   Future<Future<Result<List<RepoCourse>?>>> findCoursesWithContent(String contentHash) async {
+//   Future<Future<Result<List<RepoCourse>?>>> findCoursesWithContent(String xxh3Hash) async {
 //     return Result.tryRunAsync(() async {
-//       final lookupResult = await findContentByHash(contentHash);
+//       final lookupResult = await findContentByHash(xxh3Hash);
 //       if (lookupResult.isError || lookupResult.data == null) {
 //         return <RepoCourse>[];
 //       }
@@ -592,12 +592,12 @@
 //   }
 
 //   /// Update content title (admin can override voting)
-//   Future<Result<void>> overrideTitleForContent({required String contentHash, required String newTitle}) async {
+//   Future<Result<void>> overrideTitleForContent({required String xxh3Hash, required String newTitle}) async {
 //     return Result.tryRunAsync(() async {
-//       await _firestore.collection('content-lookup').doc(contentHash).update({
+//       await _firestore.collection('content-lookup').doc(xxh3Hash).update({
 //         'topTitle': newTitle,
 //         'adminOverride': true,
-//         'lastUpdated': FieldValue.serverTimestamp(),
+//         'lastModified': FieldValue.serverTimestamp(),
 //       });
 //     });
 //   }
@@ -654,12 +654,12 @@
 
 //   /// Update content lookup index with title crowdsourcing
 //   Future<void> _updateContentLookup({
-//     required String contentHash,
+//     required String xxh3Hash,
 //     required String courseId,
 //     required String title,
 //     required int fileSize,
 //   }) async {
-//     final docRef = _firestore.collection('content-lookup').doc(contentHash);
+//     final docRef = _firestore.collection('content-lookup').doc(xxh3Hash);
 //     final doc = await docRef.get();
 
 //     if (doc.exists) {
@@ -672,7 +672,7 @@
 //         if (!courseIds.contains(courseId)) {
 //           await docRef.update({
 //             'courseIds': FieldValue.arrayUnion([courseId]),
-//             'lastUpdated': FieldValue.serverTimestamp(),
+//             'lastModified': FieldValue.serverTimestamp(),
 //           });
 //         }
 //         return;
@@ -699,21 +699,21 @@
 
 //       await docRef.update({
 //         'courseIds': courseIds,
-//         'lastUpdated': FieldValue.serverTimestamp(),
+//         'lastModified': FieldValue.serverTimestamp(),
 //         'topTitle': mostPopularTitle,
 //         'titleVotes': titleVotes,
 //         'totalSubmissions': FieldValue.increment(1),
 //       });
 //     } else {
 //       await docRef.set({
-//         'contentHash': contentHash,
+//         'xxh3Hash': xxh3Hash,
 //         'topTitle': title,
 //         'fileSize': fileSize,
 //         'courseIds': [courseId],
 //         'titleVotes': {title: 1},
 //         'totalSubmissions': 1,
 //         'adminOverride': false,
-//         'lastUpdated': FieldValue.serverTimestamp(),
+//         'lastModified': FieldValue.serverTimestamp(),
 //       });
 //     }
 //   }
@@ -882,20 +882,20 @@
 
 // /// Content lookup result
 // class ContentLookupResult {
-//   final String contentHash;
+//   final String xxh3Hash;
 //   final String topTitle;
 //   final int fileSize;
 //   final List<String> courseIds;
-//   final DateTime lastUpdated;
+//   final DateTime lastModified;
 //   final Map<String, int> titleVotes;
 //   final int totalSubmissions;
 
 //   ContentLookupResult({
-//     required this.contentHash,
+//     required this.xxh3Hash,
 //     required this.topTitle,
 //     required this.fileSize,
 //     required this.courseIds,
-//     required this.lastUpdated,
+//     required this.lastModified,
 //     this.titleVotes = const {},
 //     this.totalSubmissions = 0,
 //   });
@@ -910,11 +910,11 @@
 //   /// Convert to JSON for isolate transfer
 //   Map<String, dynamic> toJson() {
 //     return {
-//       'contentHash': contentHash,
+//       'xxh3Hash': xxh3Hash,
 //       'topTitle': topTitle,
 //       'fileSize': fileSize,
 //       'courseIds': courseIds,
-//       'lastUpdated': lastUpdated.toIso8601String(),
+//       'lastModified': lastModified.toIso8601String(),
 //       'titleVotes': titleVotes,
 //       'totalSubmissions': totalSubmissions,
 //     };
@@ -923,11 +923,11 @@
 //   /// Create from JSON for isolate transfer
 //   factory ContentLookupResult.fromJson(Map<String, dynamic> json) {
 //     return ContentLookupResult(
-//       contentHash: json['contentHash'],
+//       xxh3Hash: json['xxh3Hash'],
 //       topTitle: json['topTitle'],
 //       fileSize: json['fileSize'],
 //       courseIds: List<String>.from(json['courseIds']),
-//       lastUpdated: DateTime.parse(json['lastUpdated']),
+//       lastModified: DateTime.parse(json['lastModified']),
 //       titleVotes: Map<String, int>.from(json['titleVotes'] ?? {}),
 //       totalSubmissions: json['totalSubmissions'] ?? 0,
 //     );

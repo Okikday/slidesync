@@ -8,7 +8,7 @@ import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_collection/course_collection.dart';
+import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/add_content/select_contents_uc.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/add_content/store_contents.dart';
 import 'package:slidesync/features/browse/shared/usecases/types/add_content_result.dart';
@@ -20,7 +20,7 @@ import 'package:uuid/uuid.dart';
 class AddContentsUc {
   /// Shared method to process and store contents
   static Future<List<AddContentResult>> _processAndStoreContents({
-    required CourseCollection collection,
+    required Module collection,
     required List<String> filePaths,
     required List<String> uuids,
     required RootIsolateToken rootIsolateToken,
@@ -35,14 +35,14 @@ class AddContentsUc {
         key: HiveDataPathKey.contentsAddingProgressList.name,
         value: <String, dynamic>{
           for (int i = 0; i < uuidFileNames.length; i++) uuidFileNames[i]: filePaths[i],
-          'collectionId': collection.collectionId,
+          'collectionId': collection.uid,
         },
       );
     });
 
     final args = StoreContentArgs(
       token: rootIsolateToken,
-      collectionId: collection.collectionId,
+      collectionId: collection.uid,
       filePaths: filePaths,
       uuids: uuids,
       deleteCache: true,
@@ -68,8 +68,8 @@ class AddContentsUc {
   /// Adds contents to the provided collection by referring to system file picker
   /// Returns list of AddContentResult
   static Future<List<AddContentResult>> addToCollection({
-    required CourseCollection collection,
-    required CourseContentType type,
+    required Module collection,
+    required ModuleContentType type,
     ValueNotifier<String>? valueNotifier,
     bool selectByFolder = false,
   }) async {
@@ -119,7 +119,7 @@ class AddContentsUc {
   /// Adds contents to the provided collection without referring to system file picker
   /// Returns list of AddContentResult
   static Future<List<AddContentResult>> addToCollectionNoRef({
-    required CourseCollection collection,
+    required Module collection,
     required List<String> filePaths,
     ValueNotifier<String>? valueNotifier,
   }) async {

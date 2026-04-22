@@ -6,9 +6,9 @@ import 'package:go_router/go_router.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course/course.dart';
-import 'package:slidesync/data/models/course_collection/collection_metadata.dart';
-import 'package:slidesync/data/models/course_collection/course_collection.dart';
-import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/data/models/module/module_metadata.dart';
+import 'package:slidesync/data/models/module/module.dart';
+import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/features/browse/shared/usecases/collections/modify_collection_uc.dart';
@@ -26,10 +26,10 @@ class ModifyCollectionActions {
     if (course.collections.length >= 30) {
       return "Collections under a course must be under 30";
     }
-    final newCollection = CourseCollection.create(
-      parentId: course.courseId,
+    final newCollection = Module.create(
+      parentId: course.uid,
       collectionTitle: title,
-      metadataJson: CollectionMetadata(color: AppPalette.getRandom()).toJson(),
+      metadata: ModuleMetadata.create(color: AppPalette.getRandom()),
     );
     final String? result = await CourseCollectionRepo.addCollectionNoDuplicateTitle(newCollection);
     return result;
@@ -78,7 +78,7 @@ class ModifyCollectionActions {
     return '';
   }
 
-  Future<String?> renameCollectionAction(CourseCollection collection) async {
+  Future<String?> renameCollectionAction(Module collection) async {
     final Result<String?> renameOutcome = await Result.tryRunAsync<String?>(() async {
       final String? result = await CourseCollectionRepo.addCollectionNoDuplicateTitle(collection);
       return (result == null ? result : "An error occured while renaming collection!");
@@ -93,12 +93,8 @@ class ModifyCollectionActions {
     }
   }
 
-  Future<void> onRenameCollection(
-    BuildContext context, {
-    required String newText,
-    required CourseCollection collection,
-  }) async {
-    if (newText.isNotEmpty && newText != collection.collectionTitle && newText.length >= 2 && newText.length < 256) {
+  Future<void> onRenameCollection(BuildContext context, {required String newText, required Module collection}) async {
+    if (newText.isNotEmpty && newText != collection.title && newText.length >= 2 && newText.length < 256) {
       final String? outcome = await renameCollectionAction(collection.copyWith(collectionTitle: newText));
       if (context.mounted) CustomDialog.hide(context);
       if (context.mounted) {
@@ -118,7 +114,7 @@ class ModifyCollectionActions {
     }
   }
 
-  Future<void> onDeleteCollection(BuildContext context, {required CourseCollection collection}) async {
+  Future<void> onDeleteCollection(BuildContext context, {required Module collection}) async {
     GlobalNav.popGlobal();
     final BuildContext? newContext = rootNavigatorKey.currentContext;
 
@@ -140,7 +136,7 @@ class ModifyCollectionActions {
         if (newContext.mounted) {
           await UiUtils.showFlushBar(
             newContext,
-            msg: "Successfully removed ${collection.collectionTitle}",
+            msg: "Successfully removed ${collection.title}",
             vibe: FlushbarVibe.success,
           );
         }

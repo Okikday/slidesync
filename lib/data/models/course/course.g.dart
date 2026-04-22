@@ -17,37 +17,31 @@ const CourseSchema = CollectionSchema(
   name: r'Course',
   id: -5832084671214696602,
   properties: {
-    r'courseId': PropertySchema(
-      id: 0,
-      name: r'courseId',
-      type: IsarType.string,
-    ),
-    r'courseTitle': PropertySchema(
-      id: 1,
-      name: r'courseTitle',
-      type: IsarType.string,
-    ),
     r'createdAt': PropertySchema(
-      id: 2,
+      id: 0,
       name: r'createdAt',
       type: IsarType.dateTime,
     ),
     r'description': PropertySchema(
-      id: 3,
+      id: 1,
       name: r'description',
       type: IsarType.string,
     ),
-    r'hashCode': PropertySchema(id: 4, name: r'hashCode', type: IsarType.long),
-    r'lastUpdated': PropertySchema(
-      id: 5,
-      name: r'lastUpdated',
+    r'hashCode': PropertySchema(id: 2, name: r'hashCode', type: IsarType.long),
+    r'lastModified': PropertySchema(
+      id: 3,
+      name: r'lastModified',
       type: IsarType.dateTime,
     ),
-    r'metadataJson': PropertySchema(
-      id: 6,
-      name: r'metadataJson',
-      type: IsarType.string,
+    r'metadata': PropertySchema(
+      id: 4,
+      name: r'metadata',
+      type: IsarType.object,
+
+      target: r'CourseMetadata',
     ),
+    r'title': PropertySchema(id: 5, name: r'title', type: IsarType.string),
+    r'uid': PropertySchema(id: 6, name: r'uid', type: IsarType.string),
   },
 
   estimateSize: _courseEstimateSize,
@@ -56,27 +50,27 @@ const CourseSchema = CollectionSchema(
   deserializeProp: _courseDeserializeProp,
   idName: r'id',
   indexes: {
-    r'courseId': IndexSchema(
-      id: -4937057111615935929,
-      name: r'courseId',
+    r'uid': IndexSchema(
+      id: 8193695471701937315,
+      name: r'uid',
       unique: true,
       replace: false,
       properties: [
         IndexPropertySchema(
-          name: r'courseId',
+          name: r'uid',
           type: IndexType.hash,
           caseSensitive: true,
         ),
       ],
     ),
-    r'courseTitle': IndexSchema(
-      id: 1400096731337472664,
-      name: r'courseTitle',
+    r'title': IndexSchema(
+      id: -7636685945352118059,
+      name: r'title',
       unique: false,
       replace: false,
       properties: [
         IndexPropertySchema(
-          name: r'courseTitle',
+          name: r'title',
           type: IndexType.hash,
           caseSensitive: false,
         ),
@@ -87,11 +81,14 @@ const CourseSchema = CollectionSchema(
     r'collections': LinkSchema(
       id: -9118433930885973565,
       name: r'collections',
-      target: r'CourseCollection',
+      target: r'Module',
       single: false,
     ),
   },
-  embeddedSchemas: {},
+  embeddedSchemas: {
+    r'CourseMetadata': CourseMetadataSchema,
+    r'FilePath': FilePathSchema,
+  },
 
   getId: _courseGetId,
   getLinks: _courseGetLinks,
@@ -105,10 +102,16 @@ int _courseEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
-  bytesCount += 3 + object.courseId.length * 3;
-  bytesCount += 3 + object.courseTitle.length * 3;
   bytesCount += 3 + object.description.length * 3;
-  bytesCount += 3 + object.metadataJson.length * 3;
+  bytesCount +=
+      3 +
+      CourseMetadataSchema.estimateSize(
+        object.metadata,
+        allOffsets[CourseMetadata]!,
+        allOffsets,
+      );
+  bytesCount += 3 + object.title.length * 3;
+  bytesCount += 3 + object.uid.length * 3;
   return bytesCount;
 }
 
@@ -118,13 +121,18 @@ void _courseSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.courseId);
-  writer.writeString(offsets[1], object.courseTitle);
-  writer.writeDateTime(offsets[2], object.createdAt);
-  writer.writeString(offsets[3], object.description);
-  writer.writeLong(offsets[4], object.hashCode);
-  writer.writeDateTime(offsets[5], object.lastUpdated);
-  writer.writeString(offsets[6], object.metadataJson);
+  writer.writeDateTime(offsets[0], object.createdAt);
+  writer.writeString(offsets[1], object.description);
+  writer.writeLong(offsets[2], object.hashCode);
+  writer.writeDateTime(offsets[3], object.lastModified);
+  writer.writeObject<CourseMetadata>(
+    offsets[4],
+    allOffsets,
+    CourseMetadataSchema.serialize,
+    object.metadata,
+  );
+  writer.writeString(offsets[5], object.title);
+  writer.writeString(offsets[6], object.uid);
 }
 
 Course _courseDeserialize(
@@ -134,13 +142,19 @@ Course _courseDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = Course();
-  object.courseId = reader.readString(offsets[0]);
-  object.courseTitle = reader.readString(offsets[1]);
-  object.createdAt = reader.readDateTimeOrNull(offsets[2]);
-  object.description = reader.readString(offsets[3]);
+  object.createdAt = reader.readDateTime(offsets[0]);
+  object.description = reader.readString(offsets[1]);
   object.id = id;
-  object.lastUpdated = reader.readDateTimeOrNull(offsets[5]);
-  object.metadataJson = reader.readString(offsets[6]);
+  object.lastModified = reader.readDateTime(offsets[3]);
+  object.metadata =
+      reader.readObjectOrNull<CourseMetadata>(
+        offsets[4],
+        CourseMetadataSchema.deserialize,
+        allOffsets,
+      ) ??
+      CourseMetadata();
+  object.title = reader.readString(offsets[5]);
+  object.uid = reader.readString(offsets[6]);
   return object;
 }
 
@@ -152,17 +166,23 @@ P _courseDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readString(offset)) as P;
+      return (reader.readDateTime(offset)) as P;
     case 1:
       return (reader.readString(offset)) as P;
     case 2:
-      return (reader.readDateTimeOrNull(offset)) as P;
-    case 3:
-      return (reader.readString(offset)) as P;
-    case 4:
       return (reader.readLong(offset)) as P;
+    case 3:
+      return (reader.readDateTime(offset)) as P;
+    case 4:
+      return (reader.readObjectOrNull<CourseMetadata>(
+                offset,
+                CourseMetadataSchema.deserialize,
+                allOffsets,
+              ) ??
+              CourseMetadata())
+          as P;
     case 5:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readString(offset)) as P;
     case 6:
       return (reader.readString(offset)) as P;
     default:
@@ -182,63 +202,63 @@ void _courseAttach(IsarCollection<dynamic> col, Id id, Course object) {
   object.id = id;
   object.collections.attach(
     col,
-    col.isar.collection<CourseCollection>(),
+    col.isar.collection<Module>(),
     r'collections',
     id,
   );
 }
 
 extension CourseByIndex on IsarCollection<Course> {
-  Future<Course?> getByCourseId(String courseId) {
-    return getByIndex(r'courseId', [courseId]);
+  Future<Course?> getByUid(String uid) {
+    return getByIndex(r'uid', [uid]);
   }
 
-  Course? getByCourseIdSync(String courseId) {
-    return getByIndexSync(r'courseId', [courseId]);
+  Course? getByUidSync(String uid) {
+    return getByIndexSync(r'uid', [uid]);
   }
 
-  Future<bool> deleteByCourseId(String courseId) {
-    return deleteByIndex(r'courseId', [courseId]);
+  Future<bool> deleteByUid(String uid) {
+    return deleteByIndex(r'uid', [uid]);
   }
 
-  bool deleteByCourseIdSync(String courseId) {
-    return deleteByIndexSync(r'courseId', [courseId]);
+  bool deleteByUidSync(String uid) {
+    return deleteByIndexSync(r'uid', [uid]);
   }
 
-  Future<List<Course?>> getAllByCourseId(List<String> courseIdValues) {
-    final values = courseIdValues.map((e) => [e]).toList();
-    return getAllByIndex(r'courseId', values);
+  Future<List<Course?>> getAllByUid(List<String> uidValues) {
+    final values = uidValues.map((e) => [e]).toList();
+    return getAllByIndex(r'uid', values);
   }
 
-  List<Course?> getAllByCourseIdSync(List<String> courseIdValues) {
-    final values = courseIdValues.map((e) => [e]).toList();
-    return getAllByIndexSync(r'courseId', values);
+  List<Course?> getAllByUidSync(List<String> uidValues) {
+    final values = uidValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'uid', values);
   }
 
-  Future<int> deleteAllByCourseId(List<String> courseIdValues) {
-    final values = courseIdValues.map((e) => [e]).toList();
-    return deleteAllByIndex(r'courseId', values);
+  Future<int> deleteAllByUid(List<String> uidValues) {
+    final values = uidValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'uid', values);
   }
 
-  int deleteAllByCourseIdSync(List<String> courseIdValues) {
-    final values = courseIdValues.map((e) => [e]).toList();
-    return deleteAllByIndexSync(r'courseId', values);
+  int deleteAllByUidSync(List<String> uidValues) {
+    final values = uidValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'uid', values);
   }
 
-  Future<Id> putByCourseId(Course object) {
-    return putByIndex(r'courseId', object);
+  Future<Id> putByUid(Course object) {
+    return putByIndex(r'uid', object);
   }
 
-  Id putByCourseIdSync(Course object, {bool saveLinks = true}) {
-    return putByIndexSync(r'courseId', object, saveLinks: saveLinks);
+  Id putByUidSync(Course object, {bool saveLinks = true}) {
+    return putByIndexSync(r'uid', object, saveLinks: saveLinks);
   }
 
-  Future<List<Id>> putAllByCourseId(List<Course> objects) {
-    return putAllByIndex(r'courseId', objects);
+  Future<List<Id>> putAllByUid(List<Course> objects) {
+    return putAllByIndex(r'uid', objects);
   }
 
-  List<Id> putAllByCourseIdSync(List<Course> objects, {bool saveLinks = true}) {
-    return putAllByIndexSync(r'courseId', objects, saveLinks: saveLinks);
+  List<Id> putAllByUidSync(List<Course> objects, {bool saveLinks = true}) {
+    return putAllByIndexSync(r'uid', objects, saveLinks: saveLinks);
   }
 }
 
@@ -319,34 +339,30 @@ extension CourseQueryWhere on QueryBuilder<Course, Course, QWhereClause> {
     });
   }
 
-  QueryBuilder<Course, Course, QAfterWhereClause> courseIdEqualTo(
-    String courseId,
-  ) {
+  QueryBuilder<Course, Course, QAfterWhereClause> uidEqualTo(String uid) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'courseId', value: [courseId]),
+        IndexWhereClause.equalTo(indexName: r'uid', value: [uid]),
       );
     });
   }
 
-  QueryBuilder<Course, Course, QAfterWhereClause> courseIdNotEqualTo(
-    String courseId,
-  ) {
+  QueryBuilder<Course, Course, QAfterWhereClause> uidNotEqualTo(String uid) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'courseId',
+                indexName: r'uid',
                 lower: [],
-                upper: [courseId],
+                upper: [uid],
                 includeUpper: false,
               ),
             )
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'courseId',
-                lower: [courseId],
+                indexName: r'uid',
+                lower: [uid],
                 includeLower: false,
                 upper: [],
               ),
@@ -355,17 +371,17 @@ extension CourseQueryWhere on QueryBuilder<Course, Course, QWhereClause> {
         return query
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'courseId',
-                lower: [courseId],
+                indexName: r'uid',
+                lower: [uid],
                 includeLower: false,
                 upper: [],
               ),
             )
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'courseId',
+                indexName: r'uid',
                 lower: [],
-                upper: [courseId],
+                upper: [uid],
                 includeUpper: false,
               ),
             );
@@ -373,37 +389,32 @@ extension CourseQueryWhere on QueryBuilder<Course, Course, QWhereClause> {
     });
   }
 
-  QueryBuilder<Course, Course, QAfterWhereClause> courseTitleEqualTo(
-    String courseTitle,
-  ) {
+  QueryBuilder<Course, Course, QAfterWhereClause> titleEqualTo(String title) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IndexWhereClause.equalTo(
-          indexName: r'courseTitle',
-          value: [courseTitle],
-        ),
+        IndexWhereClause.equalTo(indexName: r'title', value: [title]),
       );
     });
   }
 
-  QueryBuilder<Course, Course, QAfterWhereClause> courseTitleNotEqualTo(
-    String courseTitle,
+  QueryBuilder<Course, Course, QAfterWhereClause> titleNotEqualTo(
+    String title,
   ) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'courseTitle',
+                indexName: r'title',
                 lower: [],
-                upper: [courseTitle],
+                upper: [title],
                 includeUpper: false,
               ),
             )
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'courseTitle',
-                lower: [courseTitle],
+                indexName: r'title',
+                lower: [title],
                 includeLower: false,
                 upper: [],
               ),
@@ -412,17 +423,17 @@ extension CourseQueryWhere on QueryBuilder<Course, Course, QWhereClause> {
         return query
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'courseTitle',
-                lower: [courseTitle],
+                indexName: r'title',
+                lower: [title],
                 includeLower: false,
                 upper: [],
               ),
             )
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'courseTitle',
+                indexName: r'title',
                 lower: [],
-                upper: [courseTitle],
+                upper: [title],
                 includeUpper: false,
               ),
             );
@@ -432,316 +443,8 @@ extension CourseQueryWhere on QueryBuilder<Course, Course, QWhereClause> {
 }
 
 extension CourseQueryFilter on QueryBuilder<Course, Course, QFilterCondition> {
-  QueryBuilder<Course, Course, QAfterFilterCondition> courseIdEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'courseId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> courseIdGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'courseId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> courseIdLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'courseId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> courseIdBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'courseId',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> courseIdStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'courseId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> courseIdEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'courseId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> courseIdContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'courseId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> courseIdMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'courseId',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> courseIdIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'courseId', value: ''),
-      );
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> courseIdIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'courseId', value: ''),
-      );
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> courseTitleEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'courseTitle',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> courseTitleGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'courseTitle',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> courseTitleLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'courseTitle',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> courseTitleBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'courseTitle',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> courseTitleStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'courseTitle',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> courseTitleEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'courseTitle',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> courseTitleContains(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'courseTitle',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> courseTitleMatches(
-    String pattern, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'courseTitle',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> courseTitleIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'courseTitle', value: ''),
-      );
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> courseTitleIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'courseTitle', value: ''),
-      );
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> createdAtIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'createdAt'),
-      );
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> createdAtIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'createdAt'),
-      );
-    });
-  }
-
   QueryBuilder<Course, Course, QAfterFilterCondition> createdAtEqualTo(
-    DateTime? value,
+    DateTime value,
   ) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -751,7 +454,7 @@ extension CourseQueryFilter on QueryBuilder<Course, Course, QFilterCondition> {
   }
 
   QueryBuilder<Course, Course, QAfterFilterCondition> createdAtGreaterThan(
-    DateTime? value, {
+    DateTime value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -766,7 +469,7 @@ extension CourseQueryFilter on QueryBuilder<Course, Course, QFilterCondition> {
   }
 
   QueryBuilder<Course, Course, QAfterFilterCondition> createdAtLessThan(
-    DateTime? value, {
+    DateTime value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -781,8 +484,8 @@ extension CourseQueryFilter on QueryBuilder<Course, Course, QFilterCondition> {
   }
 
   QueryBuilder<Course, Course, QAfterFilterCondition> createdAtBetween(
-    DateTime? lower,
-    DateTime? upper, {
+    DateTime lower,
+    DateTime upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
@@ -1061,72 +764,56 @@ extension CourseQueryFilter on QueryBuilder<Course, Course, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Course, Course, QAfterFilterCondition> lastUpdatedIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'lastUpdated'),
-      );
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> lastUpdatedIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'lastUpdated'),
-      );
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterFilterCondition> lastUpdatedEqualTo(
-    DateTime? value,
+  QueryBuilder<Course, Course, QAfterFilterCondition> lastModifiedEqualTo(
+    DateTime value,
   ) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'lastUpdated', value: value),
+        FilterCondition.equalTo(property: r'lastModified', value: value),
       );
     });
   }
 
-  QueryBuilder<Course, Course, QAfterFilterCondition> lastUpdatedGreaterThan(
-    DateTime? value, {
+  QueryBuilder<Course, Course, QAfterFilterCondition> lastModifiedGreaterThan(
+    DateTime value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(
           include: include,
-          property: r'lastUpdated',
+          property: r'lastModified',
           value: value,
         ),
       );
     });
   }
 
-  QueryBuilder<Course, Course, QAfterFilterCondition> lastUpdatedLessThan(
-    DateTime? value, {
+  QueryBuilder<Course, Course, QAfterFilterCondition> lastModifiedLessThan(
+    DateTime value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.lessThan(
           include: include,
-          property: r'lastUpdated',
+          property: r'lastModified',
           value: value,
         ),
       );
     });
   }
 
-  QueryBuilder<Course, Course, QAfterFilterCondition> lastUpdatedBetween(
-    DateTime? lower,
-    DateTime? upper, {
+  QueryBuilder<Course, Course, QAfterFilterCondition> lastModifiedBetween(
+    DateTime lower,
+    DateTime upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.between(
-          property: r'lastUpdated',
+          property: r'lastModified',
           lower: lower,
           includeLower: includeLower,
           upper: upper,
@@ -1136,14 +823,14 @@ extension CourseQueryFilter on QueryBuilder<Course, Course, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Course, Course, QAfterFilterCondition> metadataJsonEqualTo(
+  QueryBuilder<Course, Course, QAfterFilterCondition> titleEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.equalTo(
-          property: r'metadataJson',
+          property: r'title',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1151,7 +838,7 @@ extension CourseQueryFilter on QueryBuilder<Course, Course, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Course, Course, QAfterFilterCondition> metadataJsonGreaterThan(
+  QueryBuilder<Course, Course, QAfterFilterCondition> titleGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -1160,7 +847,7 @@ extension CourseQueryFilter on QueryBuilder<Course, Course, QFilterCondition> {
       return query.addFilterCondition(
         FilterCondition.greaterThan(
           include: include,
-          property: r'metadataJson',
+          property: r'title',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1168,7 +855,7 @@ extension CourseQueryFilter on QueryBuilder<Course, Course, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Course, Course, QAfterFilterCondition> metadataJsonLessThan(
+  QueryBuilder<Course, Course, QAfterFilterCondition> titleLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -1177,7 +864,7 @@ extension CourseQueryFilter on QueryBuilder<Course, Course, QFilterCondition> {
       return query.addFilterCondition(
         FilterCondition.lessThan(
           include: include,
-          property: r'metadataJson',
+          property: r'title',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1185,7 +872,7 @@ extension CourseQueryFilter on QueryBuilder<Course, Course, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Course, Course, QAfterFilterCondition> metadataJsonBetween(
+  QueryBuilder<Course, Course, QAfterFilterCondition> titleBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -1195,7 +882,7 @@ extension CourseQueryFilter on QueryBuilder<Course, Course, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.between(
-          property: r'metadataJson',
+          property: r'title',
           lower: lower,
           includeLower: includeLower,
           upper: upper,
@@ -1206,14 +893,14 @@ extension CourseQueryFilter on QueryBuilder<Course, Course, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Course, Course, QAfterFilterCondition> metadataJsonStartsWith(
+  QueryBuilder<Course, Course, QAfterFilterCondition> titleStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.startsWith(
-          property: r'metadataJson',
+          property: r'title',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1221,14 +908,14 @@ extension CourseQueryFilter on QueryBuilder<Course, Course, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Course, Course, QAfterFilterCondition> metadataJsonEndsWith(
+  QueryBuilder<Course, Course, QAfterFilterCondition> titleEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.endsWith(
-          property: r'metadataJson',
+          property: r'title',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1236,14 +923,14 @@ extension CourseQueryFilter on QueryBuilder<Course, Course, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Course, Course, QAfterFilterCondition> metadataJsonContains(
+  QueryBuilder<Course, Course, QAfterFilterCondition> titleContains(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.contains(
-          property: r'metadataJson',
+          property: r'title',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -1251,14 +938,14 @@ extension CourseQueryFilter on QueryBuilder<Course, Course, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Course, Course, QAfterFilterCondition> metadataJsonMatches(
+  QueryBuilder<Course, Course, QAfterFilterCondition> titleMatches(
     String pattern, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.matches(
-          property: r'metadataJson',
+          property: r'title',
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -1266,28 +953,182 @@ extension CourseQueryFilter on QueryBuilder<Course, Course, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Course, Course, QAfterFilterCondition> metadataJsonIsEmpty() {
+  QueryBuilder<Course, Course, QAfterFilterCondition> titleIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'metadataJson', value: ''),
+        FilterCondition.equalTo(property: r'title', value: ''),
       );
     });
   }
 
-  QueryBuilder<Course, Course, QAfterFilterCondition> metadataJsonIsNotEmpty() {
+  QueryBuilder<Course, Course, QAfterFilterCondition> titleIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'metadataJson', value: ''),
+        FilterCondition.greaterThan(property: r'title', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterFilterCondition> uidEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'uid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterFilterCondition> uidGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'uid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterFilterCondition> uidLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'uid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterFilterCondition> uidBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'uid',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterFilterCondition> uidStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'uid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterFilterCondition> uidEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'uid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterFilterCondition> uidContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'uid',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterFilterCondition> uidMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'uid',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterFilterCondition> uidIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'uid', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterFilterCondition> uidIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'uid', value: ''),
       );
     });
   }
 }
 
-extension CourseQueryObject on QueryBuilder<Course, Course, QFilterCondition> {}
+extension CourseQueryObject on QueryBuilder<Course, Course, QFilterCondition> {
+  QueryBuilder<Course, Course, QAfterFilterCondition> metadata(
+    FilterQuery<CourseMetadata> q,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'metadata');
+    });
+  }
+}
 
 extension CourseQueryLinks on QueryBuilder<Course, Course, QFilterCondition> {
   QueryBuilder<Course, Course, QAfterFilterCondition> collections(
-    FilterQuery<CourseCollection> q,
+    FilterQuery<Module> q,
   ) {
     return QueryBuilder.apply(this, (query) {
       return query.link(q, r'collections');
@@ -1349,30 +1190,6 @@ extension CourseQueryLinks on QueryBuilder<Course, Course, QFilterCondition> {
 }
 
 extension CourseQuerySortBy on QueryBuilder<Course, Course, QSortBy> {
-  QueryBuilder<Course, Course, QAfterSortBy> sortByCourseId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'courseId', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterSortBy> sortByCourseIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'courseId', Sort.desc);
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterSortBy> sortByCourseTitle() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'courseTitle', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterSortBy> sortByCourseTitleDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'courseTitle', Sort.desc);
-    });
-  }
-
   QueryBuilder<Course, Course, QAfterSortBy> sortByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.asc);
@@ -1409,56 +1226,44 @@ extension CourseQuerySortBy on QueryBuilder<Course, Course, QSortBy> {
     });
   }
 
-  QueryBuilder<Course, Course, QAfterSortBy> sortByLastUpdated() {
+  QueryBuilder<Course, Course, QAfterSortBy> sortByLastModified() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'lastUpdated', Sort.asc);
+      return query.addSortBy(r'lastModified', Sort.asc);
     });
   }
 
-  QueryBuilder<Course, Course, QAfterSortBy> sortByLastUpdatedDesc() {
+  QueryBuilder<Course, Course, QAfterSortBy> sortByLastModifiedDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'lastUpdated', Sort.desc);
+      return query.addSortBy(r'lastModified', Sort.desc);
     });
   }
 
-  QueryBuilder<Course, Course, QAfterSortBy> sortByMetadataJson() {
+  QueryBuilder<Course, Course, QAfterSortBy> sortByTitle() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'metadataJson', Sort.asc);
+      return query.addSortBy(r'title', Sort.asc);
     });
   }
 
-  QueryBuilder<Course, Course, QAfterSortBy> sortByMetadataJsonDesc() {
+  QueryBuilder<Course, Course, QAfterSortBy> sortByTitleDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'metadataJson', Sort.desc);
+      return query.addSortBy(r'title', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterSortBy> sortByUid() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'uid', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterSortBy> sortByUidDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'uid', Sort.desc);
     });
   }
 }
 
 extension CourseQuerySortThenBy on QueryBuilder<Course, Course, QSortThenBy> {
-  QueryBuilder<Course, Course, QAfterSortBy> thenByCourseId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'courseId', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterSortBy> thenByCourseIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'courseId', Sort.desc);
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterSortBy> thenByCourseTitle() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'courseTitle', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Course, Course, QAfterSortBy> thenByCourseTitleDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'courseTitle', Sort.desc);
-    });
-  }
-
   QueryBuilder<Course, Course, QAfterSortBy> thenByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'createdAt', Sort.asc);
@@ -1507,48 +1312,44 @@ extension CourseQuerySortThenBy on QueryBuilder<Course, Course, QSortThenBy> {
     });
   }
 
-  QueryBuilder<Course, Course, QAfterSortBy> thenByLastUpdated() {
+  QueryBuilder<Course, Course, QAfterSortBy> thenByLastModified() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'lastUpdated', Sort.asc);
+      return query.addSortBy(r'lastModified', Sort.asc);
     });
   }
 
-  QueryBuilder<Course, Course, QAfterSortBy> thenByLastUpdatedDesc() {
+  QueryBuilder<Course, Course, QAfterSortBy> thenByLastModifiedDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'lastUpdated', Sort.desc);
+      return query.addSortBy(r'lastModified', Sort.desc);
     });
   }
 
-  QueryBuilder<Course, Course, QAfterSortBy> thenByMetadataJson() {
+  QueryBuilder<Course, Course, QAfterSortBy> thenByTitle() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'metadataJson', Sort.asc);
+      return query.addSortBy(r'title', Sort.asc);
     });
   }
 
-  QueryBuilder<Course, Course, QAfterSortBy> thenByMetadataJsonDesc() {
+  QueryBuilder<Course, Course, QAfterSortBy> thenByTitleDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'metadataJson', Sort.desc);
+      return query.addSortBy(r'title', Sort.desc);
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterSortBy> thenByUid() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'uid', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Course, Course, QAfterSortBy> thenByUidDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'uid', Sort.desc);
     });
   }
 }
 
 extension CourseQueryWhereDistinct on QueryBuilder<Course, Course, QDistinct> {
-  QueryBuilder<Course, Course, QDistinct> distinctByCourseId({
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'courseId', caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<Course, Course, QDistinct> distinctByCourseTitle({
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'courseTitle', caseSensitive: caseSensitive);
-    });
-  }
-
   QueryBuilder<Course, Course, QDistinct> distinctByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'createdAt');
@@ -1569,17 +1370,25 @@ extension CourseQueryWhereDistinct on QueryBuilder<Course, Course, QDistinct> {
     });
   }
 
-  QueryBuilder<Course, Course, QDistinct> distinctByLastUpdated() {
+  QueryBuilder<Course, Course, QDistinct> distinctByLastModified() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'lastUpdated');
+      return query.addDistinctBy(r'lastModified');
     });
   }
 
-  QueryBuilder<Course, Course, QDistinct> distinctByMetadataJson({
+  QueryBuilder<Course, Course, QDistinct> distinctByTitle({
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'metadataJson', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'title', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<Course, Course, QDistinct> distinctByUid({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'uid', caseSensitive: caseSensitive);
     });
   }
 }
@@ -1591,19 +1400,7 @@ extension CourseQueryProperty on QueryBuilder<Course, Course, QQueryProperty> {
     });
   }
 
-  QueryBuilder<Course, String, QQueryOperations> courseIdProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'courseId');
-    });
-  }
-
-  QueryBuilder<Course, String, QQueryOperations> courseTitleProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'courseTitle');
-    });
-  }
-
-  QueryBuilder<Course, DateTime?, QQueryOperations> createdAtProperty() {
+  QueryBuilder<Course, DateTime, QQueryOperations> createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'createdAt');
     });
@@ -1621,15 +1418,27 @@ extension CourseQueryProperty on QueryBuilder<Course, Course, QQueryProperty> {
     });
   }
 
-  QueryBuilder<Course, DateTime?, QQueryOperations> lastUpdatedProperty() {
+  QueryBuilder<Course, DateTime, QQueryOperations> lastModifiedProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'lastUpdated');
+      return query.addPropertyName(r'lastModified');
     });
   }
 
-  QueryBuilder<Course, String, QQueryOperations> metadataJsonProperty() {
+  QueryBuilder<Course, CourseMetadata, QQueryOperations> metadataProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'metadataJson');
+      return query.addPropertyName(r'metadata');
+    });
+  }
+
+  QueryBuilder<Course, String, QQueryOperations> titleProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'title');
+    });
+  }
+
+  QueryBuilder<Course, String, QQueryOperations> uidProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'uid');
     });
   }
 }

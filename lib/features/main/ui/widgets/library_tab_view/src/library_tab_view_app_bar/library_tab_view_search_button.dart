@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:isar_community/isar.dart';
 import 'package:slidesync/data/models/course/course.dart';
-import 'package:slidesync/data/models/course_collection/course_collection.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
-import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
-import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/data/models/module/module.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
+import 'package:slidesync/data/repos/course_repo/module_repo.dart';
+import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/browse/course/ui/components/collection_card.dart';
 import 'package:slidesync/features/browse/collection/ui/components/material_list_card.dart';
@@ -84,11 +84,8 @@ class LibraryTabViewSearchButton extends ConsumerWidget with CourseCardActions {
         }
         final List searchResults;
         searchResults = switch (ref.watch(_searchTypeProvider)) {
-          0 => await (await CourseRepo.filter).courseTitleContains(controller.text, caseSensitive: false).findAll(),
-          1 =>
-            await (await CourseCollectionRepo.filter)
-                .collectionTitleContains(controller.text, caseSensitive: false)
-                .findAll(),
+          0 => await (await CourseRepo.filter).titleContains(controller.text, caseSensitive: false).findAll(),
+          1 => await (await CourseCollectionRepo.filter).titleContains(controller.text, caseSensitive: false).findAll(),
           2 => await (await CourseContentRepo.filter).titleContains(controller.text, caseSensitive: false).findAll(),
           _ => [],
         };
@@ -116,12 +113,11 @@ class LibraryTabViewSearchButton extends ConsumerWidget with CourseCardActions {
                       1 => Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: FutureBuilder(
-                          future: CourseRepo.getCourseById((value as CourseCollection).parentId),
+                          future: CourseRepo.getCourseById((value as Module).parentId),
                           builder: (context, courseSnapshot) {
                             return CollectionCard(
                               collection: (value),
-                              subtitleText:
-                                  "${value.contents.length} items -> ${courseSnapshot.data?.courseTitle ?? ""}",
+                              subtitleText: "${value.contents.length} items -> ${courseSnapshot.data?.title ?? ""}",
                               onTap: () async {
                                 // controller.closeView("");
                                 final curr = value;
@@ -133,7 +129,7 @@ class LibraryTabViewSearchButton extends ConsumerWidget with CourseCardActions {
                           },
                         ),
                       ),
-                      2 => MaterialListCard(content: value as CourseContent, showGoToCollection: true),
+                      2 => MaterialListCard(content: value as ModuleContent, showGoToCollection: true),
                       _ => const SizedBox(),
                     };
                   },

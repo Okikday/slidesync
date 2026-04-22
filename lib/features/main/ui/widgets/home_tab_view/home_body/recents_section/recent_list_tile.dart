@@ -3,7 +3,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/models/file_path.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
@@ -75,7 +75,7 @@ class RecentListTile extends ConsumerWidget {
                             child: BuildImagePathWidget(
                               width: 48,
                               height: 48,
-                              fileDetails: FileDetails(filePath: dataModel.previewPath ?? ''),
+                              fileDetails: FilePath(local: dataModel.previewPath ?? ''),
                               fallbackWidget: Icon(Iconsax.document_1, size: 26, color: ref.primary),
                             ),
                           ),

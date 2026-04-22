@@ -5,13 +5,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_collection/course_collection.dart';
+import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/add_contents_actions.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class AddContentsBottomSheet extends ConsumerStatefulWidget {
-  final CourseCollection collection;
+  final Module collection;
   const AddContentsBottomSheet({super.key, required this.collection});
 
   @override
@@ -79,15 +79,15 @@ class AddContentCardSection extends ConsumerWidget {
   const AddContentCardSection({super.key, required this.fixedExtentScrollController, required this.collection});
 
   final FixedExtentScrollController fixedExtentScrollController;
-  final CourseCollection collection;
+  final Module collection;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    const typesMap = <CourseContentType, _CourseContentTypeDetails>{
-      CourseContentType.image: (title: "Image", icon: HugeIconsSolid.image01),
-      CourseContentType.unknown: (title: "Auto", icon: HugeIconsSolid.magicWand03),
-      CourseContentType.document: (title: "Document", icon: HugeIconsSolid.documentAttachment),
-      CourseContentType.link: (title: "Link", icon: HugeIconsSolid.link01),
+    const typesMap = <ModuleContentType, _CourseContentTypeDetails>{
+      ModuleContentType.image: (title: "Image", icon: HugeIconsSolid.image01),
+      ModuleContentType.unknown: (title: "Auto", icon: HugeIconsSolid.magicWand03),
+      ModuleContentType.document: (title: "Document", icon: HugeIconsSolid.documentAttachment),
+      ModuleContentType.link: (title: "Link", icon: HugeIconsSolid.link01),
     };
 
     final theme = ref;

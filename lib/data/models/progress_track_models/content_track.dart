@@ -20,7 +20,7 @@ class ContentTrack {
   String? description;
 
   @Index()
-  late String contentHash;
+  late String xxh3Hash;
   double? progress;
   String? additionalDetail;
   List<String> pages = <String>[];
@@ -36,7 +36,7 @@ class ContentTrack {
     required String parentId,
     String? title,
     String? description,
-    required String contentHash,
+    required String xxh3Hash,
     double? progress,
     String? additionalDetail,
     List<String>? pages,
@@ -48,7 +48,7 @@ class ContentTrack {
       ..parentId = parentId
       ..title = title
       ..description = description
-      ..contentHash = contentHash
+      ..xxh3Hash = xxh3Hash
       ..progress = progress
       ..additionalDetail = additionalDetail
       ..pages = pages ?? <String>[]
@@ -63,7 +63,7 @@ class ContentTrack {
       'parentId': parentId,
       'title': title,
       'description': description,
-      'contentHash': contentHash,
+      'xxh3Hash': xxh3Hash,
       'progress': progress,
       'additionalDetail': additionalDetail,
       'pages': pages,
@@ -79,7 +79,7 @@ class ContentTrack {
       ..parentId = map['parentId'] as String
       ..title = map['title'] as String?
       ..description = map['description'] as String?
-      ..contentHash = map['contentHash'] as String? ?? ''
+      ..xxh3Hash = map['xxh3Hash'] as String? ?? ''
       ..progress = map['progress'] as double? ?? 0.0
       ..additionalDetail = map['additionalDetail'] as String? ?? ''
       ..pages = map['pages'] as List<String>? ?? <String>[]
@@ -93,7 +93,7 @@ class ContentTrack {
 
   @override
   String toString() {
-    return 'ProgressTrackModel(id: $id, contentId: $contentId, parentId: $parentId, title: $title, description: $description, contentHash: $contentHash, progress: $progress, additionalDetail: $additionalDetail, pages: $pages, lastRead: $lastRead, metadataJson: $metadataJson)';
+    return 'ProgressTrackModel(id: $id, contentId: $contentId, parentId: $parentId, title: $title, description: $description, xxh3Hash: $xxh3Hash, progress: $progress, additionalDetail: $additionalDetail, pages: $pages, lastRead: $lastRead, metadata: $metadataJson)';
   }
 
   @override
@@ -105,7 +105,7 @@ class ContentTrack {
         other.parentId == parentId &&
         other.title == title &&
         other.description == description &&
-        other.contentHash == contentHash &&
+        other.xxh3Hash == xxh3Hash &&
         other.progress == progress &&
         other.additionalDetail == additionalDetail &&
         const ListEquality().equals(other.pages, pages) &&
@@ -120,7 +120,7 @@ class ContentTrack {
         parentId.hashCode ^
         title.hashCode ^
         description.hashCode ^
-        contentHash.hashCode ^
+        xxh3Hash.hashCode ^
         progress.hashCode ^
         additionalDetail.hashCode ^
         pages.hashCode ^
@@ -136,7 +136,7 @@ extension ProgressTrackModelExtension on ContentTrack {
     String? parentId,
     String? title,
     String? description,
-    String? contentHash,
+    String? xxh3Hash,
     double? progress,
     String? additionalDetail,
     List<String>? pages,
@@ -148,7 +148,7 @@ extension ProgressTrackModelExtension on ContentTrack {
       ..parentId = parentId ?? this.parentId
       ..title = title ?? this.title
       ..description = description ?? this.description
-      ..contentHash = contentHash ?? this.contentHash
+      ..xxh3Hash = xxh3Hash ?? this.xxh3Hash
       ..progress = progress ?? this.progress
       ..additionalDetail = additionalDetail ?? this.additionalDetail
       ..pages = pages ?? this.pages

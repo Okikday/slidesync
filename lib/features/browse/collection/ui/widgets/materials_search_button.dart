@@ -3,11 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:isar_community/isar.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
-import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
+import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/features/browse/collection/ui/components/material_list_card.dart';
 import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
@@ -46,7 +45,7 @@ class MaterialsSearchButton extends ConsumerWidget {
             ),
           ];
         }
-        final List<CourseContent> searchResults = await (await CourseContentRepo.filter)
+        final List<ModuleContent> searchResults = await (await CourseContentRepo.filter)
             .parentIdEqualTo(collectionId)
             .titleContains(controller.text, caseSensitive: false)
             .findAll();

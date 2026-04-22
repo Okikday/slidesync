@@ -1,8 +1,8 @@
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/sync/entities/drive_file_entity.dart';
-import 'package:slidesync/data/models/course_content/content_metadata.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
-import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/models/module_content/module_content_metadata.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
+import 'package:slidesync/data/models/file_path.dart';
 
 extension DriveFileEntityCourseContentMapper on DriveFileEntity {
   bool get isUnsupportedForCourseContent => isFolder || mimeType == 'application/vnd.google-apps.shortcut';
@@ -13,20 +13,20 @@ extension DriveFileEntityCourseContentMapper on DriveFileEntity {
 
   int get sizeInBytes => int.tryParse(size ?? '') ?? 0;
 
-  CourseContentType inferCourseContentType() {
+  ModuleContentType inferCourseContentType() {
     final mt = mimeType.toLowerCase();
 
-    if (mt.contains('image')) return CourseContentType.image;
+    if (mt.contains('image')) return ModuleContentType.image;
     if (mt.contains('pdf') || mt.contains('document') || mt.contains('word') || mt.contains('text')) {
-      return CourseContentType.document;
+      return ModuleContentType.document;
     }
     if (mt.contains('presentation') || mt.contains('powerpoint') || mt.contains('slides')) {
-      return CourseContentType.document;
+      return ModuleContentType.document;
     }
     if (mt.contains('spreadsheet') || mt.contains('excel') || mt.contains('sheet')) {
-      return CourseContentType.document;
+      return ModuleContentType.document;
     }
-    return CourseContentType.link;
+    return ModuleContentType.link;
   }
 
   String resolvedTitle({bool useDisplayName = true}) {
@@ -34,9 +34,9 @@ extension DriveFileEntityCourseContentMapper on DriveFileEntity {
     return displayName;
   }
 
-  FileDetails toFileDetails() => FileDetails(urlPath: driveUrl);
+  FilePath toFileDetails() => FilePath(url: driveUrl);
 
-  ContentMetadata toContentMetadata({
+  ModuleContentMetadata toContentMetadata({
     ContentOrigin contentOrigin = ContentOrigin.server,
     String? originalFileName,
     String? author,
@@ -66,20 +66,20 @@ extension DriveFileEntityCourseContentMapper on DriveFileEntity {
       if (extraFields != null) ...extraFields,
     };
 
-    return ContentMetadata(
+    return ModuleContentMetadata.create(
       originalFileName: originalFileName ?? originalFilename ?? name,
-      thumbnails: thumbnailLink != null ? FileDetails(urlPath: thumbnailLink!) : null,
+      thumbnails: thumbnailLink != null ? FilePath(url: thumbnailLink!) : FilePath(),
       contentOrigin: contentOrigin,
       author: author ?? ownerDisplayName ?? ownerEmail,
       fields: fields.isEmpty ? null : fields,
     );
   }
 
-  CourseContent? toCourseContent({
+  ModuleContent? toCourseContent({
     required String parentId,
     String? contentId,
     String? title,
-    CourseContentType? courseContentType,
+    ModuleContentType? type,
     ContentOrigin contentOrigin = ContentOrigin.server,
     bool useDisplayName = true,
     String? descriptionOverride,
@@ -88,18 +88,18 @@ extension DriveFileEntityCourseContentMapper on DriveFileEntity {
     if (isUnsupportedForCourseContent) return null;
 
     final resolvedTitle = title ?? this.resolvedTitle(useDisplayName: useDisplayName);
-    final resolvedType = courseContentType ?? inferCourseContentType();
+    final resolvedType = type ?? inferCourseContentType();
 
-    return CourseContent.create(
-      contentHash: contentHashKey,
+    return ModuleContent.create(
+      xxh3Hash: contentHashKey,
       contentId: contentId ?? id,
       parentId: parentId,
       title: resolvedTitle,
       path: toFileDetails(),
       createdAt: createdAt != null ? DateTime.tryParse(createdTime ?? '') : null,
       lastModified: modifiedTime != null ? DateTime.tryParse(modifiedTime ?? '') : null,
-      courseContentType: resolvedType,
-      fileSize: sizeInBytes,
+      type: resolvedType,
+      fileSizeInBytes: sizeInBytes,
       description: descriptionOverride ?? description ?? '',
       metadata: toContentMetadata(
         contentOrigin: contentOrigin,
@@ -112,10 +112,10 @@ extension DriveFileEntityCourseContentMapper on DriveFileEntity {
 }
 
 extension DriveFileEntityCollectionMapper on Iterable<DriveFileEntity> {
-  List<CourseContent> toCourseContents({
+  List<ModuleContent> toCourseContents({
     required String parentId,
     String? contentIdPrefix,
-    CourseContentType? courseContentType,
+    ModuleContentType? type,
     ContentOrigin contentOrigin = ContentOrigin.server,
     bool useDisplayName = true,
     Map<String, dynamic>? extraFields,
@@ -124,20 +124,20 @@ extension DriveFileEntityCollectionMapper on Iterable<DriveFileEntity> {
       (file) => file.toCourseContent(
         parentId: parentId,
         contentId: contentIdPrefix == null ? null : '${contentIdPrefix}_${file.id}',
-        courseContentType: courseContentType,
+        type: type,
         contentOrigin: contentOrigin,
         useDisplayName: useDisplayName,
         extraFields: extraFields,
       ),
-    ).whereType<CourseContent>().toList();
+    ).whereType<ModuleContent>().toList();
   }
 }
 
 extension DrivePageCourseContentMapper on DrivePage {
-  List<CourseContent> toCourseContents({
+  List<ModuleContent> toCourseContents({
     required String parentId,
     String? contentIdPrefix,
-    CourseContentType? courseContentType,
+    ModuleContentType? type,
     ContentOrigin contentOrigin = ContentOrigin.server,
     bool useDisplayName = true,
     Map<String, dynamic>? extraFields,
@@ -145,7 +145,7 @@ extension DrivePageCourseContentMapper on DrivePage {
     return files.toCourseContents(
       parentId: parentId,
       contentIdPrefix: contentIdPrefix,
-      courseContentType: courseContentType,
+      type: type,
       contentOrigin: contentOrigin,
       useDisplayName: useDisplayName,
       extraFields: extraFields,

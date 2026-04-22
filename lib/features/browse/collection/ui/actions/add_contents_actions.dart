@@ -7,7 +7,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_collection/course_collection.dart';
+import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/add_contents/add_link_bottom_sheet.dart';
 import 'package:slidesync/features/browse/shared/usecases/types/add_content_result.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/add_contents/loading_overlay.dart';
@@ -20,7 +20,7 @@ import 'package:slidesync/shared/widgets/dialogs/app_alert_dialog.dart';
 class AddContentsActions {
   // Shared method for the common flow
   static Future<void> _executeAddContentFlow({
-    required CourseCollection collection,
+    required Module collection,
     required Future<List<AddContentResult>> Function(ValueNotifier<String>) addContentOperation,
     String initialMessage = "Loading...",
     bool permissionIssue = false,
@@ -75,7 +75,7 @@ class AddContentsActions {
                       "No folder selected or access denied.\n\nPlease try selecting individual files instead - you can still pick multiple files at once!.\n\nWould you like to select instead?",
                   onCancel: null,
                   onConfirm: () {
-                    onClickToAddContent(context, collection: collection, type: CourseContentType.unknown);
+                    onClickToAddContent(context, collection: collection, type: ModuleContentType.unknown);
                   },
                   onPop: () => context.pop(),
                 ).animate().scaleXY(
@@ -107,11 +107,11 @@ class AddContentsActions {
 
   static void onClickToAddContent(
     BuildContext context, {
-    required CourseCollection collection,
-    required CourseContentType type,
+    required Module collection,
+    required ModuleContentType type,
     bool selectByFolder = false,
   }) async {
-    if (type == CourseContentType.link) {
+    if (type == ModuleContentType.link) {
       UiUtils.hideDialog(context);
       UiUtils.showCustomDialog(
         context,
@@ -133,7 +133,7 @@ class AddContentsActions {
     );
   }
 
-  static void onClickToAddContentNoRef({required CourseCollection collection, required List<String> filePaths}) async {
+  static void onClickToAddContentNoRef({required Module collection, required List<String> filePaths}) async {
     await _executeAddContentFlow(
       collection: collection,
       initialMessage: "Offloading contents",

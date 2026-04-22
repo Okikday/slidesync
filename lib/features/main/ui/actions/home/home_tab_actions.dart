@@ -7,7 +7,7 @@ import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
-import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
@@ -71,9 +71,9 @@ mixin HomeTabActions {
   void onEmptyReadingButtonTapped() async {
     final anyCourse = await (await CourseRepo.filter).collectionsIsNotEmpty().findFirst();
     if (anyCourse == null) {
-      final anotherCourse = await (await CourseRepo.filter).courseIdIsNotEmpty().findFirst();
+      final anotherCourse = await (await CourseRepo.filter).uidIsNotEmpty().findFirst();
       if (anotherCourse != null) {
-        GlobalNav.withContext((context) => context.pushNamed(Routes.courseDetails.name, extra: anotherCourse.courseId));
+        GlobalNav.withContext((context) => context.pushNamed(Routes.courseDetails.name, extra: anotherCourse.uid));
         await Future.delayed(1.inSeconds);
       }
       GlobalNav.withContext(

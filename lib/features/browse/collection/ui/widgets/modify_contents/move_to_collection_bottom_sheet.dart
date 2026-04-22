@@ -8,10 +8,10 @@ import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:isar_community/isar.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_collection/course_collection.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
-import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
-import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/data/models/module/module.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
+import 'package:slidesync/data/repos/course_repo/module_repo.dart';
+import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/modify_contents/edit_course_tile.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/modify_contents/empty_courses_view.dart';
 import 'package:slidesync/features/browse/course/ui/components/collection_card.dart';
@@ -23,6 +23,7 @@ import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
@@ -35,7 +36,7 @@ enum ContentSheetMode {
 
 class MoveOrStoreContentBottomSheet extends ConsumerStatefulWidget {
   /// For moving existing contents
-  final List<CourseContent>? contentsToMove;
+  final List<ModuleContent>? contentsToMove;
 
   /// For storing new files - Map of file path to UUID
   final List<String>? filePaths;
@@ -43,7 +44,7 @@ class MoveOrStoreContentBottomSheet extends ConsumerStatefulWidget {
   /// Determines the mode
   final ContentSheetMode mode;
 
-  const MoveOrStoreContentBottomSheet.move({super.key, required List<CourseContent> contents})
+  const MoveOrStoreContentBottomSheet.move({super.key, required List<ModuleContent> contents})
     : contentsToMove = contents,
       filePaths = null,
       mode = ContentSheetMode.move;
@@ -60,7 +61,7 @@ class MoveOrStoreContentBottomSheet extends ConsumerStatefulWidget {
 class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreContentBottomSheet> {
   Timer? _searchDebounceTimer;
   late final ValueNotifier<List<Course>?> coursesNotifier;
-  late final ValueNotifier<List<CourseCollection>?> collectionsNotifier;
+  late final ValueNotifier<List<Module>?> collectionsNotifier;
   late final ValueNotifier<String> searchQueryNotifier;
   bool isLoadingCourses = true;
 
@@ -101,172 +102,172 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
         title: "",
         extendBodyBehindAppBar: true,
         appBar: AppBarContainer(child: AppBarContainerChild(context.isDarkMode, title: "Save file")),
-        body: AnimatedPadding(
-          duration: Durations.medium1,
-          padding: EdgeInsets.only(bottom: context.viewInsets.bottom),
-          child: SmoothCustomScrollView(
-            slivers: [
-              PinnedHeaderSliver(
-                child: ColoredBox(
-                  color: theme.background,
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 16, top: 12),
-                    child: ValueListenableBuilder(
-                      valueListenable: collectionsNotifier,
-                      builder: (context, collections, child) {
-                        return CustomText(
-                          collections == null ? "Select a course.." : "Select a collection",
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: ref.theme.onBackground,
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: ColoredBox(color: theme.background, child: ConstantSizing.columnSpacingMedium),
-              ),
-              PinnedHeaderSliver(
-                child: ColoredBox(
-                  color: theme.background,
+        body: SmoothCustomScrollView(
+          slivers: [
+            const SliverToBoxAdapter(child: TopPadding(withHeight: kToolbarHeight + 4)),
+            PinnedHeaderSliver(
+              child: ColoredBox(
+                color: theme.background,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 16, top: 12),
                   child: ValueListenableBuilder(
                     valueListenable: collectionsNotifier,
                     builder: (context, collections, child) {
-                      return MoveToCollectionSearchBar(
-                        onBackButtonPressed: collections == null
-                            ? null
-                            : () async {
-                                collectionsNotifier.value = null;
-
-                                final courses = await CourseRepo.getAllCourses();
-                                coursesNotifier.value = courses;
-                              },
-                        courseId: collections?.first.parentId,
-                        onSearchChanged: (query) {
-                          // Cancel previous timer
-                          _searchDebounceTimer?.cancel();
-
-                          // Start new timer
-                          _searchDebounceTimer = Timer(const Duration(milliseconds: 300), () async {
-                            // Update courses based on search
-                            if (collectionsNotifier.value == null) {
-                              // Searching courses - use findAll()
-                              if (query.isEmpty) {
-                                final courses = await CourseRepo.getAllCourses();
-                                coursesNotifier.value = courses;
-                              } else {
-                                final filter = await CourseRepo.filter;
-                                final courses = await filter.courseTitleContains(query, caseSensitive: false).findAll();
-                                coursesNotifier.value = courses;
-                              }
-                            } else {
-                              // Searching collections
-                              searchQueryNotifier.value = query;
-                            }
-                          });
-                        },
+                      return CustomText(
+                        collections == null ? "Select a course.." : "Select a collection",
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: ref.theme.onBackground,
                       );
                     },
                   ),
                 ),
               ),
+            ),
+            SliverToBoxAdapter(
+              child: ColoredBox(color: theme.background, child: ConstantSizing.columnSpacingMedium),
+            ),
+            PinnedHeaderSliver(
+              child: ColoredBox(
+                color: theme.background,
+                child: ValueListenableBuilder(
+                  valueListenable: collectionsNotifier,
+                  builder: (context, collections, child) {
+                    return MoveToCollectionSearchBar(
+                      isCollection: collections != null,
+                      onBackButtonPressed: collections == null
+                          ? null
+                          : () async {
+                              collectionsNotifier.value = null;
 
-              // Collections list (when a course is selected)
-              ValueListenableBuilder(
-                valueListenable: collectionsNotifier,
-                builder: (context, collections, child) {
-                  if (collections != null && collections.isNotEmpty) {
-                    return ValueListenableBuilder(
-                      valueListenable: searchQueryNotifier,
-                      builder: (context, searchQuery, child) {
-                        final filteredCollections = searchQuery.isEmpty
-                            ? collections
-                            : collections
-                                  .where((c) => c.collectionTitle.toLowerCase().contains(searchQuery.toLowerCase()))
-                                  .toList();
-                        return SliverList.builder(
-                          itemCount: filteredCollections.length,
-                          itemBuilder: (context, index) {
-                            final collection = filteredCollections[index];
-                            return Padding(
-                              padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
-                              child:
-                                  CollectionCard(
-                                        collection: collection,
-                                        onTap: () => _handleCollectionSelection(context, collection),
-                                      )
-                                      .animate()
-                                      .slideY(
-                                        begin: 0.1 * ((index + 1) / filteredCollections.length),
-                                        end: 0,
-                                        duration: Durations.extralong1,
-                                        curve: CustomCurves.defaultIosSpring,
-                                      )
-                                      .fadeIn(),
-                            );
-                          },
-                        );
+                              final courses = await CourseRepo.getAllCourses();
+                              coursesNotifier.value = courses;
+                            },
+                      courseId: collections?.first.parentId,
+                      onSearchChanged: (query) {
+                        // Cancel previous timer
+                        _searchDebounceTimer?.cancel();
+
+                        // Start new timer
+                        _searchDebounceTimer = Timer(const Duration(milliseconds: 300), () async {
+                          // Update courses based on search
+                          if (collectionsNotifier.value == null) {
+                            // Searching courses - use findAll()
+                            if (query.isEmpty) {
+                              final courses = await CourseRepo.getAllCourses();
+                              coursesNotifier.value = courses;
+                            } else {
+                              final filter = await CourseRepo.filter;
+                              final courses = await filter.titleContains(query, caseSensitive: false).findAll();
+                              coursesNotifier.value = courses;
+                            }
+                          } else {
+                            // Searching collections
+                            searchQueryNotifier.value = query;
+                          }
+                        });
                       },
                     );
-                  }
-                  return const SliverToBoxAdapter();
-                },
+                  },
+                ),
               ),
+            ),
 
-              ValueListenableBuilder(
-                valueListenable: collectionsNotifier,
-                builder: (context, collections, child) {
-                  if (collections == null) {
-                    return ValueListenableBuilder(
-                      valueListenable: coursesNotifier,
-                      builder: (context, courses, child) {
-                        if (courses == null) {
-                          return const SliverToBoxAdapter(child: LoadingLogo());
-                        }
+            // Collections list (when a course is selected)
+            ValueListenableBuilder(
+              valueListenable: collectionsNotifier,
+              builder: (context, collections, child) {
+                if (collections != null && collections.isNotEmpty) {
+                  return ValueListenableBuilder(
+                    valueListenable: searchQueryNotifier,
+                    builder: (context, searchQuery, child) {
+                      final filteredCollections = searchQuery.isEmpty
+                          ? collections
+                          : collections
+                                .where((c) => c.title.toLowerCase().contains(searchQuery.toLowerCase()))
+                                .toList();
+                      return SliverList.builder(
+                        itemCount: filteredCollections.length,
+                        itemBuilder: (context, index) {
+                          final collection = filteredCollections[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
+                            child:
+                                CollectionCard(
+                                      collection: collection,
+                                      onTap: () => _handleCollectionSelection(context, collection),
+                                    )
+                                    .animate()
+                                    .slideY(
+                                      begin: 0.1 * ((index + 1) / filteredCollections.length),
+                                      end: 0,
+                                      duration: Durations.extralong1,
+                                      curve: CustomCurves.defaultIosSpring,
+                                    )
+                                    .fadeIn(),
+                          );
+                        },
+                      );
+                    },
+                  );
+                }
+                return const SliverToBoxAdapter();
+              },
+            ),
 
-                        if (courses.isEmpty) {
-                          return EmptyCoursesView();
-                        }
+            ValueListenableBuilder(
+              valueListenable: collectionsNotifier,
+              builder: (context, collections, child) {
+                if (collections == null) {
+                  return ValueListenableBuilder(
+                    valueListenable: coursesNotifier,
+                    builder: (context, courses, child) {
+                      if (courses == null) {
+                        return const SliverToBoxAdapter(child: LoadingLogo());
+                      }
 
-                        return SliverList.builder(
-                          itemCount: courses.length,
-                          itemBuilder: (context, index) {
-                            final course = courses[index];
-                            return Padding(
-                              padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
-                              child:
-                                  EditCourseTile(
-                                        courseName: course.courseName,
-                                        courseCode: course.courseCode,
-                                        categoriesCount: course.collections.length,
-                                        selectionState: (selected: false, isSelecting: false),
-                                        imgFilePath: course.thumbnailPath,
-                                        onTap: () => _handleCourseSelection(context, course),
-                                        onSelected: () {},
-                                      )
-                                      .animate()
-                                      .slideY(
-                                        begin: 0.1 * ((index + 1) / courses.length),
-                                        end: 0,
-                                        duration: Durations.extralong1,
-                                        curve: CustomCurves.defaultIosSpring,
-                                      )
-                                      .fadeIn(),
-                            );
-                          },
-                        );
-                      },
-                    );
-                  }
-                  return const SliverToBoxAdapter();
-                },
-              ),
+                      if (courses.isEmpty) {
+                        return EmptyCoursesView();
+                      }
 
-              const SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
-            ],
-          ),
+                      return SliverList.builder(
+                        itemCount: courses.length,
+                        itemBuilder: (context, index) {
+                          final course = courses[index];
+                          return Padding(
+                            padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
+                            child:
+                                EditCourseTile(
+                                      courseName: course.courseName,
+                                      courseCode: course.courseCode,
+                                      categoriesCount: course.collections.length,
+                                      selectionState: (selected: false, isSelecting: false),
+                                      imgFilePath: course.thumbnailPath,
+                                      onTap: () => _handleCourseSelection(context, course),
+                                      onSelected: () {},
+                                    )
+                                    .animate()
+                                    .slideY(
+                                      begin: 0.1 * ((index + 1) / courses.length),
+                                      end: 0,
+                                      duration: Durations.extralong1,
+                                      curve: CustomCurves.defaultIosSpring,
+                                    )
+                                    .fadeIn(),
+                          );
+                        },
+                      );
+                    },
+                  );
+                }
+                return const SliverToBoxAdapter();
+              },
+            ),
+
+            const SliverToBoxAdapter(child: BottomPadding()),
+
+            const SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
+          ],
         ),
       ),
     );
@@ -287,7 +288,7 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
     }
   }
 
-  Future<void> _handleCollectionSelection(BuildContext context, CourseCollection collection) async {
+  Future<void> _handleCollectionSelection(BuildContext context, Module collection) async {
     if (widget.mode == ContentSheetMode.move) {
       await _handleMoveContents(context, collection);
     } else {
@@ -296,15 +297,15 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
   }
 
   /// Handle moving existing contents to a collection
-  Future<void> _handleMoveContents(BuildContext context, CourseCollection collection) async {
+  Future<void> _handleMoveContents(BuildContext context, Module collection) async {
     // context.pop(true);
-    if (widget.contentsToMove!.isNotEmpty && collection.collectionId == widget.contentsToMove!.first.parentId) {
+    if (widget.contentsToMove!.isNotEmpty && collection.uid == widget.contentsToMove!.first.parentId) {
       return;
     }
 
     UiUtils.showLoadingDialog(context, message: "Hold on for a moment while we move your materials", canPop: false);
 
-    await CourseContentRepo.moveContents(widget.contentsToMove!, collection.collectionId);
+    await CourseContentRepo.moveContents(widget.contentsToMove!, collection.uid);
     GlobalNav.withContext((c) => c.pop());
 
     GlobalNav.withContext((c) => c.pushReplacementNamed(Routes.courseMaterials.name, extra: collection));
@@ -312,11 +313,11 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
   }
 
   /// Handle storing new files to a collection
-  Future<void> _handleStoreFiles(BuildContext context, CourseCollection collection) async {
+  Future<void> _handleStoreFiles(BuildContext context, Module collection) async {
     context.pop(true);
     UiUtils.showLoadingDialog(context, message: "Storing your files...", canPop: false);
 
-    await _storeContentsToCollection(collectionId: collection.collectionId, filePaths: widget.filePaths!);
+    await _storeContentsToCollection(collectionId: collection.uid, filePaths: widget.filePaths!);
     context.pop();
 
     // GlobalNav.withContext((c) => c.pop());
@@ -337,11 +338,13 @@ class MoveToCollectionSearchBar extends ConsumerWidget {
   final void Function(String) onSearchChanged;
   final void Function()? onBackButtonPressed;
   final String? courseId;
+  final bool isCollection;
   const MoveToCollectionSearchBar({
     super.key,
     required this.onSearchChanged,
     required this.onBackButtonPressed,
     this.courseId,
+    required this.isCollection,
   });
 
   @override
@@ -354,7 +357,7 @@ class MoveToCollectionSearchBar extends ConsumerWidget {
           if (onBackButtonPressed != null) BackButton(onPressed: onBackButtonPressed),
           Expanded(
             child: SearchBar(
-              hintText: "Search a course",
+              hintText: "Search for a ${(isCollection ? "Collection" : "Course")}",
               onChanged: onSearchChanged,
               leading: const Padding(
                 padding: EdgeInsets.only(left: 8, right: 4),

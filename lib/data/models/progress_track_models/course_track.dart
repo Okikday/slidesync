@@ -68,7 +68,7 @@ class CourseTrack {
 
   @override
   String toString() {
-    return 'CourseTrack(id: $id, courseId: $courseId, title: $title, description: $description, progress: $progress, additionalDetail: $additionalDetail, metadataJson: $metadataJson)';
+    return 'CourseTrack(id: $id, courseId: $courseId, title: $title, description: $description, progress: $progress, additionalDetail: $additionalDetail, metadata: $metadataJson)';
   }
 
   @override

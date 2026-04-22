@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/data/models/course_collection/course_collection.dart';
+import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/models/file_path.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/add_link_actions.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/retrieve_content_uc.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -14,7 +14,7 @@ import 'package:slidesync/shared/widgets/bottom_sheets/input_text_bottom_sheet.d
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 class AddLinkBottomSheet extends ConsumerStatefulWidget {
-  final CourseCollection collection;
+  final Module collection;
   const AddLinkBottomSheet({super.key, required this.collection});
 
   @override
@@ -62,7 +62,7 @@ class _AddLinkBottomSheetState extends ConsumerState<AddLinkBottomSheet> {
 
             final bool result = await AddLinkActions.onAddLinkContent(
               text,
-              parentId: widget.collection.collectionId,
+              parentId: widget.collection.uid,
               previewLinkDetails: additionalDetails.value,
             );
 
@@ -103,7 +103,7 @@ class _AddLinkBottomSheetState extends ConsumerState<AddLinkBottomSheet> {
                       );
 
                       return BuildImagePathWidget(
-                        fileDetails: FileDetails(urlPath: snapshot.data!.previewUrl!),
+                        fileDetails: FilePath(url: snapshot.data!.previewUrl!),
                         fit: BoxFit.cover,
                         width: 100,
                         height: 100,

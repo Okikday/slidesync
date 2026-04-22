@@ -1,6 +1,3 @@
-import 'dart:math';
-
-import 'package:flutter/widgets.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
@@ -16,14 +13,14 @@ class CreateCourseUc {
     String? courseImagePath,
   }) async {
     final Result<Course?> createCourseOutcome = await Result.tryRunAsync<Course>(() async {
-      Course course = Course.create(courseTitle: Formatter.joinCodeToTitle(courseCode, courseName));
+      Course course = Course.create(title: Formatter.joinCodeToTitle(courseCode, courseName));
 
       if (courseImagePath != null) {
-        await ContentThumbnailCreator.createThumbnailForCourse(courseImagePath, filename: course.courseId);
+        await ContentThumbnailCreator.createThumbnailForCourse(courseImagePath, filename: course.uid);
       }
       final author = (await UserDataFunctions().getUserDetails()).data?.userID;
       course = course.copyWith(
-        metadataJson: (course.metadata.copyWith(author: author, color: AppPalette.getRandom())).toJson(),
+        metadata: (course.metadata.copyWith(author: author, color: AppPalette.getRandom())),
       );
 
       final createdId = await CourseRepo.addCourse(course);

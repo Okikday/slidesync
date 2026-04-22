@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
-import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/models/file_path.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/browse/course/providers/course_details_provider.dart';
@@ -74,9 +74,7 @@ class CourseDetailsHeaderContent extends ConsumerWidget {
     final shapeSize = kToolbarHeight * 2;
     final courseDetail = ref.watch(
       CourseProviders.courseProvider(courseId).select(
-        (s) => s.whenData(
-          (cb) => (title: cb.courseTitle, imageLocationJson: cb.thumbnailPath, description: cb.description),
-        ),
+        (s) => s.whenData((cb) => (title: cb.title, imageLocationJson: cb.thumbnailPath, description: cb.description)),
       ),
     );
 
@@ -179,7 +177,7 @@ class CourseDetailsHeaderContentChild extends ConsumerWidget {
                         return AnimatedShapeProgressWidget(
                               progress: data,
                               shapeSize: shapeSize,
-                              fileDetails: FileDetails(filePath: thumbnailPath),
+                              fileDetails: FilePath(local: thumbnailPath),
                               onClick: () async {
                                 await Future.delayed(Durations.short4);
                                 final course = await CourseRepo.getCourseById(courseId);

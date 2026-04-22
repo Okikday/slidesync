@@ -4,8 +4,8 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/crypto_utils.dart';
-import 'package:slidesync/data/models/file_details.dart';
-import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/data/models/file_path.dart';
+import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
 import 'package:slidesync/features/sync/providers/download_feed_provider.dart';
 import 'package:slidesync/features/sync/providers/download_history_provider.dart';
@@ -315,7 +315,7 @@ class _DownloadTile extends ConsumerWidget {
       return;
     }
 
-    final path = content.path.filePath;
+    final path = content.path.local;
     if (path.isEmpty || !await File(path).exists()) {
       _showSnack(context, 'File is no longer available on disk.');
       return;
@@ -324,13 +324,19 @@ class _DownloadTile extends ConsumerWidget {
     try {
       final hash = await CryptoUtils.calculateFileHashXXH3(path);
       final resolved = await CourseContentRepo.getByHash(hash);
-      if (resolved == null) {
-        _showSnack(context, 'Could not verify the downloaded file.');
+      if (resolved != null) {
+        await ContentViewGateActions.redirectToViewer(ref, resolved);
         return;
       }
-      await ContentViewGateActions.redirectToViewer(ref, resolved);
+
+      // Fallback: open the indexed content when hash lookup is stale/missing.
+      await ContentViewGateActions.redirectToViewer(ref, content);
     } catch (_) {
-      _showSnack(context, 'Could not open this downloaded item.');
+      try {
+        await ContentViewGateActions.redirectToViewer(ref, content);
+      } catch (_) {
+        _showSnack(context, 'Could not open this downloaded item.');
+      }
     }
   }
 

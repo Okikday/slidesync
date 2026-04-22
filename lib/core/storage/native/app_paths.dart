@@ -21,5 +21,7 @@ class AppPaths {
 
   static final tempFolder = "$_appFolderName${Platform.pathSeparator}temp";
 
+  static final rootFolder = _appFolderName;
+
   /// Others
 }

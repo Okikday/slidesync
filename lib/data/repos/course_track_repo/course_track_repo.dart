@@ -12,17 +12,17 @@ class CourseTrackRepo {
       (await _isar).courseTracks.filter();
 
   // static Future<QueryBuilder<CourseTrack, CourseTrack, QAfterFilterCondition>> _queryByCourseId(String courseId) async {
-  //   return (await _isarData.query<CourseTrack>((q) => q.idGreaterThan(0))).filter().courseIdEqualTo(courseId);
+  //   return (await _isarData.query<CourseTrack>((q) => q.idGreaterThan(0))).filter().uidEqualTo(courseId);
   // }
 
   static Future<CourseTrack?> getByCourseId(String courseId) async {
-    return await (await _isar).courseTracks.filter().courseIdEqualTo(courseId).findFirst();
+    return await (await _isar).courseTracks.filter().uidEqualTo(courseId).findFirst();
   }
 
   static Stream<CourseTrack?> watchByCourseId(String courseId) async* {
     yield* (await _isar).courseTracks
         .filter()
-        .courseIdEqualTo(courseId)
+        .uidEqualTo(courseId)
         .watch(fireImmediately: true)
         .map((list) => list.firstOrNull);
   }

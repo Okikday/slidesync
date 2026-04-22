@@ -20,9 +20,9 @@ mixin CourseCardActions {
 
     if (context.mounted) {
       if (DeviceUtils.isDesktop()) {
-        context.goNamed(Routes.courseDetails.name, extra: course.courseId);
+        context.goNamed(Routes.courseDetails.name, extra: course.uid);
       } else {
-        context.pushNamed(Routes.courseDetails.name, extra: course.courseId);
+        context.pushNamed(Routes.courseDetails.name, extra: course.uid);
       }
     }
     libraryNotifier.isAnyCardAnimating = false;

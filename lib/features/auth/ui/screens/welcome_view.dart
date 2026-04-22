@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/assets/assets.gen.dart';
 import 'package:slidesync/features/auth/ui/screens/onboarding_1.dart';

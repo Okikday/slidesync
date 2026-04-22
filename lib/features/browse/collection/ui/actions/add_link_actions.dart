@@ -4,11 +4,11 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/crypto_utils.dart';
-import 'package:slidesync/data/models/course_content/content_metadata.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
-import 'package:slidesync/data/models/file_details.dart';
-import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
-import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/data/models/module_content/module_content_metadata.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
+import 'package:slidesync/data/models/file_path.dart';
+import 'package:slidesync/data/repos/course_repo/module_repo.dart';
+import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/retrieve_content_uc.dart';
 import 'package:super_clipboard/super_clipboard.dart';
 
@@ -22,14 +22,14 @@ class AddLinkActions {
     if (parentId.isEmpty) return false;
     final collection = await CourseCollectionRepo.getById(parentId);
     if (collection == null) return false;
-    final contentHash = CryptoUtils.calculateStringHash(link);
-    final CourseContent? sameHashedContent = await CourseContentRepo.findFirstDuplicateContentByHash(
+    final xxh3Hash = CryptoUtils.calculateStringHash(link);
+    final ModuleContent? sameHashedContent = await CourseContentRepo.findFirstDuplicateContentByHash(
       collection,
-      contentHash,
+      xxh3Hash,
     );
-    final CourseContent newContent;
+    final ModuleContent newContent;
     if (sameHashedContent != null) {
-      if (contentHash == sameHashedContent.contentHash && link == sameHashedContent.path.fileDetails.urlPath) {
+      if (xxh3Hash == sameHashedContent.xxh3Hash && link == sameHashedContent.path.url) {
         if (previewLinkDetails.isEmpty) return false;
         if ((previewLinkDetails.title != null && previewLinkDetails.title == sameHashedContent.title)) {
           if (previewLinkDetails.description != null &&
@@ -43,10 +43,10 @@ class AddLinkActions {
         // log("They are the same, modify");
 
         newContent = sameHashedContent.copyWith(
-          contentHash: contentHash,
+          xxh3Hash: xxh3Hash,
           title: previewLinkDetails.title != "Unknown link" ? previewLinkDetails.title : "Unknown link",
           description: previewLinkDetails.description != '' ? previewLinkDetails.description : '',
-          metadataJson: jsonEncode({
+          metadata: ModuleContentMetadata.fromMap({
             ...jsonDecode(sameHashedContent.metadataJson),
             'previewUrl': previewLinkDetails.previewUrl,
           }),
@@ -54,15 +54,15 @@ class AddLinkActions {
         return await CourseContentRepo.addMultipleContents(newContent.collectionId, [newContent]);
       }
     } else {
-      newContent = CourseContent.create(
-        contentHash: contentHash,
-        parentId: collection.collectionId,
+      newContent = ModuleContent.create(
+        xxh3Hash: xxh3Hash,
+        parentId: collection.uid,
         title: previewLinkDetails.title ?? "Unknown link",
         description: previewLinkDetails.description ?? '',
-        path: FileDetails(urlPath: link),
-        fileSize: link.length,
-        courseContentType: CourseContentType.link,
-        metadata: ContentMetadata(fields: {'previewUrl': previewLinkDetails.previewUrl}),
+        path: FilePath(url: link),
+        fileSizeInBytes: link.length,
+        type: ModuleContentType.link,
+        metadata: ModuleContentMetadata.create(fields: {'previewUrl': previewLinkDetails.previewUrl}),
       );
       return await CourseContentRepo.addMultipleContents(newContent.collectionId, [newContent]);
     }

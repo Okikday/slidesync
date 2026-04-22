@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -13,7 +11,7 @@ import 'package:slidesync/features/browse/course/ui/widgets/shared/edit_course_b
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/models/file_path.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
@@ -96,7 +94,7 @@ class CourseCardContextMenu extends ConsumerWidget {
                                       child: SizedBox.square(
                                         dimension: dimension - 8,
                                         child: BuildImagePathWidget(
-                                          fileDetails: FileDetails(filePath: course.thumbnailPath),
+                                          fileDetails: FilePath(local: course.thumbnailPath),
                                           fallbackWidget: Icon(Iconsax.document_1, size: 16, color: theme.onBackground),
                                         ),
                                       ),
@@ -184,7 +182,7 @@ class CourseCardContextMenu extends ConsumerWidget {
                       iconData: HugeIconsSolid.play,
                       onTap: () {
                         UiUtils.hideDialog(context);
-                        context.pushNamed(Routes.courseDetails.name, extra: course.courseId);
+                        context.pushNamed(Routes.courseDetails.name, extra: course.uid);
                       },
                     ),
                     divider,
@@ -207,7 +205,7 @@ class CourseCardContextMenu extends ConsumerWidget {
                           enableDrag: false,
                           showDragHandle: false,
                           isScrollControlled: true,
-                          builder: (context) => EditCourseBottomSheet(courseId: course.courseId),
+                          builder: (context) => EditCourseBottomSheet(courseId: course.uid),
                         );
                         // context.pushNamed(Routes.courseDetails.name, extra: course.courseId);
                       },
@@ -224,7 +222,7 @@ class CourseCardContextMenu extends ConsumerWidget {
                       onTap: () {
                         UiUtils.hideDialog(context);
                         if (rootNavigatorKey.currentContext != null && rootNavigatorKey.currentContext!.mounted) {
-                          ModifyCourseActions().showDeleteCourseDialog(course.courseId);
+                          ModifyCourseActions().showDeleteCourseDialog(course.uid);
                         }
                       },
                     ),

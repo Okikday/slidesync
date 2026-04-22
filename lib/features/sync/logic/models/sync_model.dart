@@ -14,7 +14,7 @@ class RemoteCourse {
   final String courseTitle;
   final String description;
   final DateTime? createdAt;
-  final DateTime? lastUpdated;
+  final DateTime? lastModified;
   final String metadataJson;
   final int collectionsCount;
   final int totalContentsCount;
@@ -24,7 +24,7 @@ class RemoteCourse {
     required this.courseTitle,
     this.description = '',
     this.createdAt,
-    this.lastUpdated,
+    this.lastModified,
     this.metadataJson = '{}',
     this.collectionsCount = 0,
     this.totalContentsCount = 0,
@@ -36,7 +36,7 @@ class RemoteCourse {
       'courseTitle': courseTitle,
       'description': description,
       'createdAt': createdAt?.toIso8601String(),
-      'lastUpdated': lastUpdated?.toIso8601String(),
+      'lastModified': lastModified?.toIso8601String(),
       'metadataJson': metadataJson,
       'collectionsCount': collectionsCount,
       'totalContentsCount': totalContentsCount,
@@ -49,7 +49,7 @@ class RemoteCourse {
       courseTitle: map['courseTitle'] ?? '',
       description: map['description'] ?? '',
       createdAt: map['createdAt'] != null ? DateTime.tryParse(map['createdAt']) : null,
-      lastUpdated: map['lastUpdated'] != null ? DateTime.tryParse(map['lastUpdated']) : null,
+      lastModified: map['lastModified'] != null ? DateTime.tryParse(map['lastModified']) : null,
       metadataJson: map['metadataJson'] ?? '{}',
       collectionsCount: map['collectionsCount'] ?? 0,
       totalContentsCount: map['totalContentsCount'] ?? 0,
@@ -114,20 +114,20 @@ class RemoteCollection {
 
 /// Remote content metadata (global reference)
 class RemoteContent {
-  final String contentHash;
+  final String xxh3Hash;
   final String title;
   final String description;
-  final String courseContentType; // Stored as string
+  final String type; // Stored as string
   final int fileSize;
   final String storageUrl; // Firebase Storage download URL for .ss file
   final String metadataJson;
   final DateTime? uploadedAt;
 
   RemoteContent({
-    required this.contentHash,
+    required this.xxh3Hash,
     required this.title,
     this.description = '',
-    required this.courseContentType,
+    required this.type,
     required this.fileSize,
     required this.storageUrl,
     this.metadataJson = '{}',
@@ -136,10 +136,10 @@ class RemoteContent {
 
   Map<String, dynamic> toMap() {
     return {
-      'contentHash': contentHash,
+      'xxh3Hash': xxh3Hash,
       'title': title,
       'description': description,
-      'courseContentType': courseContentType,
+      'type': type,
       'fileSize': fileSize,
       'storageUrl': storageUrl,
       'metadataJson': metadataJson,
@@ -149,10 +149,10 @@ class RemoteContent {
 
   factory RemoteContent.fromMap(Map<String, dynamic> map) {
     return RemoteContent(
-      contentHash: map['contentHash'] ?? '',
+      xxh3Hash: map['xxh3Hash'] ?? '',
       title: map['title'] ?? '',
       description: map['description'] ?? '',
-      courseContentType: map['courseContentType'] ?? 'document',
+      type: map['type'] ?? 'document',
       fileSize: map['fileSize'] ?? 0,
       storageUrl: map['storageUrl'] ?? '',
       metadataJson: map['metadataJson'] ?? '{}',

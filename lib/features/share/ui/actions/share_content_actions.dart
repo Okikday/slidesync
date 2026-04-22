@@ -7,9 +7,8 @@ import 'package:isar_community/isar.dart';
 import 'package:path/path.dart' as p;
 import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
-import 'package:slidesync/data/models/file_details.dart';
-import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
+import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/features/share/logic/usecases/share_content_uc.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
@@ -17,13 +16,13 @@ class ShareContentActions {
   static Future<void> shareContent(BuildContext context, String contentId) async {
     final content = await CourseContentRepo.getByContentId(contentId);
     if (content == null) return;
-    if (content.courseContentType == CourseContentType.document ||
-        content.courseContentType == CourseContentType.image ||
-        content.courseContentType == CourseContentType.unknown) {
-      ShareContentActions.shareFileContent(context, content.contentId);
-    } else if (content.courseContentType == CourseContentType.link) {
+    if (content.type == ModuleContentType.document ||
+        content.type == ModuleContentType.image ||
+        content.type == ModuleContentType.unknown) {
+      ShareContentActions.shareFileContent(context, content.uid);
+    } else if (content.type == ModuleContentType.link) {
       UiUtils.showFlushBar(context, msg: "Preparing content...");
-      ShareContentUc().shareText(context, content.path.urlPath);
+      ShareContentUc().shareText(context, content.path.url);
     } else {
       UiUtils.showFlushBar(context, msg: "Sharing not supported!");
     }
@@ -39,23 +38,20 @@ class ShareContentActions {
 
     await ShareContentUc().shareFile(
       context,
-      File(content.path.filePath),
-      filename: origFilename ?? p.setExtension(content.title, p.extension(content.path.filePath)),
+      File(content.path.local),
+      filename: origFilename ?? p.setExtension(content.title, p.extension(content.path.local)),
     );
   }
 
   static Future<void> shareCollection(BuildContext context, String collectionId) async {
     UiUtils.showFlushBar(context, msg: "Preparing files...");
-    final contents = await (await CourseContentRepo.filter).parentIdEqualTo(collectionId).sortByContentId().findAll();
+    final contents = await (await CourseContentRepo.filter).parentIdEqualTo(collectionId).sortByUid().findAll();
     if (contents.isEmpty) {
       UiUtils.showFlushBar(context, msg: "Nothing to share");
       return;
     }
     final Set<(File file, String fileName)> dataSet = contents.map((e) {
-      return (
-        File(e.path.filePath),
-        (e.metadata.originalFileName) ?? p.setExtension(e.title, p.extension(e.path.filePath)),
-      );
+      return (File(e.path.local), (e.metadata.originalFileName) ?? p.setExtension(e.title, p.extension(e.path.local)));
     }).toSet();
     final files = dataSet.map((e) => e.$1).toList();
     final fileNames = dataSet.map((e) => e.$2).toList();
@@ -69,12 +65,10 @@ class ShareContentActions {
       UiUtils.showFlushBar(context, msg: "Nothing to share");
       return;
     }
-    final contents = await (await CourseContentRepo.filter)
-        .anyOf(contentIds, (a, b) => a.contentIdEqualTo(b))
-        .findAll();
+    final contents = await (await CourseContentRepo.filter).anyOf(contentIds, (a, b) => a.uidEqualTo(b)).findAll();
     final Set<(File file, String fileName)> dataSet = contents.map((e) {
-      final filename = p.setExtension(e.title, p.extension(e.path.filePath));
-      return (File(e.path.filePath), filename.isEmpty ? ((e.metadata.originalFileName) ?? "Unknown file") : filename);
+      final filename = p.setExtension(e.title, p.extension(e.path.local));
+      return (File(e.path.local), filename.isEmpty ? ((e.metadata.originalFileName) ?? "Unknown file") : filename);
     }).toSet();
     final files = dataSet.map((e) => e.$1).toList();
     final fileNames = dataSet.map((e) => e.$2).toList();

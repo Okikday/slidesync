@@ -8,11 +8,14 @@ class ThemeUtils {
 
   /// Converts a hexadecimal string to [Color], supports formats "#RRGGBB" and "#AARRGGBB".
   static Color hexToColor(String hex) {
-    final buffer = StringBuffer();
-    if (hex.startsWith('#')) hex = hex.substring(1);
-    if (hex.length == 6) buffer.write('FF'); // default alpha
-    buffer.write(hex);
-    return Color(int.parse(buffer.toString(), radix: 16));
+    try {
+      var cleanHex = hex.startsWith('#') ? hex.substring(1) : hex;
+      if (cleanHex.length == 6) cleanHex = 'FF$cleanHex';
+      if (cleanHex.length != 8) return const Color(0x00000000);
+      return Color(int.parse(cleanHex, radix: 16));
+    } catch (_) {
+      return const Color(0x00000000);
+    }
   }
 }
 

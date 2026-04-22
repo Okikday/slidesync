@@ -17,8 +17,8 @@ import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 
 import 'package:slidesync/app.dart';
 import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/data/models/course_collection/course_collection.dart';
-import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/data/models/module/module.dart';
+import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/firebase_options.dart';
 import 'package:slidesync/features/sync/logic/notification_service.dart';
 import 'package:window_manager/window_manager.dart';

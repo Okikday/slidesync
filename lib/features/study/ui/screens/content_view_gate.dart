@@ -101,7 +101,7 @@
 //                             fileDetails: FileDetails(filePath: content.previewPath),
 //                             fit: BoxFit.cover,
 //                             fallbackWidget: Icon(
-//                               WidgetHelper.resolveIconData(content.courseContentType, false),
+//                               WidgetHelper.resolveIconData(content.type, false),
 //                               size: 36,
 //                             ),
 //                           ),
@@ -135,7 +135,7 @@
 //                                   ),
 //                                 ),
 //                                 CustomText(
-//                                   Formatter.formatEnumName(content.courseContentType.name),
+//                                   Formatter.formatEnumName(content.type.name),
 //                                   fontSize: 11,
 //                                   color: theme.supportingText,
 //                                 ),

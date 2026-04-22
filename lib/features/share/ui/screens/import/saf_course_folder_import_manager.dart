@@ -13,8 +13,8 @@ import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course/course.dart';
-import 'package:slidesync/data/models/course_collection/course_collection.dart';
-import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/data/models/module/module.dart';
+import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/add_content/store_contents.dart';
 import 'package:slidesync/features/browse/shared/usecases/types/store_content_args.dart';
@@ -351,8 +351,11 @@ class CourseFolderImportManager {
     log('✅ Scan complete. Opening import screen...');
 
     if (context.mounted) {
-      await Navigator.of(context).push(
-        PageAnimation.pageRouteBuilder(_FolderImportScreen(folderNode: folderNode), type: TransitionType.rightToLeft),
+      context.pop();
+      GlobalNav.withContext(
+        (context) => Navigator.of(context).push(
+          PageAnimation.pageRouteBuilder(_FolderImportScreen(folderNode: folderNode), type: TransitionType.rightToLeft),
+        ),
       );
     }
   }
@@ -385,17 +388,14 @@ class CourseFolderImportManager {
       log('📚 Creating course: $baseCourseName (has subfolders: $hasSubfolders)');
 
       // Create the Course
-      final course = Course.create(
-        courseTitle: baseCourseName,
-        description: 'Imported from folder: ${folderNode.name}',
-      );
+      final course = Course.create(title: baseCourseName, description: 'Imported from folder: ${folderNode.name}');
 
       final courseDbId = await CourseRepo.addCourse(course);
       if (courseDbId == -1) {
         throw Exception('Failed to create course');
       }
 
-      log('✅ Course created with ID: ${course.courseId}');
+      log('✅ Course created with ID: ${course.uid}');
 
       // Get filtered root files
       final rootFiles = folderNode.files.where((file) {
@@ -440,8 +440,8 @@ class CourseFolderImportManager {
 
           log('📁 Processing subfolder: ${subfolder.name}');
 
-          final collection = CourseCollection.create(
-            parentId: course.courseId,
+          final collection = Module.create(
+            parentId: course.uid,
             collectionTitle: subfolder.name,
             description: 'Collection from folder: ${subfolder.name}',
           );
@@ -492,8 +492,8 @@ class CourseFolderImportManager {
 
           log('📁 Creating Base collection for root files');
 
-          final rootCollection = CourseCollection.create(
-            parentId: course.courseId,
+          final rootCollection = Module.create(
+            parentId: course.uid,
             collectionTitle: 'Base',
             description: 'Base folder materials',
           );
@@ -527,8 +527,8 @@ class CourseFolderImportManager {
 
         log('📁 Creating Materials collection (no subfolders)');
 
-        final collection = CourseCollection.create(
-          parentId: course.courseId,
+        final collection = Module.create(
+          parentId: course.uid,
           collectionTitle: 'Materials',
           description: 'Course materials',
         );
@@ -571,7 +571,7 @@ class CourseFolderImportManager {
   }
 
   static Future<void> _addFilesToCollection(
-    CourseCollection collection,
+    Module collection,
     List<SafDocumentFile> safFiles,
     ValueNotifier<ImportProgress> progressNotifier,
     int currentCollection,
@@ -652,14 +652,14 @@ class CourseFolderImportManager {
           key: HiveDataPathKey.contentsAddingProgressList.name,
           value: <String, dynamic>{
             for (int i = 0; i < uuidFileNames.length; i++) uuidFileNames[i]: copiedFilePaths[i],
-            'collectionId': collection.collectionId,
+            'collectionId': collection.uid,
           },
         );
       });
 
       final args = StoreContentArgs(
         token: rootIsolateToken,
-        collectionId: collection.collectionId,
+        collectionId: collection.uid,
         filePaths: copiedFilePaths,
         uuids: uuids,
         deleteCache: true,

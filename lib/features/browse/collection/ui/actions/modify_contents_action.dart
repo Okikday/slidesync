@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
-import 'package:slidesync/data/repos/course_repo/course_content_repo.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
+import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/modify_content_uc.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
@@ -26,7 +26,7 @@ class ModifyContentsAction {
     }
   }
 
-  Future<String?> onRenameContent(CourseContent content, {required String newTitle}) async {
+  Future<String?> onRenameContent(ModuleContent content, {required String newTitle}) async {
     if (newTitle.isEmpty || newTitle == content.title || newTitle.length < 2) return "Try inputting a valid title!";
     if (rootNavigatorKey.currentContext!.mounted) {
       UiUtils.showLoadingDialog(rootNavigatorKey.currentContext!, canPop: false, message: "Renaming content...");

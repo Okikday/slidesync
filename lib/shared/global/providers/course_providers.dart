@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 
-final defaultCourse = Course.create(courseTitle: "_", courseId: '_');
+final defaultCourse = Course.create(title: "_", uid: '_');
 final _watchCourseById = StreamNotifierProvider.autoDispose.family((String arg) => CourseStreamNotifier(arg));
 
 class CourseProviders {

@@ -10,6 +10,15 @@ class _PublicDrive {
   _PublicDrive._();
 
   static const _maxUploadBytes = 500 * 1024 * 1024; // 500MB hard cap
+  AuthClient? _cachedAdminClient;
+
+  Future<AuthClient?> _adminClient({bool forceRefreshAuth = false}) async {
+    if (forceRefreshAuth) {
+      _cachedAdminClient = null;
+    }
+    _cachedAdminClient ??= await GDriveManager.instance.auth.adminClient();
+    return _cachedAdminClient;
+  }
 
   // ── Upload ─────────────────────────────────────────────────────────────────
 
@@ -31,18 +40,43 @@ class _PublicDrive {
     required String operationId,
     String? fileName,
     String? mimeType,
+    bool forceRefreshAuth = false,
   }) async* {
-    try {
-      // 500MB guard
-      final size = await file.length();
-      if (size > _maxUploadBytes) {
-        yield DriveProgress.failed('File exceeds 500MB limit (${DriveProgress.formatBytes(size)})');
-        return;
-      }
+    final item = PublicUploadObject(file: file, operationId: operationId, fileName: fileName, mimeType: mimeType);
 
-      final client = await GDriveManager.instance.auth.adminClient();
+    await for (final event in uploadMultiple(
+      objects: [item],
+      institutionId: institutionId,
+      courseId: courseId,
+      uploadedBy: uploadedBy,
+      forceRefreshAuth: forceRefreshAuth,
+    )) {
+      yield event.progress;
+    }
+  }
+
+  /// Upload multiple files to the public vault folder for the given institution/course.
+  ///
+  /// This reuses the same authenticated client and destination folder for all items.
+  Stream<PublicUploadProgressEvent> uploadMultiple({
+    required List<PublicUploadObject> objects,
+    required String institutionId,
+    required String courseId,
+    required String uploadedBy,
+    bool forceRefreshAuth = true,
+  }) async* {
+    if (objects.isEmpty) return;
+
+    try {
+      final client = await _adminClient(forceRefreshAuth: forceRefreshAuth);
       if (client == null) {
-        yield DriveProgress.failed('Admin not signed in');
+        for (final item in objects) {
+          yield PublicUploadProgressEvent(
+            operationId: item.operationId,
+            file: item.file,
+            progress: DriveProgress.failed('Admin not signed in'),
+          );
+        }
         return;
       }
 
@@ -53,26 +87,48 @@ class _PublicDrive {
         folderId = await _PrivateDrive._findOrCreateFolder(client, name, folderId);
       }
 
-      // Patch file description with uploader UID for audit trail
-      // The description is readable via metadata so we know who uploaded.
-      // Format: "uploadedBy:{uid}"
-      final auditedFileName = fileName ?? p.basename(file.path);
+      for (final item in objects) {
+        try {
+          final size = await item.file.length();
+          if (size > _maxUploadBytes) {
+            yield PublicUploadProgressEvent(
+              operationId: item.operationId,
+              file: item.file,
+              progress: DriveProgress.failed('File exceeds 500MB limit (${DriveProgress.formatBytes(size)})'),
+            );
+            continue;
+          }
 
-      yield* _ResumableUpload.upload(
-        file: file,
-        parentFolderId: folderId!,
-        client: client,
-        operationId: operationId,
-        fileName: auditedFileName,
-        mimeType: mimeType,
-      );
+          final auditedFileName = item.fileName ?? p.basename(item.file.path);
 
-      // Note: after upload, caller must patch description with uploadedBy.
-      // We don't do it here because we'd need the fileId from the final
-      // DriveProgress event. The caller handles: patchDescription + batch write.
+          await for (final progress in _ResumableUpload.upload(
+            file: item.file,
+            parentFolderId: folderId!,
+            client: client,
+            operationId: item.operationId,
+            fileName: auditedFileName,
+            mimeType: item.mimeType,
+          )) {
+            yield PublicUploadProgressEvent(operationId: item.operationId, file: item.file, progress: progress);
+          }
+        } catch (e, st) {
+          log('PublicDrive.uploadMultiple item failed', error: e, stackTrace: st);
+          yield PublicUploadProgressEvent(
+            operationId: item.operationId,
+            file: item.file,
+            progress: DriveProgress.failed(e.toString()),
+          );
+        }
+      }
     } catch (e, st) {
       log('PublicDrive.upload failed', error: e, stackTrace: st);
-      yield DriveProgress.failed(e.toString());
+      for (final item in objects) {
+        yield PublicUploadProgressEvent(
+          operationId: item.operationId,
+          file: item.file,
+          progress: DriveProgress.failed(e.toString()),
+        );
+      }
     }
   }
 
@@ -80,7 +136,7 @@ class _PublicDrive {
   /// Call this immediately after [upload] emits a [DriveProgress.done] event.
   Future<Result<void>> patchUploaderAudit({required String fileId, required String uploadedBy}) =>
       Result.tryRunAsync(() async {
-        final client = await GDriveManager.instance.auth.adminClient();
+        final client = await _adminClient();
         if (client == null) throw StateError('Admin not signed in');
         final url = Uri.parse('https://www.googleapis.com/drive/v3/files/$fileId?fields=id');
         await client.patch(
@@ -88,6 +144,18 @@ class _PublicDrive {
           headers: {'Content-Type': 'application/json'},
           body: jsonEncode({'description': 'uploadedBy:$uploadedBy'}),
         );
+      });
+
+  /// Verifies that a file ID is readable from the signed-in admin Drive account.
+  /// Useful to ensure an upload completed on Drive before marking business success.
+  Future<Result<bool?>> verifyUploadedFileExists(String fileId, {bool forceRefreshAuth = false}) =>
+      Result.tryRunAsync(() async {
+        final client = await _adminClient(forceRefreshAuth: forceRefreshAuth);
+        if (client == null) return false;
+
+        final url = Uri.parse('https://www.googleapis.com/drive/v3/files/$fileId?fields=id');
+        final response = await client.get(url);
+        return response.statusCode == 200;
       });
 
   // ── List & browse ──────────────────────────────────────────────────────────
@@ -100,8 +168,9 @@ class _PublicDrive {
     int pageSize = 50,
     String? pageToken,
     String? nameContains,
+    bool forceRefreshAuth = false,
   }) => Result.tryRunAsync(() async {
-    final client = await GDriveManager.instance.auth.adminClient();
+    final client = await _adminClient(forceRefreshAuth: forceRefreshAuth);
     if (client == null) throw StateError('Not signed in');
 
     final segments = GDrivePaths.publicSegments(institutionId: institutionId, courseId: courseId);
@@ -139,4 +208,21 @@ class PublicDriveFile {
   final String? uploadedBy;
 
   const PublicDriveFile({required this.file, this.uploadedBy});
+}
+
+class PublicUploadObject {
+  final File file;
+  final String operationId;
+  final String? fileName;
+  final String? mimeType;
+
+  const PublicUploadObject({required this.file, required this.operationId, this.fileName, this.mimeType});
+}
+
+class PublicUploadProgressEvent {
+  final String operationId;
+  final File file;
+  final DriveProgress progress;
+
+  const PublicUploadProgressEvent({required this.operationId, required this.file, required this.progress});
 }

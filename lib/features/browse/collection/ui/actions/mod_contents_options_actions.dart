@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/features/browse/collection/providers/src/mod_contents_state.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/modify_content_card_actions.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/modify_contents/move_to_collection_bottom_sheet.dart';
@@ -23,7 +23,7 @@ class ModContentsOptionsActions {
   static void onShare(BuildContext context, ModContentsNotifier n) async {
     final contents = n.selectedContents.toList();
     n.clearContents();
-    await ShareContentActions.shareContents(context, contents.map((e) => e.contentId).toList());
+    await ShareContentActions.shareContents(context, contents.map((e) => e.uid).toList());
   }
 
   static void onSelectAll(BuildContext context, ModContentsNotifier n) async {

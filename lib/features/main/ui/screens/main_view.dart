@@ -63,6 +63,7 @@ class _MainViewState extends ConsumerState<MainView> with MainViewActions {
       },
       child: PageView(
         controller: pageController,
+        physics: const NeverScrollableScrollPhysics(),
         onPageChanged: (index) => MainProvider.state.act(ref).setTabIndex(index),
         children: tabs,
       ),

@@ -1,17 +1,22 @@
 import 'dart:developer';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
+import 'package:slidesync/core/utils/storage_utils/clean_up_utils.dart';
+import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/settings/logic/models/settings_model.dart';
 import 'package:slidesync/features/settings/providers/settings_provider.dart';
 import 'package:slidesync/features/settings/ui/components/settings_appearance_dialog.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/theme/theme.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -179,19 +184,19 @@ class SettingsView extends ConsumerWidget {
                       textColor: theme.supportingText,
                       textSize: 14,
                       onClick: () async {
-                        // final token = RootIsolateToken.instance;
-                        // if (token != null) {
-                        //   await compute(FileUtils.deleteEmptyCoursesDirsInIsolate, {'rootIsolateToken': token});
-                        //   await FileUtils().clearCacheOrTemp();
-                        //   await AppHiveData.instance.setData(
-                        //     key: HiveDataPathKey.lastClearedCacheDate.name,
-                        //     value: DateTime.now(),
-                        //   );
-                        //   GlobalNav.withContext(
-                        //     (context) =>
-                        //         UiUtils.showFlushBar(context, msg: "Successfully cleared up temporary files.."),
-                        //   );
-                        // }
+                        final token = RootIsolateToken.instance;
+                        if (token != null) {
+                          await compute(CleanUpUtils.deleteEmptyCoursesDirsInIsolate, {'rootIsolateToken': token});
+                          await CleanUpUtils().clearCacheOrTemp();
+                          await AppHiveData.instance.setData(
+                            key: HiveDataPathKey.lastClearedCacheDate.name,
+                            value: DateTime.now(),
+                          );
+                          GlobalNav.withContext(
+                            (context) =>
+                                UiUtils.showFlushBar(context, msg: "Successfully cleared up temporary files.."),
+                          );
+                        }
                       },
                     ),
                   ),

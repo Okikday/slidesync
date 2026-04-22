@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as p;
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
-import 'package:slidesync/data/models/file_details.dart';
 import 'package:slidesync/features/study/logic/usecases/content_progress_tracker.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -14,8 +13,8 @@ import 'package:slidesync/core/constants/src/enums.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
-import 'package:slidesync/data/repos/course_repo/course_collection_repo.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
+import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/features/browse/collection/providers/collection_materials_provider.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/add_contents_actions.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/handle_archive_uc.dart';
@@ -28,7 +27,7 @@ import 'package:slidesync/shared/widgets/dialogs/app_alert_dialog.dart';
 
 class ContentViewGateActions {
   ///
-  static Future<void> redirectToViewer(MutationTarget ref, CourseContent content, {bool? openOutsideApp}) async {
+  static Future<void> redirectToViewer(MutationTarget ref, ModuleContent content, {bool? openOutsideApp}) async {
     final refCon = ref.container;
 
     // Handle explicit external opening
@@ -40,7 +39,7 @@ class ContentViewGateActions {
     // Determine if should use built-in viewer
     final shouldUseBuiltInViewer = await _shouldUseBuiltInViewer(ref, content, openOutsideApp);
 
-    if (!shouldUseBuiltInViewer && content.courseContentType != CourseContentType.link) {
+    if (!shouldUseBuiltInViewer && content.type != ModuleContentType.link) {
       await _openExternally(content);
       return;
     }
@@ -51,16 +50,16 @@ class ContentViewGateActions {
 
   // ==================== Private Helper Methods ====================
 
-  static Future<void> _openExternally(CourseContent content) async {
-    final isLink = content.courseContentType == CourseContentType.link;
+  static Future<void> _openExternally(ModuleContent content) async {
+    final isLink = content.type == ModuleContentType.link;
     if (isLink) {
-      await launchUrl(Uri.parse(content.path.urlPath));
+      await launchUrl(Uri.parse(content.path.url));
     } else {
-      ContentProgressTracker().registerContentAccess(content.contentId);
+      ContentProgressTracker().registerContentAccess(content.uid);
       // Launching outside application
-      final extWithDot = p.extension(content.path.filePath);
+      final extWithDot = p.extension(content.path.local);
       final toOpen = await FileUtils.storeFile(
-        file: File(content.path.filePath),
+        file: File(content.path.local),
         base: AppDirType.temporary,
         newFileName: content.title + extWithDot,
       );
@@ -75,29 +74,29 @@ class ContentViewGateActions {
     );
   }
 
-  static Future<bool> _shouldUseBuiltInViewer(MutationTarget ref, CourseContent content, bool? openOutsideApp) async {
+  static Future<bool> _shouldUseBuiltInViewer(MutationTarget ref, ModuleContent content, bool? openOutsideApp) async {
     if (openOutsideApp != null) return !openOutsideApp;
 
     final settings = await ref.container.read(SettingsProvider.settingsProvider.future);
     final userPreference = settings.useBuiltInViewer;
 
     // Default behavior based on content type and platform
-    final defaultBehavior = content.courseContentType == CourseContentType.image ? true : !DeviceUtils.isDesktop();
+    final defaultBehavior = content.type == ModuleContentType.image ? true : !DeviceUtils.isDesktop();
 
     return userPreference ?? defaultBehavior;
   }
 
-  static Future<void> _routeToViewer(MutationTarget ref, CourseContent content) async {
-    switch (content.courseContentType) {
-      case CourseContentType.document:
+  static Future<void> _routeToViewer(MutationTarget ref, ModuleContent content) async {
+    switch (content.type) {
+      case ModuleContentType.document:
         await _handleDocument(ref, content);
         break;
 
-      case CourseContentType.image:
+      case ModuleContentType.image:
         await _handleImage(content);
         break;
 
-      case CourseContentType.link:
+      case ModuleContentType.link:
         await _handleLink(content);
         break;
 
@@ -109,9 +108,9 @@ class ContentViewGateActions {
 
   // ==================== Content Type Handlers ====================
 
-  static Future<void> _handleDocument(MutationTarget ref, CourseContent content) async {
-    final filePath = content.path.filePath;
-    final urlPath = content.path.urlPath;
+  static Future<void> _handleDocument(MutationTarget ref, ModuleContent content) async {
+    final filePath = content.path.local;
+    final urlPath = content.path.url;
     final isPdf =
         p.extension(filePath).toLowerCase().contains("pdf") || p.extension(urlPath).toLowerCase().contains("pdf");
 
@@ -126,10 +125,10 @@ class ContentViewGateActions {
     GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "Opening with external application..."));
   }
 
-  static Future<void> _handleImage(CourseContent content) async => _navigateTo(Routes.imageViewer, content);
+  static Future<void> _handleImage(ModuleContent content) async => _navigateTo(Routes.imageViewer, content);
 
-  static Future<void> _handleLink(CourseContent content) async {
-    final urlPath = content.path.urlPath;
+  static Future<void> _handleLink(ModuleContent content) async {
+    final urlPath = content.path.url;
     final isUnresolvedDriveLink =
         content.metadataJson.decodeJson['resolved'] != true && DriveBrowser.isGoogleDriveLink(urlPath);
 
@@ -147,8 +146,8 @@ class ContentViewGateActions {
     }
   }
 
-  static Future<void> _handleUnknownType(CourseContent content) async {
-    final filePath = content.path.filePath;
+  static Future<void> _handleUnknownType(ModuleContent content) async {
+    final filePath = content.path.local;
     final file = File(filePath);
 
     // Check if it's an archive file
@@ -164,7 +163,7 @@ class ContentViewGateActions {
 
   // ==================== Archive Handling ====================
 
-  static Future<void> _handleArchiveFile(File file, CourseContent content) async {
+  static Future<void> _handleArchiveFile(File file, ModuleContent content) async {
     await Result.tryRunAsync(() async {
       final context = rootNavigatorKey.currentContext;
       if (context == null || !context.mounted) return;
@@ -183,22 +182,25 @@ class ContentViewGateActions {
     });
   }
 
-  static Future<void> _extractAndAddArchive(File file, CourseContent content) async {
+  static Future<void> _extractAndAddArchive(File file, ModuleContent content) async {
     final navState = rootNavigatorKey.currentState;
     if (navState == null) return;
 
-    // Close dialog
-    navState.pop();
+    GlobalNav.popGlobal();
 
     // Check file size
-    UiUtils.showLoadingDialog(navState.context, message: "Processing archive", canPop: false);
+    GlobalNav.withContext(
+      (context) => UiUtils.showLoadingDialog(context, message: "Processing archive, please wait...", canPop: false),
+    );
 
     final fileSize = await file.length();
     const maxSize = 1024 * 1000 * 200; // 200MB
 
     if (fileSize > maxSize) {
       navState.pop();
-      UiUtils.showFlushBar(navState.context, msg: "Archive size is too large, couldn't extract.");
+      GlobalNav.withContext(
+        (context) => UiUtils.showFlushBar(navState.context, msg: "Archive size is too large, couldn't extract."),
+      );
       return;
     }
 
@@ -206,14 +208,20 @@ class ContentViewGateActions {
     final collection = await CourseCollectionRepo.getById(content.parentId);
     if (collection == null) {
       navState.pop();
-      UiUtils.showFlushBar(navState.context, msg: "Couldn't get parent collection");
+      GlobalNav.withContext(
+        (context) => UiUtils.showFlushBar(navState.context, msg: "Unable to load collection for this content."),
+      );
+
       return;
     }
 
     navState.pop();
 
     // Extract archive
-    UiUtils.showLoadingDialog(navState.context, message: "Unpacking archive", canPop: false);
+
+    GlobalNav.withContext(
+      (context) => UiUtils.showLoadingDialog(navState.context, message: "Unpacking archive", canPop: false),
+    );
 
     final contentsToAdd = await HandleArchiveUc().extractArchiveToCache(file);
     navState.pop();
@@ -224,11 +232,11 @@ class ContentViewGateActions {
 
   // ==================== Navigation Helpers ====================
 
-  static void _navigateTo(Routes route, CourseContent content) {
+  static void _navigateTo(Routes route, ModuleContent content) {
     GlobalNav.withContext((context) => context.pushNamed(route.name, extra: content));
   }
 
-  static Future<void> _stopPaginationIfNeeded(MutationTarget ref, CourseContent content) async {
+  static Future<void> _stopPaginationIfNeeded(MutationTarget ref, ModuleContent content) async {
     Result.tryRun(() async {
       final pageProvider = await ref.container.read(
         CollectionMaterialsProvider.contentPaginationProvider(content.parentId).future,

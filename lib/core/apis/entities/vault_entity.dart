@@ -27,14 +27,14 @@ class UpdateVaultInput {
 
 class LogUploadInput {
   final String uploadedBy;
-  final String contentHash;
+  final String xxh3Hash;
   final String fileName;
   final int fileSize;
   final String notes;
 
   const LogUploadInput({
     required this.uploadedBy,
-    required this.contentHash,
+    required this.xxh3Hash,
     required this.fileName,
     required this.fileSize,
     this.notes = '',
@@ -93,7 +93,7 @@ class VaultEntity {
 class VaultUploadEntity {
   final String uploadId;
   final String uploadedBy;
-  final String contentHash;
+  final String xxh3Hash;
   final String fileName;
   final int fileSize;
   final DateTime uploadedAt;
@@ -102,7 +102,7 @@ class VaultUploadEntity {
   const VaultUploadEntity({
     required this.uploadId,
     required this.uploadedBy,
-    required this.contentHash,
+    required this.xxh3Hash,
     required this.fileName,
     required this.fileSize,
     required this.uploadedAt,
@@ -114,7 +114,7 @@ class VaultUploadEntity {
     return VaultUploadEntity(
       uploadId: doc.id,
       uploadedBy: d['uploadedBy'] as String? ?? '',
-      contentHash: d['contentHash'] as String? ?? '',
+      xxh3Hash: d['xxh3Hash'] as String? ?? '',
       fileName: d['fileName'] as String? ?? 'unknown',
       fileSize: d['fileSize'] as int? ?? 0,
       uploadedAt: (d['uploadedAt'] as Timestamp).toDate(),
@@ -124,7 +124,7 @@ class VaultUploadEntity {
 
   Map<String, dynamic> toMap() => {
     'uploadedBy': uploadedBy,
-    'contentHash': contentHash,
+    'xxh3Hash': xxh3Hash,
     'fileName': fileName,
     'fileSize': fileSize,
     'uploadedAt': Timestamp.fromDate(uploadedAt),
@@ -135,7 +135,7 @@ class VaultUploadEntity {
     'uploadId': uploadId,
     // Immutable fields — never updatable after creation
     'uploadedBy': input.uploadedBy,
-    'contentHash': input.contentHash,
+    'xxh3Hash': input.xxh3Hash,
     'uploadedAt': FieldValue.serverTimestamp(),
     // Mutable
     'fileName': input.fileName,

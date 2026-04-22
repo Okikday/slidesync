@@ -96,10 +96,10 @@ abstract class FlaggableApiBase {
 abstract class ContentLookupApiBase {
   /// Register content hash in global immutable registry.
   /// Safe to call multiple times — rules enforce no update/delete.
-  Future<Result<void>> registerHash(String contentHash);
+  Future<Result<void>> registerHash(String xxh3Hash);
 
   /// Check if hash is registered.
-  Future<Result<bool?>> isHashRegistered(String contentHash);
+  Future<Result<bool?>> isHashRegistered(String xxh3Hash);
 }
 
 /// Abstract for batch operations (atomicity).

@@ -24,11 +24,11 @@ class ContentQuestionsRepo {
 
   static Stream<List<ContentQuestions>> watchAll() => _isarData.watchAll();
 
-  static Future<List<ContentQuestions>> getAllByContentHash(String contentHash) async =>
-      await (await _isar).contentQuestions.where().contentHashEqualTo(contentHash).findAll();
-  static Future<ContentQuestions?> getByContentHash(String contentHash) async =>
-      await (await _isar).contentQuestions.where().contentHashEqualTo(contentHash).findFirst();
+  static Future<List<ContentQuestions>> getAllByContentHash(String xxh3Hash) async =>
+      await (await _isar).contentQuestions.where().xxh3HashEqualTo(xxh3Hash).findAll();
+  static Future<ContentQuestions?> getByContentHash(String xxh3Hash) async =>
+      await (await _isar).contentQuestions.where().xxh3HashEqualTo(xxh3Hash).findFirst();
 
   static Future<List<ContentQuestions>> getByContentId(String contentId) async =>
-      await (await _isar).contentQuestions.filter().contentIdEqualTo(contentId).findAll();
+      await (await _isar).contentQuestions.filter().uidEqualTo(contentId).findAll();
 }

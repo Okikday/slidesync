@@ -1,5 +1,5 @@
 import 'package:path/path.dart' as p;
-import 'package:slidesync/data/models/course_content/course_content.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/features/sync/providers/entities/sync_type.dart';
 import 'package:slidesync/features/study/logic/services/drive_browser.dart' as drive_service;
 
@@ -75,7 +75,7 @@ class DriveSourceFingerprint {
     }..removeWhere((key, value) => value == null || value == '');
   }
 
-  bool matchesContent(CourseContent content) {
+  bool matchesContent(ModuleContent content) {
     final metadata = content.metadata;
     final fields = metadata.fields ?? const <String, dynamic>{};
 
@@ -101,7 +101,7 @@ class DriveSourceFingerprint {
         normalizedTitle.isNotEmpty && (storedTitle == normalizedTitle || storedOriginalTitle == normalizedTitle);
     if (!titleMatches) return false;
 
-    if (fileSize != null && fileSize! > 0 && content.fileSize != fileSize) return false;
+    if (fileSize != null && fileSize! > 0 && content.fileSizeInBytes != fileSize) return false;
 
     if (normalizedExtension.isNotEmpty) {
       final contentExtension = _normalizeToken(

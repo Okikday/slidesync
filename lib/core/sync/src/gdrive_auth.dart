@@ -11,6 +11,7 @@ class GDriveAuth {
 
   final GoogleSignIn _googleAuth = GoogleSignIn.instance;
   bool isInitialized = false;
+  bool isSignedIn = false;
   static const _defaultScopes = ['email', 'profile', 'openid'];
   static const _privateSignInScopes = [..._defaultScopes, drive.DriveApi.driveFileScope];
 
@@ -31,7 +32,7 @@ class GDriveAuth {
 
   // ── Private sign-in (personal backup, driveFile scope) ────────────────────
 
-  Future<GoogleSignInAccount?> signInPrivate() async {
+  Future<GoogleSignInAccount?> _signInPrivate() async {
     try {
       await _initializeGoogleAuth();
       final account = await _googleAuth.authenticate(scopeHint: _privateSignInScopes);
@@ -45,6 +46,7 @@ class GDriveAuth {
 
   Future<void> signOut() async {
     await _googleAuth.signOut();
+    isSignedIn = false;
     log('GDriveAuth: signed out');
   }
 
@@ -55,7 +57,7 @@ class GDriveAuth {
 
   // ── Admin sign-in (public vault uploads, full drive scope) ─────────────────
 
-  Future<GoogleSignInAccount?> signInAdmin() async {
+  Future<GoogleSignInAccount?> _signInAdmin() async {
     try {
       await _initializeGoogleAuth();
       final account = await _googleAuth.authenticate(scopeHint: _adminSignInScopes);
@@ -73,7 +75,10 @@ class GDriveAuth {
   /// Returns null if the user is not signed in.
   Future<AuthClient?> privateClient() async {
     _initializeGoogleAuth();
-    final account = await _googleAuth.attemptLightweightAuthentication() ?? await signInPrivate();
+    isSignedIn = false;
+
+    final account = await _googleAuth.attemptLightweightAuthentication() ?? await _signInPrivate();
+    isSignedIn = true;
     if (account == null) return null;
     final authorization = await account.authorizationClient.authorizeScopes(_privateSignInScopes);
     return authorization.authClient(scopes: _privateSignInScopes);
@@ -82,7 +87,9 @@ class GDriveAuth {
   /// Returns an authenticated HTTP client scoped for admin/full drive ops.
   Future<AuthClient?> adminClient() async {
     _initializeGoogleAuth();
-    final account = await _googleAuth.attemptLightweightAuthentication() ?? await signInAdmin();
+    isSignedIn = false;
+    final account = await _googleAuth.attemptLightweightAuthentication() ?? await _signInAdmin();
+    isSignedIn = true;
     if (account == null) return null;
     final authorization = await account.authorizationClient.authorizeScopes(_adminSignInScopes);
     return authorization.authClient(scopes: _adminSignInScopes);

@@ -12,7 +12,7 @@ import 'package:slidesync/features/sync/logic/models/sync_model.dart';
 /// Database Structure:
 /// - /courses/{courseId} - Course metadata
 /// - /collections/{collectionId} - Collection metadata
-/// - /contents/{contentHash} - Global content references
+/// - /contents/{xxh3Hash} - Global content references
 ///
 /// Note: Firebase Storage operations are handled separately via
 /// FirebaseStorageService
@@ -59,7 +59,7 @@ class FirebaseSyncRepository {
   /// Lists all available courses
   Future<Result<List<RemoteCourse>>> listCourses({int limit = 100}) async {
     try {
-      final snapshot = await _coursesRef.orderBy('lastUpdated', descending: true).limit(limit).get();
+      final snapshot = await _coursesRef.orderBy('lastModified', descending: true).limit(limit).get();
 
       final courses = snapshot.docs.map((doc) => RemoteCourse.fromMap(doc.data() as Map<String, dynamic>)).toList();
 
@@ -168,14 +168,14 @@ class FirebaseSyncRepository {
   Future<Result<void>> storeContentMetadata(RemoteContent content) async {
     try {
       // Check if content already exists (deduplicated by hash)
-      final existing = await _contentsRef.doc(content.contentHash).get();
+      final existing = await _contentsRef.doc(content.xxh3Hash).get();
       if (existing.exists) {
-        log('Content already exists: ${content.contentHash}');
+        log('Content already exists: ${content.xxh3Hash}');
         return Result.success(null);
       }
 
-      await _contentsRef.doc(content.contentHash).set(content.toMap());
-      log('Stored content metadata: ${content.contentHash}');
+      await _contentsRef.doc(content.xxh3Hash).set(content.toMap());
+      log('Stored content metadata: ${content.xxh3Hash}');
       return Result.success(null);
     } catch (e, st) {
       return Result.error('Failed to store content metadata: $e', st);
@@ -183,11 +183,11 @@ class FirebaseSyncRepository {
   }
 
   /// Retrieves content metadata from Firestore
-  Future<Result<RemoteContent>> getContentMetadata(String contentHash) async {
+  Future<Result<RemoteContent>> getContentMetadata(String xxh3Hash) async {
     try {
-      final doc = await _contentsRef.doc(contentHash).get();
+      final doc = await _contentsRef.doc(xxh3Hash).get();
       if (!doc.exists) {
-        return Result.error('Content not found: $contentHash');
+        return Result.error('Content not found: $xxh3Hash');
       }
 
       final data = doc.data() as Map<String, dynamic>;
@@ -240,9 +240,9 @@ class FirebaseSyncRepository {
   }
 
   /// Checks if content exists by hash
-  Future<Result<bool>> contentExists(String contentHash) async {
+  Future<Result<bool>> contentExists(String xxh3Hash) async {
     try {
-      final doc = await _contentsRef.doc(contentHash).get();
+      final doc = await _contentsRef.doc(xxh3Hash).get();
       return Result.success(doc.exists);
     } catch (e, st) {
       return Result.error('Failed to check content existence: $e', st);
@@ -250,10 +250,10 @@ class FirebaseSyncRepository {
   }
 
   /// Deletes content metadata (use with caution - global reference)
-  Future<Result<void>> deleteContentMetadata(String contentHash) async {
+  Future<Result<void>> deleteContentMetadata(String xxh3Hash) async {
     try {
-      await _contentsRef.doc(contentHash).delete();
-      log('Deleted content metadata: $contentHash');
+      await _contentsRef.doc(xxh3Hash).delete();
+      log('Deleted content metadata: $xxh3Hash');
       return Result.success(null);
     } catch (e, st) {
       return Result.error('Failed to delete content metadata: $e', st);
@@ -286,7 +286,7 @@ class FirebaseSyncRepository {
       if (contents != null) {
         for (final content in contents) {
           // Only set if doesn't exist (deduplication)
-          final contentRef = _contentsRef.doc(content.contentHash);
+          final contentRef = _contentsRef.doc(content.xxh3Hash);
           final exists = await contentRef.get();
           if (!exists.exists) {
             batch.set(contentRef, content.toMap());

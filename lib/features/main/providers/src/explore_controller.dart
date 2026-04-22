@@ -149,7 +149,7 @@
 //         type: ExploreCardType.course,
 //         tags: _extractTags(course.metadataJson),
 //         authorName: _extractAuthor(course.metadataJson),
-//         uploadedAt: course.lastUpdated ?? course.createdAt ?? DateTime.now(),
+//         uploadedAt: course.lastModified ?? course.createdAt ?? DateTime.now(),
 //         viewCount: 0,
 //         itemCount: course.collectionsCount,
 //         isFeatured: false,
@@ -214,7 +214,7 @@
 //                 .where((c) => searchQuery.isEmpty || c.title.toLowerCase().contains(searchQuery.toLowerCase()))
 //                 .map((content) {
 //                   return ExploreCardData(
-//                     id: content.contentHash,
+//                     id: content.xxh3Hash,
 //                     title: content.title,
 //                     description: content.description,
 //                     type: ExploreCardType.content,

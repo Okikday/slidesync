@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/materials_search_button.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
-import 'package:slidesync/data/models/course_collection/course_collection.dart';
+import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/features/browse/collection/ui/widgets/add_contents/add_contents_bottom_sheet.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class AddContentFAB extends ConsumerWidget {
-  final CourseCollection collection;
+  final Module collection;
   final NotifierProvider<DoubleNotifier, double>? scrollOffsetProvider;
   const AddContentFAB({super.key, required this.collection, this.scrollOffsetProvider});
   @override
@@ -21,7 +21,7 @@ class AddContentFAB extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        MaterialsSearchButton(collectionId: collection.collectionId, backgroundColor: theme.secondary.withAlpha(50)),
+        MaterialsSearchButton(collectionId: collection.uid, backgroundColor: theme.secondary.withAlpha(50)),
         FloatingActionButton(
           backgroundColor: theme.secondary,
           shape: CircleBorder(),

@@ -6,12 +6,11 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/data/models/course_collection/course_collection.dart';
+import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/features/browse/course/ui/components/collection_card.dart';
 import 'package:slidesync/shared/global/providers/collections_providers.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/course_details_view/course_details_collection_section.dart';
-import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/shared/create_collection_bottom_sheet.dart';
 import 'package:slidesync/features/browse/course/ui/widgets/collections_view/empty_collections_view.dart';
 
@@ -24,7 +23,7 @@ class ListCollectionsSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final collectionsProvider = CollectionsProviders.collectionsProvider(courseId);
     final collectionsN = ref.watch(collectionsProvider);
-    final isDarkMode = context.isDarkMode;
+    // final isDarkMode = context.isDarkMode;
 
     return ValueListenableBuilder(
       valueListenable: searchCollectionTextNotifier,
@@ -54,9 +53,7 @@ class ListCollectionsSection extends ConsumerWidget {
                 (searchText.trim().isEmpty
                         ? data
                         : data.where(
-                            (e) => e.collectionTitle.toLowerCase().contains(
-                              searchCollectionTextNotifier.value.toLowerCase(),
-                            ),
+                            (e) => e.title.toLowerCase().contains(searchCollectionTextNotifier.value.toLowerCase()),
                           ))
                     .toList();
 
@@ -65,7 +62,7 @@ class ListCollectionsSection extends ConsumerWidget {
               sliver: SliverList.separated(
                 itemCount: collections.length,
                 itemBuilder: (context, index) {
-                  final CourseCollection collection = collections[index];
+                  final Module collection = collections[index];
                   return CollectionCard(
                     collection: collection,
                     onTap: () {

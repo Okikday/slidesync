@@ -6,8 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/course_content/course_content.dart';
-import 'package:slidesync/data/models/file_details.dart';
+import 'package:slidesync/data/models/module_content/module_content.dart';
+import 'package:slidesync/data/models/file_path.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/study/providers/pdf_doc_viewer_provider.dart';
 import 'package:slidesync/features/study/providers/src/pdf_doc_viewer_state/pdf_doc_viewer_state.dart';
@@ -18,7 +18,7 @@ import 'package:url_launcher/url_launcher.dart';
 class PdfViewerWidget extends ConsumerStatefulWidget {
   const PdfViewerWidget({super.key, required this.content});
 
-  final CourseContent content;
+  final ModuleContent content;
 
   @override
   ConsumerState<PdfViewerWidget> createState() => _PdfViewerWidgetState();
@@ -31,7 +31,7 @@ class _PdfViewerWidgetState extends ConsumerState<PdfViewerWidget> {
   DateTime? _lastTapTime;
 
   void _handleSingleTap(WidgetRef ref, Offset position) {
-    final controller = PdfDocViewerProvider.state(widget.content.contentId).select((s) => s.controller).read(ref);
+    final controller = PdfDocViewerProvider.state(widget.content.uid).select((s) => s.controller).read(ref);
     if (controller.textSelectionDelegate.hasSelectedText) {
       controller.textSelectionDelegate.clearTextSelection();
     }
@@ -39,7 +39,7 @@ class _PdfViewerWidgetState extends ConsumerState<PdfViewerWidget> {
   }
 
   void _handleDoubleTap(WidgetRef ref) {
-    final docViewP = PdfDocViewerProvider.state(widget.content.contentId);
+    final docViewP = PdfDocViewerProvider.state(widget.content.uid);
     final controller = ref.read(docViewP.select((s) => s.controller));
 
     if (controller.currentZoom > controller.minScale) {
@@ -62,7 +62,7 @@ class _PdfViewerWidgetState extends ConsumerState<PdfViewerWidget> {
         controller: PdfDocViewerState.screenshotController,
         child: Consumer(
           builder: (context, ref, child) {
-            final docViewP = PdfDocViewerProvider.state(widget.content.contentId);
+            final docViewP = PdfDocViewerProvider.state(widget.content.uid);
             final pdva = ref.watch(
               docViewP.select((p) => (initialPage: p.initialPage, pdfViewerController: p.controller)),
             );
@@ -112,9 +112,9 @@ class _PdfViewerWidgetState extends ConsumerState<PdfViewerWidget> {
 
                 _pointerHasMoved = false;
               },
-              child: widget.content.path.filePath.isNotEmpty
+              child: widget.content.path.local.isNotEmpty
                   ? PdfViewer.file(
-                      widget.content.path.filePath,
+                      widget.content.path.local,
                       initialPageNumber: pdva.initialPage ?? 1,
                       params: PdfViewerParams(
                         panAxis: PanAxis.aligned,
@@ -177,7 +177,7 @@ class _PdfViewerWidgetState extends ConsumerState<PdfViewerWidget> {
                         // },
                         pagePaintCallbacks: [
                           (canvas, pageRect, page) {
-                            final searchViewP = PdfDocViewerProvider.searchState(widget.content.contentId);
+                            final searchViewP = PdfDocViewerProvider.searchState(widget.content.uid);
                             // forward to the active searcher, if any
                             ref
                                 .read(searchViewP.select((s) => s.textSearcher))
@@ -201,7 +201,7 @@ class _PdfViewerWidgetState extends ConsumerState<PdfViewerWidget> {
                       ),
                       controller: pdva.pdfViewerController,
                     )
-                  : PdfViewer.uri(Uri.parse(widget.content.path.urlPath), initialPageNumber: pdva.initialPage ?? 1),
+                  : PdfViewer.uri(Uri.parse(widget.content.path.url), initialPageNumber: pdva.initialPage ?? 1),
             );
           },
         ),
@@ -210,8 +210,8 @@ class _PdfViewerWidgetState extends ConsumerState<PdfViewerWidget> {
   }
 
   bool _handleTap(WidgetRef ref) {
-    final docViewP = PdfDocViewerProvider.state(widget.content.contentId);
-    final searchViewP = PdfDocViewerProvider.searchState(widget.content.contentId);
+    final docViewP = PdfDocViewerProvider.state(widget.content.uid);
+    final searchViewP = PdfDocViewerProvider.searchState(widget.content.uid);
 
     final bool isSearching = ref.read(searchViewP.select((s) => s.isSearchingNotifier)).value;
     if (isSearching) return false;
