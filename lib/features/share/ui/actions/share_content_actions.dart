@@ -14,7 +14,7 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class ShareContentActions {
   static Future<void> shareContent(BuildContext context, String contentId) async {
-    final content = await CourseContentRepo.getByContentId(contentId);
+    final content = await ModuleContentRepo.getByContentId(contentId);
     if (content == null) return;
     if (content.type == ModuleContentType.document ||
         content.type == ModuleContentType.image ||
@@ -22,7 +22,7 @@ class ShareContentActions {
       ShareContentActions.shareFileContent(context, content.uid);
     } else if (content.type == ModuleContentType.link) {
       UiUtils.showFlushBar(context, msg: "Preparing content...");
-      ShareContentUc().shareText(context, content.path.url);
+      ShareContentUc().shareText(context, content.path.url ?? '');
     } else {
       UiUtils.showFlushBar(context, msg: "Sharing not supported!");
     }
@@ -30,28 +30,29 @@ class ShareContentActions {
 
   static Future<void> shareFileContent(BuildContext context, String contentId) async {
     UiUtils.showFlushBar(context, msg: "Preparing file...");
-    final content = await CourseContentRepo.getByContentId(contentId);
+    final content = await ModuleContentRepo.getByContentId(contentId);
     if (content == null) return;
     final metadata = (content.metadataJson.decodeJson);
     final origFilename = (metadata['originalFilename'] as String?);
     // final fileName = (metadata['filename'] ?? metadata['fileName']) as String? ?? content.title;
-
+    final localPath = content.path.local ?? '';
     await ShareContentUc().shareFile(
       context,
-      File(content.path.local),
-      filename: origFilename ?? p.setExtension(content.title, p.extension(content.path.local)),
+      File(localPath),
+      filename: origFilename ?? p.setExtension(content.title, p.extension(localPath)),
     );
   }
 
   static Future<void> shareCollection(BuildContext context, String collectionId) async {
     UiUtils.showFlushBar(context, msg: "Preparing files...");
-    final contents = await (await CourseContentRepo.filter).parentIdEqualTo(collectionId).sortByUid().findAll();
+    final contents = await (await ModuleContentRepo.filter).parentIdEqualTo(collectionId).sortByUid().findAll();
     if (contents.isEmpty) {
       UiUtils.showFlushBar(context, msg: "Nothing to share");
       return;
     }
     final Set<(File file, String fileName)> dataSet = contents.map((e) {
-      return (File(e.path.local), (e.metadata.originalFileName) ?? p.setExtension(e.title, p.extension(e.path.local)));
+      final localPath = e.path.local ?? '';
+      return (File(localPath), (e.metadata.originalFileName) ?? p.setExtension(e.title, p.extension(localPath)));
     }).toSet();
     final files = dataSet.map((e) => e.$1).toList();
     final fileNames = dataSet.map((e) => e.$2).toList();
@@ -65,10 +66,13 @@ class ShareContentActions {
       UiUtils.showFlushBar(context, msg: "Nothing to share");
       return;
     }
-    final contents = await (await CourseContentRepo.filter).anyOf(contentIds, (a, b) => a.uidEqualTo(b)).findAll();
+    final contents = await (await ModuleContentRepo.filter).anyOf(contentIds, (a, b) => a.uidEqualTo(b)).findAll();
     final Set<(File file, String fileName)> dataSet = contents.map((e) {
-      final filename = p.setExtension(e.title, p.extension(e.path.local));
-      return (File(e.path.local), filename.isEmpty ? ((e.metadata.originalFileName) ?? "Unknown file") : filename);
+      final filename = p.setExtension(e.title, p.extension(e.path.local ?? ''));
+      return (
+        File(e.path.local ?? ''),
+        filename.isEmpty ? ((e.metadata.originalFileName) ?? "Unknown file") : filename,
+      );
     }).toSet();
     final files = dataSet.map((e) => e.$1).toList();
     final fileNames = dataSet.map((e) => e.$2).toList();

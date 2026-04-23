@@ -13,14 +13,9 @@ const FilePathSchema = Schema(
   name: r'FilePath',
   id: 5252729203139978938,
   properties: {
-    r'containsFilePath': PropertySchema(
-      id: 0,
-      name: r'containsFilePath',
-      type: IsarType.bool,
-    ),
-    r'hashCode': PropertySchema(id: 1, name: r'hashCode', type: IsarType.long),
-    r'local': PropertySchema(id: 2, name: r'local', type: IsarType.string),
-    r'url': PropertySchema(id: 3, name: r'url', type: IsarType.string),
+    r'hashCode': PropertySchema(id: 0, name: r'hashCode', type: IsarType.long),
+    r'local': PropertySchema(id: 1, name: r'local', type: IsarType.string),
+    r'url': PropertySchema(id: 2, name: r'url', type: IsarType.string),
   },
 
   estimateSize: _filePathEstimateSize,
@@ -35,8 +30,18 @@ int _filePathEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
-  bytesCount += 3 + object.local.length * 3;
-  bytesCount += 3 + object.url.length * 3;
+  {
+    final value = object.local;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.url;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -46,10 +51,9 @@ void _filePathSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeBool(offsets[0], object.containsFilePath);
-  writer.writeLong(offsets[1], object.hashCode);
-  writer.writeString(offsets[2], object.local);
-  writer.writeString(offsets[3], object.url);
+  writer.writeLong(offsets[0], object.hashCode);
+  writer.writeString(offsets[1], object.local);
+  writer.writeString(offsets[2], object.url);
 }
 
 FilePath _filePathDeserialize(
@@ -59,8 +63,8 @@ FilePath _filePathDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = FilePath(
-    local: reader.readStringOrNull(offsets[2]) ?? '',
-    url: reader.readStringOrNull(offsets[3]) ?? '',
+    local: reader.readStringOrNull(offsets[1]),
+    url: reader.readStringOrNull(offsets[2]),
   );
   return object;
 }
@@ -73,13 +77,11 @@ P _filePathDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readBool(offset)) as P;
-    case 1:
       return (reader.readLong(offset)) as P;
+    case 1:
+      return (reader.readStringOrNull(offset)) as P;
     case 2:
-      return (reader.readStringOrNull(offset) ?? '') as P;
-    case 3:
-      return (reader.readStringOrNull(offset) ?? '') as P;
+      return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -87,15 +89,6 @@ P _filePathDeserializeProp<P>(
 
 extension FilePathQueryFilter
     on QueryBuilder<FilePath, FilePath, QFilterCondition> {
-  QueryBuilder<FilePath, FilePath, QAfterFilterCondition>
-  containsFilePathEqualTo(bool value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'containsFilePath', value: value),
-      );
-    });
-  }
-
   QueryBuilder<FilePath, FilePath, QAfterFilterCondition> hashCodeEqualTo(
     int value,
   ) {
@@ -155,8 +148,24 @@ extension FilePathQueryFilter
     });
   }
 
+  QueryBuilder<FilePath, FilePath, QAfterFilterCondition> localIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'local'),
+      );
+    });
+  }
+
+  QueryBuilder<FilePath, FilePath, QAfterFilterCondition> localIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'local'),
+      );
+    });
+  }
+
   QueryBuilder<FilePath, FilePath, QAfterFilterCondition> localEqualTo(
-    String value, {
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -171,7 +180,7 @@ extension FilePathQueryFilter
   }
 
   QueryBuilder<FilePath, FilePath, QAfterFilterCondition> localGreaterThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -188,7 +197,7 @@ extension FilePathQueryFilter
   }
 
   QueryBuilder<FilePath, FilePath, QAfterFilterCondition> localLessThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -205,8 +214,8 @@ extension FilePathQueryFilter
   }
 
   QueryBuilder<FilePath, FilePath, QAfterFilterCondition> localBetween(
-    String lower,
-    String upper, {
+    String? lower,
+    String? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -301,8 +310,24 @@ extension FilePathQueryFilter
     });
   }
 
+  QueryBuilder<FilePath, FilePath, QAfterFilterCondition> urlIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'url'),
+      );
+    });
+  }
+
+  QueryBuilder<FilePath, FilePath, QAfterFilterCondition> urlIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'url'),
+      );
+    });
+  }
+
   QueryBuilder<FilePath, FilePath, QAfterFilterCondition> urlEqualTo(
-    String value, {
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -317,7 +342,7 @@ extension FilePathQueryFilter
   }
 
   QueryBuilder<FilePath, FilePath, QAfterFilterCondition> urlGreaterThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -334,7 +359,7 @@ extension FilePathQueryFilter
   }
 
   QueryBuilder<FilePath, FilePath, QAfterFilterCondition> urlLessThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -351,8 +376,8 @@ extension FilePathQueryFilter
   }
 
   QueryBuilder<FilePath, FilePath, QAfterFilterCondition> urlBetween(
-    String lower,
-    String upper, {
+    String? lower,
+    String? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,

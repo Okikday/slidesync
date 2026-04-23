@@ -102,6 +102,7 @@ class _FileManagerPageState extends ConsumerState<FileManagerPage> {
               )
             : ListView.separated(
                 itemCount: _entries.length,
+                padding: EdgeInsets.only(top: context.topPadding + kToolbarHeight),
                 separatorBuilder: (_, _) => Divider(height: 1),
                 itemBuilder: (context, idx) {
                   final ent = _entries[idx];

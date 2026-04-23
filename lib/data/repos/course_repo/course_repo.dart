@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:isar_community/isar.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/data/models/course/course.dart';
@@ -18,7 +20,7 @@ class CourseRepo {
 
   // static Future<void> deleteCourseByDbId(int dbId) async => await _isarData.deleteById(dbId);
 
-  static Future<Course?> getCourseByDbId(int dbId) => _isarData.getById(dbId);
+  static Future<Course?> getCourseById(int dbId) async => _isarData.getById(dbId);
 
   static Stream<Course?> watchCourseByDbId(int dbId) => _isarData.watchById(dbId);
 
@@ -45,7 +47,7 @@ class CourseRepo {
 
   // static Future<Stream<List<Course>>> watchAllCoursesLazily() async => await _isarData.watchAllLazily();
 
-  static Future<Course?> getCourseById(String courseId) async {
+  static Future<Course?> getCourseByUid(String courseId) async {
     return await (await _isar).courses.filter().uidEqualTo(courseId).findFirst();
   }
 
@@ -59,7 +61,7 @@ class CourseRepo {
 
   static Future<Course?> deleteCourseById(String courseId) async {
     final isar = await _isar;
-    final Course? course = await getCourseById(courseId);
+    final Course? course = await getCourseByUid(courseId);
     return await isar.writeTxn<Course?>(() async {
       if (course != null) {
         final idQuery = (await filter).uidEqualTo(courseId);

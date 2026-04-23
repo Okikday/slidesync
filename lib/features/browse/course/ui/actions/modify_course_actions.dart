@@ -26,7 +26,7 @@ import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 class ModifyCourseActions {
   /// When the user clicks to delete the course, on the Dialog
   Future<void> onDeleteCourse({required String courseId}) async {
-    final course = await CourseRepo.getCourseById(courseId);
+    final course = await CourseRepo.getCourseByUid(courseId);
     if (course == null) return;
     for (final item in course.collections) {
       await ModifyCollectionUc().deleteCollection(item);
@@ -38,10 +38,11 @@ class ModifyCourseActions {
   /// When the user Modifies image
   Future<Result> modifyCourseImageAction({required int id, required File newImageFile}) async {
     final Result<bool?> createCourseOutcome = await Result.tryRunAsync<bool>(() async {
-      Course? course = await CourseRepo.getCourseByDbId(id);
+      Course? course = await CourseRepo.getCourseById(id);
       if (course == null) return false;
 
-      await FileUtils.deleteFileAtPath(course.metadata.thumbnailsDetails.local);
+      final oldPath = course.metadata.thumbnail?.local;
+      if (oldPath != null && oldPath.isNotEmpty) await FileUtils.deleteFileAtPath(oldPath);
       final String? newPath = await ContentThumbnailCreator.createThumbnailForCourse(
         newImageFile.path,
         filename: course.uid,
@@ -66,12 +67,12 @@ class ModifyCourseActions {
 
   /// This deletes the course image
   Future<bool> deleteCourseImageAction({required int courseDbId}) async {
-    Course? course = await CourseRepo.getCourseByDbId(courseDbId);
+    final course = await CourseRepo.getCourseById(courseDbId);
     if (course == null) return false;
-    final thumbnailPath = course.thumbnailPath;
-    if (course.metadata.thumbnailsDetails.containsFilePath) {
+    final thumbnailPath = course.metadata.thumbnail;
+    if (thumbnailPath != null && thumbnailPath.containsLocalPath) {
       await CourseRepo.addCourse(course.copyWith(metadata: course.metadata.copyWith(thumbnails: FilePath())));
-      await FileUtils.deleteFileAtPath(thumbnailPath);
+      if (thumbnailPath.local != null) await FileUtils.deleteFileAtPath(thumbnailPath.local!);
       return true;
     }
     return false;
@@ -108,8 +109,8 @@ class ModifyCourseActions {
   }
 
   /// Navigates to dialog to preview image
-  Future<void> previewImageActionRoute(BuildContext context, {required String courseImagePath}) async {
-    if (!courseImagePath.fileDetails.containsFilePath) return;
+  Future<void> previewImageActionRoute(BuildContext context, {required FilePath courseImagePath}) async {
+    if (!courseImagePath.containsLocalPath) return;
     CustomDialog.show(
       context,
       transitionDuration: Durations.short3,
@@ -164,7 +165,7 @@ class ModifyCourseActions {
             CustomDialog.hide(context);
             await Future.delayed(Durations.short2);
             if (context.mounted) {
-              previewImageActionRoute(context, courseImagePath: course.metadata.thumbnailsDetails.toJson());
+              previewImageActionRoute(context, courseImagePath: course.metadata.thumbnail ?? FilePath.empty());
             }
           },
         )

@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart:developer';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
@@ -181,10 +181,10 @@ class HomeDashboard extends ConsumerWidget {
   }
 
   factory HomeDashboard.defaultConfig(
+    BuildContext context,
     bool? hasAnyCourse,
-    void Function() onEmptyReadingButtonTapped, {
-    BuildContext? context,
-  }) {
+    void Function() onEmptyReadingButtonTapped,
+  ) {
     if (hasAnyCourse == null) {
       return HomeDashboard(
         data: ContentTrack.create(contentId: "_", parentId: "_", xxh3Hash: "_", title: "Looking around", progress: 0.0),
@@ -207,7 +207,10 @@ class HomeDashboard extends ConsumerWidget {
 
         buttonText: "Get started!",
         isFirst: true,
-        onReadingBtnTapped: () async => context?.pushNamed(Routes.createCourse.name),
+        onReadingBtnTapped: () async {
+          log("Routing to create course page");
+          context?.pushNamed(Routes.createCourse.name);
+        },
       );
     }
 

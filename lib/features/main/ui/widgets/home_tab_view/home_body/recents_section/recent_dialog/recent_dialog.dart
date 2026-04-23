@@ -86,7 +86,7 @@ class _RecentDialogState extends ConsumerState<RecentDialog> with RecentDialogAc
                                       backgroundColor: theme.adjustBgAndSecondaryWithLerp,
                                       shape: CircleBorder(),
                                       // contentPadding: EdgeInsets.all(12),
-                                      onTap: () => onAddToBookmark(widget.contentTrack.contentId),
+                                      onTap: () => onAddToBookmark(widget.contentTrack.uid),
                                       child: Icon(Iconsax.star_copy, size: 26, color: theme.supportingText),
                                     ),
                                     BuildButton(

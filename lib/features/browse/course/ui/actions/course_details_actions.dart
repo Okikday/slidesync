@@ -7,7 +7,7 @@ import 'package:slidesync/shared/helpers/global_nav.dart';
 
 class CourseDetailsActions {
   static void showMoreOptionsDialog(BuildContext context, {required String courseId}) async {
-    final course = await CourseRepo.getCourseById(courseId);
+    final course = await CourseRepo.getCourseByUid(courseId);
     if (course == null) return;
     GlobalNav.withContext(
       (c) => CustomDialog.show(

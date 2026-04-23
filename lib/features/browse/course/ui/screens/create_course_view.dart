@@ -1,7 +1,9 @@
 import 'dart:io';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:slidesync/dev/file_manager_page.dart';
 import 'package:slidesync/features/share/ui/screens/import/desktop_course_folder_import_manager.dart';
 import 'package:slidesync/features/share/ui/screens/import/saf_course_folder_import_manager.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
@@ -29,7 +31,14 @@ class _CreateCourseViewState extends ConsumerState<CreateCourseView> with Single
       child: AppScaffold(
         title: "",
         appBar: AppBarContainer(child: AppBarContainerChild(context.isDarkMode, title: "Create Course")),
-
+        floatingActionButton: kDebugMode
+            ? FloatingActionButton(
+                onPressed: () {
+                  Navigator.push(context, PageAnimation.pageRouteBuilder(const FileManagerPage()));
+                },
+                child: const Icon(Icons.folder),
+              )
+            : null,
         body: CreateCourseOuterSection(),
       ),
     );

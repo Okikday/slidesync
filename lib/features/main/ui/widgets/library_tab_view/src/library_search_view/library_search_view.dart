@@ -35,7 +35,7 @@ class _LibrarySearchViewState extends ConsumerState<LibrarySearchView> {
     searchTextController = TextEditingController();
     futureContentsNotifier = ValueNotifier(null);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      filter = await CourseContentRepo.filter;
+      filter = await ModuleContentRepo.filter;
     });
   }
 
@@ -122,7 +122,7 @@ class _LibrarySearchViewState extends ConsumerState<LibrarySearchView> {
                       onChanged: (text) {
                         if (text.trim().isEmpty) {
                           if (futureContentsNotifier.value != null) {
-                            futureContentsNotifier.value = CourseContentRepo.getAll();
+                            futureContentsNotifier.value = ModuleContentRepo.getAll();
                           }
                         } else {
                           futureContentsNotifier.value =

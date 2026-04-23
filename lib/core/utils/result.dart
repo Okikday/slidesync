@@ -44,6 +44,7 @@ class Result<T> {
       final value = await operation();
       return Result.success(value);
     } catch (e, st) {
+      if (logError) log("Result tryRunAsync error: ${e.toString()}", error: e, stackTrace: st);
       return Result.error(e.toString(), st, logError);
     }
   }

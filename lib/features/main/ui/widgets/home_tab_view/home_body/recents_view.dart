@@ -48,7 +48,7 @@ class RecentsView extends ConsumerWidget {
                   isStarred: false,
                   progress: content.progress?.clamp(0, 1.0),
                   onTapTile: () async {
-                    final toPushContent = await CourseContentRepo.getByContentId(content.contentId);
+                    final toPushContent = await ModuleContentRepo.getByContentId(content.uid);
                     if (toPushContent == null) return;
                     GlobalNav.withContext((context) => ContentViewGateActions.redirectToViewer(ref, toPushContent));
                   },

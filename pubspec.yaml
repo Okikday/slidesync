@@ -64,7 +64,7 @@ dependencies:
   intl: any
   crypto: ^3.0.6
   google_fonts: ^6.2.1
-  isar_community: 3.3.0
+  isar_community: 3.3.2
   skeletonizer: ^2.1.0+1
   
   

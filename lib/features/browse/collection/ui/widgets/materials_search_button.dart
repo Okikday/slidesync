@@ -45,7 +45,7 @@ class MaterialsSearchButton extends ConsumerWidget {
             ),
           ];
         }
-        final List<ModuleContent> searchResults = await (await CourseContentRepo.filter)
+        final List<ModuleContent> searchResults = await (await ModuleContentRepo.filter)
             .parentIdEqualTo(collectionId)
             .titleContains(controller.text, caseSensitive: false)
             .findAll();

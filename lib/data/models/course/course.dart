@@ -117,6 +117,6 @@ class Course {
 
   @override
   String toString() {
-    return 'Course(id: $id, courseId: $uid, courseTitle: $title, description: $description, createdAt: $createdAt, lastModified: $lastModified, metadata: $metadata)';
+    return 'Course(id: $id, courseId: $uid, title: $title, description: $description, createdAt: $createdAt, lastModified: $lastModified, metadata: $metadata)';
   }
 }

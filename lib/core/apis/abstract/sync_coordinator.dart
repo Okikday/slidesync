@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:isar_community/isar.dart';
 import 'package:slidesync/core/apis/abstract/upload_download_base.dart';
 import 'package:slidesync/core/sync/gdrive_manager.dart';
-import 'package:slidesync/core/sync/entities/drive_progress.dart';
 import 'package:slidesync/core/apis/api.dart';
 import 'package:slidesync/core/apis/entities/vault_entity.dart';
 import 'package:slidesync/core/apis/entities/source_entity.dart';
@@ -11,7 +10,6 @@ import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
-import 'package:slidesync/data/models/file_path.dart';
 import 'package:slidesync/core/utils/result.dart';
 
 /// Upload sync result tracking
@@ -232,11 +230,10 @@ class SyncCoordinator {
           skippedCount++;
           continue;
         }
-
-        final fileDetails = content.path;
-        final file = File(fileDetails.local.replaceFirst(RegExp(r'^(file|link):'), ''));
-        if (!await file.exists()) {
-          SyncLogger.warn('File not found: ${file.path}', operation: userId);
+        final localPath = content.path.local;
+        final file = localPath == null ? null : File(localPath.replaceFirst(RegExp(r'^(file|link):'), ''));
+        if (file == null || !await file.exists()) {
+          SyncLogger.warn('File not found: ${file?.path}', operation: userId);
           failedCount++;
           failedIds.add(content.uid);
           continue;
@@ -379,10 +376,10 @@ class SyncCoordinator {
     }
 
     // Validate file - parse content.path as FileDetails (it's stored as JSON)
-    final fileDetails = content.path;
-    final file = File(fileDetails.local.replaceFirst(RegExp(r'^(file|link):'), ''));
-    if (!await file.exists()) {
-      SyncLogger.warn('File not found: ${file.path}', operation: userId);
+    final localPath = content.path.local;
+    final file = localPath == null ? null : File(localPath.replaceFirst(RegExp(r'^(file|link):'), ''));
+    if (file == null || !await file.exists()) {
+      SyncLogger.warn('File not found: ${file?.path}', operation: userId);
       return false;
     }
 

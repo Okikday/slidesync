@@ -13,19 +13,19 @@ class ModifyCollectionUc {
     await collection.contents.load();
     int fileSum = 0;
     for (final item in collection.contents) {
-      final bool dupHashExists = await CourseContentRepo.doesDuplicateHashExists(item.xxh3Hash);
+      final bool dupHashExists = await ModuleContentRepo.doesDuplicateHashExists(item.xxh3Hash);
       if (!dupHashExists) {
         final filePath = item.path.local;
-        await FileUtils.deleteFileAtPath(filePath);
+        if (filePath != null) await FileUtils.deleteFileAtPath(filePath);
 
-        final previewPath = item.metadata.thumbnails?.local;
+        final previewPath = item.metadata.thumbnail?.local;
         if (previewPath != null && previewPath.isNotEmpty) await FileUtils.deleteFileAtPath(previewPath);
         fileSum += item.fileSizeInBytes;
       }
     }
     // await CourseCollectionRepo.deleteMultipleContents(collection.contents.toList(), collection);
     // log("Successfully deleted multiple contents");
-    final bool deleteOutcome = await CourseCollectionRepo.deleteCollection(collection);
+    final bool deleteOutcome = await ModuleRepo.deleteCollection(collection);
     await Result.tryRunAsync(() async {
       final prevFileSum = await AppHiveData.instance.getData<int?>(key: HiveDataPathKey.globalFileSizeSum.name);
       if (prevFileSum == null) return;

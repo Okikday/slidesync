@@ -39,9 +39,7 @@ class IsarData<T> {
   static Future<void> initializeDefault({
     List<CollectionSchema> collectionSchemas = isarSchemas,
     bool inspector = true,
-  }) async {
-    return await initialize(collectionSchemas: collectionSchemas, inspector: inspector);
-  }
+  }) async => await initialize(collectionSchemas: collectionSchemas, inspector: inspector);
 
   /// Get the opened Isar instance (internal use)
   static Future<Isar> get isarFuture async => await _openDb!;

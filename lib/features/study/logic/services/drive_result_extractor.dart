@@ -121,7 +121,7 @@ Future<DriveExtractionResult> extractAndAddDriveResources({
         });
       }
 
-      addSuccess = await CourseContentRepo.addMultipleContents(collectionId, contentsToAdd);
+      addSuccess = await ModuleContentRepo.addMultipleContents(collectionId, contentsToAdd);
     }
 
     // Close loading dialog

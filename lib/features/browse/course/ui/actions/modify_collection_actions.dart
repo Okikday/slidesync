@@ -18,7 +18,7 @@ import 'package:slidesync/shared/theme/src/app_palette.dart';
 class ModifyCollectionActions {
   /// Add collection to course
   Future<String?> _addCollectionToCourse(String courseId, String title) async {
-    final Course? course = await CourseRepo.getCourseById(courseId);
+    final Course? course = await CourseRepo.getCourseByUid(courseId);
     if (course == null) {
       return "Couldn't find course!";
     }
@@ -28,10 +28,10 @@ class ModifyCollectionActions {
     }
     final newCollection = Module.create(
       parentId: course.uid,
-      collectionTitle: title,
+      title: title,
       metadata: ModuleMetadata.create(color: AppPalette.getRandom()),
     );
-    final String? result = await CourseCollectionRepo.addCollectionNoDuplicateTitle(newCollection);
+    final String? result = await ModuleRepo.addCollectionNoDuplicateTitle(newCollection);
     return result;
   }
 
@@ -80,7 +80,7 @@ class ModifyCollectionActions {
 
   Future<String?> renameCollectionAction(Module collection) async {
     final Result<String?> renameOutcome = await Result.tryRunAsync<String?>(() async {
-      final String? result = await CourseCollectionRepo.addCollectionNoDuplicateTitle(collection);
+      final String? result = await ModuleRepo.addCollectionNoDuplicateTitle(collection);
       return (result == null ? result : "An error occured while renaming collection!");
     });
     if (renameOutcome.isSuccess && renameOutcome.data == null) {

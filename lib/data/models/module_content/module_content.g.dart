@@ -140,7 +140,7 @@ const ModuleContentSchema = CollectionSchema(
   getId: _moduleContentGetId,
   getLinks: _moduleContentGetLinks,
   attach: _moduleContentAttach,
-  version: '3.3.0',
+  version: '3.3.2',
 );
 
 int _moduleContentEstimateSize(

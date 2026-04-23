@@ -442,11 +442,11 @@ class CourseFolderImportManager {
 
           final collection = Module.create(
             parentId: course.uid,
-            collectionTitle: subfolder.name,
+            title: subfolder.name,
             description: 'Collection from folder: ${subfolder.name}',
           );
 
-          final addResult = await CourseCollectionRepo.addCollectionNoDuplicateTitle(collection);
+          final addResult = await ModuleRepo.addCollectionNoDuplicateTitle(collection);
           if (addResult != null) {
             log('⚠️ Collection "${subfolder.name}" already exists or error: $addResult');
             continue;
@@ -494,11 +494,11 @@ class CourseFolderImportManager {
 
           final rootCollection = Module.create(
             parentId: course.uid,
-            collectionTitle: 'Base',
+            title: 'Base',
             description: 'Base folder materials',
           );
 
-          await CourseCollectionRepo.addCollectionNoDuplicateTitle(rootCollection);
+          await ModuleRepo.addCollectionNoDuplicateTitle(rootCollection);
 
           final limitedFiles = rootFiles.take(config.maxContents).toList();
           log('📤 Adding ${limitedFiles.length} files to Base');
@@ -527,13 +527,9 @@ class CourseFolderImportManager {
 
         log('📁 Creating Materials collection (no subfolders)');
 
-        final collection = Module.create(
-          parentId: course.uid,
-          collectionTitle: 'Materials',
-          description: 'Course materials',
-        );
+        final collection = Module.create(parentId: course.uid, title: 'Materials', description: 'Course materials');
 
-        final addResult = await CourseCollectionRepo.addCollectionNoDuplicateTitle(collection);
+        final addResult = await ModuleRepo.addCollectionNoDuplicateTitle(collection);
         if (addResult != null) {
           throw Exception(addResult);
         }

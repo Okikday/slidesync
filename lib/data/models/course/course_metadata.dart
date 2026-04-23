@@ -10,13 +10,13 @@ part 'course_metadata.g.dart';
 @embedded
 class CourseMetadata {
   String? author;
-  FilePath? thumbnails;
+  FilePath? thumbnail;
   String? rawColor;
 
   @ignore
   Color? get color => rawColor != null && rawColor!.isNotEmpty ? ThemeUtils.hexToColor(rawColor!) : null;
 
-  FilePath get thumbnailsDetails => thumbnails ?? FilePath();
+  // FilePath get thumbnailsDetails => thumbnails ?? FilePath();
 
   CourseMetadata();
 
@@ -24,7 +24,7 @@ class CourseMetadata {
     final resolvedColor = rawColor ?? (color != null ? ThemeUtils.colorToHex(color) : null);
     return CourseMetadata()
       ..author = author
-      ..thumbnails = thumbnails
+      ..thumbnail = thumbnails
       ..rawColor = resolvedColor;
   }
 
@@ -38,7 +38,7 @@ class CourseMetadata {
   Map<String, dynamic> toMap() {
     return {
       if (author != null) 'author': author,
-      if (thumbnails != null) 'thumbnails': thumbnails!.toJson(),
+      if (thumbnail != null) 'thumbnails': thumbnail!.toJson(),
       if (rawColor != null) 'color': rawColor,
     };
   }
@@ -73,14 +73,14 @@ class CourseMetadata {
   CourseMetadata copyWith({String? author, FilePath? thumbnails, Color? color}) {
     return CourseMetadata.create(
       author: author ?? this.author,
-      thumbnails: thumbnails ?? this.thumbnails,
+      thumbnails: thumbnails ?? this.thumbnail,
       rawColor: color != null ? ThemeUtils.colorToHex(color) : rawColor,
     );
   }
 
   @override
   String toString() {
-    return 'CourseMetadata(author: $author, thumbnails: $thumbnails, color: $rawColor)';
+    return 'CourseMetadata(author: $author, thumbnails: $thumbnail, color: $rawColor)';
   }
 
   @override
@@ -89,12 +89,12 @@ class CourseMetadata {
 
     return other is CourseMetadata &&
         other.author == author &&
-        other.thumbnails == thumbnails &&
+        other.thumbnail == thumbnail &&
         other.rawColor == rawColor;
   }
 
   @override
   int get hashCode {
-    return author.hashCode ^ thumbnails.hashCode ^ rawColor.hashCode;
+    return author.hashCode ^ thumbnail.hashCode ^ rawColor.hashCode;
   }
 }

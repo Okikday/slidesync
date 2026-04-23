@@ -11,7 +11,7 @@ class ContentTrack {
   Id id = Isar.autoIncrement;
 
   @Index(unique: true)
-  late String contentId;
+  late String uid;
 
   @Index()
   late String parentId;
@@ -44,7 +44,7 @@ class ContentTrack {
     DateTime? lastRead,
   }) {
     return ContentTrack()
-      ..contentId = contentId
+      ..uid = contentId
       ..parentId = parentId
       ..title = title
       ..description = description
@@ -59,7 +59,7 @@ class ContentTrack {
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'id': id,
-      'contentId': contentId,
+      'contentId': uid,
       'parentId': parentId,
       'title': title,
       'description': description,
@@ -75,7 +75,7 @@ class ContentTrack {
   factory ContentTrack.fromMap(Map<String, dynamic> map) {
     return ContentTrack()
       ..id = map['id'] as int
-      ..contentId = map['contentId'] as String
+      ..uid = map['contentId'] as String
       ..parentId = map['parentId'] as String
       ..title = map['title'] as String?
       ..description = map['description'] as String?
@@ -93,7 +93,7 @@ class ContentTrack {
 
   @override
   String toString() {
-    return 'ProgressTrackModel(id: $id, contentId: $contentId, parentId: $parentId, title: $title, description: $description, xxh3Hash: $xxh3Hash, progress: $progress, additionalDetail: $additionalDetail, pages: $pages, lastRead: $lastRead, metadata: $metadataJson)';
+    return 'ProgressTrackModel(id: $id, contentId: $uid, parentId: $parentId, title: $title, description: $description, xxh3Hash: $xxh3Hash, progress: $progress, additionalDetail: $additionalDetail, pages: $pages, lastRead: $lastRead, metadata: $metadataJson)';
   }
 
   @override
@@ -101,7 +101,7 @@ class ContentTrack {
     if (identical(this, other)) return true;
 
     return other.id == id &&
-        other.contentId == contentId &&
+        other.uid == uid &&
         other.parentId == parentId &&
         other.title == title &&
         other.description == description &&
@@ -116,7 +116,7 @@ class ContentTrack {
   @override
   int get hashCode {
     return id.hashCode ^
-        contentId.hashCode ^
+        uid.hashCode ^
         parentId.hashCode ^
         title.hashCode ^
         description.hashCode ^
@@ -144,7 +144,7 @@ extension ProgressTrackModelExtension on ContentTrack {
     String? metadataJson,
   }) {
     return this
-      ..contentId = contentId ?? this.contentId
+      ..uid = contentId ?? this.uid
       ..parentId = parentId ?? this.parentId
       ..title = title ?? this.title
       ..description = description ?? this.description

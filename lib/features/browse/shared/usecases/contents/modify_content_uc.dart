@@ -13,9 +13,9 @@ import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 class ModifyContentUc {
   /// Deletes the content provided from storage and database
   Future<String?> deleteContent(ModuleContent content) async {
-    final bool dupHashExists = await CourseContentRepo.doesDuplicateHashExists(content.xxh3Hash);
+    final bool dupHashExists = await ModuleContentRepo.doesDuplicateHashExists(content.xxh3Hash);
     final fileSize = content.fileSizeInBytes;
-    await CourseContentRepo.deleteContent(content);
+    await ModuleContentRepo.deleteContent(content);
     await removeIdFromRecents(content.uid);
     await ContentTrackRepo.deleteByContentId(content.uid);
     if (!dupHashExists) {
@@ -30,9 +30,9 @@ class ModifyContentUc {
     }
 
     if (!dupHashExists) {
-      await FileUtils.deleteFileAtPath(content.path.local);
-      final previewPath = content.thumbnailPath;
-      await FileUtils.deleteFileAtPath(previewPath);
+      final path = content.path.local;
+      if (path != null) await FileUtils.deleteFileAtPath(path);
+      await FileUtils.deleteFileAtPath(content.thumbnailPath);
     }
 
     return null;
@@ -61,13 +61,13 @@ class ModifyContentUc {
   /// Renames the content provided with the new title
   Future<String?> renameContent(ModuleContent content, String newTitle) async {
     return (await Result.tryRunAsync(() async {
-      ModuleContent? stContent = await CourseContentRepo.getByDbId(content.id);
+      ModuleContent? stContent = await ModuleContentRepo.getByDbId(content.id);
       if (stContent == null) {
-        stContent = await CourseContentRepo.getByContentId(content.uid);
+        stContent = await ModuleContentRepo.getByContentId(content.uid);
         if (stContent == null) return;
       }
 
-      await CourseContentRepo.add(stContent.copyWith(xxh3Hash: content.xxh3Hash, title: newTitle));
+      await ModuleContentRepo.add(stContent.copyWith(xxh3Hash: content.xxh3Hash, title: newTitle));
       try {
         final contentTrack = await ContentTrackRepo.getByContentId(content.uid);
         final updated = contentTrack?.copyWith(title: newTitle);

@@ -68,7 +68,7 @@ class ListCourseCard extends ConsumerWidget {
       ),
       child: Badge(
         backgroundColor: Colors.transparent,
-        isLabelVisible: (course.createdAt?.difference(DateTime.now()).inMinutes.abs() ?? 10) <= 5,
+        isLabelVisible: (course.createdAt.difference(DateTime.now()).inMinutes.abs()) <= 5,
         alignment: Alignment.bottomRight,
         offset: Offset(-8, 0),
         label: DecoratedBox(
@@ -97,7 +97,7 @@ class ListCourseCard extends ConsumerWidget {
                 courseCode: course.courseCode,
                 courseName: course.courseName,
                 categoriesCount: course.collections.length,
-                hasImage: course.metadata.thumbnailsDetails.containsFilePath,
+                hasImage: course.metadata.thumbnail?.containsAnyPath ?? false,
               ),
             ),
 
@@ -220,7 +220,7 @@ class _ListCourseCardIconState extends ConsumerState<ListCourseCardIcon> {
 
                     if (progress != null &&
                         widget.course.courseCode.isEmpty &&
-                        !widget.course.metadata.thumbnailsDetails.containsFilePath)
+                        !(widget.course.metadata.thumbnail?.containsAnyPath ?? false))
                       Positioned.fill(
                         child: Center(
                           child: CustomText(

@@ -68,16 +68,13 @@ class ContentCardActions {
   // }
 
   static String resolveExtension(ModuleContent content) {
-    final res = p.extension(content.path.local).replaceAll('.', '').toUpperCase();
-    switch (content.type) {
-      case ModuleContentType.image:
-        return res;
-      case ModuleContentType.document:
-        return res;
-      case ModuleContentType.link:
-        return "link";
-      default:
-        return '';
-    }
+    final path = content.path.local;
+    if (path == null) return '';
+    final res = p.extension(path).replaceAll('.', '').toUpperCase();
+    return switch (content.type) {
+      ModuleContentType.image || ModuleContentType.document => res,
+      ModuleContentType.link => "link",
+      _ => '',
+    };
   }
 }

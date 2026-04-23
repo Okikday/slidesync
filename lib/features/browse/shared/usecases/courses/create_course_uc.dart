@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
@@ -14,18 +16,27 @@ class CreateCourseUc {
   }) async {
     final Result<Course?> createCourseOutcome = await Result.tryRunAsync<Course>(() async {
       Course course = Course.create(title: Formatter.joinCodeToTitle(courseCode, courseName));
+      log("Created course with title: ${course.title}, code: $courseCode");
 
       if (courseImagePath != null) {
         await ContentThumbnailCreator.createThumbnailForCourse(courseImagePath, filename: course.uid);
       }
       final author = (await UserDataFunctions().getUserDetails()).data?.userID;
+      log("   Author ID: $author");
       course = course.copyWith(
         metadata: (course.metadata.copyWith(author: author, color: AppPalette.getRandom())),
       );
 
+      log(
+        "Course after setting metadata - title: ${course.title}, author: ${course.metadata.author}, color: ${course.metadata.color}",
+      );
+
       final createdId = await CourseRepo.addCourse(course);
-      final Course? getCourse = await CourseRepo.getCourseByDbId(createdId);
-      if (getCourse == null) return null;
+      log(" Course added to repo with ID: $createdId");
+      final getCourse = await CourseRepo.getCourseById(createdId);
+      log(
+        "Fetched course from repo: ${getCourse != null ? 'title: ${getCourse.title}, author: ${getCourse.metadata.author}, color: ${getCourse.metadata.color}' : 'Course not found'}",
+      );
       return getCourse;
     });
 

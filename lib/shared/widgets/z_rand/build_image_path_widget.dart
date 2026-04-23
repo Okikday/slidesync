@@ -81,10 +81,11 @@ class _BuildImagePathWidgetState extends ConsumerState<BuildImagePathWidget> {
     final fit = widget.fit;
     final width = widget.width;
     final height = widget.height;
+    final local = fileDetails.local;
 
-    if (!fileDetails.containsFilePath) return fallbackWidget;
+    if (!fileDetails.containsAnyPath) return fallbackWidget;
 
-    if (fileDetails.local.isNotEmpty) {
+    if (local != null && local.isNotEmpty) {
       // && imageBytes != null
       return ImageFromFile(
         fileDetails: fileDetails,
@@ -94,7 +95,7 @@ class _BuildImagePathWidgetState extends ConsumerState<BuildImagePathWidget> {
         fallbackWidget: fallbackWidget,
         ref: ref,
       ).animate().fadeIn();
-    } else if (fileDetails.url.isNotEmpty) {
+    } else if (fileDetails.url != null) {
       return ImageFromNetwork(
         fileDetails: fileDetails,
         fit: fit,
@@ -129,7 +130,7 @@ class ImageFromFile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Image.file(
-      File(fileDetails.local),
+      File(fileDetails.local ?? ''),
       fit: fit,
       width: width,
       height: height,
@@ -169,7 +170,7 @@ class ImageFromNetwork extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CachedNetworkImage(
-      imageUrl: fileDetails.url,
+      imageUrl: fileDetails.url ?? '',
       fit: fit,
       width: width,
       height: height,

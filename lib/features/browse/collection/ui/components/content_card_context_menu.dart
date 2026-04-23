@@ -124,8 +124,11 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                                     iconData: HugeIconsStroke.copyLink,
                                     onTap: () {
                                       Navigator.pop(context);
-                                      Clipboard.setData(ClipboardData(text: widget.content.path.url));
-                                      UiUtils.showFlushBar(context, msg: "Link copied to clipboard");
+                                      final url = widget.content.path.url;
+                                      if (url != null) {
+                                        Clipboard.setData(ClipboardData(text: url));
+                                        UiUtils.showFlushBar(context, msg: "Link copied to clipboard");
+                                      }
                                     },
                                   )
                                 : _buildLeadingMenuOption(
@@ -295,7 +298,7 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
         return;
       }
 
-      final parentCollection = await CourseCollectionRepo.getById(content.parentId);
+      final parentCollection = await ModuleRepo.getById(content.parentId);
       if (parentCollection == null) {
         transferNotifier.updateStatus(id: transferId, status: TransferStatus.failed);
         uploadFeedNotifier.fail(transferId, 'Parent collection not found');

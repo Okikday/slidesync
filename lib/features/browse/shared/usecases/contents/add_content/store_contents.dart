@@ -44,7 +44,7 @@ Future<List<Map<String, dynamic>>> storeContents(
         final List<ModuleContent> contentsToAdd = [];
         final Set<String> seenHashesSet = <String>{};
 
-        Module? collection = await CourseCollectionRepo.getById(args.collectionId);
+        Module? collection = await ModuleRepo.getById(args.collectionId);
         if (collection == null) return "Unable to load collection";
 
         final contentPathsLength = args.filePaths.length;
@@ -72,7 +72,7 @@ Future<List<Map<String, dynamic>>> storeContents(
           final newFileName = "$hash${p.extension(filePath)}";
 
           final Result<String?> addContentResult = await Result.tryRunAsync(() async {
-            final ModuleContent? sameHashedContent = await CourseContentRepo.getByHash(hash);
+            final ModuleContent? sameHashedContent = await ModuleContentRepo.getByHash(hash);
             if (sameHashedContent == null) {
               final File storedAt = File(
                 await FileUtils.storeFile(
@@ -110,7 +110,7 @@ Future<List<Map<String, dynamic>>> storeContents(
               seenHashesSet.add(hash);
               return content.uid;
             } else {
-              final ModuleContent? sameHashedContentInColl = await CourseContentRepo.findFirstDuplicateContentByHash(
+              final ModuleContent? sameHashedContentInColl = await ModuleContentRepo.findFirstDuplicateContentByHash(
                 collection,
                 hash,
               );
@@ -169,7 +169,7 @@ Future<List<Map<String, dynamic>>> storeContents(
         }
 
         if (contentsToAdd.isNotEmpty) {
-          await CourseContentRepo.addMultipleContents(collection.uid, contentsToAdd);
+          await ModuleContentRepo.addMultipleContents(collection.uid, contentsToAdd);
         }
         if (args.deleteCache) await FileUtils.deleteFiles(args.filePaths); // Delete the cache
 

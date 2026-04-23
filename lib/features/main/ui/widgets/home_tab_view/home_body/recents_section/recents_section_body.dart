@@ -45,7 +45,7 @@ class RecentsSectionBody extends ConsumerWidget with RecentDialogActions {
                     isStarred: false,
                     progress: content.progress?.clamp(0, 1.0),
                     onTapTile: () async {
-                      await onContinueReading(ref, content.contentId);
+                      await onContinueReading(ref, content.uid);
                     },
                     onLongTapTile: () {
                       UiUtils.showCustomDialog(

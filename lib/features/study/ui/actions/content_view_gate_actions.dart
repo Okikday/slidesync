@@ -53,13 +53,21 @@ class ContentViewGateActions {
   static Future<void> _openExternally(ModuleContent content) async {
     final isLink = content.type == ModuleContentType.link;
     if (isLink) {
-      await launchUrl(Uri.parse(content.path.url));
+      final url = content.path.url;
+      if (url != null) await launchUrl(Uri.parse(url));
     } else {
       ContentProgressTracker().registerContentAccess(content.uid);
+      final local = content.path.local;
+      if (local == null || local.isEmpty) {
+        GlobalNav.withContext(
+          (context) => UiUtils.showFlushBar(context, msg: "File path not found, cannot open content"),
+        );
+        return;
+      }
       // Launching outside application
-      final extWithDot = p.extension(content.path.local);
+      final extWithDot = p.extension(local);
       final toOpen = await FileUtils.storeFile(
-        file: File(content.path.local),
+        file: File(local),
         base: AppDirType.temporary,
         newFileName: content.title + extWithDot,
       );
@@ -109,8 +117,8 @@ class ContentViewGateActions {
   // ==================== Content Type Handlers ====================
 
   static Future<void> _handleDocument(MutationTarget ref, ModuleContent content) async {
-    final filePath = content.path.local;
-    final urlPath = content.path.url;
+    final filePath = content.path.local ?? '';
+    final urlPath = content.path.url ?? '';
     final isPdf =
         p.extension(filePath).toLowerCase().contains("pdf") || p.extension(urlPath).toLowerCase().contains("pdf");
 
@@ -128,7 +136,7 @@ class ContentViewGateActions {
   static Future<void> _handleImage(ModuleContent content) async => _navigateTo(Routes.imageViewer, content);
 
   static Future<void> _handleLink(ModuleContent content) async {
-    final urlPath = content.path.url;
+    final urlPath = content.path.url ?? '';
     final isUnresolvedDriveLink =
         content.metadataJson.decodeJson['resolved'] != true && DriveBrowser.isGoogleDriveLink(urlPath);
 
@@ -147,7 +155,7 @@ class ContentViewGateActions {
   }
 
   static Future<void> _handleUnknownType(ModuleContent content) async {
-    final filePath = content.path.local;
+    final filePath = content.path.local ?? '';
     final file = File(filePath);
 
     // Check if it's an archive file
@@ -205,7 +213,7 @@ class ContentViewGateActions {
     }
 
     // Get parent collection
-    final collection = await CourseCollectionRepo.getById(content.parentId);
+    final collection = await ModuleRepo.getById(content.parentId);
     if (collection == null) {
       navState.pop();
       GlobalNav.withContext(

@@ -20,10 +20,10 @@ class AddLinkActions {
   }) async {
     log("previewLinkDetails: $previewLinkDetails");
     if (parentId.isEmpty) return false;
-    final collection = await CourseCollectionRepo.getById(parentId);
+    final collection = await ModuleRepo.getById(parentId);
     if (collection == null) return false;
     final xxh3Hash = CryptoUtils.calculateStringHash(link);
-    final ModuleContent? sameHashedContent = await CourseContentRepo.findFirstDuplicateContentByHash(
+    final ModuleContent? sameHashedContent = await ModuleContentRepo.findFirstDuplicateContentByHash(
       collection,
       xxh3Hash,
     );
@@ -51,7 +51,7 @@ class AddLinkActions {
             'previewUrl': previewLinkDetails.previewUrl,
           }),
         );
-        return await CourseContentRepo.addMultipleContents(newContent.collectionId, [newContent]);
+        return await ModuleContentRepo.addMultipleContents(newContent.collectionId, [newContent]);
       }
     } else {
       newContent = ModuleContent.create(
@@ -64,7 +64,7 @@ class AddLinkActions {
         type: ModuleContentType.link,
         metadata: ModuleContentMetadata.create(fields: {'previewUrl': previewLinkDetails.previewUrl}),
       );
-      return await CourseContentRepo.addMultipleContents(newContent.collectionId, [newContent]);
+      return await ModuleContentRepo.addMultipleContents(newContent.collectionId, [newContent]);
     }
     return false;
   }

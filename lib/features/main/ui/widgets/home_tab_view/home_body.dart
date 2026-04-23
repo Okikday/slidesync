@@ -64,7 +64,7 @@ class _HomeBodyState extends ConsumerState<HomeBody> with HomeTabActions {
             child: FutureBuilder(
               future: hasAnyCourseFuture,
               builder: (context, hasAnyCourseSnap) =>
-                  HomeDashboard.defaultConfig(hasAnyCourseSnap.data, onEmptyReadingButtonTapped),
+                  HomeDashboard.defaultConfig(context, hasAnyCourseSnap.data, onEmptyReadingButtonTapped),
             ),
           ),
         ),

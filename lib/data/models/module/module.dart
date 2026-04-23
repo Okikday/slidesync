@@ -38,7 +38,6 @@ class Module {
   factory Module.create({
     String? uid,
     String? parentId,
-    String? collectionTitle,
     String? title,
     String? description,
     DateTime? createdAt,
@@ -46,16 +45,17 @@ class Module {
     ModuleMetadata? metadata,
   }) {
     final now = DateTime.now();
-    final resolvedTitle = title ?? collectionTitle;
     return Module()
       ..uid = (uid == null || uid.isEmpty) ? const Uuid().v4() : uid
       ..parentId = parentId ?? ''
-      ..title = resolvedTitle ?? ''
+      ..title = title ?? ''
       ..description = description ?? ''
       ..createdAt = createdAt ?? now
       ..lastModified = lastModified ?? now
       ..metadata = metadata ?? ModuleMetadata.empty();
   }
+
+  factory Module.empty() => Module.create(uid: "_", title: "_");
 
   Map<String, dynamic> toMap() {
     return {

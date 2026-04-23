@@ -85,8 +85,8 @@ class LibraryTabViewSearchButton extends ConsumerWidget with CourseCardActions {
         final List searchResults;
         searchResults = switch (ref.watch(_searchTypeProvider)) {
           0 => await (await CourseRepo.filter).titleContains(controller.text, caseSensitive: false).findAll(),
-          1 => await (await CourseCollectionRepo.filter).titleContains(controller.text, caseSensitive: false).findAll(),
-          2 => await (await CourseContentRepo.filter).titleContains(controller.text, caseSensitive: false).findAll(),
+          1 => await (await ModuleRepo.filter).titleContains(controller.text, caseSensitive: false).findAll(),
+          2 => await (await ModuleContentRepo.filter).titleContains(controller.text, caseSensitive: false).findAll(),
           _ => [],
         };
 
@@ -113,7 +113,7 @@ class LibraryTabViewSearchButton extends ConsumerWidget with CourseCardActions {
                       1 => Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
                         child: FutureBuilder(
-                          future: CourseRepo.getCourseById((value as Module).parentId),
+                          future: CourseRepo.getCourseByUid((value as Module).parentId),
                           builder: (context, courseSnapshot) {
                             return CollectionCard(
                               collection: (value),
@@ -121,7 +121,7 @@ class LibraryTabViewSearchButton extends ConsumerWidget with CourseCardActions {
                               onTap: () async {
                                 // controller.closeView("");
                                 final curr = value;
-                                final parent = await CourseRepo.getCourseById(curr.parentId);
+                                final parent = await CourseRepo.getCourseByUid(curr.parentId);
                                 if (parent == null) return;
                                 onTapCourseCard(ref, course: parent);
                               },

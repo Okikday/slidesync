@@ -12,7 +12,7 @@ class ModifyContentsAction {
     if (rootNavigatorKey.currentContext!.mounted) {
       UiUtils.showLoadingDialog(rootNavigatorKey.currentContext!, message: "Deleting content...");
     }
-    final content = await CourseContentRepo.getByContentId(contentId);
+    final content = await ModuleContentRepo.getByContentId(contentId);
     if (content == null) return "Couldn't find content";
     final Result<String?> delOutcome = await Result.tryRunAsync(() async {
       return await ModifyContentUc().deleteContent(content);

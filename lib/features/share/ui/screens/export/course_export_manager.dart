@@ -99,7 +99,7 @@ class _CourseExportShared {
 
     GlobalNav.withContext((c) => UiUtils.showLoadingDialog(c, message: 'Loading course...'));
 
-    final course = await CourseRepo.getCourseById(courseId);
+    final course = await CourseRepo.getCourseByUid(courseId);
 
     GlobalNav.popGlobal();
 
@@ -243,12 +243,10 @@ class _CourseExportShared {
     String originalFilename = metadata.originalFileName ?? content.title;
 
     if (!p.extension(originalFilename).isNotEmpty) {
-      if (content.path.local.isNotEmpty) {
-        final storedPath = content.path.local;
-        final ext = p.extension(storedPath);
-        if (ext.isNotEmpty) {
-          originalFilename = '$originalFilename$ext';
-        }
+      final storedPath = content.path.local ?? '';
+      final ext = p.extension(storedPath);
+      if (ext.isNotEmpty) {
+        originalFilename = '$originalFilename$ext';
       }
     }
 
@@ -322,15 +320,9 @@ class CourseFolderExportManager {
   ) async {
     try {
       final originalFilename = _CourseExportShared.resolveOriginalFileName(content);
-
-      if (content.path.local.isEmpty) {
-        return FileExportResult(originalName: originalFilename, success: false, error: 'No file path found');
-      }
-
       final storedFilePath = content.path.local;
-
-      if (storedFilePath.isEmpty) {
-        return FileExportResult(originalName: originalFilename, success: false, error: 'Invalid file path');
+      if (storedFilePath == null || storedFilePath.isEmpty) {
+        return FileExportResult(originalName: originalFilename, success: false, error: 'No file path found');
       }
 
       final file = File(storedFilePath);
@@ -498,17 +490,12 @@ class CourseFolderExportManagerWindows {
     try {
       final originalFilename = _CourseExportShared.resolveOriginalFileName(content);
 
-      if (content.path.local.isEmpty) {
+      final localPath = content.path.local;
+      if (localPath == null || localPath.isEmpty) {
         return FileExportResult(originalName: originalFilename, success: false, error: 'No file path found');
       }
 
-      final storedFilePath = content.path.local;
-
-      if (storedFilePath.isEmpty) {
-        return FileExportResult(originalName: originalFilename, success: false, error: 'Invalid file path');
-      }
-
-      final sourceFile = File(storedFilePath);
+      final sourceFile = File(localPath);
 
       if (!await sourceFile.exists()) {
         return FileExportResult(originalName: originalFilename, success: false, error: 'File does not exist');

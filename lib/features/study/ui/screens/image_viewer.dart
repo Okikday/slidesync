@@ -44,7 +44,7 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
   void initState() {
     super.initState();
     pageController = PageController();
-    collectionFuture = CourseCollectionRepo.getById(widget.content.parentId).then((c) => c ?? defaultCollection);
+    collectionFuture = ModuleRepo.getById(widget.content.parentId).then((c) => c ?? Module.empty());
   }
 
   @override
@@ -121,9 +121,9 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
                                   filterQuality: FilterQuality.high,
                                   minScale: PhotoViewComputedScale.contained,
                                   controller: ref.watch(stateProvider.select((s) => s.controller)),
-                                  imageProvider: currContent.path.containsFilePath
-                                      ? FileImage(File(currContent.path.local))
-                                      : NetworkImage(currContent.path.url),
+                                  imageProvider: currContent.path.containsLocalPath
+                                      ? FileImage(File(currContent.path.local ?? ''))
+                                      : NetworkImage(currContent.path.url ?? ''),
                                   onTapUp: (context, details, controllerValue) {
                                     ref.read(stateProvider).toggleAppBarVisible();
                                   },

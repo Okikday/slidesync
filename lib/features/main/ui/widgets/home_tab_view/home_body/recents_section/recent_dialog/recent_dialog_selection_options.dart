@@ -23,7 +23,7 @@ class RecentDialogSelectionOptions extends ConsumerWidget with RecentDialogActio
           title: "Continue reading",
           icon: Icon(Iconsax.play_copy, size: 24, color: theme.supportingText),
           textStyle: TextStyle(fontSize: 16, color: theme.onBackground),
-          onTap: () => onContinueReading(ref, contentTrack.contentId),
+          onTap: () => onContinueReading(ref, contentTrack.uid),
         ),
 
         divider,
@@ -32,7 +32,7 @@ class RecentDialogSelectionOptions extends ConsumerWidget with RecentDialogActio
           title: "Open Outside App",
           icon: Icon(Icons.send_to_mobile_outlined, size: 24, color: theme.supportingText),
           textStyle: TextStyle(fontSize: 16, color: theme.onBackground),
-          onTap: () => onOpenOutsideApp(ref, contentTrack.contentId),
+          onTap: () => onOpenOutsideApp(ref, contentTrack.uid),
         ),
 
         divider,
@@ -41,7 +41,7 @@ class RecentDialogSelectionOptions extends ConsumerWidget with RecentDialogActio
           title: "Share",
           icon: Icon(Icons.share_outlined, size: 24, color: theme.supportingText),
           textStyle: TextStyle(fontSize: 15, color: theme.onBackground),
-          onTap: () => onShare(context, contentTrack.contentId),
+          onTap: () => onShare(context, contentTrack.uid),
         ),
 
         divider,

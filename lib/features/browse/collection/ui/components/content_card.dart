@@ -297,7 +297,7 @@ class ContentCardTitle extends ConsumerWidget {
           message: resolveTitle,
           triggerMode: TooltipTriggerMode.tap,
           child: CustomText(
-            resolveTitle,
+            resolveTitle ?? "Unknown",
             color: theme.onBackground,
             fontWeight: FontWeight.w600,
             overflow: TextOverflow.ellipsis,
@@ -494,7 +494,11 @@ class PreviewLinkTypeDialog extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       spacing: 4,
                       children: [
-                        CustomText(content.path.url, fontWeight: FontWeight.bold, color: theme.secondary),
+                        CustomText(
+                          content.path.url ?? "Link error!",
+                          fontWeight: FontWeight.bold,
+                          color: theme.secondary,
+                        ),
                         Flexible(
                           child: Tooltip(
                             message: content.description.trim().isEmpty ? "No description" : content.description,
@@ -525,7 +529,10 @@ class PreviewLinkTypeDialog extends ConsumerWidget {
                 Flexible(
                   child: CustomElevatedButton(
                     onClick: () async {
-                      await Clipboard.setData(ClipboardData(text: content.path.url));
+                      final url = content.path.url;
+                      if (url != null) {
+                        await Clipboard.setData(ClipboardData(text: url));
+                      }
                     },
                     pixelHeight: 44,
                     borderRadius: 44,

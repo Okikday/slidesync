@@ -5,12 +5,11 @@ import 'package:isar_community/isar.dart';
 import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 
-final defaultCollection = Module.create(parentId: '_', collectionTitle: "_");
 final _collectionById = StreamNotifierProvider.autoDispose.family<CollectionNotifier, Module, String>(
   (collectionId) => CollectionNotifier(collectionId),
 );
 final _collectionsByParentId = StreamProvider.autoDispose.family<List<Module>, String>((ref, arg) async* {
-  yield* (await CourseCollectionRepo.filter).parentIdEqualTo(arg).sortByTitle().watch(fireImmediately: true);
+  yield* (await ModuleRepo.filter).parentIdEqualTo(arg).sortByTitle().watch(fireImmediately: true);
 });
 
 class CollectionsProviders {
@@ -25,9 +24,9 @@ class CollectionNotifier extends StreamNotifier<Module> {
   CollectionNotifier(this.collectionId);
   @override
   Stream<Module> build() {
-    return CourseCollectionRepo.watchCollectionById(collectionId).map((c) {
+    return ModuleRepo.watchCollectionById(collectionId).map((c) {
       log("detect collection change");
-      return c ?? defaultCollection;
+      return c ?? Module.empty();
     });
   }
 

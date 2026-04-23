@@ -7,6 +7,7 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
+import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/features/settings/providers/settings_provider.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/browse/course/providers/course_details_provider.dart';
@@ -143,7 +144,7 @@ class LoadingShimmerListView extends ConsumerWidget {
       itemBuilder: (context, index) => Skeletonizer(
         child: Padding(
           padding: const EdgeInsets.only(bottom: 8.0),
-          child: CollectionCard(collection: defaultCollection, onTap: () {}),
+          child: CollectionCard(collection: Module.empty(), onTap: () {}),
         ),
       ),
     );

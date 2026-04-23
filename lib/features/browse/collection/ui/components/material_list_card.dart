@@ -125,7 +125,11 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
           label: "Copy",
           icon: Icons.copy,
           onTap: () {
-            Clipboard.setData(ClipboardData(text: content.path.url));
+            final url = content.path.url;
+            if (url != null) {
+              Clipboard.setData(ClipboardData(text: url));
+              UiUtils.showFlushBar(context, msg: "Link copied to clipboard");
+            }
           },
         ),
 
@@ -135,7 +139,7 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
           icon: Iconsax.star,
           onTap: () async {
             final content = widget.content;
-            final collection = await CourseCollectionRepo.getById(content.parentId);
+            final collection = await ModuleRepo.getById(content.parentId);
             if (collection == null) return;
             GlobalNav.withContext((c) {
               if ((DeviceUtils.isDesktop())) c.pop();
@@ -262,9 +266,10 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
                             children: [
                               Flexible(
                                 child: CustomText(
-                                  content.type == ModuleContentType.link
-                                      ? content.path.url
-                                      : content.title + p.extension(content.path.local),
+                                  (content.type == ModuleContentType.link
+                                          ? content.path.url
+                                          : content.title + p.extension(content.path.local ?? '')) ??
+                                      "Unknown",
                                   fontSize: 13,
                                   color: theme.onBackground,
                                   fontWeight: FontWeight.w600,

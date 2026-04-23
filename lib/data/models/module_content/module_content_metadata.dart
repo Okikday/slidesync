@@ -9,7 +9,7 @@ part 'module_content_metadata.g.dart';
 @embedded
 class ModuleContentMetadata {
   String? originalFileName;
-  FilePath? thumbnails;
+  FilePath? thumbnail;
 
   @Enumerated(EnumType.ordinal)
   ContentOrigin contentOrigin = ContentOrigin.none;
@@ -42,7 +42,7 @@ class ModuleContentMetadata {
 
     return ModuleContentMetadata()
       ..originalFileName = originalFileName
-      ..thumbnails = thumbnails
+      ..thumbnail = thumbnails
       ..contentOrigin = contentOrigin ?? ContentOrigin.none
       ..groupId = groupId
       ..author = author
@@ -60,7 +60,7 @@ class ModuleContentMetadata {
     final extraFields = fields;
     return {
       if (originalFileName != null) 'originalFileName': originalFileName,
-      if (thumbnails != null) 'thumbnails': thumbnails!.toJson(),
+      if (thumbnail != null) 'thumbnails': thumbnail!.toJson(),
       'contentOrigin': contentOrigin.name,
       if (groupId != null) 'groupId': groupId,
       if (author != null) 'author': author,
@@ -119,7 +119,7 @@ class ModuleContentMetadata {
     final nextFields = fields ?? this.fields;
     return ModuleContentMetadata.create(
       originalFileName: originalFileName ?? this.originalFileName,
-      thumbnails: thumbnails ?? this.thumbnails,
+      thumbnails: thumbnails ?? this.thumbnail,
       contentOrigin: contentOrigin ?? this.contentOrigin,
       groupId: groupId ?? this.groupId,
       author: author ?? this.author,
@@ -130,7 +130,7 @@ class ModuleContentMetadata {
 
   @override
   String toString() {
-    return 'ContentMetadata(originalFileName: $originalFileName, thumbnails: $thumbnails, contentOrigin: $contentOrigin, groupId: $groupId, author: $author, fields: $fields)';
+    return 'ContentMetadata(originalFileName: $originalFileName, thumbnails: $thumbnail, contentOrigin: $contentOrigin, groupId: $groupId, author: $author, fields: $fields)';
   }
 
   @override
@@ -139,7 +139,7 @@ class ModuleContentMetadata {
 
     return other is ModuleContentMetadata &&
         other.originalFileName == originalFileName &&
-        other.thumbnails == thumbnails &&
+        other.thumbnail == thumbnail &&
         other.contentOrigin == contentOrigin &&
         other.groupId == groupId &&
         other.author == author &&
@@ -149,7 +149,7 @@ class ModuleContentMetadata {
   @override
   int get hashCode {
     return originalFileName.hashCode ^
-        thumbnails.hashCode ^
+        thumbnail.hashCode ^
         contentOrigin.hashCode ^
         groupId.hashCode ^
         author.hashCode ^

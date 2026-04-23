@@ -112,96 +112,104 @@ class _PdfViewerWidgetState extends ConsumerState<PdfViewerWidget> {
 
                 _pointerHasMoved = false;
               },
-              child: widget.content.path.local.isNotEmpty
-                  ? PdfViewer.file(
-                      widget.content.path.local,
-                      initialPageNumber: pdva.initialPage ?? 1,
-                      params: PdfViewerParams(
-                        panAxis: PanAxis.aligned,
-                        scrollPhysics: BouncingScrollPhysics(),
-                        layoutPages: (pages, params) {
-                          final width = pages.fold(0.0, (w, p) => math.max(w, p.width)) + params.margin * 2;
+              child: Builder(
+                builder: (context) {
+                  final localPath = widget.content.path.local;
+                  return localPath != null && localPath.isNotEmpty
+                      ? PdfViewer.file(
+                          localPath,
+                          initialPageNumber: pdva.initialPage ?? 1,
+                          params: PdfViewerParams(
+                            panAxis: PanAxis.aligned,
+                            scrollPhysics: BouncingScrollPhysics(),
+                            layoutPages: (pages, params) {
+                              final width = pages.fold(0.0, (w, p) => math.max(w, p.width)) + params.margin * 2;
 
-                          final pageLayout = <Rect>[];
-                          double y = params.margin + (130);
-                          for (int i = 0; i < pages.length; i++) {
-                            final page = pages[i];
-                            final rect = Rect.fromLTWH((width - page.width) / 2, y, page.width, page.height);
-                            pageLayout.add(rect);
-                            y += page.height + params.margin;
-                          }
+                              final pageLayout = <Rect>[];
+                              double y = params.margin + (130);
+                              for (int i = 0; i < pages.length; i++) {
+                                final page = pages[i];
+                                final rect = Rect.fromLTWH((width - page.width) / 2, y, page.width, page.height);
+                                pageLayout.add(rect);
+                                y += page.height + params.margin;
+                              }
 
-                          return PdfPageLayout(pageLayouts: pageLayout, documentSize: Size(width, y));
-                        },
-                        backgroundColor: theme.background,
-                        activeMatchTextColor: theme.primary.withValues(alpha: 0.5),
-                        linkHandlerParams: PdfLinkHandlerParams(
-                          onLinkTap: (link) async {
-                            // log("Link tapped: ${link.url ?? link.dest}");
-                            if (link.url != null) {
-                              UiUtils.showFlushBar(context, msg: "Opening link...");
-                              await launchUrl(link.url!, mode: LaunchMode.platformDefault);
-                            }
-                          },
-                          linkColor: Colors.blue.withValues(alpha: 0.04),
-                        ),
-                        viewerOverlayBuilder: (context, size, handleLinkTap) => [
-                          // ValueListenableBuilder(
-                          //   valueListenable: pdva.isAppBarVisibleNotifier,
-                          //   builder: (context, value, child) {
-                          //     if (!value) return const SizedBox();
+                              return PdfPageLayout(pageLayouts: pageLayout, documentSize: Size(width, y));
+                            },
+                            backgroundColor: theme.background,
+                            activeMatchTextColor: theme.primary.withValues(alpha: 0.5),
+                            linkHandlerParams: PdfLinkHandlerParams(
+                              onLinkTap: (link) async {
+                                // log("Link tapped: ${link.url ?? link.dest}");
+                                if (link.url != null) {
+                                  UiUtils.showFlushBar(context, msg: "Opening link...");
+                                  await launchUrl(link.url!, mode: LaunchMode.platformDefault);
+                                }
+                              },
+                              linkColor: Colors.blue.withValues(alpha: 0.04),
+                            ),
+                            viewerOverlayBuilder: (context, size, handleLinkTap) => [
+                              // ValueListenableBuilder(
+                              //   valueListenable: pdva.isAppBarVisibleNotifier,
+                              //   builder: (context, value, child) {
+                              //     if (!value) return const SizedBox();
 
-                          //   },
-                          PdfScrollThumbOverlay(pdva: pdva),
-                        ],
-                        // onGeneralTap: (context, controller, details) {
-                        //   log("normal tap");
-                        //   if (details.type == PdfViewerGeneralTapType.doubleTap) {
-                        //     if (controller.currentZoom > controller.minScale) {
-                        //       controller.setZoom(controller.centerPosition, controller.minScale);
-                        //     } else {
-                        //       controller.setZoom(controller.centerPosition, 2.0);
-                        //     }
+                              //   },
+                              PdfScrollThumbOverlay(pdva: pdva),
+                            ],
+                            // onGeneralTap: (context, controller, details) {
+                            //   log("normal tap");
+                            //   if (details.type == PdfViewerGeneralTapType.doubleTap) {
+                            //     if (controller.currentZoom > controller.minScale) {
+                            //       controller.setZoom(controller.centerPosition, controller.minScale);
+                            //     } else {
+                            //       controller.setZoom(controller.centerPosition, 2.0);
+                            //     }
 
-                        //     return false;
-                        //   }
-                        //   // if (controller.textSelectionDelegate.hasSelectedText &&
-                        //   //     details.type == PdfViewerGeneralTapType.tap) {
-                        //   //   return false;
-                        //   // }
-                        //   if (details.type != PdfViewerGeneralTapType.tap) return false;
-                        //   if (controller.textSelectionDelegate.hasSelectedText) {
-                        //     controller.textSelectionDelegate.clearTextSelection();
-                        //   }
-                        //   return _handleTap(ref);
-                        // },
-                        pagePaintCallbacks: [
-                          (canvas, pageRect, page) {
-                            final searchViewP = PdfDocViewerProvider.searchState(widget.content.uid);
-                            // forward to the active searcher, if any
-                            ref
-                                .read(searchViewP.select((s) => s.textSearcher))
-                                ?.pageTextMatchPaintCallback(canvas, pageRect, page);
-                          },
-                          // other page paint callbacks...
-                        ],
-                        textSelectionParams: PdfTextSelectionParams(
-                          buildSelectionHandle: (context, anchor, state) {
-                            final isStart = anchor.type == PdfTextSelectionAnchorType.a;
-                            return Transform.translate(
-                              offset: Offset(isStart ? 0 : 0, isStart ? 36 : 0),
-                              child: MaterialTextSelectionControls().buildHandle(
-                                context,
-                                isStart ? TextSelectionHandleType.left : TextSelectionHandleType.right,
-                                anchor.rect.height,
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      controller: pdva.pdfViewerController,
-                    )
-                  : PdfViewer.uri(Uri.parse(widget.content.path.url), initialPageNumber: pdva.initialPage ?? 1),
+                            //     return false;
+                            //   }
+                            //   // if (controller.textSelectionDelegate.hasSelectedText &&
+                            //   //     details.type == PdfViewerGeneralTapType.tap) {
+                            //   //   return false;
+                            //   // }
+                            //   if (details.type != PdfViewerGeneralTapType.tap) return false;
+                            //   if (controller.textSelectionDelegate.hasSelectedText) {
+                            //     controller.textSelectionDelegate.clearTextSelection();
+                            //   }
+                            //   return _handleTap(ref);
+                            // },
+                            pagePaintCallbacks: [
+                              (canvas, pageRect, page) {
+                                final searchViewP = PdfDocViewerProvider.searchState(widget.content.uid);
+                                // forward to the active searcher, if any
+                                ref
+                                    .read(searchViewP.select((s) => s.textSearcher))
+                                    ?.pageTextMatchPaintCallback(canvas, pageRect, page);
+                              },
+                              // other page paint callbacks...
+                            ],
+                            textSelectionParams: PdfTextSelectionParams(
+                              buildSelectionHandle: (context, anchor, state) {
+                                final isStart = anchor.type == PdfTextSelectionAnchorType.a;
+                                return Transform.translate(
+                                  offset: Offset(isStart ? 0 : 0, isStart ? 36 : 0),
+                                  child: MaterialTextSelectionControls().buildHandle(
+                                    context,
+                                    isStart ? TextSelectionHandleType.left : TextSelectionHandleType.right,
+                                    anchor.rect.height,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          controller: pdva.pdfViewerController,
+                        )
+                      : PdfViewer.uri(
+                          Uri.parse(widget.content.path.url ?? ''),
+                          initialPageNumber: pdva.initialPage ?? 1,
+                        );
+                },
+              ),
             );
           },
         ),

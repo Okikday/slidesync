@@ -7,7 +7,7 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 class PreviewModifyCourseImageDialog extends ConsumerWidget {
-  final String imagePath;
+  final FilePath imagePath;
   const PreviewModifyCourseImageDialog({super.key, required this.imagePath});
 
   @override
@@ -25,7 +25,7 @@ class PreviewModifyCourseImageDialog extends ConsumerWidget {
             width: dimension > 300 ? 300 : dimension,
             height: dimension > 300 ? 300 : dimension,
             child: BuildImagePathWidget(
-              fileDetails: imagePath.fileDetails,
+              fileDetails: imagePath,
               fit: BoxFit.contain,
               width: dimension,
               fallbackWidget: Icon(Iconsax.document, color: ref.primaryColor),

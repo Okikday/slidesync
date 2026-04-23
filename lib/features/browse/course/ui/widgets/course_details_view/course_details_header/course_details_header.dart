@@ -180,7 +180,7 @@ class CourseDetailsHeaderContentChild extends ConsumerWidget {
                               fileDetails: FilePath(local: thumbnailPath),
                               onClick: () async {
                                 await Future.delayed(Durations.short4);
-                                final course = await CourseRepo.getCourseById(courseId);
+                                final course = await CourseRepo.getCourseByUid(courseId);
                                 if (course == null) return;
                                 if (context.mounted) {
                                   ModifyCourseActions().onClickCourseImage(ref, course: course);

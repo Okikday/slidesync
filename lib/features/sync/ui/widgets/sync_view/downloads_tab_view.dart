@@ -4,7 +4,6 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/crypto_utils.dart';
-import 'package:slidesync/data/models/file_path.dart';
 import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
 import 'package:slidesync/features/sync/providers/download_feed_provider.dart';
@@ -309,21 +308,21 @@ class _DownloadTile extends ConsumerWidget {
       return;
     }
 
-    final content = await CourseContentRepo.getByContentId(contentId);
+    final content = await ModuleContentRepo.getByContentId(contentId);
     if (content == null) {
       _showSnack(context, 'Could not find the content record.');
       return;
     }
 
-    final path = content.path.local;
-    if (path.isEmpty || !await File(path).exists()) {
+    final localPath = content.path.local;
+    if (localPath == null || localPath.isEmpty || !await File(localPath).exists()) {
       _showSnack(context, 'File is no longer available on disk.');
       return;
     }
 
     try {
-      final hash = await CryptoUtils.calculateFileHashXXH3(path);
-      final resolved = await CourseContentRepo.getByHash(hash);
+      final hash = await CryptoUtils.calculateFileHashXXH3(localPath);
+      final resolved = await ModuleContentRepo.getByHash(hash);
       if (resolved != null) {
         await ContentViewGateActions.redirectToViewer(ref, resolved);
         return;

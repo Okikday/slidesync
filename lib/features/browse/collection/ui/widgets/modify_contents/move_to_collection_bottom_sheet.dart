@@ -305,7 +305,7 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
 
     UiUtils.showLoadingDialog(context, message: "Hold on for a moment while we move your materials", canPop: false);
 
-    await CourseContentRepo.moveContents(widget.contentsToMove!, collection.uid);
+    await ModuleContentRepo.moveContents(widget.contentsToMove!, collection.uid);
     GlobalNav.withContext((c) => c.pop());
 
     GlobalNav.withContext((c) => c.pushReplacementNamed(Routes.courseMaterials.name, extra: collection));
@@ -327,7 +327,7 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
 
   /// Your storage implementation
   Future<void> _storeContentsToCollection({required String collectionId, required List<String> filePaths}) async {
-    final collection = await CourseCollectionRepo.getById(collectionId);
+    final collection = await ModuleRepo.getById(collectionId);
     if (collection == null) return;
 
     await AddContentsUc.addToCollectionNoRef(collection: collection, filePaths: filePaths);

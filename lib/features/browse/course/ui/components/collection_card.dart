@@ -142,7 +142,7 @@ class _CollectionCardState extends ConsumerState<CollectionCard> {
                       iconData: HugeIconsSolid.edit01,
                       onTap: () async {
                         CustomDialog.hide(context);
-                        final coll = await CourseCollectionRepo.getById(collection.uid);
+                        final coll = await ModuleRepo.getById(collection.uid);
                         if (coll == null) return;
                         GlobalNav.withContext(
                           (c) => UiUtils.showCustomDialog(

@@ -11,7 +11,7 @@ import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 
-class CourseContentRepo {
+class ModuleContentRepo {
   static final IsarData<ModuleContent> _isarData = IsarData.instance<ModuleContent>();
   static Future<Isar> get _isar async => await IsarData.isarFuture;
   static IsarData<ModuleContent> get isarData => _isarData;
@@ -143,7 +143,7 @@ class CourseContentRepo {
       final contentTrack = await contentTrackQuery.findFirst();
       CourseTrack? parentCourseTrack = contentTrack == null
           ? null
-          : await isar.courseTracks.getByCourseId(contentTrack.parentId);
+          : await isar.courseTracks.getByUid(contentTrack.parentId);
 
       double newProgress = 0.0;
 
@@ -276,7 +276,7 @@ class CourseContentRepo {
         sourceCollections[sourceCollection.id] = sourceCollection;
 
         // Get source course for this collection
-        final sourceCourse = await CourseRepo.getCourseById(sourceCollection.parentId);
+        final sourceCourse = await CourseRepo.getCourseByUid(sourceCollection.parentId);
         if (sourceCourse == null) continue;
 
         // Get or cache source course track
@@ -316,7 +316,7 @@ class CourseContentRepo {
         for (final updatedTrack in contentTracksToUpdate) {
           final sourceCourseTrack = sourceCourseTracksMap[updatedTrack.parentId];
           if (sourceCourseTrack != null) {
-            sourceCourseTrack.contentTracks.removeWhere((t) => t.contentId == updatedTrack.contentId);
+            sourceCourseTrack.contentTracks.removeWhere((t) => t.uid == updatedTrack.uid);
           }
 
           targetCourseTrack.contentTracks.add(updatedTrack);
@@ -443,7 +443,7 @@ class CourseContentRepo {
     if (getCollection == null) return (null, null);
 
     if (getCollection.parentId.isEmpty) return (null, null);
-    final Course? course = await CourseRepo.getCourseById(getCollection.parentId);
+    final Course? course = await CourseRepo.getCourseByUid(getCollection.parentId);
     if (course == null) return (null, null);
     return (course, getCollection);
   }

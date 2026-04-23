@@ -12,7 +12,7 @@ import 'package:slidesync/data/models/progress_track_models/course_track.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 
-class CourseCollectionRepo {
+class ModuleRepo {
   static final IsarData<Module> _isarData = IsarData.instance<Module>();
   static Future<Isar> get _isar async => await IsarData.isarFuture;
 
@@ -69,7 +69,7 @@ class CourseCollectionRepo {
   static Future<bool> addCollection(Module collection) async {
     try {
       if (collection.parentId.isEmpty) return false;
-      final Course? course = await CourseRepo.getCourseById(collection.parentId);
+      final Course? course = await CourseRepo.getCourseByUid(collection.parentId);
       if (course == null) return false;
 
       final Isar isar = (await _isar);
@@ -93,7 +93,7 @@ class CourseCollectionRepo {
     try {
       if (collection.uid.isEmpty) return false;
 
-      final Course? course = await CourseRepo.getCourseById(collection.parentId);
+      final Course? course = await CourseRepo.getCourseByUid(collection.parentId);
       if (course == null) return false;
 
       final isar = (await _isar);
@@ -106,7 +106,7 @@ class CourseCollectionRepo {
 
       if (courseTrack != null) {
         for (final id in contentIds) {
-          courseTrack.contentTracks.removeWhere((c) => c.contentId == id);
+          courseTrack.contentTracks.removeWhere((c) => c.uid == id);
         }
       }
       // final contentTrackQuery = (await ContentTrackRepo.filter).uidEqualTo(collection.parentId);
@@ -122,7 +122,7 @@ class CourseCollectionRepo {
           await isar.moduleContents.deleteAllByUid(contentIds);
           if (courseTrack != null) {
             await courseTrack.contentTracks.save();
-            isar.contentTracks.deleteAllByContentId(contentIds);
+            isar.contentTracks.deleteAllByUid(contentIds);
           }
         }
 
@@ -139,7 +139,7 @@ class CourseCollectionRepo {
 
   static Future<String?> addCollectionNoDuplicateTitle(Module collection) async {
     final isar = (await _isar);
-    final Module? duplicate = await (isar.modules
+    final duplicate = await (isar.modules
         .filter()
         .titleEqualTo(collection.title)
         .parentIdEqualTo(collection.parentId)

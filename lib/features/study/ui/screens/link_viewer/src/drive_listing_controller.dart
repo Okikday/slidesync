@@ -205,7 +205,7 @@ class DriveListingController {
       ),
     ).create(recursive: true);
 
-    final existingContents = await CourseContentRepo.getAll();
+    final existingContents = await ModuleContentRepo.getAll();
     final cachedEntries = <DriveCacheEntry>[];
     final encounteredNotes = <String>[];
     final seenSourceKeys = <String>{};
@@ -420,7 +420,7 @@ class DriveListingController {
     final existingContent = await _findExistingDriveContent(effectiveFile, existingContents);
     if (existingContent != null) {
       final existingPath = existingContent.path.local;
-      if (existingPath.isNotEmpty && await File(existingPath).exists()) {
+      if (existingPath != null && await File(existingPath).exists()) {
         final fileLabel = effectiveFile.name ?? file.name ?? 'file';
         final existingSize = existingContent.fileSizeInBytes > 0
             ? existingContent.fileSizeInBytes
@@ -708,7 +708,7 @@ class DriveListingController {
         continue;
       }
 
-      final content = await CourseContentRepo.getByContentId(result.contentId!);
+      final content = await ModuleContentRepo.getByContentId(result.contentId!);
       if (content == null) {
         continue;
       }
@@ -730,7 +730,7 @@ class DriveListingController {
         continue;
       }
 
-      await CourseContentRepo.add(content.copyWith(xxh3Hash: content.xxh3Hash, metadata: metadata));
+      await ModuleContentRepo.add(content.copyWith(xxh3Hash: content.xxh3Hash, metadata: metadata));
     }
   }
 
@@ -754,28 +754,28 @@ class DriveListingController {
   }
 
   Future<Course?> _resolveParentCourse() async {
-    final collection = await CourseCollectionRepo.getById(collectionId);
+    final collection = await ModuleRepo.getById(collectionId);
     if (collection == null) {
       return null;
     }
 
-    return await CourseRepo.getCourseById(collection.parentId);
+    return await CourseRepo.getCourseByUid(collection.parentId);
   }
 
   Future<Module?> _resolveOrCreateImportCollection(String courseId, String title) async {
-    final existing = await CourseCollectionRepo.getByTitleAndParentId(title: title, parentId: courseId);
+    final existing = await ModuleRepo.getByTitleAndParentId(title: title, parentId: courseId);
     if (existing != null) {
       return existing;
     }
 
-    final collection = Module.create(parentId: courseId, collectionTitle: title, description: 'Imported from Drive');
+    final collection = Module.create(parentId: courseId, title: title, description: 'Imported from Drive');
 
-    final result = await CourseCollectionRepo.addCollectionNoDuplicateTitle(collection);
+    final result = await ModuleRepo.addCollectionNoDuplicateTitle(collection);
     if (result != null) {
-      return await CourseCollectionRepo.getByTitleAndParentId(title: title, parentId: courseId);
+      return await ModuleRepo.getByTitleAndParentId(title: title, parentId: courseId);
     }
 
-    return await CourseCollectionRepo.getByTitleAndParentId(title: title, parentId: courseId);
+    return await ModuleRepo.getByTitleAndParentId(title: title, parentId: courseId);
   }
 
   SyncType _resolveHistoryType(drive_service.DriveResource resource) {

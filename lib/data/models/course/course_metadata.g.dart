@@ -20,16 +20,9 @@ const CourseMetadataSchema = Schema(
       name: r'rawColor',
       type: IsarType.string,
     ),
-    r'thumbnails': PropertySchema(
+    r'thumbnail': PropertySchema(
       id: 3,
-      name: r'thumbnails',
-      type: IsarType.object,
-
-      target: r'FilePath',
-    ),
-    r'thumbnailsDetails': PropertySchema(
-      id: 4,
-      name: r'thumbnailsDetails',
+      name: r'thumbnail',
       type: IsarType.object,
 
       target: r'FilePath',
@@ -61,20 +54,13 @@ int _courseMetadataEstimateSize(
     }
   }
   {
-    final value = object.thumbnails;
+    final value = object.thumbnail;
     if (value != null) {
       bytesCount +=
           3 +
           FilePathSchema.estimateSize(value, allOffsets[FilePath]!, allOffsets);
     }
   }
-  bytesCount +=
-      3 +
-      FilePathSchema.estimateSize(
-        object.thumbnailsDetails,
-        allOffsets[FilePath]!,
-        allOffsets,
-      );
   return bytesCount;
 }
 
@@ -91,13 +77,7 @@ void _courseMetadataSerialize(
     offsets[3],
     allOffsets,
     FilePathSchema.serialize,
-    object.thumbnails,
-  );
-  writer.writeObject<FilePath>(
-    offsets[4],
-    allOffsets,
-    FilePathSchema.serialize,
-    object.thumbnailsDetails,
+    object.thumbnail,
   );
 }
 
@@ -110,7 +90,7 @@ CourseMetadata _courseMetadataDeserialize(
   final object = CourseMetadata();
   object.author = reader.readStringOrNull(offsets[0]);
   object.rawColor = reader.readStringOrNull(offsets[2]);
-  object.thumbnails = reader.readObjectOrNull<FilePath>(
+  object.thumbnail = reader.readObjectOrNull<FilePath>(
     offsets[3],
     FilePathSchema.deserialize,
     allOffsets,
@@ -137,14 +117,6 @@ P _courseMetadataDeserializeProp<P>(
             FilePathSchema.deserialize,
             allOffsets,
           ))
-          as P;
-    case 4:
-      return (reader.readObjectOrNull<FilePath>(
-                offset,
-                FilePathSchema.deserialize,
-                allOffsets,
-              ) ??
-              FilePath())
           as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -527,19 +499,19 @@ extension CourseMetadataQueryFilter
   }
 
   QueryBuilder<CourseMetadata, CourseMetadata, QAfterFilterCondition>
-  thumbnailsIsNull() {
+  thumbnailIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'thumbnails'),
+        const FilterCondition.isNull(property: r'thumbnail'),
       );
     });
   }
 
   QueryBuilder<CourseMetadata, CourseMetadata, QAfterFilterCondition>
-  thumbnailsIsNotNull() {
+  thumbnailIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'thumbnails'),
+        const FilterCondition.isNotNull(property: r'thumbnail'),
       );
     });
   }
@@ -547,17 +519,11 @@ extension CourseMetadataQueryFilter
 
 extension CourseMetadataQueryObject
     on QueryBuilder<CourseMetadata, CourseMetadata, QFilterCondition> {
-  QueryBuilder<CourseMetadata, CourseMetadata, QAfterFilterCondition>
-  thumbnails(FilterQuery<FilePath> q) {
+  QueryBuilder<CourseMetadata, CourseMetadata, QAfterFilterCondition> thumbnail(
+    FilterQuery<FilePath> q,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.object(q, r'thumbnails');
-    });
-  }
-
-  QueryBuilder<CourseMetadata, CourseMetadata, QAfterFilterCondition>
-  thumbnailsDetails(FilterQuery<FilePath> q) {
-    return QueryBuilder.apply(this, (query) {
-      return query.object(q, r'thumbnailsDetails');
+      return query.object(q, r'thumbnail');
     });
   }
 }

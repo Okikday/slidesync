@@ -32,17 +32,17 @@ Future<void> _firstAppLaunch() async {
     final referenceCollection = Module.create(
       parentId: AppCourseCollections.references.name,
       uid: AppCourseCollections.references.name,
-      collectionTitle: "References",
+      title: "References",
       description: "This is the Default App Reference collections",
     );
     final bookMarkCollection = Module.create(
       parentId: AppCourseCollections.bookmarks.name,
       uid: AppCourseCollections.bookmarks.name,
-      collectionTitle: "Bookmarks",
+      title: "Bookmarks",
       description: "This is the Default App Bookmark collections",
     );
-    await CourseCollectionRepo.add(referenceCollection);
-    await CourseCollectionRepo.add(bookMarkCollection);
+    await ModuleRepo.add(referenceCollection);
+    await ModuleRepo.add(bookMarkCollection);
     await HiveDataPathKey.isFirstLaunch.name.trySetHiveData(value: false);
   }
 }

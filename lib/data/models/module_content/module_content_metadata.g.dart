@@ -32,9 +32,9 @@ const ModuleContentMetadataSchema = Schema(
       name: r'rawFieldsJson',
       type: IsarType.string,
     ),
-    r'thumbnails': PropertySchema(
+    r'thumbnail': PropertySchema(
       id: 6,
-      name: r'thumbnails',
+      name: r'thumbnail',
       type: IsarType.object,
 
       target: r'FilePath',
@@ -78,7 +78,7 @@ int _moduleContentMetadataEstimateSize(
     }
   }
   {
-    final value = object.thumbnails;
+    final value = object.thumbnail;
     if (value != null) {
       bytesCount +=
           3 +
@@ -104,7 +104,7 @@ void _moduleContentMetadataSerialize(
     offsets[6],
     allOffsets,
     FilePathSchema.serialize,
-    object.thumbnails,
+    object.thumbnail,
   );
 }
 
@@ -124,7 +124,7 @@ ModuleContentMetadata _moduleContentMetadataDeserialize(
   object.groupId = reader.readStringOrNull(offsets[2]);
   object.originalFileName = reader.readStringOrNull(offsets[4]);
   object.rawFieldsJson = reader.readStringOrNull(offsets[5]);
-  object.thumbnails = reader.readObjectOrNull<FilePath>(
+  object.thumbnail = reader.readObjectOrNull<FilePath>(
     offsets[6],
     FilePathSchema.deserialize,
     allOffsets,
@@ -1159,10 +1159,10 @@ extension ModuleContentMetadataQueryFilter
     ModuleContentMetadata,
     QAfterFilterCondition
   >
-  thumbnailsIsNull() {
+  thumbnailIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'thumbnails'),
+        const FilterCondition.isNull(property: r'thumbnail'),
       );
     });
   }
@@ -1172,10 +1172,10 @@ extension ModuleContentMetadataQueryFilter
     ModuleContentMetadata,
     QAfterFilterCondition
   >
-  thumbnailsIsNotNull() {
+  thumbnailIsNotNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'thumbnails'),
+        const FilterCondition.isNotNull(property: r'thumbnail'),
       );
     });
   }
@@ -1193,9 +1193,9 @@ extension ModuleContentMetadataQueryObject
     ModuleContentMetadata,
     QAfterFilterCondition
   >
-  thumbnails(FilterQuery<FilePath> q) {
+  thumbnail(FilterQuery<FilePath> q) {
     return QueryBuilder.apply(this, (query) {
-      return query.object(q, r'thumbnails');
+      return query.object(q, r'thumbnail');
     });
   }
 }

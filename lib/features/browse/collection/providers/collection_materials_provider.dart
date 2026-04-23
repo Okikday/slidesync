@@ -18,7 +18,7 @@ class CollectionMaterialsProvider {
   /// COURSE MATERIALS PAGINATION
   /// ===================================================================================================
   static final _watchContentChanges = StreamProvider.autoDispose.family<int, String>((ref, parentId) async* {
-    final stream = (await CourseContentRepo.filter).parentIdEqualTo(parentId).watch();
+    final stream = (await ModuleContentRepo.filter).parentIdEqualTo(parentId).watch();
     yield* stream.map((c) => DateTime.now().millisecondsSinceEpoch);
   });
 

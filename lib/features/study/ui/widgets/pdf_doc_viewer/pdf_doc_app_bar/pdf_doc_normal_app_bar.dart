@@ -35,7 +35,7 @@ class PdfDocNormalAppBar extends ConsumerWidget {
                   theme.isDarkMode,
                   title: title,
                   onBackButtonClicked: () async {
-                    final content = await CourseContentRepo.getByContentId(contentId);
+                    final content = await ModuleContentRepo.getByContentId(contentId);
                     if (content != null) {
                       await Result.tryRunAsync(() async {
                         (await ref.read(

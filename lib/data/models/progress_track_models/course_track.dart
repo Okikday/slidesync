@@ -10,7 +10,7 @@ class CourseTrack {
   Id id = Isar.autoIncrement;
 
   @Index(unique: true)
-  late String courseId;
+  late String uid;
   String? title;
   String? description;
 
@@ -30,7 +30,7 @@ class CourseTrack {
     String? metadataJson,
   }) {
     return CourseTrack()
-      ..courseId = courseId
+      ..uid = courseId
       ..title = title
       ..description = description
       ..progress = progress
@@ -41,7 +41,7 @@ class CourseTrack {
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
       'id': id,
-      'courseId': courseId,
+      'courseId': uid,
       'title': title,
       'description': description,
       'progress': progress,
@@ -54,7 +54,7 @@ class CourseTrack {
   factory CourseTrack.fromMap(Map<String, dynamic> map) {
     return CourseTrack()
       ..id = map['id'] as int
-      ..courseId = map['courseId'] as String
+      ..uid = map['courseId'] as String
       ..title = map['title'] as String?
       ..description = map['description'] as String?
       ..progress = map['progress'] as double? ?? 0.0
@@ -68,7 +68,7 @@ class CourseTrack {
 
   @override
   String toString() {
-    return 'CourseTrack(id: $id, courseId: $courseId, title: $title, description: $description, progress: $progress, additionalDetail: $additionalDetail, metadata: $metadataJson)';
+    return 'CourseTrack(id: $id, courseId: $uid, title: $title, description: $description, progress: $progress, additionalDetail: $additionalDetail, metadata: $metadataJson)';
   }
 
   @override
@@ -76,7 +76,7 @@ class CourseTrack {
     if (identical(this, other)) return true;
 
     return other.id == id &&
-        other.courseId == courseId &&
+        other.uid == uid &&
         other.title == title &&
         other.description == description &&
         other.progress == progress &&
@@ -87,7 +87,7 @@ class CourseTrack {
   @override
   int get hashCode {
     return id.hashCode ^
-        courseId.hashCode ^
+        uid.hashCode ^
         title.hashCode ^
         description.hashCode ^
         progress.hashCode ^
@@ -108,7 +108,7 @@ extension CourseTrackExtension on CourseTrack {
   }) {
     return this
       ..id = id ?? this.id
-      ..courseId = courseId ?? this.courseId
+      ..uid = courseId ?? this.uid
       ..title = title ?? this.title
       ..description = description ?? this.description
       ..progress = progress ?? this.progress

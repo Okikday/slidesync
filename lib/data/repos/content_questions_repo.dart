@@ -30,5 +30,5 @@ class ContentQuestionsRepo {
       await (await _isar).contentQuestions.where().xxh3HashEqualTo(xxh3Hash).findFirst();
 
   static Future<List<ContentQuestions>> getByContentId(String contentId) async =>
-      await (await _isar).contentQuestions.filter().uidEqualTo(contentId).findAll();
+      await (await _isar).contentQuestions.filter().contentIdEqualTo(contentId).findAll();
 }

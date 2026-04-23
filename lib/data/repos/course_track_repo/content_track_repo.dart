@@ -20,7 +20,7 @@ class ContentTrackRepo {
   }
 
   static Future<int> add(ContentTrack contentTrack) async {
-    final existingContentTrack = await (await ContentTrackRepo.filter).uidEqualTo(contentTrack.contentId).findFirst();
+    final existingContentTrack = await (await ContentTrackRepo.filter).uidEqualTo(contentTrack.uid).findFirst();
     if (existingContentTrack == null) {
       final courseTrack = await (await CourseTrackRepo.filter).uidEqualTo(contentTrack.parentId).findFirst();
       if (courseTrack == null) return -1;

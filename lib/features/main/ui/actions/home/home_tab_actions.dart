@@ -45,7 +45,7 @@ mixin HomeTabActions {
 
   /// When the reading button on the [HomeDashboard] is clicked
   void onReadingButtonTapped(WidgetRef ref, {required ContentTrack data}) async {
-    final content = await CourseContentRepo.getByContentId(data.contentId);
+    final content = await ModuleContentRepo.getByContentId(data.uid);
     if (content == null) {
       if (ref.context.mounted) {
         UiUtils.showFlushBar(ref.context, msg: "Unable to open material");
@@ -59,7 +59,7 @@ mixin HomeTabActions {
           .findFirst();
       nextContentTrack ??= await (await ContentTrackRepo.filter).progressLessThan(1.0).findFirst();
       if (nextContentTrack == null) return;
-      final nextContent = await CourseContentRepo.getByContentId(nextContentTrack.contentId);
+      final nextContent = await ModuleContentRepo.getByContentId(nextContentTrack.uid);
       if (nextContent == null) return;
       if (ref.context.mounted) ContentViewGateActions.redirectToViewer(ref, nextContent);
     } else {

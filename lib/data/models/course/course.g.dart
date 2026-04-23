@@ -93,7 +93,7 @@ const CourseSchema = CollectionSchema(
   getId: _courseGetId,
   getLinks: _courseGetLinks,
   attach: _courseAttach,
-  version: '3.3.0',
+  version: '3.3.2',
 );
 
 int _courseEstimateSize(

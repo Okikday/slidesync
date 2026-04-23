@@ -101,7 +101,7 @@ class CollectionMaterialsPagination extends LeakPrevention {
       await init();
     }
     if (_isStopping) return [];
-    if (count <= 0) count = await (await CourseContentRepo.filter).parentIdEqualTo(parentId).count();
+    if (count <= 0) count = await (await ModuleContentRepo.filter).parentIdEqualTo(parentId).count();
 
     if (isFirstTime || _isolate == null) await init();
     if (_isStopping || _isolate == null) return [];
@@ -266,7 +266,7 @@ Future<List<ModuleContent>> _doFetch(String parentId, int pageKey, int limit, Co
 
 Future<List<ModuleContent>> _doFetchByTitle(String parentId, int pageKey, int limit, [bool ascending = true]) async {
   final offset = (pageKey - 1) * limit;
-  final query = (await CourseContentRepo.filter).parentIdEqualTo(parentId);
+  final query = (await ModuleContentRepo.filter).parentIdEqualTo(parentId);
   return await (ascending
       ? query.sortByTitle().offset(offset).limit(limit).findAll()
       : query.sortByTitleDesc().offset(offset).limit(limit).findAll());
@@ -279,7 +279,7 @@ Future<List<ModuleContent>> _doFetchByDateCreated(
   bool ascending = true,
 ]) async {
   final offset = (pageKey - 1) * limit;
-  final query = (await CourseContentRepo.filter).parentIdEqualTo(parentId);
+  final query = (await ModuleContentRepo.filter).parentIdEqualTo(parentId);
   return await (ascending
       ? query.sortByCreatedAt().offset(offset).limit(limit).findAll()
       : query.sortByCreatedAtDesc().offset(offset).limit(limit).findAll());
@@ -292,14 +292,14 @@ Future<List<ModuleContent>> _doFetchByDateModified(
   bool ascending = true,
 ]) async {
   final offset = (pageKey - 1) * limit;
-  final query = (await CourseContentRepo.filter).parentIdEqualTo(parentId);
+  final query = (await ModuleContentRepo.filter).parentIdEqualTo(parentId);
   return await (ascending
       ? query.sortByLastModified().offset(offset).limit(limit).findAll()
       : query.sortByLastModifiedDesc().offset(offset).limit(limit).findAll());
 }
 
 Future<void> compareContentAndUpdate(CollectionMaterialsPagination cmp) async {
-  final presentCount = await (await CourseContentRepo.isar).moduleContents
+  final presentCount = await (await ModuleContentRepo.isar).moduleContents
       .filter()
       .parentIdEqualTo(cmp.parentId)
       .count();
@@ -343,7 +343,7 @@ Future<void> compareContentAndUpdate(CollectionMaterialsPagination cmp) async {
 
     // log("currentlyLoadedContentPages: $contentLoadedOnPages");
 
-    final List<ModuleContent> contentLoadedOnPagesFromIsar = await (await CourseContentRepo.filter)
+    final List<ModuleContent> contentLoadedOnPagesFromIsar = await (await ModuleContentRepo.filter)
         .parentIdEqualTo(cmp.parentId)
         .anyOf(contentLoadedOnPages, (query, content) => query.uidEqualTo(content.uid))
         .findAll();

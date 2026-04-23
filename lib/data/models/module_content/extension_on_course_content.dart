@@ -9,9 +9,9 @@ extension CourseContentExtension on ModuleContent {
   String get metadataJson => metadata.toJson();
   set metadataJson(String value) => metadata = ModuleContentMetadata.fromJson(value);
 
-  String get previewPath => metadata.thumbnails?.local ?? '';
+  String get previewPath => metadata.thumbnail?.local ?? '';
   String get thumbnailPath => previewPath;
-  FilePath get thumbnailDetails => metadata.thumbnails ?? FilePath();
+  FilePath get thumbnailDetails => metadata.thumbnail ?? FilePath();
 }
 
 // extension CourseContentMapX on Map<String, dynamic> {
