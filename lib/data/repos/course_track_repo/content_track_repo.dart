@@ -61,7 +61,7 @@ class ContentTrackRepo {
   }
 
   static double computeProgressForMultiple(IsarLinks<ContentTrack> contentTracks) {
-    final totalProgress = contentTracks.fold<double>(0.0, (sum, track) => sum + (track.progress ?? 0.0));
+    final totalProgress = contentTracks.fold<double>(0.0, (sum, track) => sum + (track.progress));
     return totalProgress / contentTracks.length;
   }
 }

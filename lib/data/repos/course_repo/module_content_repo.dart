@@ -47,8 +47,22 @@ class ModuleContentRepo {
     return await _isar.moduleContents.filter().xxh3HashEqualTo(xxh3Hash).findFirst();
   }
 
-  static Future<bool> doesDuplicateHashExists(String xxh3Hash) async {
-    return (await _isar.moduleContents.filter().xxh3HashEqualTo(xxh3Hash).limit(2).findAll()).length > 1;
+  static Future<bool> doesDuplicateHashExists(String xxh3Hash) async =>
+      (await _isar.moduleContents.filter().xxh3HashEqualTo(xxh3Hash).limit(2).findAll()).length > 1;
+
+  static Future<Map<String, bool>> doesMultipleDuplicateHashExist(Iterable<String> xxh3Hashes) async {
+    final matches = await _isar.moduleContents
+        .filter()
+        .anyOf(xxh3Hashes, (q, String h) => q.xxh3HashEqualTo(h))
+        .xxh3HashProperty()
+        .findAll();
+
+    final counts = <String, int>{};
+    for (final hash in matches) {
+      counts[hash] = (counts[hash] ?? 0) + 1;
+    }
+
+    return counts.map((k, v) => MapEntry(k, v > 1));
   }
 
   // static Future<CourseContent?> deleteByHash(String xxh3Hash) async {

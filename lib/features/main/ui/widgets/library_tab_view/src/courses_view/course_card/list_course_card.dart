@@ -169,7 +169,7 @@ class _ListCourseCardIconState extends ConsumerState<ListCourseCardIcon> {
                 child: BuildImagePathWidget(
                   height: 64,
                   width: 64,
-                  fileDetails: FilePath(local: widget.course.localThumbnailPath),
+                  fileDetails: widget.course.metadata.thumbnail ?? FilePath.empty(),
                   fallbackWidget: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Center(

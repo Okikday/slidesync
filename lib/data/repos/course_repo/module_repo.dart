@@ -75,7 +75,7 @@ class ModuleRepo {
     return false;
   }
 
-  /// Deletes a [Module] or [Collection] and it's contents
+  /// Deletes a [Module] or [Collection] and all of it's contents
   static Future<bool> deleteCollection(Module collection) async {
     try {
       if (collection.uid.isEmpty) return false;

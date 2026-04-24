@@ -26,6 +26,7 @@ class CreateCourseUc {
       log("   Author ID: $author");
       course = course.copyWith(
         metadata: (course.metadata.copyWith(author: author, rawColor: ThemeUtils.colorToHex(AppPalette.getRandom()))),
+        lastModified: DateTime.now(),
       );
 
       log(

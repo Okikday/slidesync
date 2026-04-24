@@ -111,7 +111,7 @@ class GridCourseCardStackedCard extends ConsumerWidget {
                                     child: BuildImagePathWidget(
                                       width: 40,
                                       height: 40,
-                                      fileDetails: FilePath(local: course.localThumbnailPath),
+                                      fileDetails: course.metadata.thumbnail ?? FilePath.empty(),
                                       fallbackWidget: Icon(
                                         Iconsax.star,
                                         size: 16,

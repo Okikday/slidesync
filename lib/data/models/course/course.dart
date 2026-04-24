@@ -40,7 +40,11 @@ class Course with CourseMappable {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is Course && runtimeType == other.runtimeType && uid == other.uid;
+      identical(this, other) ||
+      other is Course &&
+          runtimeType == other.runtimeType &&
+          uid == other.uid &&
+          lastModified.compareTo(other.lastModified) <= 0;
 
   @override
   int get hashCode => uid.hashCode;

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 import 'package:slidesync/core/constants/src/enums/enums.dart';
+import 'package:slidesync/core/utils/result.dart';
 
 export 'dart:io';
 
@@ -94,6 +95,12 @@ class FileUtils {
       return false;
     }
   }
+
+  static Future<List<bool>> deleteMultipleFiles(Iterable<File> files) async => await Future.wait(
+    files.map(
+      (file) async => Result.fromAsync(() async => file.path.isEmpty ? false : await file.delete().then((v) => true)),
+    ),
+  );
 
   /// Deletes [relativePath] under the selected [base] directory.
   /// e.g. if base==documents and relativePath=="foo/bar",

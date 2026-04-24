@@ -50,6 +50,7 @@ class ModifyCourseActions {
       if (newPath != null) {
         final newCourse = course.copyWith(
           metadata: course.metadata.copyWith(thumbnail: FilePath(local: newPath)),
+          lastModified: DateTime.now(),
         );
         log("New course thumbnail path: ${newCourse.metadata}");
         await CourseRepo.addCourse(newCourse);
@@ -71,7 +72,12 @@ class ModifyCourseActions {
     if (course == null) return false;
     final thumbnailPath = course.metadata.thumbnail;
     if (thumbnailPath != null && thumbnailPath.containsLocalPath) {
-      await CourseRepo.addCourse(course.copyWith(metadata: course.metadata.copyWith(thumbnail: FilePath())));
+      await CourseRepo.addCourse(
+        course.copyWith(
+          metadata: course.metadata.copyWith(thumbnail: FilePath()),
+          lastModified: DateTime.now(),
+        ),
+      );
       if (thumbnailPath.local != null) await FileUtils.deleteFileAtPath(thumbnailPath.local!);
       return true;
     }

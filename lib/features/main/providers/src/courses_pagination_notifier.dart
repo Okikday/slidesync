@@ -142,7 +142,7 @@ class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
         final Map<int, Course> modifiedCoursesMap = {};
         for (final isarCourse in coursesFromIsar) {
           final pageCourse = coursesOnPagesMap[isarCourse.id];
-          if (pageCourse != null && isarCourse != pageCourse) {
+          if (pageCourse != null && isarCourse.lastModified.compareTo(pageCourse.lastModified) != 0) {
             modifiedCoursesMap[isarCourse.id] = isarCourse;
           }
         }
