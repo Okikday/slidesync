@@ -5,13 +5,12 @@ import 'package:slidesync/data/models/progress_track_models/course_track.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 
 class ContentTrackRepo {
-  static final IsarData<ContentTrack> _isarData = IsarData.instance<ContentTrack>();
-  static Future<Isar> get _isar async => await IsarData.isarFuture;
-  static Future<Isar> get isar async => await _isar;
+  static final IsarData<ContentTrack> _isarData = IsarData<ContentTrack>();
   static IsarData<ContentTrack> get isarData => _isarData;
+  static Isar get _isar => _isarData.isarInstance;
+  static Isar get isar => _isar;
 
-  static Future<QueryBuilder<ContentTrack, ContentTrack, QFilterCondition>> get filter async =>
-      (await _isar).contentTracks.filter();
+  static QueryBuilder<ContentTrack, ContentTrack, QFilterCondition> get filter => _isar.contentTracks.filter();
 
   static Future<QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>> _queryByContentId(
     String contentId,
@@ -20,13 +19,13 @@ class ContentTrackRepo {
   }
 
   static Future<int> add(ContentTrack contentTrack) async {
-    final existingContentTrack = await (await ContentTrackRepo.filter).uidEqualTo(contentTrack.uid).findFirst();
+    final existingContentTrack = await (ContentTrackRepo.filter).uidEqualTo(contentTrack.uid).findFirst();
     if (existingContentTrack == null) {
-      final courseTrack = await (await CourseTrackRepo.filter).uidEqualTo(contentTrack.parentId).findFirst();
+      final courseTrack = await (CourseTrackRepo.filter).uidEqualTo(contentTrack.parentId).findFirst();
       if (courseTrack == null) return -1;
       await courseTrack.contentTracks.load();
       courseTrack.contentTracks.add(contentTrack);
-      final isar = (await _isar);
+      final isar = _isar;
       return isar.writeTxn(() async {
         await isar.courseTracks.put(courseTrack);
         return await isar.contentTracks.put(contentTrack);
@@ -37,11 +36,11 @@ class ContentTrackRepo {
   }
 
   static Future<ContentTrack?> getByContentId(String contentId) async {
-    return await (await _isar).contentTracks.filter().uidEqualTo(contentId).findFirst();
+    return await _isar.contentTracks.filter().uidEqualTo(contentId).findFirst();
   }
 
   static Stream<ContentTrack?> watchByContentId(String contentId) async* {
-    yield* (await _isar).contentTracks
+    yield* _isar.contentTracks
         .filter()
         .uidEqualTo(contentId)
         .watch(fireImmediately: true)
@@ -51,7 +50,6 @@ class ContentTrackRepo {
   static Future<void> deleteByDbId(int dbId) async => await _isarData.deleteById(dbId);
 
   static Future<ContentTrack?> deleteByContentId(String contentId) async {
-    final isar = await _isar;
     final ContentTrack? course = await getByContentId(contentId);
     return await isar.writeTxn<ContentTrack?>(() async {
       if (course != null) {

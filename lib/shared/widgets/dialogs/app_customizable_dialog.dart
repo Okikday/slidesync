@@ -73,7 +73,7 @@ class AppCustomizableDialog extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              if (leading != null) leading!,
+                              ?leading,
                               Flexible(child: child),
                             ],
                           ),
@@ -82,7 +82,7 @@ class AppCustomizableDialog extends ConsumerWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            if (leading != null) leading!,
+                            ?leading,
                             Flexible(child: child),
                           ],
                         ),

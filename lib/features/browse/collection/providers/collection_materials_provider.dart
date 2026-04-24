@@ -1,5 +1,5 @@
 import 'package:isar_community/isar.dart';
-import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/features/browse/collection/providers/src/mod_contents_state.dart';
@@ -18,7 +18,7 @@ class CollectionMaterialsProvider {
   /// COURSE MATERIALS PAGINATION
   /// ===================================================================================================
   static final _watchContentChanges = StreamProvider.autoDispose.family<int, String>((ref, parentId) async* {
-    final stream = (await ModuleContentRepo.filter).parentIdEqualTo(parentId).watch();
+    final stream = (ModuleContentRepo.filter).parentIdEqualTo(parentId).watch();
     yield* stream.map((c) => DateTime.now().millisecondsSinceEpoch);
   });
 

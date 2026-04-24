@@ -144,7 +144,7 @@ extension ProgressTrackModelExtension on ContentTrack {
     String? metadataJson,
   }) {
     return this
-      ..uid = contentId ?? this.uid
+      ..uid = contentId ?? uid
       ..parentId = parentId ?? this.parentId
       ..title = title ?? this.title
       ..description = description ?? this.description

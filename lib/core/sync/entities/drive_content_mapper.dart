@@ -1,8 +1,7 @@
-import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/sync/entities/drive_file_entity.dart';
-import 'package:slidesync/data/models/module_content/module_content_metadata.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
-import 'package:slidesync/data/models/file_path.dart';
+import 'package:slidesync/data/models/file_path/file_path.dart';
 
 extension DriveFileEntityCourseContentMapper on DriveFileEntity {
   bool get isUnsupportedForCourseContent => isFolder || mimeType == 'application/vnd.google-apps.shortcut';
@@ -68,7 +67,7 @@ extension DriveFileEntityCourseContentMapper on DriveFileEntity {
 
     return ModuleContentMetadata.create(
       originalFileName: originalFileName ?? originalFilename ?? name,
-      thumbnails: thumbnailLink != null ? FilePath(url: thumbnailLink!) : FilePath(),
+      thumbnail: thumbnailLink != null ? FilePath(url: thumbnailLink!) : FilePath(),
       contentOrigin: contentOrigin,
       author: author ?? ownerDisplayName ?? ownerEmail,
       fields: fields.isEmpty ? null : fields,
@@ -97,7 +96,6 @@ extension DriveFileEntityCourseContentMapper on DriveFileEntity {
       title: resolvedTitle,
       path: toFileDetails(),
       createdAt: createdAt != null ? DateTime.tryParse(createdTime ?? '') : null,
-      lastModified: modifiedTime != null ? DateTime.tryParse(modifiedTime ?? '') : null,
       type: resolvedType,
       fileSizeInBytes: sizeInBytes,
       description: descriptionOverride ?? description ?? '',

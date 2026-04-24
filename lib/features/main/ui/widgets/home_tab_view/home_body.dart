@@ -24,7 +24,7 @@ class HomeBody extends ConsumerStatefulWidget {
 }
 
 class _HomeBodyState extends ConsumerState<HomeBody> with HomeTabActions {
-  final hasAnyCourseFuture = CourseRepo.filter.then((filter) => filter.uidIsNotEmpty().count().then((c) => c > 0));
+  final hasAnyCourseFuture = CourseRepo.filter.uidIsNotEmpty().count().then((count) => count > 0);
 
   @override
   Widget build(BuildContext context) {

@@ -100,6 +100,7 @@
 
 
   
+  // ignore: dangling_library_doc_comments
   /// BasicUtils
     // static Future<String> calculatePartialHash(String path, {int chunkSize = 32 * 1024}) async {
   //   final file = File(path);

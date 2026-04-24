@@ -7,7 +7,6 @@ import 'package:pdfrx/pdfrx.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
-import 'package:slidesync/data/models/file_path.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/study/providers/pdf_doc_viewer_provider.dart';
 import 'package:slidesync/features/study/providers/src/pdf_doc_viewer_state/pdf_doc_viewer_state.dart';

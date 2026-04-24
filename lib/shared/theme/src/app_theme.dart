@@ -34,7 +34,7 @@ class UnifiedThemeModel {
   }) {
     return UnifiedThemeModel(
       title: title,
-      fontFamily: fontFamily ?? this.fontFamily,
+      fontFamily: fontFamily ?? fontFamily,
       theme: theme,
       darkTheme: darkTheme,
       currentBrightness: currentBrightness ?? this.currentBrightness,

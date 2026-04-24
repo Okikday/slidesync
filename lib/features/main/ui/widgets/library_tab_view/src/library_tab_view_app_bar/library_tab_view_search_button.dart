@@ -84,9 +84,9 @@ class LibraryTabViewSearchButton extends ConsumerWidget with CourseCardActions {
         }
         final List searchResults;
         searchResults = switch (ref.watch(_searchTypeProvider)) {
-          0 => await (await CourseRepo.filter).titleContains(controller.text, caseSensitive: false).findAll(),
-          1 => await (await ModuleRepo.filter).titleContains(controller.text, caseSensitive: false).findAll(),
-          2 => await (await ModuleContentRepo.filter).titleContains(controller.text, caseSensitive: false).findAll(),
+          0 => await (CourseRepo.filter).titleContains(controller.text, caseSensitive: false).findAll(),
+          1 => await (ModuleRepo.filter).titleContains(controller.text, caseSensitive: false).findAll(),
+          2 => await (ModuleContentRepo.filter).titleContains(controller.text, caseSensitive: false).findAll(),
           _ => [],
         };
 

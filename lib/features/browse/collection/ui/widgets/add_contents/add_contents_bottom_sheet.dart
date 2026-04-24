@@ -3,7 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
-import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/add_contents_actions.dart';

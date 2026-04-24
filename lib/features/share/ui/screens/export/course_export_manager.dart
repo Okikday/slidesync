@@ -111,9 +111,9 @@ class _CourseExportShared {
       return;
     }
 
-    await course.collections.load();
+    await course.modules.load();
 
-    if (course.collections.isEmpty) {
+    if (course.modules.isEmpty) {
       log('⚠️ Course has no collections');
       if (context.mounted) {
         UiUtils.showFlushBar(context, msg: 'This course has no content to export', vibe: FlushbarVibe.warning);
@@ -121,7 +121,7 @@ class _CourseExportShared {
       return;
     }
 
-    log('✅ Course loaded with ${course.collections.length} collections. Opening export screen...');
+    log('✅ Course loaded with ${course.modules.length} collections. Opening export screen...');
 
     if (context.mounted) {
       await Navigator.of(context).push(
@@ -150,8 +150,8 @@ class _CourseExportShared {
 
       progressNotifier.value = ExportProgress(message: 'Preparing export...');
 
-      await course.collections.load();
-      final collections = course.collections.toList();
+      await course.modules.load();
+      final collections = course.modules.toList();
 
       if (collections.isEmpty) {
         throw Exception('No collections to export');
@@ -240,7 +240,7 @@ class _CourseExportShared {
 
   static String resolveOriginalFileName(ModuleContent content) {
     final metadata = content.metadata;
-    String originalFilename = metadata.originalFileName ?? content.title;
+    String originalFilename = metadata?.originalFileName ?? content.title;
 
     if (!p.extension(originalFilename).isNotEmpty) {
       final storedPath = content.path.local ?? '';
@@ -555,7 +555,7 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
     int total = 0;
     Map<String, int> counts = {};
 
-    for (final collection in widget.course.collections) {
+    for (final collection in widget.course.modules) {
       await collection.contents.load();
       final fileCount = collection.contents.length;
       counts[collection.title] = fileCount;
@@ -631,7 +631,7 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
                       const SizedBox(height: 16),
                       Row(
                         children: [
-                          _buildStatChip(theme, Icons.folder, '${widget.course.collections.length}', 'Collections'),
+                          _buildStatChip(theme, Icons.folder, '${widget.course.modules.length}', 'Collections'),
                           const SizedBox(width: 12),
                           _buildStatChip(theme, Icons.insert_drive_file, '$totalFiles', 'Files'),
                         ],
@@ -656,10 +656,10 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
               ),
               const SliverToBoxAdapter(child: SizedBox(height: 12)),
               SliverList.separated(
-                itemCount: widget.course.collections.length,
+                itemCount: widget.course.modules.length,
                 separatorBuilder: (context, index) => const SizedBox(height: 12),
                 itemBuilder: (context, index) {
-                  final collection = widget.course.collections.elementAt(index);
+                  final collection = widget.course.modules.elementAt(index);
                   // final fileCount = collectionFileCounts[collection.title] ?? 0;
 
                   return Padding(

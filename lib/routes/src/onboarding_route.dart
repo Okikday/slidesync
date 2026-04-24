@@ -1,5 +1,4 @@
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/auth/ui/screens/onboarding_1.dart';
 import 'package:slidesync/features/auth/ui/screens/welcome_view.dart';

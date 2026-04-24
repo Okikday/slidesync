@@ -53,11 +53,11 @@ mixin HomeTabActions {
       return;
     }
     if (data.progress == 1.0) {
-      ContentTrack? nextContentTrack = await (await ContentTrackRepo.filter)
+      ContentTrack? nextContentTrack = await ContentTrackRepo.filter
           .parentIdEqualTo(content.parentId)
           .progressLessThan(1.0)
           .findFirst();
-      nextContentTrack ??= await (await ContentTrackRepo.filter).progressLessThan(1.0).findFirst();
+      nextContentTrack ??= await (ContentTrackRepo.filter).progressLessThan(1.0).findFirst();
       if (nextContentTrack == null) return;
       final nextContent = await ModuleContentRepo.getByContentId(nextContentTrack.uid);
       if (nextContent == null) return;
@@ -69,9 +69,9 @@ mixin HomeTabActions {
 
   /// When the reading button on the [HomeDashboard] is clicked but there is no recent content
   void onEmptyReadingButtonTapped() async {
-    final anyCourse = await (await CourseRepo.filter).collectionsIsNotEmpty().findFirst();
+    final anyCourse = await (CourseRepo.filter).modulesIsNotEmpty().findFirst();
     if (anyCourse == null) {
-      final anotherCourse = await (await CourseRepo.filter).uidIsNotEmpty().findFirst();
+      final anotherCourse = await (CourseRepo.filter).uidIsNotEmpty().findFirst();
       if (anotherCourse != null) {
         GlobalNav.withContext((context) => context.pushNamed(Routes.courseDetails.name, extra: anotherCourse.uid));
         await Future.delayed(1.inSeconds);
@@ -86,8 +86,8 @@ mixin HomeTabActions {
       );
       return;
     } else {
-      await anyCourse.collections.load();
-      final toCollection = anyCourse.collections.first;
+      await anyCourse.modules.load();
+      final toCollection = anyCourse.modules.first;
       GlobalNav.withContext((context) => context.pushNamed(Routes.courseMaterials.name, extra: toCollection));
       if (toCollection.contents.isEmpty) {
         await 1.inSeconds.delay();

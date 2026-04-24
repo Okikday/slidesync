@@ -8,7 +8,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:slidesync/data/models/file_path.dart';
+import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class BuildImagePathWidget extends ConsumerStatefulWidget {

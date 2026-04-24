@@ -209,7 +209,7 @@ class HomeDashboard extends ConsumerWidget {
         isFirst: true,
         onReadingBtnTapped: () async {
           log("Routing to create course page");
-          context?.pushNamed(Routes.createCourse.name);
+          context.pushNamed(Routes.createCourse.name);
         },
       );
     }

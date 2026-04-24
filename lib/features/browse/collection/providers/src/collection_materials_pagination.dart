@@ -6,9 +6,8 @@ import 'dart:math' as math;
 import 'package:flutter/services.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:isar_community/isar.dart';
-import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
-import 'package:slidesync/core/storage/isar_data/isar_schemas.dart';
 import 'package:slidesync/core/base/leak_prevention.dart';
 import 'package:slidesync/core/utils/smart_isolate.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
@@ -61,7 +60,7 @@ class CollectionMaterialsPagination extends LeakPrevention {
         registerHandler,
       ) async {
         BackgroundIsolateBinaryMessenger.ensureInitialized(token);
-        await IsarData.initialize(collectionSchemas: isarSchemas, inspector: false);
+        await IsarData.initializeDefault(inspector: false);
         registerHandler((arg, respond) {
           doFetchInIsolate(arg)
               .then((result) {
@@ -101,7 +100,7 @@ class CollectionMaterialsPagination extends LeakPrevention {
       await init();
     }
     if (_isStopping) return [];
-    if (count <= 0) count = await (await ModuleContentRepo.filter).parentIdEqualTo(parentId).count();
+    if (count <= 0) count = await (ModuleContentRepo.filter).parentIdEqualTo(parentId).count();
 
     if (isFirstTime || _isolate == null) await init();
     if (_isStopping || _isolate == null) return [];
@@ -266,7 +265,7 @@ Future<List<ModuleContent>> _doFetch(String parentId, int pageKey, int limit, Co
 
 Future<List<ModuleContent>> _doFetchByTitle(String parentId, int pageKey, int limit, [bool ascending = true]) async {
   final offset = (pageKey - 1) * limit;
-  final query = (await ModuleContentRepo.filter).parentIdEqualTo(parentId);
+  final query = (ModuleContentRepo.filter).parentIdEqualTo(parentId);
   return await (ascending
       ? query.sortByTitle().offset(offset).limit(limit).findAll()
       : query.sortByTitleDesc().offset(offset).limit(limit).findAll());
@@ -279,7 +278,7 @@ Future<List<ModuleContent>> _doFetchByDateCreated(
   bool ascending = true,
 ]) async {
   final offset = (pageKey - 1) * limit;
-  final query = (await ModuleContentRepo.filter).parentIdEqualTo(parentId);
+  final query = (ModuleContentRepo.filter).parentIdEqualTo(parentId);
   return await (ascending
       ? query.sortByCreatedAt().offset(offset).limit(limit).findAll()
       : query.sortByCreatedAtDesc().offset(offset).limit(limit).findAll());
@@ -292,17 +291,14 @@ Future<List<ModuleContent>> _doFetchByDateModified(
   bool ascending = true,
 ]) async {
   final offset = (pageKey - 1) * limit;
-  final query = (await ModuleContentRepo.filter).parentIdEqualTo(parentId);
+  final query = (ModuleContentRepo.filter).parentIdEqualTo(parentId);
   return await (ascending
       ? query.sortByLastModified().offset(offset).limit(limit).findAll()
       : query.sortByLastModifiedDesc().offset(offset).limit(limit).findAll());
 }
 
 Future<void> compareContentAndUpdate(CollectionMaterialsPagination cmp) async {
-  final presentCount = await (await ModuleContentRepo.isar).moduleContents
-      .filter()
-      .parentIdEqualTo(cmp.parentId)
-      .count();
+  final presentCount = await (ModuleContentRepo.isar).moduleContents.filter().parentIdEqualTo(cmp.parentId).count();
 
   if (cmp.isUpdating) {
     log("Course Materials Pagination is updating!");
@@ -343,7 +339,7 @@ Future<void> compareContentAndUpdate(CollectionMaterialsPagination cmp) async {
 
     // log("currentlyLoadedContentPages: $contentLoadedOnPages");
 
-    final List<ModuleContent> contentLoadedOnPagesFromIsar = await (await ModuleContentRepo.filter)
+    final List<ModuleContent> contentLoadedOnPagesFromIsar = await (ModuleContentRepo.filter)
         .parentIdEqualTo(cmp.parentId)
         .anyOf(contentLoadedOnPages, (query, content) => query.uidEqualTo(content.uid))
         .findAll();

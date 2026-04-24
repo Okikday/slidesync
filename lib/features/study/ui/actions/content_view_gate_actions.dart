@@ -9,7 +9,7 @@ import 'package:slidesync/features/study/logic/usecases/content_progress_tracker
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';

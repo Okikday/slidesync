@@ -11,7 +11,6 @@ import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/storage_utils/clean_up_utils.dart';
-import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/settings/logic/models/settings_model.dart';
 import 'package:slidesync/features/settings/providers/settings_provider.dart';
@@ -317,7 +316,7 @@ class SettingsCard extends ConsumerWidget {
                 ),
               ),
 
-              if (trailing != null) trailing!,
+              ?trailing,
             ],
           ),
         ),

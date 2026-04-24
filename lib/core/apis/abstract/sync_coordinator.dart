@@ -5,12 +5,13 @@ import 'package:slidesync/core/sync/gdrive_manager.dart';
 import 'package:slidesync/core/apis/api.dart';
 import 'package:slidesync/core/apis/entities/vault_entity.dart';
 import 'package:slidesync/core/apis/entities/source_entity.dart';
-import 'package:slidesync/core/constants/src/enums.dart';
-import 'package:slidesync/core/storage/isar_data/isar_data.dart';
+import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/core/utils/result.dart';
+import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
+import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 
 /// Upload sync result tracking
 class SyncResult {
@@ -68,8 +69,7 @@ class SyncCoordinator {
 
     try {
       // Fetch collections for this course (parentId = courseId)
-      final isar = await IsarData.isarFuture;
-      final collections = await isar.collection<Module>().where().parentIdEqualTo(courseId).findAll();
+      final collections = await ModuleRepo.filter.parentIdEqualTo(courseId).findAll();
 
       if (collections.isEmpty) {
         SyncLogger.warn('Course is empty (no collections), skipping upload', operation: userId);
@@ -190,8 +190,7 @@ class SyncCoordinator {
     SyncLogger.info('Syncing collection: $collectionId', operation: userId);
 
     // Fetch contents
-    final isar = await IsarData.isarFuture;
-    final contents = await isar.collection<ModuleContent>().where().parentIdEqualTo(collectionId).findAll();
+    final contents = await ModuleContentRepo.filter.parentIdEqualTo(collectionId).findAll();
 
     if (contents.isEmpty) {
       SyncLogger.info('Collection is empty, skipping', operation: userId);
@@ -215,9 +214,9 @@ class SyncCoordinator {
       try {
         final metadata = content.metadata;
 
-        if (content.type != ModuleContentType.link && metadata.contentOrigin != ContentOrigin.local) {
+        if (content.type != ModuleContentType.link && metadata?.contentOrigin != ContentOrigin.local) {
           SyncLogger.info(
-            'Content ${content.uid} is not local or link (type=${content.type}, origin=${metadata.contentOrigin}), skipping upload',
+            'Content ${content.uid} is not local or link (type=${content.type}, origin=${metadata?.contentOrigin}), skipping upload',
             operation: userId,
           );
           skippedCount++;
@@ -359,9 +358,9 @@ class SyncCoordinator {
 
     // Skip if not uploadable: only upload local files or links
     // Links (type=link) should be uploaded regardless of origin
-    if (content.type != ModuleContentType.link && metadata.contentOrigin != ContentOrigin.local) {
+    if (content.type != ModuleContentType.link && metadata?.contentOrigin != ContentOrigin.local) {
       SyncLogger.info(
-        'Content ${content.uid} is not local or link (type=${content.type}, origin=${metadata.contentOrigin}), skipping upload',
+        'Content ${content.uid} is not local or link (type=${content.type}, origin=${metadata?.contentOrigin}), skipping upload',
         operation: userId,
       );
       return null;

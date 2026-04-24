@@ -6,14 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/data/models/file_path.dart';
+import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/features/main/ui/actions/home/recent_dialog_actions.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recent_dialog/recent_dialog_selection_options.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
-import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 class RecentDialog extends ConsumerStatefulWidget {

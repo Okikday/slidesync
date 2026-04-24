@@ -9,7 +9,7 @@ final _collectionById = StreamNotifierProvider.autoDispose.family<CollectionNoti
   (collectionId) => CollectionNotifier(collectionId),
 );
 final _collectionsByParentId = StreamProvider.autoDispose.family<List<Module>, String>((ref, arg) async* {
-  yield* (await ModuleRepo.filter).parentIdEqualTo(arg).sortByTitle().watch(fireImmediately: true);
+  yield* (ModuleRepo.filter).parentIdEqualTo(arg).sortByTitle().watch(fireImmediately: true);
 });
 
 class CollectionsProviders {

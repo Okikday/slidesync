@@ -1,3 +1,7 @@
+import 'package:dart_mappable/dart_mappable.dart';
+
+part 'enums.mapper.dart';
+
 enum DeviceType { mobile, tablet, desktop, webMobile, webTablet, webDesktop, unknown }
 
 enum CourseSortOption { nameAsc, nameDesc, dateCreatedAsc, dateCreatedDesc, dateModifiedAsc, dateModifiedDesc }
@@ -12,4 +16,5 @@ enum AppClipboardContentType { empty, text, image, images, file, files, html, un
 
 enum AppCourseCollections { bookmarks, references }
 
+@MappableEnum()
 enum ContentOrigin { none, local, server }

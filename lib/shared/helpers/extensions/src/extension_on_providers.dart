@@ -17,7 +17,7 @@ extension AsyncProviderExtension<StateT> on AsyncProviderListenable<StateT> {
 extension RefExtensions on Ref {
   void emptyListenMany(List<ProviderListenable> providers) {
     for (final p in providers) {
-      listen(p, (_, __) {});
+      listen(p, (_, _) {});
     }
   }
 

@@ -330,7 +330,7 @@ class ExploreDownloadHelper {
 
   /// Shows dialog to select target collection
   Future<Module?> _showCollectionSelectionDialog(BuildContext context) async {
-    final courses = await CourseRepo.getAllCourses();
+    // final courses = await CourseRepo.getAllCourses();
 
     if (!context.mounted) return null;
 
@@ -338,8 +338,8 @@ class ExploreDownloadHelper {
     final selectedCourse = await _showCourseSelectionDialog(context);
     if (selectedCourse == null || !context.mounted) return null;
 
-    await selectedCourse.collections.load();
-    final collections = selectedCourse.collections.toList();
+    await selectedCourse.modules.load();
+    final collections = selectedCourse.modules.toList();
 
     if (!context.mounted) return null;
 

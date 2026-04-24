@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course/course.dart';
-import 'package:slidesync/data/models/module/module_metadata.dart';
 import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
@@ -22,8 +21,8 @@ class ModifyCollectionActions {
     if (course == null) {
       return "Couldn't find course!";
     }
-    await course.collections.load();
-    if (course.collections.length >= 30) {
+    await course.modules.load();
+    if (course.modules.length >= 30) {
       return "Collections under a course must be under 30";
     }
     final newCollection = Module.create(
@@ -95,7 +94,7 @@ class ModifyCollectionActions {
 
   Future<void> onRenameCollection(BuildContext context, {required String newText, required Module collection}) async {
     if (newText.isNotEmpty && newText != collection.title && newText.length >= 2 && newText.length < 256) {
-      final String? outcome = await renameCollectionAction(collection.copyWith(collectionTitle: newText));
+      final String? outcome = await renameCollectionAction(collection.copyWith(title: newText));
       if (context.mounted) CustomDialog.hide(context);
       if (context.mounted) {
         if (outcome == null) {

@@ -17,23 +17,22 @@ const ModuleContentMetadataSchema = Schema(
     r'contentOrigin': PropertySchema(
       id: 1,
       name: r'contentOrigin',
-      type: IsarType.byte,
+      type: IsarType.string,
       enumMap: _ModuleContentMetadatacontentOriginEnumValueMap,
     ),
     r'groupId': PropertySchema(id: 2, name: r'groupId', type: IsarType.string),
-    r'hashCode': PropertySchema(id: 3, name: r'hashCode', type: IsarType.long),
     r'originalFileName': PropertySchema(
-      id: 4,
+      id: 3,
       name: r'originalFileName',
       type: IsarType.string,
     ),
     r'rawFieldsJson': PropertySchema(
-      id: 5,
+      id: 4,
       name: r'rawFieldsJson',
       type: IsarType.string,
     ),
     r'thumbnail': PropertySchema(
-      id: 6,
+      id: 5,
       name: r'thumbnail',
       type: IsarType.object,
 
@@ -59,6 +58,7 @@ int _moduleContentMetadataEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
+  bytesCount += 3 + object.contentOrigin.name.length * 3;
   {
     final value = object.groupId;
     if (value != null) {
@@ -95,13 +95,12 @@ void _moduleContentMetadataSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.author);
-  writer.writeByte(offsets[1], object.contentOrigin.index);
+  writer.writeString(offsets[1], object.contentOrigin.name);
   writer.writeString(offsets[2], object.groupId);
-  writer.writeLong(offsets[3], object.hashCode);
-  writer.writeString(offsets[4], object.originalFileName);
-  writer.writeString(offsets[5], object.rawFieldsJson);
+  writer.writeString(offsets[3], object.originalFileName);
+  writer.writeString(offsets[4], object.rawFieldsJson);
   writer.writeObject<FilePath>(
-    offsets[6],
+    offsets[5],
     allOffsets,
     FilePathSchema.serialize,
     object.thumbnail,
@@ -114,20 +113,21 @@ ModuleContentMetadata _moduleContentMetadataDeserialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = ModuleContentMetadata();
-  object.author = reader.readStringOrNull(offsets[0]);
-  object.contentOrigin =
-      _ModuleContentMetadatacontentOriginValueEnumMap[reader.readByteOrNull(
-        offsets[1],
-      )] ??
-      ContentOrigin.none;
-  object.groupId = reader.readStringOrNull(offsets[2]);
-  object.originalFileName = reader.readStringOrNull(offsets[4]);
-  object.rawFieldsJson = reader.readStringOrNull(offsets[5]);
-  object.thumbnail = reader.readObjectOrNull<FilePath>(
-    offsets[6],
-    FilePathSchema.deserialize,
-    allOffsets,
+  final object = ModuleContentMetadata(
+    author: reader.readStringOrNull(offsets[0]),
+    contentOrigin:
+        _ModuleContentMetadatacontentOriginValueEnumMap[reader.readStringOrNull(
+          offsets[1],
+        )] ??
+        ContentOrigin.none,
+    groupId: reader.readStringOrNull(offsets[2]),
+    originalFileName: reader.readStringOrNull(offsets[3]),
+    rawFieldsJson: reader.readStringOrNull(offsets[4]),
+    thumbnail: reader.readObjectOrNull<FilePath>(
+      offsets[5],
+      FilePathSchema.deserialize,
+      allOffsets,
+    ),
   );
   return object;
 }
@@ -143,18 +143,16 @@ P _moduleContentMetadataDeserializeProp<P>(
       return (reader.readStringOrNull(offset)) as P;
     case 1:
       return (_ModuleContentMetadatacontentOriginValueEnumMap[reader
-                  .readByteOrNull(offset)] ??
+                  .readStringOrNull(offset)] ??
               ContentOrigin.none)
           as P;
     case 2:
       return (reader.readStringOrNull(offset)) as P;
     case 3:
-      return (reader.readLong(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 4:
       return (reader.readStringOrNull(offset)) as P;
     case 5:
-      return (reader.readStringOrNull(offset)) as P;
-    case 6:
       return (reader.readObjectOrNull<FilePath>(
             offset,
             FilePathSchema.deserialize,
@@ -167,14 +165,14 @@ P _moduleContentMetadataDeserializeProp<P>(
 }
 
 const _ModuleContentMetadatacontentOriginEnumValueMap = {
-  'none': 0,
-  'local': 1,
-  'server': 2,
+  r'none': r'none',
+  r'local': r'local',
+  r'server': r'server',
 };
 const _ModuleContentMetadatacontentOriginValueEnumMap = {
-  0: ContentOrigin.none,
-  1: ContentOrigin.local,
-  2: ContentOrigin.server,
+  r'none': ContentOrigin.none,
+  r'local': ContentOrigin.local,
+  r'server': ContentOrigin.server,
 };
 
 extension ModuleContentMetadataQueryFilter
@@ -396,26 +394,13 @@ extension ModuleContentMetadataQueryFilter
     ModuleContentMetadata,
     QAfterFilterCondition
   >
-  contentOriginEqualTo(ContentOrigin value) {
+  contentOriginEqualTo(ContentOrigin value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'contentOrigin', value: value),
-      );
-    });
-  }
-
-  QueryBuilder<
-    ModuleContentMetadata,
-    ModuleContentMetadata,
-    QAfterFilterCondition
-  >
-  contentOriginGreaterThan(ContentOrigin value, {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
+        FilterCondition.equalTo(
           property: r'contentOrigin',
           value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -426,13 +411,40 @@ extension ModuleContentMetadataQueryFilter
     ModuleContentMetadata,
     QAfterFilterCondition
   >
-  contentOriginLessThan(ContentOrigin value, {bool include = false}) {
+  contentOriginGreaterThan(
+    ContentOrigin value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'contentOrigin',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    ModuleContentMetadata,
+    ModuleContentMetadata,
+    QAfterFilterCondition
+  >
+  contentOriginLessThan(
+    ContentOrigin value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.lessThan(
           include: include,
           property: r'contentOrigin',
           value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -448,6 +460,7 @@ extension ModuleContentMetadataQueryFilter
     ContentOrigin upper, {
     bool includeLower = true,
     bool includeUpper = true,
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
@@ -457,7 +470,102 @@ extension ModuleContentMetadataQueryFilter
           includeLower: includeLower,
           upper: upper,
           includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
         ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    ModuleContentMetadata,
+    ModuleContentMetadata,
+    QAfterFilterCondition
+  >
+  contentOriginStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'contentOrigin',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    ModuleContentMetadata,
+    ModuleContentMetadata,
+    QAfterFilterCondition
+  >
+  contentOriginEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'contentOrigin',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    ModuleContentMetadata,
+    ModuleContentMetadata,
+    QAfterFilterCondition
+  >
+  contentOriginContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'contentOrigin',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    ModuleContentMetadata,
+    ModuleContentMetadata,
+    QAfterFilterCondition
+  >
+  contentOriginMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'contentOrigin',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    ModuleContentMetadata,
+    ModuleContentMetadata,
+    QAfterFilterCondition
+  >
+  contentOriginIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'contentOrigin', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<
+    ModuleContentMetadata,
+    ModuleContentMetadata,
+    QAfterFilterCondition
+  >
+  contentOriginIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'contentOrigin', value: ''),
       );
     });
   }
@@ -665,77 +773,6 @@ extension ModuleContentMetadataQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(property: r'groupId', value: ''),
-      );
-    });
-  }
-
-  QueryBuilder<
-    ModuleContentMetadata,
-    ModuleContentMetadata,
-    QAfterFilterCondition
-  >
-  hashCodeEqualTo(int value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'hashCode', value: value),
-      );
-    });
-  }
-
-  QueryBuilder<
-    ModuleContentMetadata,
-    ModuleContentMetadata,
-    QAfterFilterCondition
-  >
-  hashCodeGreaterThan(int value, {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'hashCode',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<
-    ModuleContentMetadata,
-    ModuleContentMetadata,
-    QAfterFilterCondition
-  >
-  hashCodeLessThan(int value, {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'hashCode',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<
-    ModuleContentMetadata,
-    ModuleContentMetadata,
-    QAfterFilterCondition
-  >
-  hashCodeBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'hashCode',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
       );
     });
   }

@@ -3,14 +3,13 @@ import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/data/models/quiz_question_model/content_questions.dart';
 
 class ContentQuestionsRepo {
-  static final IsarData<ContentQuestions> _isarData = IsarData.instance<ContentQuestions>();
-
-  static Future<Isar> get _isar async => await IsarData.isarFuture;
+  static final IsarData<ContentQuestions> _isarData = IsarData<ContentQuestions>();
   static IsarData<ContentQuestions> get isarData => _isarData;
-  static Future<Isar> get isar async => await IsarData.isarFuture;
+  static Isar get _isar => _isarData.isarInstance;
+  static Isar get isar => _isar;
 
-  static Future<QueryBuilder<ContentQuestions, ContentQuestions, QFilterCondition>> get filter async =>
-      (await _isar).contentQuestions.filter();
+  static QueryBuilder<ContentQuestions, ContentQuestions, QFilterCondition> get filter =>
+      _isar.contentQuestions.filter();
 
   static Future<void> deleteByDbId(int dbId) async => await _isarData.deleteById(dbId);
 
@@ -25,10 +24,10 @@ class ContentQuestionsRepo {
   static Stream<List<ContentQuestions>> watchAll() => _isarData.watchAll();
 
   static Future<List<ContentQuestions>> getAllByContentHash(String xxh3Hash) async =>
-      await (await _isar).contentQuestions.where().xxh3HashEqualTo(xxh3Hash).findAll();
+      await _isar.contentQuestions.where().xxh3HashEqualTo(xxh3Hash).findAll();
   static Future<ContentQuestions?> getByContentHash(String xxh3Hash) async =>
-      await (await _isar).contentQuestions.where().xxh3HashEqualTo(xxh3Hash).findFirst();
+      await _isar.contentQuestions.where().xxh3HashEqualTo(xxh3Hash).findFirst();
 
   static Future<List<ContentQuestions>> getByContentId(String contentId) async =>
-      await (await _isar).contentQuestions.filter().contentIdEqualTo(contentId).findAll();
+      await _isar.contentQuestions.filter().contentIdEqualTo(contentId).findAll();
 }

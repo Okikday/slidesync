@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:isar_community/isar.dart';
 import 'package:path/path.dart' as p;
-import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
@@ -45,14 +45,14 @@ class ShareContentActions {
 
   static Future<void> shareCollection(BuildContext context, String collectionId) async {
     UiUtils.showFlushBar(context, msg: "Preparing files...");
-    final contents = await (await ModuleContentRepo.filter).parentIdEqualTo(collectionId).sortByUid().findAll();
+    final contents = await (ModuleContentRepo.filter).parentIdEqualTo(collectionId).sortByUid().findAll();
     if (contents.isEmpty) {
       UiUtils.showFlushBar(context, msg: "Nothing to share");
       return;
     }
     final Set<(File file, String fileName)> dataSet = contents.map((e) {
       final localPath = e.path.local ?? '';
-      return (File(localPath), (e.metadata.originalFileName) ?? p.setExtension(e.title, p.extension(localPath)));
+      return (File(localPath), (e.metadata?.originalFileName) ?? p.setExtension(e.title, p.extension(localPath)));
     }).toSet();
     final files = dataSet.map((e) => e.$1).toList();
     final fileNames = dataSet.map((e) => e.$2).toList();
@@ -66,12 +66,12 @@ class ShareContentActions {
       UiUtils.showFlushBar(context, msg: "Nothing to share");
       return;
     }
-    final contents = await (await ModuleContentRepo.filter).anyOf(contentIds, (a, b) => a.uidEqualTo(b)).findAll();
+    final contents = await (ModuleContentRepo.filter).anyOf(contentIds, (a, b) => a.uidEqualTo(b)).findAll();
     final Set<(File file, String fileName)> dataSet = contents.map((e) {
       final filename = p.setExtension(e.title, p.extension(e.path.local ?? ''));
       return (
         File(e.path.local ?? ''),
-        filename.isEmpty ? ((e.metadata.originalFileName) ?? "Unknown file") : filename,
+        filename.isEmpty ? ((e.metadata?.originalFileName) ?? "Unknown file") : filename,
       );
     }).toSet();
     final files = dataSet.map((e) => e.$1).toList();

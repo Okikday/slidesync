@@ -77,7 +77,7 @@ class _EditCollectionTitleBottomSheetState extends ConsumerState<EditCollectionT
                     if (isValid != null) return;
                     // Create new collection
                     final outcome = await modifyCollectionActions.renameCollectionAction(
-                      collection.copyWith(collectionTitle: text),
+                      collection.copyWith(title: text),
                     );
                     // Handle outcome
                     if (outcome == null) {

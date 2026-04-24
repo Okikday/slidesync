@@ -7,7 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:slidesync/data/models/file_path.dart';
+import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
@@ -28,7 +28,7 @@ class ModifyCourseActions {
   Future<void> onDeleteCourse({required String courseId}) async {
     final course = await CourseRepo.getCourseByUid(courseId);
     if (course == null) return;
-    for (final item in course.collections) {
+    for (final item in course.modules) {
       await ModifyCollectionUc().deleteCollection(item);
     }
 
@@ -49,7 +49,7 @@ class ModifyCourseActions {
       );
       if (newPath != null) {
         final newCourse = course.copyWith(
-          metadata: course.metadata.copyWith(thumbnails: FilePath(local: newPath)),
+          metadata: course.metadata.copyWith(thumbnail: FilePath(local: newPath)),
         );
         log("New course thumbnail path: ${newCourse.metadata}");
         await CourseRepo.addCourse(newCourse);
@@ -71,7 +71,7 @@ class ModifyCourseActions {
     if (course == null) return false;
     final thumbnailPath = course.metadata.thumbnail;
     if (thumbnailPath != null && thumbnailPath.containsLocalPath) {
-      await CourseRepo.addCourse(course.copyWith(metadata: course.metadata.copyWith(thumbnails: FilePath())));
+      await CourseRepo.addCourse(course.copyWith(metadata: course.metadata.copyWith(thumbnail: FilePath())));
       if (thumbnailPath.local != null) await FileUtils.deleteFileAtPath(thumbnailPath.local!);
       return true;
     }
@@ -155,7 +155,7 @@ class ModifyCourseActions {
   void onClickCourseImage(WidgetRef ref, {required Course course}) async {
     final context = ref.context;
     final iconColor = ref.supportingText;
-    final hasImage = await File(course.thumbnailPath).exists();
+    final hasImage = await File(course.localThumbnailPath).exists();
     final List<AppActionDialogModel> dialogModels = [
       if (hasImage)
         AppActionDialogModel(
@@ -204,32 +204,34 @@ class ModifyCourseActions {
           },
         ),
     ];
-    CustomDialog.show(
-      context,
-      canPop: true,
-      transitionDuration: Durations.medium2,
-      reverseTransitionDuration: Durations.short2,
-      curve: CustomCurves.defaultIosSpring,
-      barrierColor: Colors.black.withAlpha(220),
-      child:
-          AppActionDialog(
-            leading: Padding(
-              padding: const EdgeInsets.only(left: 12, bottom: 16),
-              child: CustomText(
-                hasImage ? "Adjust image" : "No Image",
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: ref.onBackground,
+    GlobalNav.withContext(
+      (context) => CustomDialog.show(
+        context,
+        canPop: true,
+        transitionDuration: Durations.medium2,
+        reverseTransitionDuration: Durations.short2,
+        curve: CustomCurves.defaultIosSpring,
+        barrierColor: Colors.black.withAlpha(220),
+        child:
+            AppActionDialog(
+              leading: Padding(
+                padding: const EdgeInsets.only(left: 12, bottom: 16),
+                child: CustomText(
+                  hasImage ? "Adjust image" : "No Image",
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: ref.onBackground,
+                ),
               ),
+              actions: dialogModels,
+            ).animate().fadeIn().scaleXY(
+              begin: 0.9,
+              end: 1,
+              alignment: Alignment.topRight,
+              duration: Duration(milliseconds: 500),
+              curve: CustomCurves.defaultIosSpring,
             ),
-            actions: dialogModels,
-          ).animate().fadeIn().scaleXY(
-            begin: 0.9,
-            end: 1,
-            alignment: Alignment.topRight,
-            duration: Duration(milliseconds: 500),
-            curve: CustomCurves.defaultIosSpring,
-          ),
+      ),
     );
   }
 

@@ -1,4 +1,4 @@
-import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 
 /// Defines the allowed file extensions for various content types.

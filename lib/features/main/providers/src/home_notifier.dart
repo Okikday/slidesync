@@ -21,8 +21,6 @@ class HomeNotifier extends Notifier<HomeState> {
 /// ------------------------------------------------------------------
 final _recentContentsTrackProvider = StreamNotifierProvider.autoDispose.family(
   (int arg) => StreamedNotifier<List<ContentTrack>>(() async* {
-    yield* await ContentTrackRepo.filter.then(
-      (filter) => filter.lastReadIsNotNull().sortByLastReadDesc().limit(arg).watch(fireImmediately: true),
-    );
+    yield* ContentTrackRepo.filter.lastReadIsNotNull().sortByLastReadDesc().limit(arg).watch(fireImmediately: true);
   }),
 );

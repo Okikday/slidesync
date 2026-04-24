@@ -179,7 +179,7 @@ class SmoothListView extends StatelessWidget {
     Clip clipBehavior = Clip.hardEdge,
     ScrollController? controller,
     DragStartBehavior dragStartBehavior = DragStartBehavior.start,
-    ChildIndexGetter? findChildIndexCallback,
+    ChildIndexGetter? findItemIndexCallback,
     double? itemExtent,
     ScrollViewKeyboardDismissBehavior keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
     EdgeInsetsGeometry? padding,
@@ -206,7 +206,7 @@ class SmoothListView extends StatelessWidget {
         clipBehavior: clipBehavior,
         controller: controller,
         dragStartBehavior: dragStartBehavior,
-        findChildIndexCallback: findChildIndexCallback,
+        findChildIndexCallback: findItemIndexCallback,
         itemExtent: itemExtent,
         keyboardDismissBehavior: keyboardDismissBehavior,
         padding: padding,
@@ -235,7 +235,7 @@ class SmoothListView extends StatelessWidget {
       clipBehavior: clipBehavior,
       controller: controller,
       dragStartBehavior: dragStartBehavior,
-      findChildIndexCallback: findChildIndexCallback,
+      findItemIndexCallback: findItemIndexCallback,
       itemExtent: itemExtent,
       keyboardDismissBehavior: keyboardDismissBehavior,
       padding: padding,
@@ -266,7 +266,7 @@ class SmoothListView extends StatelessWidget {
     Clip clipBehavior = Clip.hardEdge,
     ScrollController? controller,
     DragStartBehavior dragStartBehavior = DragStartBehavior.start,
-    ChildIndexGetter? findChildIndexCallback,
+    ChildIndexGetter? findItemIndexCallback,
     double? itemExtent,
     ScrollViewKeyboardDismissBehavior keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
     EdgeInsetsGeometry? padding,
@@ -294,7 +294,7 @@ class SmoothListView extends StatelessWidget {
         clipBehavior: clipBehavior,
         controller: controller,
         dragStartBehavior: dragStartBehavior,
-        findChildIndexCallback: findChildIndexCallback,
+        findItemIndexCallback: findItemIndexCallback,
         keyboardDismissBehavior: keyboardDismissBehavior,
         padding: padding,
         physics: physics,
@@ -321,7 +321,7 @@ class SmoothListView extends StatelessWidget {
       clipBehavior: clipBehavior,
       controller: controller,
       dragStartBehavior: dragStartBehavior,
-      findChildIndexCallback: findChildIndexCallback,
+      findItemIndexCallback: findItemIndexCallback,
       itemExtent: itemExtent,
       keyboardDismissBehavior: keyboardDismissBehavior,
       padding: padding,
@@ -560,7 +560,7 @@ class _SmoothListViewBuilder extends StatefulWidget {
   final Clip clipBehavior;
   final ScrollController? controller;
   final DragStartBehavior dragStartBehavior;
-  final ChildIndexGetter? findChildIndexCallback;
+  final ChildIndexGetter? findItemIndexCallback;
   final double? itemExtent;
   final ScrollViewKeyboardDismissBehavior keyboardDismissBehavior;
   final EdgeInsetsGeometry? padding;
@@ -587,7 +587,7 @@ class _SmoothListViewBuilder extends StatefulWidget {
     required this.clipBehavior,
     required this.controller,
     required this.dragStartBehavior,
-    required this.findChildIndexCallback,
+    required this.findItemIndexCallback,
     required this.itemExtent,
     required this.keyboardDismissBehavior,
     required this.padding,
@@ -661,7 +661,7 @@ class _SmoothListViewBuilderState extends State<_SmoothListViewBuilder> with Sin
         clipBehavior: widget.clipBehavior,
         controller: _scrollController,
         dragStartBehavior: widget.dragStartBehavior,
-        findChildIndexCallback: widget.findChildIndexCallback,
+        findChildIndexCallback: widget.findItemIndexCallback,
         itemExtent: widget.itemExtent,
         keyboardDismissBehavior: widget.keyboardDismissBehavior,
         padding: widget.padding,
@@ -692,7 +692,7 @@ class _SmoothListViewSeparated extends StatefulWidget {
   final Clip clipBehavior;
   final ScrollController? controller;
   final DragStartBehavior dragStartBehavior;
-  final ChildIndexGetter? findChildIndexCallback;
+  final ChildIndexGetter? findItemIndexCallback;
   final double? itemExtent;
   final ScrollViewKeyboardDismissBehavior keyboardDismissBehavior;
   final EdgeInsetsGeometry? padding;
@@ -720,7 +720,7 @@ class _SmoothListViewSeparated extends StatefulWidget {
     required this.clipBehavior,
     required this.controller,
     required this.dragStartBehavior,
-    required this.findChildIndexCallback,
+    required this.findItemIndexCallback,
     required this.itemExtent,
     required this.keyboardDismissBehavior,
     required this.padding,
@@ -795,7 +795,7 @@ class _SmoothListViewSeparatedState extends State<_SmoothListViewSeparated> with
         clipBehavior: widget.clipBehavior,
         controller: _scrollController,
         dragStartBehavior: widget.dragStartBehavior,
-        findChildIndexCallback: widget.findChildIndexCallback,
+        findItemIndexCallback: widget.findItemIndexCallback,
         keyboardDismissBehavior: widget.keyboardDismissBehavior,
         padding: widget.padding,
         physics: physics,

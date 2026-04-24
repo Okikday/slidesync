@@ -88,7 +88,7 @@ class _CollectionsViewState extends ConsumerState<CollectionsView> {
             SliverToBoxAdapter(child: TopPadding(withHeight: 60)),
             Consumer(
               builder: (context, ref, child) {
-                final dataN = ref.watch(courseProvider.select((c) => c.whenData((cb) => cb.collections)));
+                final dataN = ref.watch(courseProvider.select((c) => c.whenData((cb) => cb.modules)));
                 return dataN.when(
                   data: (data) {
                     if (data.isEmpty) return const SliverToBoxAdapter();

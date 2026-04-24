@@ -33,19 +33,16 @@ class GDrivePaths {
   // GDriveManager uses these to create/resolve folder trees.
 
   /// Path segments from root to a private collection folder.
-  static List<String> privateSegments({
-    required String uid,
-    required String courseId,
-    required String collectionId,
-  }) =>
+  static List<String> privateSegments({required String uid, required String courseId, required String collectionId}) =>
       [_appRoot, _privateRoot, uid, courseId, collectionId];
 
   /// Path segments from root to a public course folder.
-  static List<String> publicSegments({
-    required String institutionId,
-    required String courseId,
-  }) =>
-      [_appRoot, _publicRoot, institutionId, courseId];
+  static List<String> publicSegments({required String institutionId, required String courseId}) => [
+    _appRoot,
+    _publicRoot,
+    institutionId,
+    courseId,
+  ];
 
   // ── Link helpers ───────────────────────────────────────────────────────────
 
@@ -75,12 +72,7 @@ class GDrivePaths {
     try {
       final uri = Uri.parse(normalized);
       final host = uri.host;
-      final validHosts = [
-        'drive.google.com',
-        'docs.google.com',
-        'sheets.google.com',
-        'slides.google.com',
-      ];
+      final validHosts = ['drive.google.com', 'docs.google.com', 'sheets.google.com', 'slides.google.com'];
       if (!validHosts.any((h) => host == h || host.endsWith('.$h'))) {
         return false;
       }
@@ -90,17 +82,15 @@ class GDrivePaths {
         RegExp(r'/(?:document|spreadsheets|presentation)/d/[a-zA-Z0-9_-]+'),
         RegExp(r'[?&]id=[a-zA-Z0-9_-]+'),
       ];
-      return drivePatterns.any((p) => p.hasMatch(uri.path + '?' + uri.query));
+      return drivePatterns.any((p) => p.hasMatch('${uri.path}?${uri.query}'));
     } catch (_) {
       return false;
     }
   }
 
   /// Constructs a webViewLink from a file ID.
-  static String fileViewLink(String fileId) =>
-      'https://drive.google.com/file/d/$fileId/view';
+  static String fileViewLink(String fileId) => 'https://drive.google.com/file/d/$fileId/view';
 
   /// Constructs a folder link from a folder ID.
-  static String folderLink(String folderId) =>
-      'https://drive.google.com/drive/folders/$folderId';
+  static String folderLink(String folderId) => 'https://drive.google.com/drive/folders/$folderId';
 }

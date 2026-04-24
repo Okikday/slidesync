@@ -17,6 +17,8 @@ analyzer:
     - lib/generated/**
   errors:
     experimental_member_access: ignore
+    experimental_member_use: ignore
+    invalid_annotation_target: ignore
 
 linter:
   # The lint rules applied to this project can be customized in the

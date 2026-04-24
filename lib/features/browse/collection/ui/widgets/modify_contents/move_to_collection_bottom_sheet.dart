@@ -157,8 +157,9 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
                               final courses = await CourseRepo.getAllCourses();
                               coursesNotifier.value = courses;
                             } else {
-                              final filter = await CourseRepo.filter;
-                              final courses = await filter.titleContains(query, caseSensitive: false).findAll();
+                              final courses = await CourseRepo.filter
+                                  .titleContains(query, caseSensitive: false)
+                                  .findAll();
                               coursesNotifier.value = courses;
                             }
                           } else {
@@ -240,9 +241,9 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
                                 EditCourseTile(
                                       courseName: course.courseName,
                                       courseCode: course.courseCode,
-                                      categoriesCount: course.collections.length,
+                                      categoriesCount: course.modules.length,
                                       selectionState: (selected: false, isSelecting: false),
-                                      imgFilePath: course.thumbnailPath,
+                                      imgFilePath: course.localThumbnailPath,
                                       onTap: () => _handleCourseSelection(context, course),
                                       onSelected: () {},
                                     )
@@ -277,14 +278,14 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
     final holdCourses = coursesNotifier.value;
     coursesNotifier.value = null;
 
-    await course.collections.load();
-    if (course.collections.isEmpty) {
+    await course.modules.load();
+    if (course.modules.isEmpty) {
       if (context.mounted) {
         UiUtils.showFlushBar(context, msg: "No collection to add to...");
       }
       coursesNotifier.value = holdCourses;
     } else {
-      collectionsNotifier.value = List.from(course.collections.toList());
+      collectionsNotifier.value = List.from(course.modules.toList());
     }
   }
 
@@ -315,10 +316,12 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
   /// Handle storing new files to a collection
   Future<void> _handleStoreFiles(BuildContext context, Module collection) async {
     context.pop(true);
-    UiUtils.showLoadingDialog(context, message: "Storing your files...", canPop: false);
+    GlobalNav.withContext(
+      (c) => UiUtils.showLoadingDialog(c, message: "Hold on for a moment while we store your files", canPop: false),
+    );
 
     await _storeContentsToCollection(collectionId: collection.uid, filePaths: widget.filePaths!);
-    context.pop();
+    GlobalNav.popGlobal();
 
     // GlobalNav.withContext((c) => c.pop());
     GlobalNav.withContext((c) => c.pushNamed(Routes.courseMaterials.name, extra: collection));

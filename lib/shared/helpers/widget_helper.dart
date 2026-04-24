@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
-import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/constants/src/enums/enums.dart';
 
 class WidgetHelper {
   static IconData resolveIconData(ModuleContentType type, [bool isOutlined = false]) {

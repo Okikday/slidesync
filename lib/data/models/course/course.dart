@@ -1,122 +1,70 @@
-// ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:convert';
-
+import 'package:dart_mappable/dart_mappable.dart';
 import 'package:isar_community/isar.dart';
-import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/data/models/course/course_metadata.dart';
-import 'package:slidesync/data/models/file_path.dart';
-import 'package:slidesync/shared/helpers/formatter.dart';
+import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:uuid/uuid.dart';
 
-import '../module/module.dart';
+import 'package:slidesync/core/constants/src/type_defs.dart';
+import 'package:slidesync/shared/helpers/formatter.dart';
+import 'package:slidesync/data/models/module/module.dart';
+import 'package:slidesync/data/models/course/src/course_metadata.dart';
 
+export 'src/course_metadata.dart';
+
+part 'course.mapper.dart';
 part 'course.g.dart';
-part 'extension_on_course.dart';
 
-@collection
-class Course {
-  Id id = Isar.autoIncrement;
-
+@MappableClass()
+@Collection(ignore: {'copyWith'})
+class Course with CourseMappable {
+  Id id;
   @Index(unique: true)
-  String uid = '';
-
+  String uid;
   @Index(caseSensitive: false)
-  String title = '';
+  String title;
+  String description;
+  DateTime createdAt;
+  DateTime lastModified;
+  CourseMetadata metadata;
 
-  String description = '';
+  final IsarLinks<Module> modules = IsarLinks<Module>();
 
-  DateTime createdAt = DateTime.now();
-  DateTime lastModified = DateTime.now();
+  Course({
+    this.id = Isar.autoIncrement,
+    required this.uid,
+    required this.title,
+    required this.description,
+    required this.createdAt,
+    required this.lastModified,
+    required this.metadata,
+  });
 
-  final IsarLinks<Module> collections = IsarLinks<Module>();
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is Course && runtimeType == other.runtimeType && uid == other.uid;
 
-  CourseMetadata metadata = CourseMetadata.empty();
+  @override
+  int get hashCode => uid.hashCode;
 
-  Course();
+  static const fromJson = CourseMapper.fromJson;
 
-  factory Course.create({
-    String? uid,
-    String? title,
-    String? description,
-    DateTime? createdAt,
-    DateTime? lastModified,
-    CourseMetadata? metadata,
-  }) {
+  static Course create({required String title, String? uid, String? description}) {
     final now = DateTime.now();
-    return Course()
-      ..uid = (uid == null || uid.isEmpty) ? const Uuid().v4() : uid
-      ..title = title ?? ''
-      ..description = description ?? ''
-      ..createdAt = createdAt ?? now
-      ..lastModified = lastModified ?? now
-      ..metadata = metadata ?? CourseMetadata.empty();
+    return Course(
+      uid: uid ?? const Uuid().v4(),
+      title: title,
+      description: description ?? '',
+      createdAt: now,
+      lastModified: now,
+      metadata: CourseMetadata.empty(),
+    );
   }
+}
 
-  // Json Conversions
-  Map<String, dynamic> toMap() => {
-    'uid': uid,
-    'title': title,
-    'description': description,
-    'createdAt': createdAt.toIso8601String(),
-    'lastModified': lastModified.toIso8601String(),
-    'metadata': metadata.toJson(),
-    // Note: subCollections and rootContents are IsarLinks, not serialized here
-  };
+extension CourseExtension on Course {
+  CourseTitleRecord get _sorterCourseTitle => Formatter.separateCodeFromTitle(title);
+  String get courseName => _sorterCourseTitle.courseName;
+  String get courseCode => _sorterCourseTitle.courseCode;
 
-  factory Course.fromMap(Map<String, dynamic> map) => Course.create(
-    uid: map['uid'] ?? const Uuid().v4(),
-    title: map['title'] ?? '',
-    description: map['description'] ?? '',
-    createdAt: DateTime.tryParse((map['createdAt'] as String?) ?? ''),
-    lastModified: DateTime.tryParse((map['lastModified'] as String?) ?? ''),
-    metadata: map['metadata'] != null ? CourseMetadata.fromJson(Result.from(() => (map['metadata'] as String))) : null,
-  );
-
-  String toJson() => jsonEncode(toMap());
-  factory Course.fromJson(String source) => Course.fromMap(jsonDecode(source));
-
-  // Copy with
-  Course copyWith({
-    String? title,
-    String? description,
-    DateTime? createdAt,
-    DateTime? lastModified,
-    CourseMetadata? metadata,
-  }) {
-    return this
-      ..title = title ?? this.title
-      ..description = description ?? this.description
-      ..createdAt = createdAt ?? this.createdAt
-      ..lastModified = lastModified ?? DateTime.now()
-      ..metadata = metadata ?? this.metadata;
-  }
-
-  @override
-  bool operator ==(covariant Course other) {
-    if (identical(this, other)) return true;
-
-    return other.id == id &&
-        other.uid == uid &&
-        other.title == title &&
-        other.description == description &&
-        other.createdAt == createdAt &&
-        other.lastModified == lastModified &&
-        other.metadata == metadata;
-  }
-
-  @override
-  int get hashCode {
-    return id.hashCode ^
-        uid.hashCode ^
-        title.hashCode ^
-        description.hashCode ^
-        createdAt.hashCode ^
-        lastModified.hashCode ^
-        metadata.hashCode;
-  }
-
-  @override
-  String toString() {
-    return 'Course(id: $id, courseId: $uid, title: $title, description: $description, createdAt: $createdAt, lastModified: $lastModified, metadata: $metadata)';
-  }
+  String get previewPath => metadata.thumbnail?.local ?? '';
+  String get localThumbnailPath => previewPath;
 }

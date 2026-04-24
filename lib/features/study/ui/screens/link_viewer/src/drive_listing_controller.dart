@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,15 +7,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:path/path.dart' as p;
-import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/storage/native/app_paths.dart';
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/models/module/module.dart';
-import 'package:slidesync/data/models/module_content/module_content_metadata.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
-import 'package:slidesync/data/models/file_path.dart';
+import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
@@ -712,21 +712,21 @@ class DriveListingController {
       if (content == null) {
         continue;
       }
-
+      final fields = content.metadata?.fields;
       final mergedFields = <String, dynamic>{
-        if (content.metadata.fields != null) ...content.metadata.fields!,
+        if (fields != null) ...fields,
         ...entries[index].fingerprint.toMetadataFields(),
         'downloadedFromDrive': true,
         'reusedExistingPath': entries[index].reusedExistingPath,
       }..removeWhere((key, value) => value == null || value == '');
 
-      final metadata = content.metadata.copyWith(
-        originalFileName: content.metadata.originalFileName ?? entries[index].fingerprint.sourceName,
+      final metadata = content.metadata?.copyWith(
+        originalFileName: content.metadata?.originalFileName ?? entries[index].fingerprint.sourceName,
         contentOrigin: ContentOrigin.local,
-        fields: mergedFields.isEmpty ? null : mergedFields,
+        rawFieldsJson: mergedFields.isEmpty ? null : jsonEncode(mergedFields),
       );
 
-      if (metadata.toJson() == content.metadataJson) {
+      if (metadata?.rawFieldsJson == content.metadataJson) {
         continue;
       }
 
@@ -865,7 +865,7 @@ class DriveListingController {
       metadata: ModuleContentMetadata.create(
         originalFileName: originalName,
         contentOrigin: ContentOrigin.local,
-        thumbnails: file.thumbnailLink != null ? FilePath(url: file.thumbnailLink!) : FilePath(),
+        thumbnail: file.thumbnailLink != null ? FilePath(url: file.thumbnailLink!) : FilePath(),
         fields: {
           'resolved': true,
           'driveId': file.id,

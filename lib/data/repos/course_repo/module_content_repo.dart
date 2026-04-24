@@ -12,10 +12,10 @@ import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 
 class ModuleContentRepo {
-  static final IsarData<ModuleContent> _isarData = IsarData.instance<ModuleContent>();
-  static Future<Isar> get _isar async => await IsarData.isarFuture;
+  static final IsarData<ModuleContent> _isarData = IsarData<ModuleContent>();
   static IsarData<ModuleContent> get isarData => _isarData;
-  static Future<Isar> get isar async => await IsarData.isarFuture;
+  static Isar get _isar => _isarData.isarInstance;
+  static Isar get isar => _isar;
 
   // static Future<QueryBuilder<CourseContent, CourseContent, QAfterFilterCondition>> _queryById(
   //   String xxh3Hash,
@@ -23,8 +23,7 @@ class ModuleContentRepo {
   //   return (await _isarData.query<CourseContent>((q) => q.idGreaterThan(0))).filter().xxh3HashEqualTo(xxh3Hash);
   // }
 
-  static Future<QueryBuilder<ModuleContent, ModuleContent, QFilterCondition>> get filter async =>
-      (await _isar).moduleContents.filter();
+  static QueryBuilder<ModuleContent, ModuleContent, QFilterCondition> get filter => _isar.moduleContents.filter();
 
   static Future<void> deleteByDbId(int dbId) async => await _isarData.deleteById(dbId);
 
@@ -41,14 +40,14 @@ class ModuleContentRepo {
   // static Future<Stream<List<CourseContent>>> watchAllLazily() async => await _isarData.watchAllLazily();
 
   static Future<ModuleContent?> getByContentId(String contentId) async =>
-      await (await _isar).moduleContents.where().uidEqualTo(contentId).findFirst();
+      await _isar.moduleContents.where().uidEqualTo(contentId).findFirst();
 
   static Future<ModuleContent?> getByHash(String xxh3Hash) async {
-    return await (await _isar).moduleContents.filter().xxh3HashEqualTo(xxh3Hash).findFirst();
+    return await _isar.moduleContents.filter().xxh3HashEqualTo(xxh3Hash).findFirst();
   }
 
   static Future<bool> doesDuplicateHashExists(String xxh3Hash) async {
-    return (await (await _isar).moduleContents.filter().xxh3HashEqualTo(xxh3Hash).limit(2).findAll()).length > 1;
+    return (await _isar.moduleContents.filter().xxh3HashEqualTo(xxh3Hash).limit(2).findAll()).length > 1;
   }
 
   // static Future<CourseContent?> deleteByHash(String xxh3Hash) async {
@@ -65,7 +64,7 @@ class ModuleContentRepo {
 
   /// Gets Duplicate Coursecontents, or contents with same hash
   static Future<List<ModuleContent>> findAllDuplicatesByHash(String xxh3Hash) async {
-    return await (await _isar).moduleContents.filter().xxh3HashEqualTo(xxh3Hash).findAll();
+    return await _isar.moduleContents.filter().xxh3HashEqualTo(xxh3Hash).findAll();
   }
 
   static Future<ModuleContent?> findFirstDuplicateContentByHash(Module collection, String xxh3Hash) async {
@@ -77,7 +76,7 @@ class ModuleContentRepo {
   // static Future<bool> addContent(CourseContent content, [CourseCollection? collection]) async {
   //   if (content.parentId.isEmpty) return false;
   //   final result = await Result.tryRunAsync<bool>(() async {
-  //     final isar = (await _isar);
+  //     final isar = _isar;
 
   //     final fetchResult = await _fetchCourseAndCollection(isar, collection, content.parentId);
   //     final getCollection = fetchResult.$2;
@@ -129,7 +128,7 @@ class ModuleContentRepo {
   // Check
   static Future<bool> deleteContent(ModuleContent content, [Module? collection]) async {
     try {
-      final isar = (await _isar);
+      final isar = _isar;
 
       final fetchResult = await _fetchCourseAndCollection(isar, collection, content.parentId);
       final getCollection = fetchResult.$2;
@@ -138,8 +137,8 @@ class ModuleContentRepo {
       if (getCollection == null || course == null) return false;
 
       await getCollection.contents.load();
-      await course.collections.load();
-      final contentTrackQuery = (await ContentTrackRepo.filter).uidEqualTo(content.uid);
+      await course.modules.load();
+      final contentTrackQuery = (ContentTrackRepo.filter).uidEqualTo(content.uid);
       final contentTrack = await contentTrackQuery.findFirst();
       CourseTrack? parentCourseTrack = contentTrack == null
           ? null
@@ -183,7 +182,7 @@ class ModuleContentRepo {
 
   static Future<bool> addMultipleContents(String collectionId, List<ModuleContent> contents) async {
     if (contents.isEmpty) return false;
-    final isar = (await _isar);
+    final isar = _isar;
     final fetchResult = await _fetchCourseAndCollection(isar, null, collectionId);
     final getCollection = fetchResult.$2;
     final course = fetchResult.$1;
@@ -204,7 +203,7 @@ class ModuleContentRepo {
         )
         .toList();
 
-    final courseTrack = await (await CourseTrackRepo.filter).uidEqualTo(course.uid).findFirst();
+    final courseTrack = await (CourseTrackRepo.filter).uidEqualTo(course.uid).findFirst();
     if (courseTrack == null) {
       log("Couldn't find the parent course Track");
       return false;
@@ -240,8 +239,6 @@ class ModuleContentRepo {
     if (targetCollectionId.isEmpty) return false;
 
     try {
-      final isar = await _isar;
-
       // Fetch target collection and its parent course
       final fetchResult = await _fetchCourseAndCollection(isar, null, targetCollectionId);
       final targetCollection = fetchResult.$2;
@@ -252,7 +249,7 @@ class ModuleContentRepo {
       await targetCollection.contents.load();
 
       // Get target course track
-      final targetCourseTrack = await (await CourseTrackRepo.filter).uidEqualTo(targetCourse.uid).findFirst();
+      final targetCourseTrack = await (CourseTrackRepo.filter).uidEqualTo(targetCourse.uid).findFirst();
       if (targetCourseTrack == null) {
         log("Couldn't find the target course track");
         return false;
@@ -281,7 +278,7 @@ class ModuleContentRepo {
 
         // Get or cache source course track
         if (!sourceCourseTracksMap.containsKey(sourceCourse.uid)) {
-          final sourceCourseTrack = await (await CourseTrackRepo.filter).uidEqualTo(sourceCourse.uid).findFirst();
+          final sourceCourseTrack = await (CourseTrackRepo.filter).uidEqualTo(sourceCourse.uid).findFirst();
           if (sourceCourseTrack != null) {
             await sourceCourseTrack.contentTracks.load();
             sourceCourseTracksMap[sourceCourse.uid] = sourceCourseTrack;
@@ -289,7 +286,7 @@ class ModuleContentRepo {
         }
 
         // Find and prepare content track for move
-        final contentTrack = await (await ContentTrackRepo.filter).uidEqualTo(content.uid).findFirst();
+        final contentTrack = await (ContentTrackRepo.filter).uidEqualTo(content.uid).findFirst();
         if (contentTrack != null) {
           contentTracksToUpdate.add(contentTrack.copyWith(parentId: targetCourse.uid));
         }
@@ -368,7 +365,7 @@ class ModuleContentRepo {
 
   // static Future<bool> deleteAllContentsInCollection(CourseCollection collection) async {
   //   try {
-  //     final isar = (await _isar);
+  //     final isar = _isar;
 
   //     // Ensure collection contents are loaded
   //     await collection.contents.load();

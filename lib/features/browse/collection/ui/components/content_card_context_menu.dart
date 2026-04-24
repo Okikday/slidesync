@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:heroine/heroine.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
-import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/sync/entities/drive_progress.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/core/apis/api.dart';

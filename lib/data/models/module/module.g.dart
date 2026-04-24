@@ -27,26 +27,25 @@ const ModuleSchema = CollectionSchema(
       name: r'description',
       type: IsarType.string,
     ),
-    r'hashCode': PropertySchema(id: 2, name: r'hashCode', type: IsarType.long),
     r'lastModified': PropertySchema(
-      id: 3,
+      id: 2,
       name: r'lastModified',
       type: IsarType.dateTime,
     ),
     r'metadata': PropertySchema(
-      id: 4,
+      id: 3,
       name: r'metadata',
       type: IsarType.object,
 
       target: r'ModuleMetadata',
     ),
     r'parentId': PropertySchema(
-      id: 5,
+      id: 4,
       name: r'parentId',
       type: IsarType.string,
     ),
-    r'title': PropertySchema(id: 6, name: r'title', type: IsarType.string),
-    r'uid': PropertySchema(id: 7, name: r'uid', type: IsarType.string),
+    r'title': PropertySchema(id: 5, name: r'title', type: IsarType.string),
+    r'uid': PropertySchema(id: 6, name: r'uid', type: IsarType.string),
   },
 
   estimateSize: _moduleEstimateSize,
@@ -142,17 +141,16 @@ void _moduleSerialize(
 ) {
   writer.writeDateTime(offsets[0], object.createdAt);
   writer.writeString(offsets[1], object.description);
-  writer.writeLong(offsets[2], object.hashCode);
-  writer.writeDateTime(offsets[3], object.lastModified);
+  writer.writeDateTime(offsets[2], object.lastModified);
   writer.writeObject<ModuleMetadata>(
-    offsets[4],
+    offsets[3],
     allOffsets,
     ModuleMetadataSchema.serialize,
     object.metadata,
   );
-  writer.writeString(offsets[5], object.parentId);
-  writer.writeString(offsets[6], object.title);
-  writer.writeString(offsets[7], object.uid);
+  writer.writeString(offsets[4], object.parentId);
+  writer.writeString(offsets[5], object.title);
+  writer.writeString(offsets[6], object.uid);
 }
 
 Module _moduleDeserialize(
@@ -161,21 +159,22 @@ Module _moduleDeserialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = Module();
-  object.createdAt = reader.readDateTime(offsets[0]);
-  object.description = reader.readString(offsets[1]);
-  object.id = id;
-  object.lastModified = reader.readDateTime(offsets[3]);
-  object.metadata =
-      reader.readObjectOrNull<ModuleMetadata>(
-        offsets[4],
-        ModuleMetadataSchema.deserialize,
-        allOffsets,
-      ) ??
-      ModuleMetadata();
-  object.parentId = reader.readString(offsets[5]);
-  object.title = reader.readString(offsets[6]);
-  object.uid = reader.readString(offsets[7]);
+  final object = Module(
+    createdAt: reader.readDateTime(offsets[0]),
+    description: reader.readString(offsets[1]),
+    id: id,
+    lastModified: reader.readDateTime(offsets[2]),
+    metadata:
+        reader.readObjectOrNull<ModuleMetadata>(
+          offsets[3],
+          ModuleMetadataSchema.deserialize,
+          allOffsets,
+        ) ??
+        ModuleMetadata(),
+    parentId: reader.readString(offsets[4]),
+    title: reader.readString(offsets[5]),
+    uid: reader.readString(offsets[6]),
+  );
   return object;
 }
 
@@ -191,10 +190,8 @@ P _moduleDeserializeProp<P>(
     case 1:
       return (reader.readString(offset)) as P;
     case 2:
-      return (reader.readLong(offset)) as P;
-    case 3:
       return (reader.readDateTime(offset)) as P;
-    case 4:
+    case 3:
       return (reader.readObjectOrNull<ModuleMetadata>(
                 offset,
                 ModuleMetadataSchema.deserialize,
@@ -202,11 +199,11 @@ P _moduleDeserializeProp<P>(
               ) ??
               ModuleMetadata())
           as P;
+    case 4:
+      return (reader.readString(offset)) as P;
     case 5:
       return (reader.readString(offset)) as P;
     case 6:
-      return (reader.readString(offset)) as P;
-    case 7:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -721,65 +718,6 @@ extension ModuleQueryFilter on QueryBuilder<Module, Module, QFilterCondition> {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(property: r'description', value: ''),
-      );
-    });
-  }
-
-  QueryBuilder<Module, Module, QAfterFilterCondition> hashCodeEqualTo(
-    int value,
-  ) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'hashCode', value: value),
-      );
-    });
-  }
-
-  QueryBuilder<Module, Module, QAfterFilterCondition> hashCodeGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'hashCode',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Module, Module, QAfterFilterCondition> hashCodeLessThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'hashCode',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<Module, Module, QAfterFilterCondition> hashCodeBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'hashCode',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
       );
     });
   }
@@ -1439,18 +1377,6 @@ extension ModuleQuerySortBy on QueryBuilder<Module, Module, QSortBy> {
     });
   }
 
-  QueryBuilder<Module, Module, QAfterSortBy> sortByHashCode() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'hashCode', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Module, Module, QAfterSortBy> sortByHashCodeDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'hashCode', Sort.desc);
-    });
-  }
-
   QueryBuilder<Module, Module, QAfterSortBy> sortByLastModified() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastModified', Sort.asc);
@@ -1522,18 +1448,6 @@ extension ModuleQuerySortThenBy on QueryBuilder<Module, Module, QSortThenBy> {
   QueryBuilder<Module, Module, QAfterSortBy> thenByDescriptionDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'description', Sort.desc);
-    });
-  }
-
-  QueryBuilder<Module, Module, QAfterSortBy> thenByHashCode() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'hashCode', Sort.asc);
-    });
-  }
-
-  QueryBuilder<Module, Module, QAfterSortBy> thenByHashCodeDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'hashCode', Sort.desc);
     });
   }
 
@@ -1613,12 +1527,6 @@ extension ModuleQueryWhereDistinct on QueryBuilder<Module, Module, QDistinct> {
     });
   }
 
-  QueryBuilder<Module, Module, QDistinct> distinctByHashCode() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'hashCode');
-    });
-  }
-
   QueryBuilder<Module, Module, QDistinct> distinctByLastModified() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'lastModified');
@@ -1666,12 +1574,6 @@ extension ModuleQueryProperty on QueryBuilder<Module, Module, QQueryProperty> {
   QueryBuilder<Module, String, QQueryOperations> descriptionProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'description');
-    });
-  }
-
-  QueryBuilder<Module, int, QQueryOperations> hashCodeProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'hashCode');
     });
   }
 

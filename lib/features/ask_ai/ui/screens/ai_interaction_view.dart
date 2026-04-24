@@ -12,6 +12,7 @@ import 'package:slidesync/features/ask_ai/ui/widgets/ai_chat_textfield.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:markdown_widget/markdown_widget.dart';
+// ignore: depend_on_referenced_packages
 import 'package:markdown/markdown.dart' as m;
 
 class AiInteractionView extends ConsumerStatefulWidget {
@@ -366,6 +367,7 @@ class BlockLatexSyntax extends m.BlockSyntax {
 class InlineLatexNode extends SpanNode {
   final String latex;
   @override
+  // ignore: overridden_fields
   final TextStyle? style;
 
   InlineLatexNode(this.latex, {this.style});

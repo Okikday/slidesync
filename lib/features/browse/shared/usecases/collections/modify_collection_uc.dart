@@ -18,7 +18,7 @@ class ModifyCollectionUc {
         final filePath = item.path.local;
         if (filePath != null) await FileUtils.deleteFileAtPath(filePath);
 
-        final previewPath = item.metadata.thumbnail?.local;
+        final previewPath = item.metadata?.thumbnail?.local;
         if (previewPath != null && previewPath.isNotEmpty) await FileUtils.deleteFileAtPath(previewPath);
         fileSum += item.fileSizeInBytes;
       }

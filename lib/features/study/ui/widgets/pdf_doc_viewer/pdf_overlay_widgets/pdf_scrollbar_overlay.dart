@@ -167,7 +167,7 @@ class _CustomPdfScrollThumbState extends State<CustomPdfScrollThumb> {
 
     // Calculate cumulative page positions
     double cumulativeHeight = 0;
-    final boundaryMargin = widget.controller.params.boundaryMargin;
+    // final boundaryMargin = widget.controller.params.boundaryMargin;
     final pageSpacing = widget.controller.params.margin;
 
     for (int i = 0; i < pages.length; i++) {

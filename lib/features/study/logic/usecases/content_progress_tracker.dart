@@ -16,7 +16,7 @@ class ContentProgressTracker {
     final content = await ModuleContentRepo.getByContentId(contentId);
     if (content == null) return null;
 
-    final ptm = await (await ContentTrackRepo.isar).contentTracks.where().uidEqualTo(contentId).findFirst();
+    final ptm = await (ContentTrackRepo.isar).contentTracks.where().uidEqualTo(contentId).findFirst();
 
     if (ptm == null) {
       return await _createProgressTrackModel(content);

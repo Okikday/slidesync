@@ -11,6 +11,7 @@ import 'package:slidesync/features/sync/providers/download_history_provider.dart
 import 'package:slidesync/features/sync/providers/sync_provider.dart';
 import 'package:slidesync/features/sync/providers/transfer_state_provider.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 
@@ -310,13 +311,13 @@ class _DownloadTile extends ConsumerWidget {
 
     final content = await ModuleContentRepo.getByContentId(contentId);
     if (content == null) {
-      _showSnack(context, 'Could not find the content record.');
+      GlobalNav.withContext((context) => _showSnack(context, 'Could not find the content record.'));
       return;
     }
 
     final localPath = content.path.local;
     if (localPath == null || localPath.isEmpty || !await File(localPath).exists()) {
-      _showSnack(context, 'File is no longer available on disk.');
+      GlobalNav.withContext((context) => _showSnack(context, 'The downloaded file is missing.'));
       return;
     }
 
@@ -334,7 +335,7 @@ class _DownloadTile extends ConsumerWidget {
       try {
         await ContentViewGateActions.redirectToViewer(ref, content);
       } catch (_) {
-        _showSnack(context, 'Could not open this downloaded item.');
+        GlobalNav.withContext((context) => _showSnack(context, 'Failed to open content: ${content.title}'));
       }
     }
   }

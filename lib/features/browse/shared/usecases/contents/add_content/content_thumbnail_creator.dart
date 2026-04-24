@@ -4,14 +4,15 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:slidesync/core/constants/src/app_constants.dart';
-import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/storage/native/app_paths.dart';
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 
-import 'package:slidesync/data/models/file_path.dart';
+import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:slidesync/core/utils/image_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
+// ignore: depend_on_referenced_packages
 import 'package:image/image.dart';
 import 'package:slidesync/main.dart';
 
@@ -165,8 +166,8 @@ class ContentThumbnailCreator {
         final List<int> bytes = encodeJpg(imageObj);
 
         pageImage.dispose();
-        final _last = path.split(Platform.pathSeparator).last;
-        final genFilename = "${(_last.isEmpty ? null : _last) ?? filename}.tmp";
+        final last = path.split(Platform.pathSeparator).last;
+        final genFilename = "${(last.isEmpty ? null : last) ?? filename}.tmp";
 
         final tempFile = File(p.join((await getTemporaryDirectory()).path, genFilename));
         await tempFile.writeAsBytes(bytes);

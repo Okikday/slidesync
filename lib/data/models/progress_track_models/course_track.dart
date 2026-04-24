@@ -99,7 +99,7 @@ class CourseTrack {
 extension CourseTrackExtension on CourseTrack {
   CourseTrack copyWith({
     Id? id,
-    String? courseId,
+    String? courseUid,
     String? title,
     String? description,
     double? progress,
@@ -108,7 +108,7 @@ extension CourseTrackExtension on CourseTrack {
   }) {
     return this
       ..id = id ?? this.id
-      ..uid = courseId ?? this.uid
+      ..uid = courseUid ?? uid
       ..title = title ?? this.title
       ..description = description ?? this.description
       ..progress = progress ?? this.progress

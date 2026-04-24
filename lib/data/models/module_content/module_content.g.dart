@@ -32,41 +32,35 @@ const ModuleContentSchema = CollectionSchema(
       name: r'fileSizeInBytes',
       type: IsarType.long,
     ),
-    r'hashCode': PropertySchema(id: 3, name: r'hashCode', type: IsarType.long),
     r'lastModified': PropertySchema(
-      id: 4,
+      id: 3,
       name: r'lastModified',
       type: IsarType.dateTime,
     ),
     r'metadata': PropertySchema(
-      id: 5,
+      id: 4,
       name: r'metadata',
       type: IsarType.object,
 
       target: r'ModuleContentMetadata',
     ),
     r'parentId': PropertySchema(
-      id: 6,
+      id: 5,
       name: r'parentId',
       type: IsarType.string,
     ),
     r'path': PropertySchema(
-      id: 7,
+      id: 6,
       name: r'path',
       type: IsarType.object,
 
       target: r'FilePath',
     ),
-    r'title': PropertySchema(id: 8, name: r'title', type: IsarType.string),
-    r'type': PropertySchema(
-      id: 9,
-      name: r'type',
-      type: IsarType.byte,
-      enumMap: _ModuleContenttypeEnumValueMap,
-    ),
-    r'uid': PropertySchema(id: 10, name: r'uid', type: IsarType.string),
+    r'title': PropertySchema(id: 7, name: r'title', type: IsarType.string),
+    r'typeRaw': PropertySchema(id: 8, name: r'typeRaw', type: IsarType.string),
+    r'uid': PropertySchema(id: 9, name: r'uid', type: IsarType.string),
     r'xxh3Hash': PropertySchema(
-      id: 11,
+      id: 10,
       name: r'xxh3Hash',
       type: IsarType.string,
     ),
@@ -91,19 +85,6 @@ const ModuleContentSchema = CollectionSchema(
         ),
       ],
     ),
-    r'xxh3Hash': IndexSchema(
-      id: -1306133880914054561,
-      name: r'xxh3Hash',
-      unique: false,
-      replace: false,
-      properties: [
-        IndexPropertySchema(
-          name: r'xxh3Hash',
-          type: IndexType.hash,
-          caseSensitive: true,
-        ),
-      ],
-    ),
     r'parentId': IndexSchema(
       id: -809199838039056779,
       name: r'parentId',
@@ -114,19 +95,6 @@ const ModuleContentSchema = CollectionSchema(
           name: r'parentId',
           type: IndexType.hash,
           caseSensitive: true,
-        ),
-      ],
-    ),
-    r'title': IndexSchema(
-      id: -7636685945352118059,
-      name: r'title',
-      unique: false,
-      replace: false,
-      properties: [
-        IndexPropertySchema(
-          name: r'title',
-          type: IndexType.hash,
-          caseSensitive: false,
         ),
       ],
     ),
@@ -150,13 +118,18 @@ int _moduleContentEstimateSize(
 ) {
   var bytesCount = offsets.last;
   bytesCount += 3 + object.description.length * 3;
-  bytesCount +=
-      3 +
-      ModuleContentMetadataSchema.estimateSize(
-        object.metadata,
-        allOffsets[ModuleContentMetadata]!,
-        allOffsets,
-      );
+  {
+    final value = object.metadata;
+    if (value != null) {
+      bytesCount +=
+          3 +
+          ModuleContentMetadataSchema.estimateSize(
+            value,
+            allOffsets[ModuleContentMetadata]!,
+            allOffsets,
+          );
+    }
+  }
   bytesCount += 3 + object.parentId.length * 3;
   bytesCount +=
       3 +
@@ -166,6 +139,7 @@ int _moduleContentEstimateSize(
         allOffsets,
       );
   bytesCount += 3 + object.title.length * 3;
+  bytesCount += 3 + object.typeRaw.length * 3;
   bytesCount += 3 + object.uid.length * 3;
   bytesCount += 3 + object.xxh3Hash.length * 3;
   return bytesCount;
@@ -180,25 +154,24 @@ void _moduleContentSerialize(
   writer.writeDateTime(offsets[0], object.createdAt);
   writer.writeString(offsets[1], object.description);
   writer.writeLong(offsets[2], object.fileSizeInBytes);
-  writer.writeLong(offsets[3], object.hashCode);
-  writer.writeDateTime(offsets[4], object.lastModified);
+  writer.writeDateTime(offsets[3], object.lastModified);
   writer.writeObject<ModuleContentMetadata>(
-    offsets[5],
+    offsets[4],
     allOffsets,
     ModuleContentMetadataSchema.serialize,
     object.metadata,
   );
-  writer.writeString(offsets[6], object.parentId);
+  writer.writeString(offsets[5], object.parentId);
   writer.writeObject<FilePath>(
-    offsets[7],
+    offsets[6],
     allOffsets,
     FilePathSchema.serialize,
     object.path,
   );
-  writer.writeString(offsets[8], object.title);
-  writer.writeByte(offsets[9], object.type.index);
-  writer.writeString(offsets[10], object.uid);
-  writer.writeString(offsets[11], object.xxh3Hash);
+  writer.writeString(offsets[7], object.title);
+  writer.writeString(offsets[8], object.typeRaw);
+  writer.writeString(offsets[9], object.uid);
+  writer.writeString(offsets[10], object.xxh3Hash);
 }
 
 ModuleContent _moduleContentDeserialize(
@@ -207,33 +180,30 @@ ModuleContent _moduleContentDeserialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = ModuleContent();
-  object.createdAt = reader.readDateTime(offsets[0]);
-  object.description = reader.readString(offsets[1]);
-  object.fileSizeInBytes = reader.readLong(offsets[2]);
-  object.id = id;
-  object.lastModified = reader.readDateTime(offsets[4]);
-  object.metadata =
-      reader.readObjectOrNull<ModuleContentMetadata>(
-        offsets[5],
-        ModuleContentMetadataSchema.deserialize,
-        allOffsets,
-      ) ??
-      ModuleContentMetadata();
-  object.parentId = reader.readString(offsets[6]);
-  object.path =
-      reader.readObjectOrNull<FilePath>(
-        offsets[7],
-        FilePathSchema.deserialize,
-        allOffsets,
-      ) ??
-      FilePath();
-  object.title = reader.readString(offsets[8]);
-  object.type =
-      _ModuleContenttypeValueEnumMap[reader.readByteOrNull(offsets[9])] ??
-      ModuleContentType.unknown;
-  object.uid = reader.readString(offsets[10]);
-  object.xxh3Hash = reader.readString(offsets[11]);
+  final object = ModuleContent(
+    createdAt: reader.readDateTime(offsets[0]),
+    description: reader.readString(offsets[1]),
+    fileSizeInBytes: reader.readLong(offsets[2]),
+    id: id,
+    lastModified: reader.readDateTime(offsets[3]),
+    metadata: reader.readObjectOrNull<ModuleContentMetadata>(
+      offsets[4],
+      ModuleContentMetadataSchema.deserialize,
+      allOffsets,
+    ),
+    parentId: reader.readString(offsets[5]),
+    path:
+        reader.readObjectOrNull<FilePath>(
+          offsets[6],
+          FilePathSchema.deserialize,
+          allOffsets,
+        ) ??
+        FilePath(),
+    title: reader.readString(offsets[7]),
+    typeRaw: reader.readStringOrNull(offsets[8]) ?? 'unknown',
+    uid: reader.readString(offsets[9]),
+    xxh3Hash: reader.readString(offsets[10]),
+  );
   return object;
 }
 
@@ -251,20 +221,17 @@ P _moduleContentDeserializeProp<P>(
     case 2:
       return (reader.readLong(offset)) as P;
     case 3:
-      return (reader.readLong(offset)) as P;
-    case 4:
       return (reader.readDateTime(offset)) as P;
-    case 5:
+    case 4:
       return (reader.readObjectOrNull<ModuleContentMetadata>(
-                offset,
-                ModuleContentMetadataSchema.deserialize,
-                allOffsets,
-              ) ??
-              ModuleContentMetadata())
+            offset,
+            ModuleContentMetadataSchema.deserialize,
+            allOffsets,
+          ))
           as P;
-    case 6:
+    case 5:
       return (reader.readString(offset)) as P;
-    case 7:
+    case 6:
       return (reader.readObjectOrNull<FilePath>(
                 offset,
                 FilePathSchema.deserialize,
@@ -272,39 +239,18 @@ P _moduleContentDeserializeProp<P>(
               ) ??
               FilePath())
           as P;
+    case 7:
+      return (reader.readString(offset)) as P;
     case 8:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset) ?? 'unknown') as P;
     case 9:
-      return (_ModuleContenttypeValueEnumMap[reader.readByteOrNull(offset)] ??
-              ModuleContentType.unknown)
-          as P;
-    case 10:
       return (reader.readString(offset)) as P;
-    case 11:
+    case 10:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
-
-const _ModuleContenttypeEnumValueMap = {
-  'unknown': 0,
-  'document': 1,
-  'image': 2,
-  'link': 3,
-  'note': 4,
-  'reference': 5,
-  'group': 6,
-};
-const _ModuleContenttypeValueEnumMap = {
-  0: ModuleContentType.unknown,
-  1: ModuleContentType.document,
-  2: ModuleContentType.image,
-  3: ModuleContentType.link,
-  4: ModuleContentType.note,
-  5: ModuleContentType.reference,
-  6: ModuleContentType.group,
-};
 
 Id _moduleContentGetId(ModuleContent object) {
   return object.id;
@@ -516,59 +462,6 @@ extension ModuleContentQueryWhere
     });
   }
 
-  QueryBuilder<ModuleContent, ModuleContent, QAfterWhereClause> xxh3HashEqualTo(
-    String xxh3Hash,
-  ) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'xxh3Hash', value: [xxh3Hash]),
-      );
-    });
-  }
-
-  QueryBuilder<ModuleContent, ModuleContent, QAfterWhereClause>
-  xxh3HashNotEqualTo(String xxh3Hash) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'xxh3Hash',
-                lower: [],
-                upper: [xxh3Hash],
-                includeUpper: false,
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'xxh3Hash',
-                lower: [xxh3Hash],
-                includeLower: false,
-                upper: [],
-              ),
-            );
-      } else {
-        return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'xxh3Hash',
-                lower: [xxh3Hash],
-                includeLower: false,
-                upper: [],
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'xxh3Hash',
-                lower: [],
-                upper: [xxh3Hash],
-                includeUpper: false,
-              ),
-            );
-      }
-    });
-  }
-
   QueryBuilder<ModuleContent, ModuleContent, QAfterWhereClause> parentIdEqualTo(
     String parentId,
   ) {
@@ -615,60 +508,6 @@ extension ModuleContentQueryWhere
                 indexName: r'parentId',
                 lower: [],
                 upper: [parentId],
-                includeUpper: false,
-              ),
-            );
-      }
-    });
-  }
-
-  QueryBuilder<ModuleContent, ModuleContent, QAfterWhereClause> titleEqualTo(
-    String title,
-  ) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'title', value: [title]),
-      );
-    });
-  }
-
-  QueryBuilder<ModuleContent, ModuleContent, QAfterWhereClause> titleNotEqualTo(
-    String title,
-  ) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'title',
-                lower: [],
-                upper: [title],
-                includeUpper: false,
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'title',
-                lower: [title],
-                includeLower: false,
-                upper: [],
-              ),
-            );
-      } else {
-        return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'title',
-                lower: [title],
-                includeLower: false,
-                upper: [],
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'title',
-                lower: [],
-                upper: [title],
                 includeUpper: false,
               ),
             );
@@ -930,61 +769,6 @@ extension ModuleContentQueryFilter
     });
   }
 
-  QueryBuilder<ModuleContent, ModuleContent, QAfterFilterCondition>
-  hashCodeEqualTo(int value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'hashCode', value: value),
-      );
-    });
-  }
-
-  QueryBuilder<ModuleContent, ModuleContent, QAfterFilterCondition>
-  hashCodeGreaterThan(int value, {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'hashCode',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ModuleContent, ModuleContent, QAfterFilterCondition>
-  hashCodeLessThan(int value, {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'hashCode',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ModuleContent, ModuleContent, QAfterFilterCondition>
-  hashCodeBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'hashCode',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
-    });
-  }
-
   QueryBuilder<ModuleContent, ModuleContent, QAfterFilterCondition> idEqualTo(
     Id value,
   ) {
@@ -1093,6 +877,24 @@ extension ModuleContentQueryFilter
           upper: upper,
           includeUpper: includeUpper,
         ),
+      );
+    });
+  }
+
+  QueryBuilder<ModuleContent, ModuleContent, QAfterFilterCondition>
+  metadataIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'metadata'),
+      );
+    });
+  }
+
+  QueryBuilder<ModuleContent, ModuleContent, QAfterFilterCondition>
+  metadataIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'metadata'),
       );
     });
   }
@@ -1379,57 +1181,143 @@ extension ModuleContentQueryFilter
     });
   }
 
-  QueryBuilder<ModuleContent, ModuleContent, QAfterFilterCondition> typeEqualTo(
-    ModuleContentType value,
-  ) {
+  QueryBuilder<ModuleContent, ModuleContent, QAfterFilterCondition>
+  typeRawEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'type', value: value),
+        FilterCondition.equalTo(
+          property: r'typeRaw',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
       );
     });
   }
 
   QueryBuilder<ModuleContent, ModuleContent, QAfterFilterCondition>
-  typeGreaterThan(ModuleContentType value, {bool include = false}) {
+  typeRawGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(
           include: include,
-          property: r'type',
+          property: r'typeRaw',
           value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
   }
 
   QueryBuilder<ModuleContent, ModuleContent, QAfterFilterCondition>
-  typeLessThan(ModuleContentType value, {bool include = false}) {
+  typeRawLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.lessThan(
           include: include,
-          property: r'type',
+          property: r'typeRaw',
           value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
   }
 
-  QueryBuilder<ModuleContent, ModuleContent, QAfterFilterCondition> typeBetween(
-    ModuleContentType lower,
-    ModuleContentType upper, {
+  QueryBuilder<ModuleContent, ModuleContent, QAfterFilterCondition>
+  typeRawBetween(
+    String lower,
+    String upper, {
     bool includeLower = true,
     bool includeUpper = true,
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.between(
-          property: r'type',
+          property: r'typeRaw',
           lower: lower,
           includeLower: includeLower,
           upper: upper,
           includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
         ),
+      );
+    });
+  }
+
+  QueryBuilder<ModuleContent, ModuleContent, QAfterFilterCondition>
+  typeRawStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'typeRaw',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ModuleContent, ModuleContent, QAfterFilterCondition>
+  typeRawEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'typeRaw',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ModuleContent, ModuleContent, QAfterFilterCondition>
+  typeRawContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'typeRaw',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ModuleContent, ModuleContent, QAfterFilterCondition>
+  typeRawMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'typeRaw',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ModuleContent, ModuleContent, QAfterFilterCondition>
+  typeRawIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'typeRaw', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<ModuleContent, ModuleContent, QAfterFilterCondition>
+  typeRawIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'typeRaw', value: ''),
       );
     });
   }
@@ -1787,19 +1675,6 @@ extension ModuleContentQuerySortBy
     });
   }
 
-  QueryBuilder<ModuleContent, ModuleContent, QAfterSortBy> sortByHashCode() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'hashCode', Sort.asc);
-    });
-  }
-
-  QueryBuilder<ModuleContent, ModuleContent, QAfterSortBy>
-  sortByHashCodeDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'hashCode', Sort.desc);
-    });
-  }
-
   QueryBuilder<ModuleContent, ModuleContent, QAfterSortBy>
   sortByLastModified() {
     return QueryBuilder.apply(this, (query) {
@@ -1839,15 +1714,15 @@ extension ModuleContentQuerySortBy
     });
   }
 
-  QueryBuilder<ModuleContent, ModuleContent, QAfterSortBy> sortByType() {
+  QueryBuilder<ModuleContent, ModuleContent, QAfterSortBy> sortByTypeRaw() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'type', Sort.asc);
+      return query.addSortBy(r'typeRaw', Sort.asc);
     });
   }
 
-  QueryBuilder<ModuleContent, ModuleContent, QAfterSortBy> sortByTypeDesc() {
+  QueryBuilder<ModuleContent, ModuleContent, QAfterSortBy> sortByTypeRawDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'type', Sort.desc);
+      return query.addSortBy(r'typeRaw', Sort.desc);
     });
   }
 
@@ -1919,19 +1794,6 @@ extension ModuleContentQuerySortThenBy
     });
   }
 
-  QueryBuilder<ModuleContent, ModuleContent, QAfterSortBy> thenByHashCode() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'hashCode', Sort.asc);
-    });
-  }
-
-  QueryBuilder<ModuleContent, ModuleContent, QAfterSortBy>
-  thenByHashCodeDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'hashCode', Sort.desc);
-    });
-  }
-
   QueryBuilder<ModuleContent, ModuleContent, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
@@ -1983,15 +1845,15 @@ extension ModuleContentQuerySortThenBy
     });
   }
 
-  QueryBuilder<ModuleContent, ModuleContent, QAfterSortBy> thenByType() {
+  QueryBuilder<ModuleContent, ModuleContent, QAfterSortBy> thenByTypeRaw() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'type', Sort.asc);
+      return query.addSortBy(r'typeRaw', Sort.asc);
     });
   }
 
-  QueryBuilder<ModuleContent, ModuleContent, QAfterSortBy> thenByTypeDesc() {
+  QueryBuilder<ModuleContent, ModuleContent, QAfterSortBy> thenByTypeRawDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'type', Sort.desc);
+      return query.addSortBy(r'typeRaw', Sort.desc);
     });
   }
 
@@ -2044,12 +1906,6 @@ extension ModuleContentQueryWhereDistinct
     });
   }
 
-  QueryBuilder<ModuleContent, ModuleContent, QDistinct> distinctByHashCode() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'hashCode');
-    });
-  }
-
   QueryBuilder<ModuleContent, ModuleContent, QDistinct>
   distinctByLastModified() {
     return QueryBuilder.apply(this, (query) {
@@ -2073,9 +1929,11 @@ extension ModuleContentQueryWhereDistinct
     });
   }
 
-  QueryBuilder<ModuleContent, ModuleContent, QDistinct> distinctByType() {
+  QueryBuilder<ModuleContent, ModuleContent, QDistinct> distinctByTypeRaw({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'type');
+      return query.addDistinctBy(r'typeRaw', caseSensitive: caseSensitive);
     });
   }
 
@@ -2122,12 +1980,6 @@ extension ModuleContentQueryProperty
     });
   }
 
-  QueryBuilder<ModuleContent, int, QQueryOperations> hashCodeProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'hashCode');
-    });
-  }
-
   QueryBuilder<ModuleContent, DateTime, QQueryOperations>
   lastModifiedProperty() {
     return QueryBuilder.apply(this, (query) {
@@ -2135,7 +1987,7 @@ extension ModuleContentQueryProperty
     });
   }
 
-  QueryBuilder<ModuleContent, ModuleContentMetadata, QQueryOperations>
+  QueryBuilder<ModuleContent, ModuleContentMetadata?, QQueryOperations>
   metadataProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'metadata');
@@ -2160,10 +2012,9 @@ extension ModuleContentQueryProperty
     });
   }
 
-  QueryBuilder<ModuleContent, ModuleContentType, QQueryOperations>
-  typeProperty() {
+  QueryBuilder<ModuleContent, String, QQueryOperations> typeRawProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'type');
+      return query.addPropertyName(r'typeRaw');
     });
   }
 

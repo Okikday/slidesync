@@ -35,7 +35,7 @@ class _LibrarySearchViewState extends ConsumerState<LibrarySearchView> {
     searchTextController = TextEditingController();
     futureContentsNotifier = ValueNotifier(null);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      filter = await ModuleContentRepo.filter;
+      filter = ModuleContentRepo.filter;
     });
   }
 

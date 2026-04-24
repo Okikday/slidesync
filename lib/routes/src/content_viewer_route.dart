@@ -1,11 +1,9 @@
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/data/models/file_path.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/features/study/ui/screens/image_viewer.dart';
 import 'package:slidesync/features/study/ui/screens/link_viewer/drive_listing_view.dart';
 import 'package:slidesync/features/study/ui/screens/pdf_doc_viewer.dart';
-import 'package:slidesync/routes/transition.dart';
 
 final contentViewerRoutes = [
   GoRoute(

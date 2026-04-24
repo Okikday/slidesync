@@ -1,5 +1,5 @@
 import 'package:path/path.dart' as p;
-import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 
 class ContentCardActions {

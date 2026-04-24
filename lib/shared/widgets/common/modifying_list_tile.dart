@@ -67,20 +67,21 @@ class ModifyingListTile extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                      titleWidget ??  CustomText(
-                          title,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 13.5,
-                          color: ref.onBackground,
-                          overflow: TextOverflow.fade,
-                        ),
+                        titleWidget ??
+                            CustomText(
+                              title,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13.5,
+                              color: ref.onBackground,
+                              overflow: TextOverflow.fade,
+                            ),
                         ConstantSizing.columnSpacing(4),
                         subtitleWidget ?? CustomText(subtitle, fontSize: 12, color: ref.supportingText),
                       ],
                     ),
                   ),
 
-                  if (trailing != null) trailing!,
+                  ?trailing,
                 ],
               ),
             ),

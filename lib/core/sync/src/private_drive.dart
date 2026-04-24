@@ -1,3 +1,5 @@
+// ignore_for_file: unused_element
+
 part of '../gdrive_manager.dart';
 
 /// Handles all private Drive operations — personal user backup and sync.

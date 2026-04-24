@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:isar_community/isar.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/data/models/course/course.dart';
@@ -7,12 +5,12 @@ import 'package:slidesync/data/models/progress_track_models/course_track.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 
 class CourseRepo {
-  static final IsarData<Course> _isarData = IsarData.instance<Course>();
-  static Future<Isar> get _isar async => await IsarData.isarFuture;
-  static Future<Isar> get isar async => await _isar;
+  static final IsarData<Course> _isarData = IsarData<Course>();
   static IsarData<Course> get isarData => _isarData;
+  static Isar get _isar => _isarData.isarInstance;
+  static Isar get isar => _isar;
 
-  static Future<QueryBuilder<Course, Course, QFilterCondition>> get filter async => (await _isar).courses.filter();
+  static QueryBuilder<Course, Course, QFilterCondition> get filter => _isar.courses.filter();
 
   // static Future<QueryBuilder<Course, Course, QAfterFilterCondition>> _queryById(String courseId) async {
   //   return (await _isarData.query<Course>((q) => q.idGreaterThan(0))).filter().uidEqualTo(courseId);
@@ -26,16 +24,19 @@ class CourseRepo {
 
   static Future<int> addCourse(Course course) async {
     if (course.uid.trim().isEmpty || course.uid == "_") return -1;
-    final existingCourseTrack = await (await CourseTrackRepo.filter).uidEqualTo(course.uid).findFirst();
+
+    final existingCourseTrack = await (CourseTrackRepo.filter).uidEqualTo(course.uid).findFirst();
+
     if (existingCourseTrack == null) {
       final newCourseTrack = CourseTrack.create(
         courseId: course.uid,
         title: course.title,
         description: course.description,
       );
-      return await CourseTrackRepo.isarData.store(newCourseTrack);
+      await CourseTrackRepo.isarData.store(newCourseTrack);
     }
 
+    // Always save the course here so it actually enters the DB
     return await _isarData.store(course);
   }
 
@@ -48,25 +49,20 @@ class CourseRepo {
   // static Future<Stream<List<Course>>> watchAllCoursesLazily() async => await _isarData.watchAllLazily();
 
   static Future<Course?> getCourseByUid(String courseId) async {
-    return await (await _isar).courses.filter().uidEqualTo(courseId).findFirst();
+    return await _isar.courses.filter().uidEqualTo(courseId).findFirst();
   }
 
   static Stream<Course?> watchCourseById(String courseId) async* {
-    yield* (await _isar).courses
-        .filter()
-        .uidEqualTo(courseId)
-        .watch(fireImmediately: true)
-        .map((list) => list.firstOrNull);
+    yield* _isar.courses.filter().uidEqualTo(courseId).watch(fireImmediately: true).map((list) => list.firstOrNull);
   }
 
   static Future<Course?> deleteCourseById(String courseId) async {
-    final isar = await _isar;
     final Course? course = await getCourseByUid(courseId);
-    return await isar.writeTxn<Course?>(() async {
+    return await _isar.writeTxn<Course?>(() async {
       if (course != null) {
-        final idQuery = (await filter).uidEqualTo(courseId);
+        final idQuery = (filter).uidEqualTo(courseId);
         await idQuery.deleteFirst();
-        await (await CourseTrackRepo.filter).uidEqualTo(courseId).deleteFirst();
+        await (CourseTrackRepo.filter).uidEqualTo(courseId).deleteFirst();
       }
       return course;
     });

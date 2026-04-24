@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/data/models/course/course.dart';
-import 'package:slidesync/data/models/file_path.dart';
+import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:slidesync/data/models/progress_track_models/course_track.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 
@@ -96,7 +96,7 @@ class ListCourseCard extends ConsumerWidget {
               child: ListCourseCardTitleColumn(
                 courseCode: course.courseCode,
                 courseName: course.courseName,
-                categoriesCount: course.collections.length,
+                categoriesCount: course.modules.length,
                 hasImage: course.metadata.thumbnail?.containsAnyPath ?? false,
               ),
             ),
@@ -169,7 +169,7 @@ class _ListCourseCardIconState extends ConsumerState<ListCourseCardIcon> {
                 child: BuildImagePathWidget(
                   height: 64,
                   width: 64,
-                  fileDetails: FilePath(local: widget.course.thumbnailPath),
+                  fileDetails: FilePath(local: widget.course.localThumbnailPath),
                   fallbackWidget: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Center(

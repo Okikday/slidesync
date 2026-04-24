@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
-import 'package:slidesync/data/models/file_path.dart';
+import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/browse/course/providers/course_details_provider.dart';
@@ -74,25 +74,27 @@ class CourseDetailsHeaderContent extends ConsumerWidget {
     final shapeSize = kToolbarHeight * 2;
     final courseDetail = ref.watch(
       CourseProviders.courseProvider(courseId).select(
-        (s) => s.whenData((cb) => (title: cb.title, imageLocationJson: cb.thumbnailPath, description: cb.description)),
+        (s) => s.whenData(
+          (cb) => (
+            courseName: cb.courseName,
+            courseCode: cb.courseCode,
+            thumbnailPath: cb.localThumbnailPath,
+            description: cb.description,
+          ),
+        ),
       ),
     );
 
     return TopPadding(
       child: courseDetail.when(
         data: (data) {
-          final courseTitle = data.title;
-          final courseCode = courseTitle.courseCode;
-          final courseName = courseTitle.courseName;
-          final description = data.description;
-          final imageLocationJson = data.imageLocationJson;
           return CourseDetailsHeaderContentChild(
             courseId: courseId,
-            courseCode: courseCode,
+            courseCode: data.courseCode,
             shapeSize: shapeSize,
-            thumbnailPath: imageLocationJson,
-            courseName: courseName,
-            description: description,
+            thumbnailPath: data.thumbnailPath,
+            courseName: data.courseName,
+            description: data.description,
           );
         },
         error: (e, st) => Icon(Icons.error),

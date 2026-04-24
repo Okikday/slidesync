@@ -6,16 +6,14 @@ import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
-import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
-import 'package:slidesync/core/storage/isar_data/isar_schemas.dart';
 import 'package:slidesync/core/storage/native/app_paths.dart';
 import 'package:slidesync/core/utils/smart_isolate.dart';
 import 'package:slidesync/core/utils/string_utils.dart';
 import 'package:slidesync/data/models/module/module.dart';
-import 'package:slidesync/data/models/module_content/module_content_metadata.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
-import 'package:slidesync/data/models/file_path.dart';
+import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:slidesync/core/utils/crypto_utils.dart';
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
@@ -39,7 +37,7 @@ Future<List<Map<String, dynamic>>> storeContents(
       List<AddContentResult> addContentResultList = [];
       final Result outcome = await Result.tryRunAsync(() async {
         BackgroundIsolateBinaryMessenger.ensureInitialized(args.token);
-        await IsarData.initialize(collectionSchemas: isarSchemas, inspector: false);
+        await IsarData.initializeDefault(inspector: false);
 
         final List<ModuleContent> contentsToAdd = [];
         final Set<String> seenHashesSet = <String>{};
@@ -102,7 +100,7 @@ Future<List<Map<String, dynamic>>> storeContents(
                 metadata: ModuleContentMetadata.create(
                   originalFileName: p.basename(filePath),
                   contentOrigin: ContentOrigin.local,
-                  thumbnails: FilePath(local: previewPath ?? ''),
+                  thumbnail: FilePath(local: previewPath ?? ''),
                 ),
               );
 
@@ -124,7 +122,7 @@ Future<List<Map<String, dynamic>>> storeContents(
                   path: sameHashedContent.path,
                   fileSizeInBytes: fileSize,
                   type: contentType,
-                  metadata: metadata.copyWith(originalFileName: fileName),
+                  metadata: metadata?.copyWith(originalFileName: fileName),
                 );
                 contentsToAdd.add(content);
                 seenHashesSet.add(hash);

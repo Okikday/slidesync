@@ -14,14 +14,13 @@ const ModuleMetadataSchema = Schema(
   id: 4108555981307664566,
   properties: {
     r'author': PropertySchema(id: 0, name: r'author', type: IsarType.string),
-    r'hashCode': PropertySchema(id: 1, name: r'hashCode', type: IsarType.long),
     r'rawColor': PropertySchema(
-      id: 2,
+      id: 1,
       name: r'rawColor',
       type: IsarType.string,
     ),
     r'thumbnail': PropertySchema(
-      id: 3,
+      id: 2,
       name: r'thumbnail',
       type: IsarType.object,
 
@@ -71,10 +70,9 @@ void _moduleMetadataSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.author);
-  writer.writeLong(offsets[1], object.hashCode);
-  writer.writeString(offsets[2], object.rawColor);
+  writer.writeString(offsets[1], object.rawColor);
   writer.writeObject<FilePath>(
-    offsets[3],
+    offsets[2],
     allOffsets,
     FilePathSchema.serialize,
     object.thumbnail,
@@ -87,13 +85,14 @@ ModuleMetadata _moduleMetadataDeserialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = ModuleMetadata();
-  object.author = reader.readStringOrNull(offsets[0]);
-  object.rawColor = reader.readStringOrNull(offsets[2]);
-  object.thumbnail = reader.readObjectOrNull<FilePath>(
-    offsets[3],
-    FilePathSchema.deserialize,
-    allOffsets,
+  final object = ModuleMetadata(
+    author: reader.readStringOrNull(offsets[0]),
+    rawColor: reader.readStringOrNull(offsets[1]),
+    thumbnail: reader.readObjectOrNull<FilePath>(
+      offsets[2],
+      FilePathSchema.deserialize,
+      allOffsets,
+    ),
   );
   return object;
 }
@@ -108,10 +107,8 @@ P _moduleMetadataDeserializeProp<P>(
     case 0:
       return (reader.readStringOrNull(offset)) as P;
     case 1:
-      return (reader.readLong(offset)) as P;
-    case 2:
       return (reader.readStringOrNull(offset)) as P;
-    case 3:
+    case 2:
       return (reader.readObjectOrNull<FilePath>(
             offset,
             FilePathSchema.deserialize,
@@ -280,61 +277,6 @@ extension ModuleMetadataQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(property: r'author', value: ''),
-      );
-    });
-  }
-
-  QueryBuilder<ModuleMetadata, ModuleMetadata, QAfterFilterCondition>
-  hashCodeEqualTo(int value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'hashCode', value: value),
-      );
-    });
-  }
-
-  QueryBuilder<ModuleMetadata, ModuleMetadata, QAfterFilterCondition>
-  hashCodeGreaterThan(int value, {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'hashCode',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ModuleMetadata, ModuleMetadata, QAfterFilterCondition>
-  hashCodeLessThan(int value, {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'hashCode',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ModuleMetadata, ModuleMetadata, QAfterFilterCondition>
-  hashCodeBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'hashCode',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
       );
     });
   }

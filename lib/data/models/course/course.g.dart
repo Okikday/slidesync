@@ -78,9 +78,9 @@ const CourseSchema = CollectionSchema(
     ),
   },
   links: {
-    r'collections': LinkSchema(
-      id: -9118433930885973565,
-      name: r'collections',
+    r'modules': LinkSchema(
+      id: 3215100593441357087,
+      name: r'modules',
       target: r'Module',
       single: false,
     ),
@@ -141,20 +141,21 @@ Course _courseDeserialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = Course();
-  object.createdAt = reader.readDateTime(offsets[0]);
-  object.description = reader.readString(offsets[1]);
-  object.id = id;
-  object.lastModified = reader.readDateTime(offsets[3]);
-  object.metadata =
-      reader.readObjectOrNull<CourseMetadata>(
-        offsets[4],
-        CourseMetadataSchema.deserialize,
-        allOffsets,
-      ) ??
-      CourseMetadata();
-  object.title = reader.readString(offsets[5]);
-  object.uid = reader.readString(offsets[6]);
+  final object = Course(
+    createdAt: reader.readDateTime(offsets[0]),
+    description: reader.readString(offsets[1]),
+    id: id,
+    lastModified: reader.readDateTime(offsets[3]),
+    metadata:
+        reader.readObjectOrNull<CourseMetadata>(
+          offsets[4],
+          CourseMetadataSchema.deserialize,
+          allOffsets,
+        ) ??
+        CourseMetadata(),
+    title: reader.readString(offsets[5]),
+    uid: reader.readString(offsets[6]),
+  );
   return object;
 }
 
@@ -195,17 +196,12 @@ Id _courseGetId(Course object) {
 }
 
 List<IsarLinkBase<dynamic>> _courseGetLinks(Course object) {
-  return [object.collections];
+  return [object.modules];
 }
 
 void _courseAttach(IsarCollection<dynamic> col, Id id, Course object) {
   object.id = id;
-  object.collections.attach(
-    col,
-    col.isar.collection<Module>(),
-    r'collections',
-    id,
-  );
+  object.modules.attach(col, col.isar.collection<Module>(), r'modules', id);
 }
 
 extension CourseByIndex on IsarCollection<Course> {
@@ -1127,51 +1123,53 @@ extension CourseQueryObject on QueryBuilder<Course, Course, QFilterCondition> {
 }
 
 extension CourseQueryLinks on QueryBuilder<Course, Course, QFilterCondition> {
-  QueryBuilder<Course, Course, QAfterFilterCondition> collections(
+  QueryBuilder<Course, Course, QAfterFilterCondition> modules(
     FilterQuery<Module> q,
   ) {
     return QueryBuilder.apply(this, (query) {
-      return query.link(q, r'collections');
+      return query.link(q, r'modules');
     });
   }
 
-  QueryBuilder<Course, Course, QAfterFilterCondition> collectionsLengthEqualTo(
+  QueryBuilder<Course, Course, QAfterFilterCondition> modulesLengthEqualTo(
     int length,
   ) {
     return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'collections', length, true, length, true);
+      return query.linkLength(r'modules', length, true, length, true);
     });
   }
 
-  QueryBuilder<Course, Course, QAfterFilterCondition> collectionsIsEmpty() {
+  QueryBuilder<Course, Course, QAfterFilterCondition> modulesIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'collections', 0, true, 0, true);
+      return query.linkLength(r'modules', 0, true, 0, true);
     });
   }
 
-  QueryBuilder<Course, Course, QAfterFilterCondition> collectionsIsNotEmpty() {
+  QueryBuilder<Course, Course, QAfterFilterCondition> modulesIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'collections', 0, false, 999999, true);
+      return query.linkLength(r'modules', 0, false, 999999, true);
     });
   }
 
-  QueryBuilder<Course, Course, QAfterFilterCondition> collectionsLengthLessThan(
+  QueryBuilder<Course, Course, QAfterFilterCondition> modulesLengthLessThan(
     int length, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'collections', 0, true, length, include);
+      return query.linkLength(r'modules', 0, true, length, include);
     });
   }
 
-  QueryBuilder<Course, Course, QAfterFilterCondition>
-  collectionsLengthGreaterThan(int length, {bool include = false}) {
+  QueryBuilder<Course, Course, QAfterFilterCondition> modulesLengthGreaterThan(
+    int length, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.linkLength(r'collections', length, include, 999999, true);
+      return query.linkLength(r'modules', length, include, 999999, true);
     });
   }
 
-  QueryBuilder<Course, Course, QAfterFilterCondition> collectionsLengthBetween(
+  QueryBuilder<Course, Course, QAfterFilterCondition> modulesLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -1179,7 +1177,7 @@ extension CourseQueryLinks on QueryBuilder<Course, Course, QFilterCondition> {
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.linkLength(
-        r'collections',
+        r'modules',
         lower,
         includeLower,
         upper,

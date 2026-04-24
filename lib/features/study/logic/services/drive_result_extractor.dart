@@ -1,10 +1,9 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
-import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/module_content/module_content_metadata.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
-import 'package:slidesync/data/models/file_path.dart';
+import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/features/study/logic/services/drive_browser.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
@@ -226,7 +225,7 @@ Future<ModuleContent?> _createCourseContentFromDriveFile(
     type: determinedType,
     description: driveFile.description ?? '',
     metadata: ModuleContentMetadata.create(
-      thumbnails: FilePath(url: metadata['thumbnailLink'] as String? ?? ''),
+      thumbnail: FilePath(url: metadata['thumbnailLink'] as String? ?? ''),
       fields: {'previewUrl': metadata['thumbnailLink'], 'resolved': true, 'size': driveFile.size},
     ),
   );

@@ -1,5 +1,3 @@
-import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/settings/ui/screens/settings_view.dart';

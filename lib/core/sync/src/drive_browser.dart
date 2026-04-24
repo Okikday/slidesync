@@ -1,3 +1,5 @@
+// ignore_for_file: unused_element
+
 part of '../gdrive_manager.dart';
 
 /// Handles all read-only Drive operations using a public API key.

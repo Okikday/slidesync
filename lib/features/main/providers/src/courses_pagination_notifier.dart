@@ -7,7 +7,7 @@ import 'dart:ui';
 import 'package:flutter/services.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:isar_community/isar.dart';
-import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
@@ -74,8 +74,7 @@ class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
   Future<List<Course>> fetchPage(int pageKey, int limit) async {
     // Initialize count if first run
     if (count <= 0) {
-      final isar = await CourseRepo.isar;
-      Future.microtask(() async => count = await isar.courses.count());
+      Future.microtask(() async => count = await CourseRepo.isar.courses.count());
     }
 
     if (_fetching) {
@@ -115,7 +114,7 @@ class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
       return;
     }
 
-    final isar = await CourseRepo.isar;
+    final isar = CourseRepo.isar;
     final presentCount = await isar.courses.count();
 
     isUpdating = true;
@@ -137,7 +136,7 @@ class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
         final coursesLoadedOnPages = coursesOnPagesList.expand((i) => i).toList();
         final coursesOnPagesMap = {for (final course in coursesLoadedOnPages) course.id: course};
 
-        final filterRepo = await CourseRepo.filter;
+        final filterRepo = CourseRepo.filter;
         final coursesFromIsar = await filterRepo.anyOf(coursesLoadedOnPages, (a, b) => a.idEqualTo(b.id)).findAll();
 
         final Map<int, Course> modifiedCoursesMap = {};
@@ -211,7 +210,7 @@ class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
 
   Future<List<Course>> _doFetch(int pageKey, int limit, CourseSortOption sortOption) async {
     final offset = (pageKey - 1) * limit;
-    final query = (await CourseRepo.isar).courses.where();
+    final query = (CourseRepo.isar).courses.where();
 
     return switch (sortOption) {
       CourseSortOption.nameAsc => await query.sortByTitle().offset(offset).limit(limit).findAll(),

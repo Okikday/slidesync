@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/data/models/file_path.dart';
+import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/add_link_actions.dart';
 import 'package:slidesync/features/browse/shared/usecases/contents/retrieve_content_uc.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';

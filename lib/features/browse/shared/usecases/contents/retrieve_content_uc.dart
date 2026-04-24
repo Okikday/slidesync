@@ -1,5 +1,7 @@
 import 'dart:convert';
+// ignore: depend_on_referenced_packages
 import 'package:html/dom.dart' show Document, Element;
+// ignore: depend_on_referenced_packages
 import 'package:html/parser.dart' as parser show parse;
 import 'package:http/http.dart' as http show get;
 

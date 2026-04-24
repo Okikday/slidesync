@@ -77,7 +77,7 @@ class DriveSourceFingerprint {
 
   bool matchesContent(ModuleContent content) {
     final metadata = content.metadata;
-    final fields = metadata.fields ?? const <String, dynamic>{};
+    final fields = metadata?.fields ?? const <String, dynamic>{};
 
     String? fieldValue(String key) => fields[key]?.toString().trim().toLowerCase();
 
@@ -96,7 +96,7 @@ class DriveSourceFingerprint {
     if (md5Checksum != null && md5Checksum!.isNotEmpty && storedMd5Checksum == md5Checksum) return true;
 
     final storedTitle = _normalizeToken(content.title);
-    final storedOriginalTitle = _normalizeToken(p.basenameWithoutExtension(metadata.originalFileName ?? ''));
+    final storedOriginalTitle = _normalizeToken(p.basenameWithoutExtension(metadata?.originalFileName ?? ''));
     final titleMatches =
         normalizedTitle.isNotEmpty && (storedTitle == normalizedTitle || storedOriginalTitle == normalizedTitle);
     if (!titleMatches) return false;
@@ -105,7 +105,7 @@ class DriveSourceFingerprint {
 
     if (normalizedExtension.isNotEmpty) {
       final contentExtension = _normalizeToken(
-        p.extension(metadata.originalFileName ?? content.title).replaceFirst('.', ''),
+        p.extension(metadata?.originalFileName ?? content.title).replaceFirst('.', ''),
       );
       if (contentExtension.isNotEmpty && contentExtension != normalizedExtension) {
         return false;

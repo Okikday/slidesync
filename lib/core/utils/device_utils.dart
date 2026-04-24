@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import '../constants/src/enums.dart';
+import '../constants/src/enums/enums.dart';
 
 class DeviceUtils {
   static bool isDesktop() {

@@ -1,4 +1,4 @@
-import 'enums.dart';
+import 'enums/enums.dart';
 
 typedef CourseTitleRecord<String> = ({String courseName, String courseCode});
 

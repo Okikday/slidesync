@@ -13,9 +13,8 @@ const FilePathSchema = Schema(
   name: r'FilePath',
   id: 5252729203139978938,
   properties: {
-    r'hashCode': PropertySchema(id: 0, name: r'hashCode', type: IsarType.long),
-    r'local': PropertySchema(id: 1, name: r'local', type: IsarType.string),
-    r'url': PropertySchema(id: 2, name: r'url', type: IsarType.string),
+    r'local': PropertySchema(id: 0, name: r'local', type: IsarType.string),
+    r'url': PropertySchema(id: 1, name: r'url', type: IsarType.string),
   },
 
   estimateSize: _filePathEstimateSize,
@@ -51,9 +50,8 @@ void _filePathSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeLong(offsets[0], object.hashCode);
-  writer.writeString(offsets[1], object.local);
-  writer.writeString(offsets[2], object.url);
+  writer.writeString(offsets[0], object.local);
+  writer.writeString(offsets[1], object.url);
 }
 
 FilePath _filePathDeserialize(
@@ -63,8 +61,8 @@ FilePath _filePathDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = FilePath(
-    local: reader.readStringOrNull(offsets[1]),
-    url: reader.readStringOrNull(offsets[2]),
+    local: reader.readStringOrNull(offsets[0]),
+    url: reader.readStringOrNull(offsets[1]),
   );
   return object;
 }
@@ -77,10 +75,8 @@ P _filePathDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readLong(offset)) as P;
-    case 1:
       return (reader.readStringOrNull(offset)) as P;
-    case 2:
+    case 1:
       return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -89,65 +85,6 @@ P _filePathDeserializeProp<P>(
 
 extension FilePathQueryFilter
     on QueryBuilder<FilePath, FilePath, QFilterCondition> {
-  QueryBuilder<FilePath, FilePath, QAfterFilterCondition> hashCodeEqualTo(
-    int value,
-  ) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'hashCode', value: value),
-      );
-    });
-  }
-
-  QueryBuilder<FilePath, FilePath, QAfterFilterCondition> hashCodeGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'hashCode',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<FilePath, FilePath, QAfterFilterCondition> hashCodeLessThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'hashCode',
-          value: value,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<FilePath, FilePath, QAfterFilterCondition> hashCodeBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'hashCode',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-        ),
-      );
-    });
-  }
-
   QueryBuilder<FilePath, FilePath, QAfterFilterCondition> localIsNull() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(

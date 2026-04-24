@@ -1,134 +1,68 @@
 import 'dart:async';
 import 'dart:developer';
 import 'package:isar_community/isar.dart';
-import 'package:slidesync/core/storage/isar_data/isar_schemas.dart';
+import 'package:slidesync/core/storage/isar_data/default_isar_schemas.dart';
+import 'package:slidesync/core/storage/isar_data/src/isar_data_access.dart';
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 
-/// Utility class for generic Isar database operations.
-/// Pass in the Isar CollectionSchema for your model to interact with the DB easily.
-class IsarData<T> {
-  // A cache of helpers, keyed by the model Type
-  static final Map<Type, IsarData> _cache = {};
+Isar? _openDb;
 
-  // Static shared future for the database
-  static Future<Isar>? _openDb;
+Map<String, Isar> _customDbs = <String, Isar>{};
 
-  // Singleton accessor per type
-  static IsarData<T> instance<T>() {
-    if (!_cache.containsKey(T)) {
-      _cache[T] = IsarData<T>._();
-    }
-    return _cache[T]! as IsarData<T>;
+/// Initializes the shared database only once
+Future<Isar> _openDefault({bool inspector = true}) async {
+  if (_openDb == null) {
+    final dir = await FileUtils.getAppDocumentsDirectory();
+    _openDb = await Isar.open(defaultIsarSchemas, directory: dir.path, name: 'default', inspector: inspector);
+    log("Initialized Isar");
   }
+  return _openDb!;
+}
 
-  IsarData._();
+Future<void> _closeDefault() async {
+  await _openDb?.close();
+  _openDb = null;
+}
 
-  /// Initializes the shared database only once
-  static Future<void> initialize({
-    String dbName = 'default',
-    List<CollectionSchema> collectionSchemas = const [],
-    bool inspector = true,
-  }) async {
-    if (_openDb == null) {
-      final dir = await FileUtils.getAppDocumentsDirectory();
-      _openDb = Isar.open(collectionSchemas, directory: dir.path, name: dbName, inspector: inspector);
-      log("Initialized Isar");
-    }
-  }
+Future<Isar> _openCustom({
+  required String dbName,
+  required List<CollectionSchema> collectionSchemas,
+  bool inspector = true,
+}) async {
+  final dir = await FileUtils.getAppDocumentsDirectory();
+  final isar = await Isar.open(collectionSchemas, directory: dir.path, name: dbName, inspector: inspector);
+  _customDbs[dbName] = isar;
+  log("Initialized custom Isar: $dbName");
+  return isar;
+}
 
-  static Future<void> initializeDefault({
-    List<CollectionSchema> collectionSchemas = isarSchemas,
-    bool inspector = true,
-  }) async => await initialize(collectionSchemas: collectionSchemas, inspector: inspector);
-
-  /// Get the opened Isar instance (internal use)
-  static Future<Isar> get isarFuture async => await _openDb!;
-
-  /// Store or update a single object.
-  Future<int> store(T object) async {
-    final isar = await isarFuture;
-    return await isar.writeTxn(() => isar.collection<T>().put(object));
-  }
-
-  /// Store or update multiple objects.
-  Future<List<int>> storeAll(List<T> objects) async {
-    final isar = await isarFuture;
-    return await isar.writeTxn(() => isar.collection<T>().putAll(objects));
-  }
-
-  /// Retrieve an object by its ID.
-  Future<T?> getById(int id) async {
-    final isar = await isarFuture;
-    return await isar.collection<T>().get(id);
-  }
-
-  /// Retrieve all objects in the collection.
-  Future<List<T>> getAll() async {
-    final isar = await isarFuture;
-    return await isar.collection<T>().where().findAll();
-  }
-
-  /// Delete an object by its ID.
-  Future<bool> deleteById(int id) async {
-    final isar = await isarFuture;
-    return await isar.writeTxn(() => isar.collection<T>().delete(id));
-  }
-
-  /// Delete multiple objects by their IDs.
-  Future<int> deleteAll(List<int> ids) async {
-    final isar = await isarFuture;
-    return await isar.writeTxn(() => isar.collection<T>().deleteAll(ids));
-  }
-
-  /// Query builder: run a custom Isar Query.
-  Future<QueryBuilder<T, R, QAfterWhereClause>> query<R>(
-    QueryBuilder<T, R, QAfterWhereClause> Function(QueryBuilder<T, R, QWhereClause>) builder,
-  ) async {
-    final isar = await isarFuture;
-    final queryBuilder = isar.collection<T>().where() as QueryBuilder<T, R, QWhereClause>;
-    return builder(queryBuilder);
-  }
-
-  /// Stream all objects in the collection in real-time.
-  Stream<List<T>> watchAll({bool fireImmediately = true}) async* {
-    final isar = await isarFuture;
-    yield* isar.collection<T>().where().watch(fireImmediately: fireImmediately);
-  }
-
-  // Future<Stream<List<T>>> watchAllLazily({bool fireImmediately = true}) async {
-  //   final isar = await isarFuture;
-  //   return isar.collection<T>().where().watchLazy(fireImmediately: fireImmediately).asyncMap((_) => getAll());
-  // }
-
-  Future<Stream<void>> watchForChanges({bool fireImmediately = true}) async {
-    final isar = await isarFuture;
-    return isar.collection<T>().where().watchLazy(fireImmediately: fireImmediately);
-  }
-
-  Future<Stream<void>> watchAllForChanges() async {
-    final isar = await isarFuture;
-    return isar.collection<T>().where().watchLazy(fireImmediately: true);
-  }
-
-  /// Stream specific object by ID in real-time.
-  Stream<T?> watchById(int id, {bool fireImmediately = true}) async* {
-    final isar = await isarFuture;
-    yield* isar.collection<T>().watchObject(id, fireImmediately: fireImmediately);
-  }
-
-  /// Stream query results in real-time.
-  Stream<List<T>> watchQuery(
-    QueryBuilder<T, T, QAfterWhereClause> Function(QueryBuilder<T, T, QWhereClause>) builder,
-  ) async* {
-    final isar = await isarFuture;
-    final queryBuilder = isar.collection<T>().where();
-    yield* builder(queryBuilder).watch(fireImmediately: true);
-  }
-
-  /// Close the database.
-  static Future<void> close() async {
-    final isar = await _openDb!;
+Future<void> _closeCustom(String dbName) async {
+  final isar = _customDbs[dbName];
+  if (isar != null) {
     await isar.close();
-    _openDb = null;
+    _customDbs.remove(dbName);
+    log("Closed custom Isar: $dbName");
   }
+}
+
+class IsarData<T> extends IsarDataAccess<T> {
+  @override
+  Isar get isarInstance => isar;
+
+  static Isar get isar {
+    if (_openDb == null) {
+      throw Exception("Isar database not initialized. Call IsarData.initialize() before using the database.");
+    }
+    return _openDb!;
+  }
+
+  static Future<Isar> initializeDefault({bool inspector = true}) async => await _openDefault(inspector: inspector);
+  static Future<Isar> initializeCustom({
+    required String dbName,
+    required List<CollectionSchema> collectionSchemas,
+    bool inspector = true,
+  }) async => await _openCustom(dbName: dbName, collectionSchemas: collectionSchemas, inspector: inspector);
+
+  static Future<void> closeDefault() async => await _closeDefault();
+  static Future<void> closeCustom(String dbName) async => await _closeCustom(dbName);
 }

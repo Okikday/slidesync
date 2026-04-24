@@ -3,24 +3,23 @@ import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/data/models/progress_track_models/course_track.dart';
 
 class CourseTrackRepo {
-  static final IsarData<CourseTrack> _isarData = IsarData.instance<CourseTrack>();
-  static Future<Isar> get _isar async => await IsarData.isarFuture;
-  static Future<Isar> get isar async => await _isar;
+  static final IsarData<CourseTrack> _isarData = IsarData<CourseTrack>();
   static IsarData<CourseTrack> get isarData => _isarData;
+  static Isar get _isar => _isarData.isarInstance;
+  static Isar get isar => _isar;
 
-  static Future<QueryBuilder<CourseTrack, CourseTrack, QFilterCondition>> get filter async =>
-      (await _isar).courseTracks.filter();
+  static QueryBuilder<CourseTrack, CourseTrack, QFilterCondition> get filter => _isar.courseTracks.filter();
 
   // static Future<QueryBuilder<CourseTrack, CourseTrack, QAfterFilterCondition>> _queryByCourseId(String courseId) async {
   //   return (await _isarData.query<CourseTrack>((q) => q.idGreaterThan(0))).filter().uidEqualTo(courseId);
   // }
 
   static Future<CourseTrack?> getByCourseId(String courseId) async {
-    return await (await _isar).courseTracks.filter().uidEqualTo(courseId).findFirst();
+    return await _isar.courseTracks.filter().uidEqualTo(courseId).findFirst();
   }
 
   static Stream<CourseTrack?> watchByCourseId(String courseId) async* {
-    yield* (await _isar).courseTracks
+    yield* _isar.courseTracks
         .filter()
         .uidEqualTo(courseId)
         .watch(fireImmediately: true)

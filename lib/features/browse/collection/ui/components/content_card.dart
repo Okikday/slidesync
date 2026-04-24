@@ -9,7 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:heroine/heroine.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/core/constants/src/enums.dart';
+import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/features/browse/collection/ui/components/content_card_context_menu.dart';
@@ -17,7 +17,7 @@ import 'package:slidesync/features/browse/shared/usecases/contents/retrieve_cont
 import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
 import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
 
-import 'package:slidesync/data/models/file_path.dart';
+import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:slidesync/features/browse/collection/ui/actions/content_card_actions.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
