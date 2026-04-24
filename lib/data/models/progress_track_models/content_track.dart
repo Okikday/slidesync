@@ -1,158 +1,67 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:convert';
+import 'package:dart_mappable/dart_mappable.dart';
 
-import 'package:collection/collection.dart';
 import 'package:isar_community/isar.dart';
+import 'package:slidesync/data/models/file_path/file_path.dart';
 
+part 'content_track.mapper.dart';
 part 'content_track.g.dart';
 
-@collection
-class ContentTrack {
-  Id id = Isar.autoIncrement;
-
+@MappableClass()
+@Collection(ignore: {'copyWith'})
+class ContentTrack with ContentTrackMappable {
+  Id id;
   @Index(unique: true)
-  late String uid;
-
+  String uid;
   @Index()
-  late String parentId;
+  String courseId;
+  String title;
+  String description;
+  double progress;
+  FilePath thumbnail;
+  String? extraDetail;
+  List<String> pages;
+  DateTime lastRead;
 
-  String? title;
-  String? description;
+  ContentTrack({
+    this.id = Isar.autoIncrement,
+    required this.uid,
+    required this.courseId,
+    required this.title,
+    required this.description,
+    required this.progress,
+    required this.extraDetail,
+    required this.pages,
+    required this.lastRead,
+    required this.thumbnail,
+  });
 
-  @Index()
-  late String xxh3Hash;
-  double? progress;
-  String? additionalDetail;
-  List<String> pages = <String>[];
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is ContentTrack && runtimeType == other.runtimeType && uid == other.uid;
 
-  DateTime? lastRead;
+  @override
+  int get hashCode => uid.hashCode;
 
-  String metadataJson = '{}';
-
-  ContentTrack();
-
-  factory ContentTrack.create({
-    required String contentId,
-    required String parentId,
-    String? title,
+  static ContentTrack create({
+    required String uid,
+    required String courseId,
+    required String title,
     String? description,
-    required String xxh3Hash,
-    double? progress,
-    String? additionalDetail,
-    List<String>? pages,
-    String? metadataJson,
+    required double progress,
+    String? extraDetail,
+    List<String> pages = const [],
     DateTime? lastRead,
-  }) {
-    return ContentTrack()
-      ..uid = contentId
-      ..parentId = parentId
-      ..title = title
-      ..description = description
-      ..xxh3Hash = xxh3Hash
-      ..progress = progress
-      ..additionalDetail = additionalDetail
-      ..pages = pages ?? <String>[]
-      ..lastRead = lastRead
-      ..metadataJson = metadataJson ?? '{}';
-  }
-
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'id': id,
-      'contentId': uid,
-      'parentId': parentId,
-      'title': title,
-      'description': description,
-      'xxh3Hash': xxh3Hash,
-      'progress': progress,
-      'additionalDetail': additionalDetail,
-      'pages': pages,
-      'lastRead': lastRead?.toIso8601String(),
-      'metadataJson': metadataJson,
-    };
-  }
-
-  factory ContentTrack.fromMap(Map<String, dynamic> map) {
-    return ContentTrack()
-      ..id = map['id'] as int
-      ..uid = map['contentId'] as String
-      ..parentId = map['parentId'] as String
-      ..title = map['title'] as String?
-      ..description = map['description'] as String?
-      ..xxh3Hash = map['xxh3Hash'] as String? ?? ''
-      ..progress = map['progress'] as double? ?? 0.0
-      ..additionalDetail = map['additionalDetail'] as String? ?? ''
-      ..pages = map['pages'] as List<String>? ?? <String>[]
-      ..lastRead = DateTime.tryParse(map['lastRead'] as String? ?? '') ?? DateTime.now()
-      ..metadataJson = map['metadataJson'] ?? '{}';
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory ContentTrack.fromJson(String source) => ContentTrack.fromMap(json.decode(source) as Map<String, dynamic>);
-
-  @override
-  String toString() {
-    return 'ProgressTrackModel(id: $id, contentId: $uid, parentId: $parentId, title: $title, description: $description, xxh3Hash: $xxh3Hash, progress: $progress, additionalDetail: $additionalDetail, pages: $pages, lastRead: $lastRead, metadata: $metadataJson)';
-  }
-
-  @override
-  bool operator ==(covariant ContentTrack other) {
-    if (identical(this, other)) return true;
-
-    return other.id == id &&
-        other.uid == uid &&
-        other.parentId == parentId &&
-        other.title == title &&
-        other.description == description &&
-        other.xxh3Hash == xxh3Hash &&
-        other.progress == progress &&
-        other.additionalDetail == additionalDetail &&
-        const ListEquality().equals(other.pages, pages) &&
-        other.lastRead == lastRead &&
-        other.metadataJson == metadataJson;
-  }
-
-  @override
-  int get hashCode {
-    return id.hashCode ^
-        uid.hashCode ^
-        parentId.hashCode ^
-        title.hashCode ^
-        description.hashCode ^
-        xxh3Hash.hashCode ^
-        progress.hashCode ^
-        additionalDetail.hashCode ^
-        pages.hashCode ^
-        lastRead.hashCode ^
-        metadataJson.hashCode;
-  }
-}
-
-extension ProgressTrackModelExtension on ContentTrack {
-  ContentTrack copyWith({
-    Id? id,
-    String? contentId,
-    String? parentId,
-    String? title,
-    String? description,
-    String? xxh3Hash,
-    double? progress,
-    String? additionalDetail,
-    List<String>? pages,
-    DateTime? lastRead,
-    String? metadataJson,
-  }) {
-    return this
-      ..uid = contentId ?? uid
-      ..parentId = parentId ?? this.parentId
-      ..title = title ?? this.title
-      ..description = description ?? this.description
-      ..xxh3Hash = xxh3Hash ?? this.xxh3Hash
-      ..progress = progress ?? this.progress
-      ..additionalDetail = additionalDetail ?? this.additionalDetail
-      ..pages = pages ?? this.pages
-      ..lastRead = lastRead
-      ..metadataJson = metadataJson ?? this.metadataJson;
-  }
+    FilePath? thumbnail,
+  }) => ContentTrack(
+    uid: uid,
+    courseId: courseId,
+    title: title,
+    description: description ?? "",
+    progress: progress,
+    extraDetail: extraDetail,
+    pages: pages,
+    lastRead: lastRead ?? DateTime.now(),
+    thumbnail: thumbnail ?? FilePath.empty(),
+  );
 }

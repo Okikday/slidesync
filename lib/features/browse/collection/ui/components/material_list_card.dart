@@ -139,7 +139,7 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
           icon: Iconsax.star,
           onTap: () async {
             final content = widget.content;
-            final collection = await ModuleRepo.getById(content.parentId);
+            final collection = await ModuleRepo.getByUid(content.parentId);
             if (collection == null) return;
             GlobalNav.withContext((c) {
               if ((DeviceUtils.isDesktop())) c.pop();

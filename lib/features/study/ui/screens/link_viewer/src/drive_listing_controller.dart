@@ -754,7 +754,7 @@ class DriveListingController {
   }
 
   Future<Course?> _resolveParentCourse() async {
-    final collection = await ModuleRepo.getById(collectionId);
+    final collection = await ModuleRepo.getByUid(collectionId);
     if (collection == null) {
       return null;
     }

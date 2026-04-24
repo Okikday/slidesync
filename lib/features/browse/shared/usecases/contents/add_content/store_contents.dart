@@ -42,7 +42,7 @@ Future<List<Map<String, dynamic>>> storeContents(
         final List<ModuleContent> contentsToAdd = [];
         final Set<String> seenHashesSet = <String>{};
 
-        Module? collection = await ModuleRepo.getById(args.collectionId);
+        Module? collection = await ModuleRepo.getByUid(args.collectionId);
         if (collection == null) return "Unable to load collection";
 
         final contentPathsLength = args.filePaths.length;

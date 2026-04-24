@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -36,17 +34,21 @@ class RecentsView extends ConsumerWidget {
             padding: EdgeInsets.only(bottom: kBottomNavigationBarHeight + context.bottomPadding / 2),
             itemBuilder: (context, index) {
               final content = data[index];
-              final previewPath = jsonDecode(content.metadataJson)['previewPath'];
+              final previewPath = content.thumbnail.local;
               return RecentListTile(
                 dataModel: RecentListTileModel(
-                  title: content.title ?? "No title",
-                  subtitle:
-                      content.description?.substring(0, content.description?.length).padRight(3, '.') ?? "No subtitle",
+                  title: content.title.isEmpty ? "No title" : content.title,
+                  subtitle: () {
+                    final description = content.description;
+                    return description.isNotEmpty
+                        ? description.substring(0, description.length).padRight(3, '.')
+                        : "No subtitle";
+                  }(),
                   // extraContent: DummySlides.dummySlides[index]['extraContent'] as String? ?? "",
                   previewPath: previewPath,
                   progressLevel: ProgressLevel.neutral,
                   isStarred: false,
-                  progress: content.progress?.clamp(0, 1.0),
+                  progress: content.progress.clamp(0, 1.0),
                   onTapTile: () async {
                     final toPushContent = await ModuleContentRepo.getByContentId(content.uid);
                     if (toPushContent == null) return;

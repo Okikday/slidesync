@@ -16,8 +16,6 @@ class CourseRepo {
   //   return (await _isarData.query<Course>((q) => q.idGreaterThan(0))).filter().uidEqualTo(courseId);
   // }
 
-  // static Future<void> deleteCourseByDbId(int dbId) async => await _isarData.deleteById(dbId);
-
   static Future<Course?> getCourseById(int dbId) async => _isarData.getById(dbId);
 
   static Stream<Course?> watchCourseByDbId(int dbId) => _isarData.watchById(dbId);
@@ -35,12 +33,10 @@ class CourseRepo {
       );
       await CourseTrackRepo.isarData.store(newCourseTrack);
     }
-
-    // Always save the course here so it actually enters the DB
     return await _isarData.store(course);
   }
 
-  static Future<List<int>> addMultipleCourses(List<Course> courses) async => await _isarData.storeAll(courses);
+  // static Future<List<int>> addMultipleCourses(List<Course> courses) async => await _isarData.storeAll(courses);
 
   static Future<List<Course>> getAllCourses() async => _isarData.getAll();
 
@@ -48,23 +44,24 @@ class CourseRepo {
 
   // static Future<Stream<List<Course>>> watchAllCoursesLazily() async => await _isarData.watchAllLazily();
 
-  static Future<Course?> getCourseByUid(String courseId) async {
-    return await _isar.courses.filter().uidEqualTo(courseId).findFirst();
-  }
+  static Future<Course?> getCourseByUid(String courseId) => _isar.courses.filter().uidEqualTo(courseId).findFirst();
+
+  static Future<Course?> get(Id id) => _isarData.get(id);
 
   static Stream<Course?> watchCourseById(String courseId) async* {
     yield* _isar.courses.filter().uidEqualTo(courseId).watch(fireImmediately: true).map((list) => list.firstOrNull);
   }
 
-  static Future<Course?> deleteCourseById(String courseId) async {
-    final Course? course = await getCourseByUid(courseId);
-    return await _isar.writeTxn<Course?>(() async {
-      if (course != null) {
-        final idQuery = (filter).uidEqualTo(courseId);
-        await idQuery.deleteFirst();
-        await (CourseTrackRepo.filter).uidEqualTo(courseId).deleteFirst();
-      }
-      return course;
-    });
-  }
+  static Future<bool> delete(int id) => _isarData.delete(id);
+
+  // static Future<Course?> deleteCourseById(String courseId) async {
+  //   final Course? course = await getCourseByUid(courseId);
+  //   if (course == null) return course;
+  //   final idQuery = (filter).uidEqualTo(courseId);
+  //   return await _isar.writeTxn<Course?>(() async {
+  //     await idQuery.deleteFirst();
+  //     await (CourseTrackRepo.filter).uidEqualTo(courseId).deleteFirst();
+  //     return course;
+  //   });
+  // }
 }

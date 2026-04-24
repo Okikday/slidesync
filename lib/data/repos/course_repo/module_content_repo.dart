@@ -8,6 +8,7 @@ import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/data/models/progress_track_models/course_track.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
+import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 
@@ -72,105 +73,51 @@ class ModuleContentRepo {
     return (collection.contents.where((content) => content.xxh3Hash == xxh3Hash)).firstOrNull;
   }
 
-  // // Check
-  // static Future<bool> addContent(CourseContent content, [CourseCollection? collection]) async {
-  //   if (content.parentId.isEmpty) return false;
-  //   final result = await Result.tryRunAsync<bool>(() async {
-  //     final isar = _isar;
-
-  //     final fetchResult = await _fetchCourseAndCollection(isar, collection, content.parentId);
-  //     final getCollection = fetchResult.$2;
-  //     final course = fetchResult.$1;
-
-  //     if (getCollection == null || course == null) return false;
-
-  //     await getCollection.contents.load();
-
-  //     final contentTrack = ContentTrack.create(
-  //       contentId: content.contentId,
-  //       parentId: course.courseId,
-  //       xxh3Hash: content.xxh3Hash,
-  //       title: content.title,
-  //       description: content.description,
-  //       progress: 0.0,
-  //     );
-  //     final courseTrack = await (await CourseTrackRepo.filter).uidEqualTo(contentTrack.parentId).findFirst();
-  //     if (courseTrack == null) {
-  //       log("Couldn't find the parent course Track");
-  //       return false;
-  //     }
-  //     await courseTrack.contentTracks.load();
-
-  //     // Calculate new course progress before adding the new content track
-  //     final currentTotalProgress = courseTrack.contentTracks.fold<double>(
-  //       0.0,
-  //       (sum, track) => sum + (track.progress ?? 0.0),
-  //     );
-  //     final newContentsLength = courseTrack.contentTracks.length + 1;
-  //     final newCourseProgress = currentTotalProgress / newContentsLength;
-
-  //     courseTrack.contentTracks.add(contentTrack);
-  //     await isar.writeTxn(() async {
-  //       await isar.moduleContents.put(content);
-  //       await isar.contentTracks.put(contentTrack);
-  //       await getCollection.contents.save();
-  //       await courseTrack.contentTracks.save();
-  //       await isar.modules.put(getCollection);
-  //       await isar.courseTracks.put(courseTrack.copyWith(progress: newCourseProgress));
-  //     });
-  //     log("Successfully added content!");
-  //     return true;
-  //   });
-
-  //   return result.data ?? false;
-  // }
-
   // Check
   static Future<bool> deleteContent(ModuleContent content, [Module? collection]) async {
     try {
-      final isar = _isar;
+      // 1. Make sure the Module is valid
+      final module = collection ?? await ModuleRepo.getByUid(content.parentId);
+      if (module == null) return false;
 
-      final fetchResult = await _fetchCourseAndCollection(isar, collection, content.parentId);
-      final getCollection = fetchResult.$2;
-      final course = fetchResult.$1;
+      // 2. Make sure the [Course] is valid
+      final course = await _getCollectionParent(module);
+      if (course == null) return false; // Should probably delete the [Module] since it's an orphan
 
-      if (getCollection == null || course == null) return false;
-
-      await getCollection.contents.load();
+      // ... Load the Iterable collections and contents data in the respective classes
+      await module.contents.load();
       await course.modules.load();
-      final contentTrackQuery = (ContentTrackRepo.filter).uidEqualTo(content.uid);
-      final contentTrack = await contentTrackQuery.findFirst();
-      CourseTrack? parentCourseTrack = contentTrack == null
-          ? null
-          : await isar.courseTracks.getByUid(contentTrack.parentId);
 
-      double newProgress = 0.0;
+      // 3. Get the [contentTrack] and it's parent [courseTrack] for the content
+      final contentTrack = await ContentTrackRepo.filter.uidEqualTo(content.uid).findFirst();
+      final courseTrack = contentTrack == null ? null : await isar.courseTracks.getByUid(contentTrack.courseId);
 
-      if (contentTrack != null && parentCourseTrack != null) {
-        await parentCourseTrack.contentTracks.load();
-        parentCourseTrack.contentTracks.remove(contentTrack);
+      double? newProgress;
 
-        // Recalculate progress after removing the content track
-        final remainingContentsLength = parentCourseTrack.contentTracks.length;
-        if (remainingContentsLength > 0) {
-          final totalProgress = parentCourseTrack.contentTracks.fold<double>(
-            0.0,
-            (sum, track) => sum + (track.progress ?? 0.0),
-          );
-          newProgress = totalProgress / remainingContentsLength;
+      if (courseTrack != null) {
+        // ... Load the Iterable contentTracks in the courseTrack and remove the one for the content we're deleting
+        await courseTrack.contentTracks.load();
+        courseTrack.contentTracks.remove(contentTrack);
+
+        // 4. Recalculate progress after removing the content track
+        if (courseTrack.contentTracks.isNotEmpty) {
+          newProgress = ContentTrackRepo.computeProgressForMultiple(courseTrack.contentTracks);
         }
       }
 
-      await isar.writeTxn(() async {
-        getCollection.contents.remove(content);
-        await getCollection.contents.save();
+      module.contents.remove(content);
 
+      await isar.writeTxn(() async {
         await isar.moduleContents.delete(content.id);
-        await isar.modules.put(getCollection);
-        if (contentTrack != null) await isar.contentTracks.delete(contentTrack.id);
-        if (parentCourseTrack != null) {
-          await parentCourseTrack.contentTracks.save();
-          await isar.courseTracks.put(parentCourseTrack.copyWith(progress: newProgress));
+
+        await module.contents.save();
+        await isar.modules.put(module);
+
+        if (courseTrack != null && contentTrack != null) {
+          await isar.contentTracks.delete(contentTrack.id);
+
+          await courseTrack.contentTracks.save();
+          await isar.courseTracks.put(courseTrack.copyWith(progress: newProgress));
         }
       });
       return true;
@@ -182,74 +129,161 @@ class ModuleContentRepo {
 
   static Future<bool> addMultipleContents(String collectionId, List<ModuleContent> contents) async {
     if (contents.isEmpty) return false;
-    final isar = _isar;
-    final fetchResult = await _fetchCourseAndCollection(isar, null, collectionId);
-    final getCollection = fetchResult.$2;
-    final course = fetchResult.$1;
 
-    if (getCollection == null || course == null) return false;
+    final module = await ModuleRepo.getByUid(collectionId);
+    if (module == null) return false;
+    final course = await _getCollectionParent(module);
+    if (course == null) return false;
 
-    await getCollection.contents.load();
-    final contentTracks = contents
-        .map(
-          (content) => ContentTrack.create(
-            contentId: content.uid,
-            parentId: course.uid,
-            xxh3Hash: content.xxh3Hash,
-            title: content.title,
-            description: content.description,
-            progress: 0.0,
-          ),
-        )
-        .toList();
-
-    final courseTrack = await (CourseTrackRepo.filter).uidEqualTo(course.uid).findFirst();
+    final courseTrack = await CourseTrackRepo.getByUid(course.uid);
     if (courseTrack == null) {
       log("Couldn't find the parent course Track");
       return false;
     }
+
+    await module.contents.load();
     await courseTrack.contentTracks.load();
 
-    // Calculate new course progress before adding the new content tracks
-    final currentTotalProgress = courseTrack.contentTracks.fold<double>(
-      0.0,
-      (sum, track) => sum + (track.progress ?? 0.0),
-    );
-    final newContentsLength = courseTrack.contentTracks.length + contentTracks.length;
-    final newCourseProgress = currentTotalProgress / newContentsLength;
+    final contentTracks = contents
+        .map(
+          (content) => ContentTrack.create(
+            uid: content.uid,
+            courseId: course.uid,
+            title: content.title,
+            description: content.description,
+            progress: 0.0,
+            thumbnail: content.path.copyWith(),
+          ),
+        )
+        .toList();
 
-    getCollection.contents.addAll(contents);
+    // Calculate new course progress before adding the new content tracks
+    //(Progress should still remain the same since the new content tracks aren't really adding anything. Just accuracy update)
+    final newProgress = ContentTrackRepo.computeProgressForMultiple(courseTrack.contentTracks);
+
+    module.contents.addAll(contents);
     courseTrack.contentTracks.addAll(contentTracks);
     await isar.writeTxn(() async {
       await isar.moduleContents.putAll(contents);
       await isar.contentTracks.putAll(contentTracks);
-      await getCollection.contents.save();
+      await module.contents.save();
       await courseTrack.contentTracks.save();
-      await isar.modules.put(getCollection);
-      await isar.courseTracks.put(courseTrack.copyWith(progress: newCourseProgress));
+
+      await isar.modules.put(module);
+      await isar.courseTracks.put(courseTrack.copyWith(progress: newProgress));
     });
 
-    log("Successfully added all multiple contents");
+    log("Successfully added multiple contents");
     return true;
+  }
+
+  static Future<bool> deleteMultipleContents(String collectionId, List<ModuleContent> contents) async {
+    if (collectionId.isEmpty || contents.isEmpty) return false;
+
+    final targetCollection = await ModuleRepo.getByUid(collectionId);
+    if (targetCollection == null) return false;
+
+    try {
+      await targetCollection.contents.load();
+
+      // Deduplicate early so each uid is processed at most once.
+      final Map<String, ModuleContent> inputByUid = {
+        for (final content in contents)
+          if (content.uid.isNotEmpty) content.uid: content,
+      };
+      if (inputByUid.isEmpty) return false;
+
+      final Map<String, ModuleContent> resolvedByUid = {};
+      for (final uid in inputByUid.keys) {
+        final dbContent = await getByContentId(uid);
+        resolvedByUid[uid] = dbContent ?? inputByUid[uid]!;
+      }
+
+      final List<ModuleContent> sameParentContents = [];
+      final Map<String, List<ModuleContent>> otherContentsByParent = {};
+      for (final content in resolvedByUid.values) {
+        if (content.parentId == collectionId) {
+          sameParentContents.add(content);
+        } else {
+          otherContentsByParent.putIfAbsent(content.parentId, () => []).add(content);
+        }
+      }
+
+      final Map<String, Module> moduleByUid = {collectionId: targetCollection};
+      for (final parentId in otherContentsByParent.keys) {
+        final sourceCollection = await ModuleRepo.getByUid(parentId);
+        if (sourceCollection == null) continue;
+        await sourceCollection.contents.load();
+        moduleByUid[parentId] = sourceCollection;
+      }
+
+      final Set<String> toDeleteUids = resolvedByUid.keys.toSet();
+      final Set<String> affectedCourseIds = moduleByUid.values
+          .map((m) => m.parentId)
+          .where((id) => id.isNotEmpty)
+          .toSet();
+      final Map<String, CourseTrack> affectedCourseTracks = {};
+      for (final courseId in affectedCourseIds) {
+        final courseTrack = await CourseTrackRepo.getByUid(courseId);
+        if (courseTrack == null) continue;
+        await courseTrack.contentTracks.load();
+        affectedCourseTracks[courseId] = courseTrack;
+      }
+
+      if (sameParentContents.isNotEmpty) {
+        targetCollection.contents.removeWhere((c) => toDeleteUids.contains(c.uid));
+      }
+      for (final entry in otherContentsByParent.entries) {
+        final sourceCollection = moduleByUid[entry.key];
+        if (sourceCollection == null) continue;
+        final parentUids = entry.value.map((c) => c.uid).toSet();
+        sourceCollection.contents.removeWhere((c) => parentUids.contains(c.uid));
+      }
+
+      for (final courseTrack in affectedCourseTracks.values) {
+        courseTrack.contentTracks.removeWhere((t) => toDeleteUids.contains(t.uid));
+      }
+
+      await isar.writeTxn(() async {
+        await isar.moduleContents.deleteAllByUid(toDeleteUids.toList());
+        await isar.contentTracks.deleteAllByUid(toDeleteUids.toList());
+
+        for (final module in moduleByUid.values) {
+          await module.contents.save();
+          await isar.modules.put(module);
+        }
+
+        for (final courseTrack in affectedCourseTracks.values) {
+          final newProgress = courseTrack.contentTracks.isNotEmpty
+              ? ContentTrackRepo.computeProgressForMultiple(courseTrack.contentTracks)
+              : 0.0;
+          await courseTrack.contentTracks.save();
+          await isar.courseTracks.put(courseTrack.copyWith(progress: newProgress));
+        }
+      });
+
+      log("Successfully deleted ${toDeleteUids.length} contents from collection $collectionId and related collections");
+      return true;
+    } catch (e, st) {
+      log("Error deleting multiple contents: $e\n$st");
+      return false;
+    }
   }
 
   // AI GENERATED CODE - BEGIN
   static Future<bool> moveContents(List<ModuleContent> contents, String targetCollectionId) async {
-    if (contents.isEmpty) return false;
-    if (targetCollectionId.isEmpty) return false;
+    if (contents.isEmpty || targetCollectionId.isEmpty) return false;
+
+    final collection = await ModuleRepo.getByUid(targetCollectionId);
+    if (collection == null) return false;
+    final course = await _getCollectionParent(collection);
+    if (course == null) return false;
 
     try {
-      // Fetch target collection and its parent course
-      final fetchResult = await _fetchCourseAndCollection(isar, null, targetCollectionId);
-      final targetCollection = fetchResult.$2;
-      final targetCourse = fetchResult.$1;
-
-      if (targetCollection == null || targetCourse == null) return false;
-
-      await targetCollection.contents.load();
+      await collection.contents.load();
 
       // Get target course track
-      final targetCourseTrack = await (CourseTrackRepo.filter).uidEqualTo(targetCourse.uid).findFirst();
+      final targetCourseTrack = await (CourseTrackRepo.filter).uidEqualTo(course.uid).findFirst();
       if (targetCourseTrack == null) {
         log("Couldn't find the target course track");
         return false;
@@ -288,35 +322,44 @@ class ModuleContentRepo {
         // Find and prepare content track for move
         final contentTrack = await (ContentTrackRepo.filter).uidEqualTo(content.uid).findFirst();
         if (contentTrack != null) {
-          contentTracksToUpdate.add(contentTrack.copyWith(parentId: targetCourse.uid));
+          contentTracksToUpdate.add(contentTrack.copyWith(uid: course.uid));
         }
       }
+      for (final content in contents) {
+        if (content.parentId == targetCollectionId) continue;
 
-      await isar.writeTxn(() async {
-        for (final content in contents) {
-          if (content.parentId == targetCollectionId) continue;
+        // Remove from source collection
+        final sourceCollection = sourceCollections.values.firstWhere(
+          (col) => col.contents.any((c) => c.id == content.id),
+        );
+        sourceCollection.contents.remove(content);
 
-          // Remove from source collection
-          final sourceCollection = sourceCollections.values.firstWhere(
-            (col) => col.contents.any((c) => c.id == content.id),
-          );
-          sourceCollection.contents.remove(content);
+        // Update content's parentId
+        content.parentId = targetCollectionId;
 
-          // Update content's parentId
-          content.parentId = targetCollectionId;
-
-          // Add to target collection
-          targetCollection.contents.add(content);
+        // Add to target collection
+        collection.contents.add(content);
+      }
+      for (final updatedTrack in contentTracksToUpdate) {
+        final sourceCourseTrack = sourceCourseTracksMap[updatedTrack.courseId];
+        if (sourceCourseTrack != null) {
+          sourceCourseTrack.contentTracks.removeWhere((t) => t.uid == updatedTrack.uid);
         }
 
+        targetCourseTrack.contentTracks.add(updatedTrack);
+      }
+
+      // Recalculate progress for target course track
+      final targetTotalProgress = targetCourseTrack.contentTracks.fold<double>(
+        0.0,
+        (sum, track) => sum + (track.progress),
+      );
+      final targetNewProgress = targetCourseTrack.contentTracks.isNotEmpty
+          ? targetTotalProgress / targetCourseTrack.contentTracks.length
+          : 0.0;
+      await isar.writeTxn(() async {
         // Update content tracks and remove from source course tracks
         for (final updatedTrack in contentTracksToUpdate) {
-          final sourceCourseTrack = sourceCourseTracksMap[updatedTrack.parentId];
-          if (sourceCourseTrack != null) {
-            sourceCourseTrack.contentTracks.removeWhere((t) => t.uid == updatedTrack.uid);
-          }
-
-          targetCourseTrack.contentTracks.add(updatedTrack);
           await isar.contentTracks.put(updatedTrack);
         }
 
@@ -324,22 +367,13 @@ class ModuleContentRepo {
         for (final sourceCourseTrack in sourceCourseTracksMap.values) {
           final remainingLength = sourceCourseTrack.contentTracks.length;
           final newProgress = remainingLength > 0
-              ? sourceCourseTrack.contentTracks.fold<double>(0.0, (sum, track) => sum + (track.progress ?? 0.0)) /
+              ? sourceCourseTrack.contentTracks.fold<double>(0.0, (sum, track) => sum + (track.progress)) /
                     remainingLength
               : 0.0;
 
           await sourceCourseTrack.contentTracks.save();
           await isar.courseTracks.put(sourceCourseTrack.copyWith(progress: newProgress));
         }
-
-        // Recalculate progress for target course track
-        final targetTotalProgress = targetCourseTrack.contentTracks.fold<double>(
-          0.0,
-          (sum, track) => sum + (track.progress ?? 0.0),
-        );
-        final targetNewProgress = targetCourseTrack.contentTracks.isNotEmpty
-            ? targetTotalProgress / targetCourseTrack.contentTracks.length
-            : 0.0;
 
         // Save all changes
         await isar.moduleContents.putAll(contents);
@@ -348,9 +382,9 @@ class ModuleContentRepo {
           await isar.modules.put(sourceCollection);
         }
 
-        await targetCollection.contents.save();
+        await collection.contents.save();
         await targetCourseTrack.contentTracks.save();
-        await isar.modules.put(targetCollection);
+        await isar.modules.put(collection);
         await isar.courseTracks.put(targetCourseTrack.copyWith(progress: targetNewProgress));
       });
 
@@ -361,87 +395,7 @@ class ModuleContentRepo {
       return false;
     }
   }
-  // AI GENERATED CODE - END
 
-  // static Future<bool> deleteAllContentsInCollection(CourseCollection collection) async {
-  //   try {
-  //     final isar = _isar;
-
-  //     // Ensure collection contents are loaded
-  //     await collection.contents.load();
-  //     final contents = collection.contents.toList();
-  //     if (contents.isEmpty) return true; // nothing to do
-
-  //     final contentIds = contents.map((c) => c.id).toList();
-  //     final contentIdStrings = contents.map((c) => c.contentId).toList();
-
-  //     // Batch-find related ContentTrack entries (uses contentIdIn if available)
-  //     final contentTrackFilter = await ContentTrackRepo.filter;
-  //     final List<dynamic> contentTracks = await contentTrackFilter
-  //         .anyOf(contentIdStrings, (s, t) => s.uidEqualTo(t))
-  //         .findAll();
-
-  //     // Map to hold distinct parent CourseTrack instances we must update
-  //     final Map<int, dynamic> parentCourseTrackById = {};
-  //     final List<int> contentTrackIdsToDelete = [];
-
-  //     for (final ct in contentTracks) {
-  //       if (ct == null) continue;
-  //       contentTrackIdsToDelete.add(ct.id);
-  //       final parentCourseTrack = ct.courseTrackLink.value;
-  //       if (parentCourseTrack != null) {
-  //         parentCourseTrackById[parentCourseTrack.id] = parentCourseTrack;
-  //       }
-  //     }
-
-  //     // Load each parent courseTrack's contentTracks once, and remove the tracks belonging to this collection
-  //     for (final parent in parentCourseTrackById.values) {
-  //       await parent.contentTracks.load();
-  //       parent.contentTracks.removeWhere((t) => contentIdStrings.contains(t.contentId));
-  //     }
-
-  //     // Single transaction to delete DB rows and persist relationship changes
-  //     await isar.writeTxn(() async {
-  //       // Delete contentTracks rows
-  //       if (contentTrackIdsToDelete.isNotEmpty) {
-  //         await isar.contentTracks.deleteAll(contentTrackIdsToDelete);
-  //       }
-
-  //       // Delete moduleContents rows
-  //       await isar.moduleContents.deleteAll(contentIds);
-
-  //       // Clear collection contents and persist
-  //       collection.contents.clear();
-  //       await collection.contents.save();
-  //       await isar.modules.put(collection);
-
-  //       // Persist updates to parent course tracks' contentTracks lists
-  //       for (final parent in parentCourseTrackById.values) {
-  //         await parent.contentTracks.save();
-  //       }
-  //     });
-
-  //     return true;
-  //   } catch (e) {
-  //     log("Error deleting all contents in collection: $e");
-  //     return false;
-  //   }
-  // }
-
-  /// Except this ofc
-  static Future<(Course? course, Module? collection)> _fetchCourseAndCollection(
-    Isar isar,
-    Module? collection,
-    String contentParentId,
-  ) async {
-    Module? getCollection = collection != null
-        ? (await isar.modules.get(collection.id))
-        : (await isar.modules.filter().uidEqualTo(contentParentId).findFirst());
-    if (getCollection == null) return (null, null);
-
-    if (getCollection.parentId.isEmpty) return (null, null);
-    final Course? course = await CourseRepo.getCourseByUid(getCollection.parentId);
-    if (course == null) return (null, null);
-    return (course, getCollection);
-  }
+  static Future<Course?> _getCollectionParent(Module collection) async =>
+      (collection.parentId.isEmpty || collection.uid.isEmpty) ? null : CourseRepo.getCourseByUid(collection.parentId);
 }

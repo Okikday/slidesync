@@ -1,118 +1,45 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
-import 'dart:convert';
+import 'package:dart_mappable/dart_mappable.dart';
 import 'package:isar_community/isar.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 
+part 'course_track.mapper.dart';
 part 'course_track.g.dart';
 
+@MappableClass()
 @collection
-class CourseTrack {
-  Id id = Isar.autoIncrement;
-
+class CourseTrack with CourseTrackMappable {
+  Id id;
   @Index(unique: true)
-  late String uid;
-  String? title;
-  String? description;
+  String uid;
+  String title;
+  String description;
+  double progress;
+  String? extraDetail;
 
-  double? progress;
-  String? additionalDetail;
-  IsarLinks<ContentTrack> contentTracks = IsarLinks<ContentTrack>();
-  String metadataJson = '{}';
+  final IsarLinks<ContentTrack> contentTracks = IsarLinks<ContentTrack>();
+  CourseTrack({
+    this.id = Isar.autoIncrement,
+    required this.uid,
+    required this.title,
+    required this.description,
+    required this.progress,
+    required this.extraDetail,
+  });
 
-  CourseTrack();
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) || other is CourseTrack && runtimeType == other.runtimeType && uid == other.uid;
 
-  factory CourseTrack.create({
+  @override
+  int get hashCode => uid.hashCode;
+
+  static CourseTrack create({
     required String courseId,
-    String? title,
-    String? description,
-    double? progress,
-    String? additionalDetail,
-    String? metadataJson,
-  }) {
-    return CourseTrack()
-      ..uid = courseId
-      ..title = title
-      ..description = description
-      ..progress = progress
-      ..additionalDetail = additionalDetail
-      ..metadataJson = metadataJson ?? '{}';
-  }
-
-  Map<String, dynamic> toMap() {
-    return <String, dynamic>{
-      'id': id,
-      'courseId': uid,
-      'title': title,
-      'description': description,
-      'progress': progress,
-      'additionalDetail': additionalDetail,
-      'metadataJson': metadataJson,
-      // Note: contentTracks is not included in map for serialization
-    };
-  }
-
-  factory CourseTrack.fromMap(Map<String, dynamic> map) {
-    return CourseTrack()
-      ..id = map['id'] as int
-      ..uid = map['courseId'] as String
-      ..title = map['title'] as String?
-      ..description = map['description'] as String?
-      ..progress = map['progress'] as double? ?? 0.0
-      ..additionalDetail = map['additionalDetail'] as String? ?? ''
-      ..metadataJson = map['metadataJson'] ?? '{}';
-  }
-
-  String toJson() => json.encode(toMap());
-
-  factory CourseTrack.fromJson(String source) => CourseTrack.fromMap(json.decode(source) as Map<String, dynamic>);
-
-  @override
-  String toString() {
-    return 'CourseTrack(id: $id, courseId: $uid, title: $title, description: $description, progress: $progress, additionalDetail: $additionalDetail, metadata: $metadataJson)';
-  }
-
-  @override
-  bool operator ==(covariant CourseTrack other) {
-    if (identical(this, other)) return true;
-
-    return other.id == id &&
-        other.uid == uid &&
-        other.title == title &&
-        other.description == description &&
-        other.progress == progress &&
-        other.additionalDetail == additionalDetail &&
-        other.metadataJson == metadataJson;
-  }
-
-  @override
-  int get hashCode {
-    return id.hashCode ^
-        uid.hashCode ^
-        title.hashCode ^
-        description.hashCode ^
-        progress.hashCode ^
-        additionalDetail.hashCode ^
-        metadataJson.hashCode;
-  }
-}
-
-extension CourseTrackExtension on CourseTrack {
-  CourseTrack copyWith({
-    Id? id,
-    String? courseUid,
-    String? title,
-    String? description,
-    double? progress,
-    String? additionalDetail,
-    String? metadataJson,
-  }) {
-    return this
-      ..id = id ?? this.id
-      ..uid = courseUid ?? uid
-      ..title = title ?? this.title
-      ..description = description ?? this.description
-      ..progress = progress ?? this.progress
-      ..additionalDetail = additionalDetail ?? this.additionalDetail
-      ..metadataJson = metadataJson ?? this.metadataJson;
-  }
+    required String title,
+    required String description,
+    double progress = 0.0,
+    String? extraDetail,
+  }) =>
+      CourseTrack(uid: courseId, title: title, description: description, progress: progress, extraDetail: extraDetail);
 }

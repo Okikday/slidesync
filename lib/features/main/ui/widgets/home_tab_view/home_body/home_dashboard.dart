@@ -31,10 +31,10 @@ class HomeDashboard extends ConsumerWidget {
     final theme = ref;
     // final previewPath = jsonDecode(data.metadataJson)['previewPath'];
     // final isPreviewPathValid = previewPath != null && previewPath is String;
-    final title = data.title ?? "Unknown material";
-    final description = data.description ?? '';
-    final progressValue = data.progress ?? 0.0;
-    final completed = data.progress == null ? null : data.progress == 1.0;
+    final title = data.title.isEmpty ? "Unknown material" : data.title;
+    final description = data.description;
+    final progressValue = data.progress;
+    final completed = data.progress == 1.0;
     return Container(
       constraints: BoxConstraints(maxHeight: 160, maxWidth: 400),
       width: context.deviceWidth,
@@ -111,10 +111,7 @@ class HomeDashboard extends ConsumerWidget {
                     overlayColor: ref.onPrimary.withAlpha(20),
                     backgroundColor: theme.primaryColor,
                     child: CustomText(
-                      buttonText ??
-                          (completed != null
-                              ? (completed ? "Read next slide" : "Jump right back in")
-                              : "Start Reading"),
+                      buttonText ?? (completed ? "Read next slide" : "Continue reading"),
                       fontSize: 15,
                       fontWeight: FontWeight.w600,
                       color: theme.onPrimary,
@@ -127,7 +124,7 @@ class HomeDashboard extends ConsumerWidget {
               ),
 
               // ConstantSizing.rowSpacing(4),
-              if (completed != null)
+              if (completed)
                 Stack(
                   children: [
                     CustomElevatedButton(
@@ -187,7 +184,7 @@ class HomeDashboard extends ConsumerWidget {
   ) {
     if (hasAnyCourse == null) {
       return HomeDashboard(
-        data: ContentTrack.create(contentId: "_", parentId: "_", xxh3Hash: "_", title: "Looking around", progress: 0.0),
+        data: ContentTrack.create(uid: "_", courseId: "_", title: "Looking around", progress: 0.0),
         buttonText: "",
         isFirst: true,
         onReadingBtnTapped: () async {},
@@ -197,9 +194,8 @@ class HomeDashboard extends ConsumerWidget {
     if (!hasAnyCourse) {
       return HomeDashboard(
         data: ContentTrack.create(
-          contentId: "_",
-          parentId: "_",
-          xxh3Hash: "_",
+          uid: "_",
+          courseId: "_",
           title: "Add a course",
           description: "Let's add a course to get you started!",
           progress: 0.0,
@@ -216,9 +212,8 @@ class HomeDashboard extends ConsumerWidget {
 
     return HomeDashboard(
       data: ContentTrack.create(
-        contentId: "_",
-        parentId: "_",
-        xxh3Hash: "_",
+        uid: "_",
+        courseId: "_",
         title: "Start reading",
         description: "You haven't started reading, get started!",
         progress: 0.0,

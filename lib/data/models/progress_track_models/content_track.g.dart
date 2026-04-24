@@ -17,9 +17,9 @@ const ContentTrackSchema = CollectionSchema(
   name: r'ContentTrack',
   id: 6970026462422311558,
   properties: {
-    r'additionalDetail': PropertySchema(
+    r'courseId': PropertySchema(
       id: 0,
-      name: r'additionalDetail',
+      name: r'courseId',
       type: IsarType.string,
     ),
     r'description': PropertySchema(
@@ -27,35 +27,32 @@ const ContentTrackSchema = CollectionSchema(
       name: r'description',
       type: IsarType.string,
     ),
-    r'hashCode': PropertySchema(id: 2, name: r'hashCode', type: IsarType.long),
+    r'extraDetail': PropertySchema(
+      id: 2,
+      name: r'extraDetail',
+      type: IsarType.string,
+    ),
+    r'hashCode': PropertySchema(id: 3, name: r'hashCode', type: IsarType.long),
     r'lastRead': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'lastRead',
       type: IsarType.dateTime,
     ),
-    r'metadataJson': PropertySchema(
-      id: 4,
-      name: r'metadataJson',
-      type: IsarType.string,
-    ),
     r'pages': PropertySchema(id: 5, name: r'pages', type: IsarType.stringList),
-    r'parentId': PropertySchema(
-      id: 6,
-      name: r'parentId',
-      type: IsarType.string,
-    ),
     r'progress': PropertySchema(
-      id: 7,
+      id: 6,
       name: r'progress',
       type: IsarType.double,
     ),
+    r'thumbnail': PropertySchema(
+      id: 7,
+      name: r'thumbnail',
+      type: IsarType.object,
+
+      target: r'FilePath',
+    ),
     r'title': PropertySchema(id: 8, name: r'title', type: IsarType.string),
     r'uid': PropertySchema(id: 9, name: r'uid', type: IsarType.string),
-    r'xxh3Hash': PropertySchema(
-      id: 10,
-      name: r'xxh3Hash',
-      type: IsarType.string,
-    ),
   },
 
   estimateSize: _contentTrackEstimateSize,
@@ -77,27 +74,14 @@ const ContentTrackSchema = CollectionSchema(
         ),
       ],
     ),
-    r'parentId': IndexSchema(
-      id: -809199838039056779,
-      name: r'parentId',
+    r'courseId': IndexSchema(
+      id: -4937057111615935929,
+      name: r'courseId',
       unique: false,
       replace: false,
       properties: [
         IndexPropertySchema(
-          name: r'parentId',
-          type: IndexType.hash,
-          caseSensitive: true,
-        ),
-      ],
-    ),
-    r'xxh3Hash': IndexSchema(
-      id: -1306133880914054561,
-      name: r'xxh3Hash',
-      unique: false,
-      replace: false,
-      properties: [
-        IndexPropertySchema(
-          name: r'xxh3Hash',
+          name: r'courseId',
           type: IndexType.hash,
           caseSensitive: true,
         ),
@@ -105,7 +89,7 @@ const ContentTrackSchema = CollectionSchema(
     ),
   },
   links: {},
-  embeddedSchemas: {},
+  embeddedSchemas: {r'FilePath': FilePathSchema},
 
   getId: _contentTrackGetId,
   getLinks: _contentTrackGetLinks,
@@ -119,19 +103,14 @@ int _contentTrackEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
+  bytesCount += 3 + object.courseId.length * 3;
+  bytesCount += 3 + object.description.length * 3;
   {
-    final value = object.additionalDetail;
+    final value = object.extraDetail;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
     }
   }
-  {
-    final value = object.description;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
-  bytesCount += 3 + object.metadataJson.length * 3;
   bytesCount += 3 + object.pages.length * 3;
   {
     for (var i = 0; i < object.pages.length; i++) {
@@ -139,15 +118,15 @@ int _contentTrackEstimateSize(
       bytesCount += value.length * 3;
     }
   }
-  bytesCount += 3 + object.parentId.length * 3;
-  {
-    final value = object.title;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
+  bytesCount +=
+      3 +
+      FilePathSchema.estimateSize(
+        object.thumbnail,
+        allOffsets[FilePath]!,
+        allOffsets,
+      );
+  bytesCount += 3 + object.title.length * 3;
   bytesCount += 3 + object.uid.length * 3;
-  bytesCount += 3 + object.xxh3Hash.length * 3;
   return bytesCount;
 }
 
@@ -157,17 +136,21 @@ void _contentTrackSerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.additionalDetail);
+  writer.writeString(offsets[0], object.courseId);
   writer.writeString(offsets[1], object.description);
-  writer.writeLong(offsets[2], object.hashCode);
-  writer.writeDateTime(offsets[3], object.lastRead);
-  writer.writeString(offsets[4], object.metadataJson);
+  writer.writeString(offsets[2], object.extraDetail);
+  writer.writeLong(offsets[3], object.hashCode);
+  writer.writeDateTime(offsets[4], object.lastRead);
   writer.writeStringList(offsets[5], object.pages);
-  writer.writeString(offsets[6], object.parentId);
-  writer.writeDouble(offsets[7], object.progress);
+  writer.writeDouble(offsets[6], object.progress);
+  writer.writeObject<FilePath>(
+    offsets[7],
+    allOffsets,
+    FilePathSchema.serialize,
+    object.thumbnail,
+  );
   writer.writeString(offsets[8], object.title);
   writer.writeString(offsets[9], object.uid);
-  writer.writeString(offsets[10], object.xxh3Hash);
 }
 
 ContentTrack _contentTrackDeserialize(
@@ -176,18 +159,24 @@ ContentTrack _contentTrackDeserialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = ContentTrack();
-  object.additionalDetail = reader.readStringOrNull(offsets[0]);
-  object.description = reader.readStringOrNull(offsets[1]);
-  object.id = id;
-  object.lastRead = reader.readDateTimeOrNull(offsets[3]);
-  object.metadataJson = reader.readString(offsets[4]);
-  object.pages = reader.readStringList(offsets[5]) ?? [];
-  object.parentId = reader.readString(offsets[6]);
-  object.progress = reader.readDoubleOrNull(offsets[7]);
-  object.title = reader.readStringOrNull(offsets[8]);
-  object.uid = reader.readString(offsets[9]);
-  object.xxh3Hash = reader.readString(offsets[10]);
+  final object = ContentTrack(
+    courseId: reader.readString(offsets[0]),
+    description: reader.readString(offsets[1]),
+    extraDetail: reader.readStringOrNull(offsets[2]),
+    id: id,
+    lastRead: reader.readDateTime(offsets[4]),
+    pages: reader.readStringList(offsets[5]) ?? [],
+    progress: reader.readDouble(offsets[6]),
+    thumbnail:
+        reader.readObjectOrNull<FilePath>(
+          offsets[7],
+          FilePathSchema.deserialize,
+          allOffsets,
+        ) ??
+        FilePath(),
+    title: reader.readString(offsets[8]),
+    uid: reader.readString(offsets[9]),
+  );
   return object;
 }
 
@@ -199,26 +188,30 @@ P _contentTrackDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readStringOrNull(offset)) as P;
-    case 1:
-      return (reader.readStringOrNull(offset)) as P;
-    case 2:
-      return (reader.readLong(offset)) as P;
-    case 3:
-      return (reader.readDateTimeOrNull(offset)) as P;
-    case 4:
       return (reader.readString(offset)) as P;
+    case 1:
+      return (reader.readString(offset)) as P;
+    case 2:
+      return (reader.readStringOrNull(offset)) as P;
+    case 3:
+      return (reader.readLong(offset)) as P;
+    case 4:
+      return (reader.readDateTime(offset)) as P;
     case 5:
       return (reader.readStringList(offset) ?? []) as P;
     case 6:
-      return (reader.readString(offset)) as P;
+      return (reader.readDouble(offset)) as P;
     case 7:
-      return (reader.readDoubleOrNull(offset)) as P;
+      return (reader.readObjectOrNull<FilePath>(
+                offset,
+                FilePathSchema.deserialize,
+                allOffsets,
+              ) ??
+              FilePath())
+          as P;
     case 8:
-      return (reader.readStringOrNull(offset)) as P;
-    case 9:
       return (reader.readString(offset)) as P;
-    case 10:
+    case 9:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
@@ -433,33 +426,33 @@ extension ContentTrackQueryWhere
     });
   }
 
-  QueryBuilder<ContentTrack, ContentTrack, QAfterWhereClause> parentIdEqualTo(
-    String parentId,
+  QueryBuilder<ContentTrack, ContentTrack, QAfterWhereClause> courseIdEqualTo(
+    String courseId,
   ) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'parentId', value: [parentId]),
+        IndexWhereClause.equalTo(indexName: r'courseId', value: [courseId]),
       );
     });
   }
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterWhereClause>
-  parentIdNotEqualTo(String parentId) {
+  courseIdNotEqualTo(String courseId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'parentId',
+                indexName: r'courseId',
                 lower: [],
-                upper: [parentId],
+                upper: [courseId],
                 includeUpper: false,
               ),
             )
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'parentId',
-                lower: [parentId],
+                indexName: r'courseId',
+                lower: [courseId],
                 includeLower: false,
                 upper: [],
               ),
@@ -468,70 +461,17 @@ extension ContentTrackQueryWhere
         return query
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'parentId',
-                lower: [parentId],
+                indexName: r'courseId',
+                lower: [courseId],
                 includeLower: false,
                 upper: [],
               ),
             )
             .addWhereClause(
               IndexWhereClause.between(
-                indexName: r'parentId',
+                indexName: r'courseId',
                 lower: [],
-                upper: [parentId],
-                includeUpper: false,
-              ),
-            );
-      }
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterWhereClause> xxh3HashEqualTo(
-    String xxh3Hash,
-  ) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IndexWhereClause.equalTo(indexName: r'xxh3Hash', value: [xxh3Hash]),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterWhereClause>
-  xxh3HashNotEqualTo(String xxh3Hash) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'xxh3Hash',
-                lower: [],
-                upper: [xxh3Hash],
-                includeUpper: false,
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'xxh3Hash',
-                lower: [xxh3Hash],
-                includeLower: false,
-                upper: [],
-              ),
-            );
-      } else {
-        return query
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'xxh3Hash',
-                lower: [xxh3Hash],
-                includeLower: false,
-                upper: [],
-              ),
-            )
-            .addWhereClause(
-              IndexWhereClause.between(
-                indexName: r'xxh3Hash',
-                lower: [],
-                upper: [xxh3Hash],
+                upper: [courseId],
                 includeUpper: false,
               ),
             );
@@ -543,29 +483,11 @@ extension ContentTrackQueryWhere
 extension ContentTrackQueryFilter
     on QueryBuilder<ContentTrack, ContentTrack, QFilterCondition> {
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  additionalDetailIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'additionalDetail'),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  additionalDetailIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'additionalDetail'),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  additionalDetailEqualTo(String? value, {bool caseSensitive = true}) {
+  courseIdEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.equalTo(
-          property: r'additionalDetail',
+          property: r'courseId',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -574,8 +496,8 @@ extension ContentTrackQueryFilter
   }
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  additionalDetailGreaterThan(
-    String? value, {
+  courseIdGreaterThan(
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -583,7 +505,7 @@ extension ContentTrackQueryFilter
       return query.addFilterCondition(
         FilterCondition.greaterThan(
           include: include,
-          property: r'additionalDetail',
+          property: r'courseId',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -592,8 +514,8 @@ extension ContentTrackQueryFilter
   }
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  additionalDetailLessThan(
-    String? value, {
+  courseIdLessThan(
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -601,7 +523,7 @@ extension ContentTrackQueryFilter
       return query.addFilterCondition(
         FilterCondition.lessThan(
           include: include,
-          property: r'additionalDetail',
+          property: r'courseId',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -610,9 +532,9 @@ extension ContentTrackQueryFilter
   }
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  additionalDetailBetween(
-    String? lower,
-    String? upper, {
+  courseIdBetween(
+    String lower,
+    String upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -620,7 +542,7 @@ extension ContentTrackQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.between(
-          property: r'additionalDetail',
+          property: r'courseId',
           lower: lower,
           includeLower: includeLower,
           upper: upper,
@@ -632,11 +554,11 @@ extension ContentTrackQueryFilter
   }
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  additionalDetailStartsWith(String value, {bool caseSensitive = true}) {
+  courseIdStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.startsWith(
-          property: r'additionalDetail',
+          property: r'courseId',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -645,11 +567,11 @@ extension ContentTrackQueryFilter
   }
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  additionalDetailEndsWith(String value, {bool caseSensitive = true}) {
+  courseIdEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.endsWith(
-          property: r'additionalDetail',
+          property: r'courseId',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -658,11 +580,11 @@ extension ContentTrackQueryFilter
   }
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  additionalDetailContains(String value, {bool caseSensitive = true}) {
+  courseIdContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.contains(
-          property: r'additionalDetail',
+          property: r'courseId',
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -671,11 +593,11 @@ extension ContentTrackQueryFilter
   }
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  additionalDetailMatches(String pattern, {bool caseSensitive = true}) {
+  courseIdMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.matches(
-          property: r'additionalDetail',
+          property: r'courseId',
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -684,43 +606,25 @@ extension ContentTrackQueryFilter
   }
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  additionalDetailIsEmpty() {
+  courseIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'additionalDetail', value: ''),
+        FilterCondition.equalTo(property: r'courseId', value: ''),
       );
     });
   }
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  additionalDetailIsNotEmpty() {
+  courseIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'additionalDetail', value: ''),
+        FilterCondition.greaterThan(property: r'courseId', value: ''),
       );
     });
   }
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  descriptionIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'description'),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  descriptionIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'description'),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  descriptionEqualTo(String? value, {bool caseSensitive = true}) {
+  descriptionEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.equalTo(
@@ -734,7 +638,7 @@ extension ContentTrackQueryFilter
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
   descriptionGreaterThan(
-    String? value, {
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -752,7 +656,7 @@ extension ContentTrackQueryFilter
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
   descriptionLessThan(
-    String? value, {
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -770,8 +674,8 @@ extension ContentTrackQueryFilter
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
   descriptionBetween(
-    String? lower,
-    String? upper, {
+    String lower,
+    String upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -856,6 +760,165 @@ extension ContentTrackQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(property: r'description', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+  extraDetailIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'extraDetail'),
+      );
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+  extraDetailIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'extraDetail'),
+      );
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+  extraDetailEqualTo(String? value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'extraDetail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+  extraDetailGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'extraDetail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+  extraDetailLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'extraDetail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+  extraDetailBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'extraDetail',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+  extraDetailStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'extraDetail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+  extraDetailEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'extraDetail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+  extraDetailContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'extraDetail',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+  extraDetailMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'extraDetail',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+  extraDetailIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'extraDetail', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+  extraDetailIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'extraDetail', value: ''),
       );
     });
   }
@@ -975,25 +1038,7 @@ extension ContentTrackQueryFilter
   }
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  lastReadIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'lastRead'),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  lastReadIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'lastRead'),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  lastReadEqualTo(DateTime? value) {
+  lastReadEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.equalTo(property: r'lastRead', value: value),
@@ -1002,7 +1047,7 @@ extension ContentTrackQueryFilter
   }
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  lastReadGreaterThan(DateTime? value, {bool include = false}) {
+  lastReadGreaterThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(
@@ -1015,7 +1060,7 @@ extension ContentTrackQueryFilter
   }
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  lastReadLessThan(DateTime? value, {bool include = false}) {
+  lastReadLessThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.lessThan(
@@ -1029,8 +1074,8 @@ extension ContentTrackQueryFilter
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
   lastReadBetween(
-    DateTime? lower,
-    DateTime? upper, {
+    DateTime lower,
+    DateTime upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
@@ -1043,147 +1088,6 @@ extension ContentTrackQueryFilter
           upper: upper,
           includeUpper: includeUpper,
         ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  metadataJsonEqualTo(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'metadataJson',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  metadataJsonGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'metadataJson',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  metadataJsonLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'metadataJson',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  metadataJsonBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'metadataJson',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  metadataJsonStartsWith(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'metadataJson',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  metadataJsonEndsWith(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'metadataJson',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  metadataJsonContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'metadataJson',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  metadataJsonMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'metadataJson',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  metadataJsonIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'metadataJson', value: ''),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  metadataJsonIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'metadataJson', value: ''),
       );
     });
   }
@@ -1383,166 +1287,7 @@ extension ContentTrackQueryFilter
   }
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  parentIdEqualTo(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'parentId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  parentIdGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'parentId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  parentIdLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'parentId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  parentIdBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'parentId',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  parentIdStartsWith(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'parentId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  parentIdEndsWith(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'parentId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  parentIdContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'parentId',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  parentIdMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'parentId',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  parentIdIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'parentId', value: ''),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  parentIdIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'parentId', value: ''),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  progressIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'progress'),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  progressIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'progress'),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  progressEqualTo(double? value, {double epsilon = Query.epsilon}) {
+  progressEqualTo(double value, {double epsilon = Query.epsilon}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.equalTo(
@@ -1557,7 +1302,7 @@ extension ContentTrackQueryFilter
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
   progressGreaterThan(
-    double? value, {
+    double value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
@@ -1576,7 +1321,7 @@ extension ContentTrackQueryFilter
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
   progressLessThan(
-    double? value, {
+    double value, {
     bool include = false,
     double epsilon = Query.epsilon,
   }) {
@@ -1595,8 +1340,8 @@ extension ContentTrackQueryFilter
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
   progressBetween(
-    double? lower,
-    double? upper, {
+    double lower,
+    double upper, {
     bool includeLower = true,
     bool includeUpper = true,
     double epsilon = Query.epsilon,
@@ -1616,26 +1361,8 @@ extension ContentTrackQueryFilter
     });
   }
 
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  titleIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNull(property: r'title'),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  titleIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const FilterCondition.isNotNull(property: r'title'),
-      );
-    });
-  }
-
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition> titleEqualTo(
-    String? value, {
+    String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -1651,7 +1378,7 @@ extension ContentTrackQueryFilter
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
   titleGreaterThan(
-    String? value, {
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1668,7 +1395,7 @@ extension ContentTrackQueryFilter
   }
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition> titleLessThan(
-    String? value, {
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1685,8 +1412,8 @@ extension ContentTrackQueryFilter
   }
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition> titleBetween(
-    String? lower,
-    String? upper, {
+    String lower,
+    String upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -1928,168 +1655,33 @@ extension ContentTrackQueryFilter
       );
     });
   }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  xxh3HashEqualTo(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(
-          property: r'xxh3Hash',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  xxh3HashGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(
-          include: include,
-          property: r'xxh3Hash',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  xxh3HashLessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.lessThan(
-          include: include,
-          property: r'xxh3Hash',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  xxh3HashBetween(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.between(
-          property: r'xxh3Hash',
-          lower: lower,
-          includeLower: includeLower,
-          upper: upper,
-          includeUpper: includeUpper,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  xxh3HashStartsWith(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.startsWith(
-          property: r'xxh3Hash',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  xxh3HashEndsWith(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.endsWith(
-          property: r'xxh3Hash',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  xxh3HashContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.contains(
-          property: r'xxh3Hash',
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  xxh3HashMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.matches(
-          property: r'xxh3Hash',
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  xxh3HashIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.equalTo(property: r'xxh3Hash', value: ''),
-      );
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  xxh3HashIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        FilterCondition.greaterThan(property: r'xxh3Hash', value: ''),
-      );
-    });
-  }
 }
 
 extension ContentTrackQueryObject
-    on QueryBuilder<ContentTrack, ContentTrack, QFilterCondition> {}
+    on QueryBuilder<ContentTrack, ContentTrack, QFilterCondition> {
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition> thumbnail(
+    FilterQuery<FilePath> q,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'thumbnail');
+    });
+  }
+}
 
 extension ContentTrackQueryLinks
     on QueryBuilder<ContentTrack, ContentTrack, QFilterCondition> {}
 
 extension ContentTrackQuerySortBy
     on QueryBuilder<ContentTrack, ContentTrack, QSortBy> {
-  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy>
-  sortByAdditionalDetail() {
+  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> sortByCourseId() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'additionalDetail', Sort.asc);
+      return query.addSortBy(r'courseId', Sort.asc);
     });
   }
 
-  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy>
-  sortByAdditionalDetailDesc() {
+  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> sortByCourseIdDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'additionalDetail', Sort.desc);
+      return query.addSortBy(r'courseId', Sort.desc);
     });
   }
 
@@ -2103,6 +1695,19 @@ extension ContentTrackQuerySortBy
   sortByDescriptionDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'description', Sort.desc);
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> sortByExtraDetail() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'extraDetail', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy>
+  sortByExtraDetailDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'extraDetail', Sort.desc);
     });
   }
 
@@ -2127,31 +1732,6 @@ extension ContentTrackQuerySortBy
   QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> sortByLastReadDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'lastRead', Sort.desc);
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> sortByMetadataJson() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'metadataJson', Sort.asc);
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy>
-  sortByMetadataJsonDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'metadataJson', Sort.desc);
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> sortByParentId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'parentId', Sort.asc);
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> sortByParentIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'parentId', Sort.desc);
     });
   }
 
@@ -2190,33 +1770,19 @@ extension ContentTrackQuerySortBy
       return query.addSortBy(r'uid', Sort.desc);
     });
   }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> sortByXxh3Hash() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'xxh3Hash', Sort.asc);
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> sortByXxh3HashDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'xxh3Hash', Sort.desc);
-    });
-  }
 }
 
 extension ContentTrackQuerySortThenBy
     on QueryBuilder<ContentTrack, ContentTrack, QSortThenBy> {
-  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy>
-  thenByAdditionalDetail() {
+  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> thenByCourseId() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'additionalDetail', Sort.asc);
+      return query.addSortBy(r'courseId', Sort.asc);
     });
   }
 
-  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy>
-  thenByAdditionalDetailDesc() {
+  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> thenByCourseIdDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'additionalDetail', Sort.desc);
+      return query.addSortBy(r'courseId', Sort.desc);
     });
   }
 
@@ -2230,6 +1796,19 @@ extension ContentTrackQuerySortThenBy
   thenByDescriptionDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'description', Sort.desc);
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> thenByExtraDetail() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'extraDetail', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy>
+  thenByExtraDetailDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'extraDetail', Sort.desc);
     });
   }
 
@@ -2269,31 +1848,6 @@ extension ContentTrackQuerySortThenBy
     });
   }
 
-  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> thenByMetadataJson() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'metadataJson', Sort.asc);
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy>
-  thenByMetadataJsonDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'metadataJson', Sort.desc);
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> thenByParentId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'parentId', Sort.asc);
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> thenByParentIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'parentId', Sort.desc);
-    });
-  }
-
   QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> thenByProgress() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'progress', Sort.asc);
@@ -2329,29 +1883,15 @@ extension ContentTrackQuerySortThenBy
       return query.addSortBy(r'uid', Sort.desc);
     });
   }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> thenByXxh3Hash() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'xxh3Hash', Sort.asc);
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> thenByXxh3HashDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'xxh3Hash', Sort.desc);
-    });
-  }
 }
 
 extension ContentTrackQueryWhereDistinct
     on QueryBuilder<ContentTrack, ContentTrack, QDistinct> {
-  QueryBuilder<ContentTrack, ContentTrack, QDistinct>
-  distinctByAdditionalDetail({bool caseSensitive = true}) {
+  QueryBuilder<ContentTrack, ContentTrack, QDistinct> distinctByCourseId({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(
-        r'additionalDetail',
-        caseSensitive: caseSensitive,
-      );
+      return query.addDistinctBy(r'courseId', caseSensitive: caseSensitive);
     });
   }
 
@@ -2360,6 +1900,14 @@ extension ContentTrackQueryWhereDistinct
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'description', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QDistinct> distinctByExtraDetail({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'extraDetail', caseSensitive: caseSensitive);
     });
   }
 
@@ -2375,25 +1923,9 @@ extension ContentTrackQueryWhereDistinct
     });
   }
 
-  QueryBuilder<ContentTrack, ContentTrack, QDistinct> distinctByMetadataJson({
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'metadataJson', caseSensitive: caseSensitive);
-    });
-  }
-
   QueryBuilder<ContentTrack, ContentTrack, QDistinct> distinctByPages() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'pages');
-    });
-  }
-
-  QueryBuilder<ContentTrack, ContentTrack, QDistinct> distinctByParentId({
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'parentId', caseSensitive: caseSensitive);
     });
   }
 
@@ -2418,14 +1950,6 @@ extension ContentTrackQueryWhereDistinct
       return query.addDistinctBy(r'uid', caseSensitive: caseSensitive);
     });
   }
-
-  QueryBuilder<ContentTrack, ContentTrack, QDistinct> distinctByXxh3Hash({
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'xxh3Hash', caseSensitive: caseSensitive);
-    });
-  }
 }
 
 extension ContentTrackQueryProperty
@@ -2436,16 +1960,21 @@ extension ContentTrackQueryProperty
     });
   }
 
-  QueryBuilder<ContentTrack, String?, QQueryOperations>
-  additionalDetailProperty() {
+  QueryBuilder<ContentTrack, String, QQueryOperations> courseIdProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'additionalDetail');
+      return query.addPropertyName(r'courseId');
     });
   }
 
-  QueryBuilder<ContentTrack, String?, QQueryOperations> descriptionProperty() {
+  QueryBuilder<ContentTrack, String, QQueryOperations> descriptionProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'description');
+    });
+  }
+
+  QueryBuilder<ContentTrack, String?, QQueryOperations> extraDetailProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'extraDetail');
     });
   }
 
@@ -2455,15 +1984,9 @@ extension ContentTrackQueryProperty
     });
   }
 
-  QueryBuilder<ContentTrack, DateTime?, QQueryOperations> lastReadProperty() {
+  QueryBuilder<ContentTrack, DateTime, QQueryOperations> lastReadProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'lastRead');
-    });
-  }
-
-  QueryBuilder<ContentTrack, String, QQueryOperations> metadataJsonProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'metadataJson');
     });
   }
 
@@ -2473,19 +1996,19 @@ extension ContentTrackQueryProperty
     });
   }
 
-  QueryBuilder<ContentTrack, String, QQueryOperations> parentIdProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'parentId');
-    });
-  }
-
-  QueryBuilder<ContentTrack, double?, QQueryOperations> progressProperty() {
+  QueryBuilder<ContentTrack, double, QQueryOperations> progressProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'progress');
     });
   }
 
-  QueryBuilder<ContentTrack, String?, QQueryOperations> titleProperty() {
+  QueryBuilder<ContentTrack, FilePath, QQueryOperations> thumbnailProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'thumbnail');
+    });
+  }
+
+  QueryBuilder<ContentTrack, String, QQueryOperations> titleProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'title');
     });
@@ -2494,12 +2017,6 @@ extension ContentTrackQueryProperty
   QueryBuilder<ContentTrack, String, QQueryOperations> uidProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'uid');
-    });
-  }
-
-  QueryBuilder<ContentTrack, String, QQueryOperations> xxh3HashProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'xxh3Hash');
     });
   }
 }

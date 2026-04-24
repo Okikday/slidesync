@@ -73,7 +73,7 @@ mixin RecentDialogActions {
   void onGoToCollection(BuildContext context, String contentId) async {
     final content = await ModuleContentRepo.getByContentId(contentId);
     if (content == null) return;
-    final collection = await ModuleRepo.getById(content.parentId);
+    final collection = await ModuleRepo.getByUid(content.parentId);
     if (collection == null) return;
     GlobalNav.withContext((c) {
       (context.mounted ? context : c).pushReplacementNamed(Routes.courseMaterials.name, extra: collection);

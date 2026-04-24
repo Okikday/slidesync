@@ -54,7 +54,7 @@ mixin HomeTabActions {
     }
     if (data.progress == 1.0) {
       ContentTrack? nextContentTrack = await ContentTrackRepo.filter
-          .parentIdEqualTo(content.parentId)
+          .courseIdEqualTo(content.parentId)
           .progressLessThan(1.0)
           .findFirst();
       nextContentTrack ??= await (ContentTrackRepo.filter).progressLessThan(1.0).findFirst();

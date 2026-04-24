@@ -21,7 +21,7 @@ class ContentTrackRepo {
   static Future<int> add(ContentTrack contentTrack) async {
     final existingContentTrack = await (ContentTrackRepo.filter).uidEqualTo(contentTrack.uid).findFirst();
     if (existingContentTrack == null) {
-      final courseTrack = await (CourseTrackRepo.filter).uidEqualTo(contentTrack.parentId).findFirst();
+      final courseTrack = await (CourseTrackRepo.filter).uidEqualTo(contentTrack.courseId).findFirst();
       if (courseTrack == null) return -1;
       await courseTrack.contentTracks.load();
       courseTrack.contentTracks.add(contentTrack);
@@ -58,5 +58,10 @@ class ContentTrackRepo {
       }
       return course;
     });
+  }
+
+  static double computeProgressForMultiple(IsarLinks<ContentTrack> contentTracks) {
+    final totalProgress = contentTracks.fold<double>(0.0, (sum, track) => sum + (track.progress ?? 0.0));
+    return totalProgress / contentTracks.length;
   }
 }

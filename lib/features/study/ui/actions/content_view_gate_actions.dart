@@ -213,7 +213,7 @@ class ContentViewGateActions {
     }
 
     // Get parent collection
-    final collection = await ModuleRepo.getById(content.parentId);
+    final collection = await ModuleRepo.getByUid(content.parentId);
     if (collection == null) {
       navState.pop();
       GlobalNav.withContext(

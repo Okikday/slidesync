@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:ui';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
@@ -6,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/features/main/ui/actions/home/recent_dialog_actions.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recent_dialog/recent_dialog_selection_options.dart';
@@ -70,9 +68,7 @@ class _RecentDialogState extends ConsumerState<RecentDialog> with RecentDialogAc
                                   borderRadius: BorderRadius.circular(16),
                                 ),
                                 child: BuildImagePathWidget(
-                                  fileDetails: FilePath(
-                                    local: jsonDecode(widget.contentTrack.metadataJson)['previewPath'] ?? '',
-                                  ),
+                                  fileDetails: widget.contentTrack.thumbnail,
                                   fallbackWidget: Icon(Iconsax.document_1, size: 26, color: ref.onBackground),
                                 ),
                               ),
@@ -112,7 +108,10 @@ class _RecentDialogState extends ConsumerState<RecentDialog> with RecentDialogAc
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 CustomText(
-                                  widget.contentTrack.title ?? "No title",
+                                  () {
+                                    final title = widget.contentTrack.title;
+                                    return title.isEmpty ? "No title" : title;
+                                  }(),
                                   fontSize: 17,
                                   fontWeight: FontWeight.bold,
                                   color: theme.onBackground,
@@ -121,7 +120,7 @@ class _RecentDialogState extends ConsumerState<RecentDialog> with RecentDialogAc
                                 SizedBox(
                                   height: 16,
                                   child: CustomText(
-                                    widget.contentTrack.description ?? "",
+                                    widget.contentTrack.description,
                                     overflow: TextOverflow.ellipsis,
                                     fontSize: 12.0,
                                     color: theme.supportingText,
@@ -132,12 +131,12 @@ class _RecentDialogState extends ConsumerState<RecentDialog> with RecentDialogAc
                           ),
                         ),
 
-                        if (widget.contentTrack.description != null) ConstantSizing.columnSpacingSmall,
+                        if (widget.contentTrack.description.isNotEmpty) ConstantSizing.columnSpacingSmall,
 
-                        if (widget.contentTrack.description != null)
+                        if (widget.contentTrack.description.isNotEmpty)
                           Padding(padding: const EdgeInsets.symmetric(horizontal: 12.0), child: divider),
 
-                        if (widget.contentTrack.description != null)
+                        if (widget.contentTrack.description.isNotEmpty)
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Padding(
@@ -153,8 +152,8 @@ class _RecentDialogState extends ConsumerState<RecentDialog> with RecentDialogAc
                                   ),
                                   ConstantSizing.columnSpacingSmall,
                                   CustomText(
-                                    widget.contentTrack.description!
-                                        .substring(0, widget.contentTrack.description!.length.clamp(0, 128))
+                                    widget.contentTrack.description
+                                        .substring(0, widget.contentTrack.description.length.clamp(0, 128))
                                         .padRight(3, "."),
                                     fontSize: 13,
                                     color: theme.supportingText,

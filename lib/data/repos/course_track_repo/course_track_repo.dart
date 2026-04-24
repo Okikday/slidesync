@@ -14,9 +14,8 @@ class CourseTrackRepo {
   //   return (await _isarData.query<CourseTrack>((q) => q.idGreaterThan(0))).filter().uidEqualTo(courseId);
   // }
 
-  static Future<CourseTrack?> getByCourseId(String courseId) async {
-    return await _isar.courseTracks.filter().uidEqualTo(courseId).findFirst();
-  }
+  static Future<CourseTrack?> getByUid(String courseId) async =>
+      await _isar.courseTracks.filter().uidEqualTo(courseId).findFirst();
 
   static Stream<CourseTrack?> watchByCourseId(String courseId) async* {
     yield* _isar.courseTracks

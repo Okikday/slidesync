@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -33,19 +31,18 @@ class RecentsSectionBody extends ConsumerWidget with RecentDialogActions {
         return SliverList.builder(
           itemCount: data.length,
           itemBuilder: (context, index) {
-            final content = data[index];
-            final previewPath = jsonDecode(content.metadataJson)['previewPath'];
+            final contentTrack = data[index];
             return RecentListTile(
                   dataModel: RecentListTileModel(
-                    title: content.title ?? "No title",
-                    subtitle: content.pages.isEmpty ? "" : "Page ${content.pages.last}",
+                    title: contentTrack.title.isEmpty ? "No title" : contentTrack.title,
+                    subtitle: contentTrack.pages.isEmpty ? "" : "Page ${contentTrack.pages.last}",
                     // extraContent: DummySlides.dummySlides[index]['extraContent'] as String? ?? "",
-                    previewPath: previewPath,
+                    previewPath: contentTrack.thumbnail.local,
                     progressLevel: ProgressLevel.neutral,
                     isStarred: false,
-                    progress: content.progress?.clamp(0, 1.0),
+                    progress: contentTrack.progress.clamp(0, 1.0),
                     onTapTile: () async {
-                      await onContinueReading(ref, content.uid);
+                      await onContinueReading(ref, contentTrack.uid);
                     },
                     onLongTapTile: () {
                       UiUtils.showCustomDialog(
@@ -55,7 +52,7 @@ class RecentsSectionBody extends ConsumerWidget with RecentDialogActions {
                         barrierColor: Colors.black.withValues(alpha: 0.6),
                         transitionDuration: Durations.short4,
                         reverseTransitionDuration: Durations.short4,
-                        child: RecentDialog(contentTrack: content),
+                        child: RecentDialog(contentTrack: contentTrack),
                       );
                     },
                   ),

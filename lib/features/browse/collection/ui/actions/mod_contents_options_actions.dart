@@ -30,7 +30,7 @@ class ModContentsOptionsActions {
     if (n.selectedContents.isEmpty) return;
     final anyContent = n.selectedContents.firstWhereOrNull((c) => c.parentId.isNotEmpty);
     if (anyContent == null) return;
-    final collection = await ModuleRepo.getById(anyContent.parentId);
+    final collection = await ModuleRepo.getByUid(anyContent.parentId);
     if (collection == null) return;
     await collection.contents.load();
     n.selectAllContent(collection.contents.toList());

@@ -13,11 +13,15 @@ abstract class IsarDataAccess<T> {
   /// Retrieve an object by its ID.
   Future<T?> getById(int id) async => await isarInstance.collection<T>().get(id);
 
+  Future<T?> get(int id) => getById(id);
+
   /// Retrieve all objects in the collection.
   Future<List<T>> getAll() async => await isarInstance.collection<T>().where().findAll();
 
   /// Delete an object by its ID.
   Future<bool> deleteById(int id) async => await isarInstance.writeTxn(() => isarInstance.collection<T>().delete(id));
+
+  Future<bool> delete(int id) => deleteById(id);
 
   /// Delete multiple objects by their IDs.
   Future<int> deleteByIds(List<int> ids) async =>
@@ -43,6 +47,8 @@ abstract class IsarDataAccess<T> {
   Stream<T?> watchById(int id, {bool fireImmediately = true}) async* {
     yield* isarInstance.collection<T>().watchObject(id, fireImmediately: fireImmediately);
   }
+
+  Stream<T?> watch(int id, {bool fireImmediately = true}) => watchById(id, fireImmediately: fireImmediately);
 
   /// Stream query results in real-time.
   Stream<List<T>> watchByQuery(

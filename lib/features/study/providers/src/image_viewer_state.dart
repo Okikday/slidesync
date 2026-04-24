@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
@@ -12,7 +11,6 @@ import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
-import 'package:slidesync/data/models/progress_track_models/course_track.dart';
 import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
@@ -107,10 +105,7 @@ class ImageViewerState with ValueNotifierFactoryMixin {
       return await _createProgressTrackModel(content);
     } else {
       return await _updateProgressTrack(
-        ptm.copyWith(
-          lastRead: DateTime.now(),
-          metadataJson: jsonEncode(<String, dynamic>{'previewPath': content.thumbnailPath}),
-        ),
+        ptm.copyWith(lastRead: DateTime.now(), thumbnail: content.metadata?.thumbnail ?? ptm.thumbnail),
       );
     }
   }
@@ -118,22 +113,21 @@ class ImageViewerState with ValueNotifierFactoryMixin {
   Future<ContentTrack?> _createProgressTrackModel(ModuleContent content) async {
     log("Creating progress track model for image");
     final result = await Result.tryRunAsync<ContentTrack?>(() async {
-      final courseId = (await ModuleRepo.getById(content.parentId))?.parentId;
+      final courseId = (await ModuleRepo.getByUid(content.parentId))?.parentId;
       if (courseId == null) return null;
 
-      final parentId = (await CourseTrackRepo.getByCourseId(courseId))?.uid;
+      final parentId = (await CourseTrackRepo.getByUid(courseId))?.uid;
       if (parentId == null) return null;
 
       final ContentTrack newPtm = ContentTrack.create(
-        contentId: content.uid,
-        parentId: parentId,
+        uid: content.uid,
+        courseId: parentId,
         title: content.title,
         description: content.description,
-        xxh3Hash: content.xxh3Hash,
         progress: 0.0,
         pages: const [],
         lastRead: DateTime.now(),
-        metadataJson: jsonEncode({'previewPath': content.thumbnailPath}),
+        thumbnail: content.metadata?.thumbnail,
       );
 
       return await ContentTrackRepo.isarData.getById(await ContentTrackRepo.isarData.store(newPtm));
@@ -150,14 +144,14 @@ class ImageViewerState with ValueNotifierFactoryMixin {
   Future<void> _updateCourseTrackProgress() async {
     if (progressTrack == null) return;
 
-    final courseTrack = await CourseTrackRepo.getByCourseId(progressTrack!.parentId);
+    final courseTrack = await CourseTrackRepo.getByUid(progressTrack!.courseId);
     if (courseTrack == null) return;
 
     await courseTrack.contentTracks.load();
     final contentsLength = courseTrack.contentTracks.length;
     if (contentsLength == 0) return;
 
-    final totalProgress = courseTrack.contentTracks.fold<double>(0.0, (sum, track) => sum + (track.progress ?? 0.0));
+    final totalProgress = courseTrack.contentTracks.fold<double>(0.0, (sum, track) => sum + (track.progress));
 
     final newProgress = totalProgress / contentsLength;
     await CourseTrackRepo.isarData.store(courseTrack.copyWith(progress: newProgress));

@@ -32,7 +32,7 @@ class CollectionMaterialsAppBar extends ConsumerWidget {
           CustomElevatedButton(
             onClick: () async {
               context.pop();
-              final collection = await ModuleRepo.getById(collectionId);
+              final collection = await ModuleRepo.getByUid(collectionId);
               Result.tryRun(() => context.pushNamed("${Routes.courseMaterials.name}full", extra: collection));
             },
             pixelWidth: 30,
@@ -155,7 +155,7 @@ class CollectionMaterialsAppBar extends ConsumerWidget {
                 title: "Go back to Course Details",
                 iconData: HugeIconsStroke.arrowLeft01,
                 onTap: () async {
-                  final collection = await ModuleRepo.getById(collectionId);
+                  final collection = await ModuleRepo.getByUid(collectionId);
                   if (collection == null) return;
                   GlobalNav.withContext((c) {
                     (context.mounted ? context : c).pushReplacementNamed(

@@ -44,7 +44,7 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
   void initState() {
     super.initState();
     pageController = PageController();
-    collectionFuture = ModuleRepo.getById(widget.content.parentId).then((c) => c ?? Module.empty());
+    collectionFuture = ModuleRepo.getByUid(widget.content.parentId).then((c) => c ?? Module.empty());
   }
 
   @override

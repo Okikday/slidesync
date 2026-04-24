@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:isar_community/isar.dart';
@@ -9,7 +8,6 @@ import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
-import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class ContentProgressTracker {
   Future<ContentTrack?> registerContentAccess(String contentId) async {
@@ -27,10 +25,7 @@ class ContentProgressTracker {
           description: content.description,
           lastRead: DateTime.now(),
           pages: ptm.pages.isEmpty ? const ["1"] : ptm.pages,
-          metadataJson: jsonEncode(<String, dynamic>{
-            ...ptm.metadataJson.decodeJson,
-            'previewPath': content.thumbnailPath,
-          }),
+          thumbnail: content.metadata?.thumbnail ?? ptm.thumbnail,
         ),
       );
     }
@@ -39,22 +34,20 @@ class ContentProgressTracker {
   Future<ContentTrack?> _createProgressTrackModel(ModuleContent content) async {
     log("Creating progress track model");
     final result = await Result.tryRunAsync<ContentTrack?>(() async {
-      final courseId = (await ModuleRepo.getById(content.parentId))?.parentId;
+      final courseId = (await ModuleRepo.getByUid(content.parentId))?.parentId;
       if (courseId == null) return null;
 
-      final parentId = (await CourseTrackRepo.getByCourseId(courseId))?.uid;
+      final parentId = (await CourseTrackRepo.getByUid(courseId))?.uid;
       if (parentId == null) return null;
 
       final ContentTrack newPtm = ContentTrack.create(
-        contentId: content.uid,
-        parentId: parentId,
+        uid: content.uid,
+        courseId: parentId,
         title: content.title,
         description: content.description,
-        xxh3Hash: content.xxh3Hash,
         progress: 0.0,
         pages: const ["1"],
-        lastRead: DateTime.now(),
-        metadataJson: jsonEncode({'previewPath': content.thumbnailPath}),
+        thumbnail: content.metadata?.thumbnail,
       );
 
       return await ContentTrackRepo.isarData.getById(await ContentTrackRepo.isarData.store(newPtm));

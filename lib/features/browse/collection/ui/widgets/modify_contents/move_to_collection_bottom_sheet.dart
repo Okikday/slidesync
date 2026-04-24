@@ -330,7 +330,7 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
 
   /// Your storage implementation
   Future<void> _storeContentsToCollection({required String collectionId, required List<String> filePaths}) async {
-    final collection = await ModuleRepo.getById(collectionId);
+    final collection = await ModuleRepo.getByUid(collectionId);
     if (collection == null) return;
 
     await AddContentsUc.addToCollectionNoRef(collection: collection, filePaths: filePaths);

@@ -6,18 +6,16 @@ import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 
 class ModifyContentUc {
   /// Deletes the content provided from storage and database
   Future<String?> deleteContent(ModuleContent content) async {
-    final bool dupHashExists = await ModuleContentRepo.doesDuplicateHashExists(content.xxh3Hash);
+    final dupHashExists = await ModuleContentRepo.doesDuplicateHashExists(content.xxh3Hash);
     final fileSize = content.fileSizeInBytes;
     await ModuleContentRepo.deleteContent(content);
     await removeIdFromRecents(content.uid);
-    await ContentTrackRepo.deleteByContentId(content.uid);
     if (!dupHashExists) {
       await Result.tryRunAsync(() async {
         final prevFileSum = await AppHiveData.instance.getData<int?>(key: HiveDataPathKey.globalFileSizeSum.name);

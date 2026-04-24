@@ -32,7 +32,7 @@ class ModifyCourseActions {
       await ModifyCollectionUc().deleteCollection(item);
     }
 
-    await CourseRepo.deleteCourseById(courseId);
+    await CourseRepo.delete(course.id);
   }
 
   /// When the user Modifies image

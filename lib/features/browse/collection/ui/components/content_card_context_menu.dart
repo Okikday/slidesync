@@ -298,7 +298,7 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
         return;
       }
 
-      final parentCollection = await ModuleRepo.getById(content.parentId);
+      final parentCollection = await ModuleRepo.getByUid(content.parentId);
       if (parentCollection == null) {
         transferNotifier.updateStatus(id: transferId, status: TransferStatus.failed);
         uploadFeedNotifier.fail(transferId, 'Parent collection not found');

@@ -19,7 +19,7 @@ class AddLinkActions {
   }) async {
     log("previewLinkDetails: $previewLinkDetails");
     if (parentId.isEmpty) return false;
-    final collection = await ModuleRepo.getById(parentId);
+    final collection = await ModuleRepo.getByUid(parentId);
     if (collection == null) return false;
     final xxh3Hash = CryptoUtils.calculateStringHash(link);
     final ModuleContent? sameHashedContent = await ModuleContentRepo.findFirstDuplicateContentByHash(
