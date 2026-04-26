@@ -1,7 +1,7 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/features/browse/course/ui/screens/create_course_view.dart';
+import 'package:slidesync/features/browse/ui/screens/create_course_view.dart';
 import 'package:slidesync/routes/routes.dart';
 
 final courseMgmtRoutes = [
@@ -32,5 +32,4 @@ final courseMgmtRoutes = [
   //     child: SelectToModifyCourseView(),
   //   ),
   // ),
- 
 ];

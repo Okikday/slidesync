@@ -19,7 +19,7 @@ enum Routes {
 
   /// Course Nav screens
   courseDetails,
-  courseMaterials,
+  moduleContentsView,
 
   contentGate,
   createCourse,

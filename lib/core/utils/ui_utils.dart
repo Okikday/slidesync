@@ -32,7 +32,7 @@ class UiUtils {
   }
 
   /// For showing Custom Loading Dialog in tuned format
-  static void showLoadingDialog(
+  static Future<T?> showLoadingDialog<T>(
     BuildContext context, {
     String message = "Just a moment...",
     bool canPop = true,
@@ -44,7 +44,7 @@ class UiUtils {
     final theme = context.theme;
     final normalColor = theme.colorScheme.onSurface;
     final bgColor = theme.scaffoldBackgroundColor.withValues(alpha: 0.8);
-    await CustomDialog.show(
+    return CustomDialog.show(
       context,
       canPop: canPop,
       child:

@@ -5,9 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
-import 'package:slidesync/features/browse/collection/providers/collection_materials_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
 import 'package:slidesync/features/study/providers/pdf_doc_viewer_provider.dart';
@@ -35,19 +32,7 @@ class PdfDocNormalAppBar extends ConsumerWidget {
                   theme.isDarkMode,
                   title: title,
                   onBackButtonClicked: () async {
-                    final content = await ModuleContentRepo.getByContentId(contentId);
-                    if (content != null) {
-                      await Result.tryRunAsync(() async {
-                        (await ref.read(
-                          CollectionMaterialsProvider.contentPaginationProvider(content.parentId).future,
-                        )).restartIsolate();
-                      });
-                    }
-                    if (context.mounted) {
-                      context.pop();
-                    } else {
-                      GlobalNav.withContext((c) => c.pop());
-                    }
+                    GlobalNav.withContext((c) => (context.mounted ? context : c).pop());
                   },
                   trailing: Padding(
                     padding: const EdgeInsets.only(left: 8.0),

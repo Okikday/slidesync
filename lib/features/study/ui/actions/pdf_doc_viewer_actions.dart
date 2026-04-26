@@ -2,8 +2,6 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/features/browse/collection/providers/collection_materials_provider.dart';
 import 'package:slidesync/features/study/providers/pdf_doc_viewer_provider.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -15,9 +13,6 @@ class PdfDocViewerActions {
     final isSearching = ref.read(searchStateProvider.select((s) => s.isSearchingNotifier)).value;
     if (isSearching) ref.read(searchStateProvider).setSearching(false);
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    await Result.tryRunAsync(() async {
-      (await ref.read(CollectionMaterialsProvider.contentPaginationProvider(parentId).future)).restartIsolate();
-    });
   }
 
   static void calcAppBarTranslation(

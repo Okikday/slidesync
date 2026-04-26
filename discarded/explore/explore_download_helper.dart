@@ -220,7 +220,7 @@ class ExploreDownloadHelper {
       ref.read(transferStateProvider.notifier).updateStatus(id: transferId, status: TransferStatus.completed);
 
       // Navigate to collection
-      context.pushNamed(Routes.courseMaterials.name, extra: selectedCourse);
+      context.pushNamed(Routes.moduleContentsView.name, extra: selectedCourse);
     } catch (e) {
       if (!context.mounted) return;
       Navigator.pop(context);
@@ -319,7 +319,7 @@ class ExploreDownloadHelper {
       ref.read(transferStateProvider.notifier).updateStatus(id: transferId, status: TransferStatus.completed);
 
       // Navigate to collection
-      context.pushNamed(Routes.courseMaterials.name, extra: selectedCollection);
+      context.pushNamed(Routes.moduleContentsView.name, extra: selectedCollection);
     } catch (e) {
       if (!context.mounted) return;
       Navigator.pop(context);

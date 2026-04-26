@@ -1,4 +1,5 @@
 {
     "java.configuration.updateBuildConfiguration": "interactive",
-    "workbench.editor.dragToOpenWindow": false
+    "workbench.editor.dragToOpenWindow": false,
+    "cmake.sourceDirectory": "C:/Users/Okikiola/MyFlutterProjects/slidesync/windows"
 }

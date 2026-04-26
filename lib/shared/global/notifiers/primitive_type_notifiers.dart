@@ -175,23 +175,26 @@ class StreamedNotifier<T> extends StreamNotifier<T> {
 
 class HiveAsyncImpliedNotifier<In, Out> extends AsyncNotifier<Out> {
   final String _hiveKey;
-  final Out _defaultKey;
+  final Out _defaultValue;
   final bool? isUpdateNotifying;
   final FutureOr<Out?> Function(In? data)? builder;
   final FutureOr<In> Function(Out raw)? transformer;
 
+  String get hiveKey => _hiveKey;
+  Out get defaultValue => _defaultValue;
+
   final Queue<Completer<void>> _updateQueue = Queue<Completer<void>>();
   bool _isProcessingQueue = false;
 
-  HiveAsyncImpliedNotifier(this._hiveKey, this._defaultKey, {this.isUpdateNotifying, this.builder, this.transformer});
+  HiveAsyncImpliedNotifier(this._hiveKey, this._defaultValue, {this.isUpdateNotifying, this.builder, this.transformer});
 
   @override
   Future<Out> build() async {
     return (await Result.tryRunAsync(() async {
           final data = await AppHiveData.instance.getData<In>(key: _hiveKey);
-          return builder != null ? (await builder!(data) ?? data as Out?) : data as Out? ?? _defaultKey;
+          return builder != null ? (await builder!(data) ?? data as Out?) : data as Out? ?? _defaultValue;
         })).onError((e, [st]) => log("Try using resolveData params")).data ??
-        _defaultKey;
+        _defaultValue;
   }
 
   Future<void> set(Out value) async {

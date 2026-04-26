@@ -8,11 +8,10 @@ class GlobalNav {
 
   /// Execute a function with the root context
   /// Use this when you need context for dialogs, overlays, etc.
-  static void withContext(void Function(BuildContext context) run) {
+  static T? withContext<T>(T? Function(BuildContext context) run) {
     final context = rootNavigatorKey.currentState?.context ?? rootNavigatorKey.currentContext;
-    if (context != null && context.mounted) {
-      run(context);
-    }
+    if (context != null && context.mounted) return run(context);
+    return null;
   }
 
   /// Execute an async function with the root context

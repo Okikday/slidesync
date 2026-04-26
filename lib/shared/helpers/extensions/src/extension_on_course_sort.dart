@@ -1,6 +1,6 @@
 part of '../extensions.dart';
 
-extension CourseSortX on CourseSortOption {
+extension CourseSortX on EntityOrdering {
   PlainCourseSortOption toPlain() {
     final n = name;
     final core = n.endsWith('Asc')
@@ -22,17 +22,17 @@ extension CourseSortX on CourseSortOption {
 
   String get label {
     switch (this) {
-      case CourseSortOption.nameAsc:
+      case EntityOrdering.nameAsc:
         return 'Name (Ascending)';
-      case CourseSortOption.nameDesc:
+      case EntityOrdering.nameDesc:
         return 'Name (Descending)';
-      case CourseSortOption.dateCreatedAsc:
+      case EntityOrdering.dateCreatedAsc:
         return 'Date Created (Ascending)';
-      case CourseSortOption.dateCreatedDesc:
+      case EntityOrdering.dateCreatedDesc:
         return 'Date Created (Descending)';
-      case CourseSortOption.dateModifiedAsc:
+      case EntityOrdering.dateModifiedAsc:
         return 'Date Modified (Ascending)';
-      case CourseSortOption.dateModifiedDesc:
+      case EntityOrdering.dateModifiedDesc:
         return 'Date Modified (Descending)';
     }
   }

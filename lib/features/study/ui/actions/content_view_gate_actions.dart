@@ -15,9 +15,8 @@ import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/repos/course_repo/module_repo.dart';
-import 'package:slidesync/features/browse/collection/providers/collection_materials_provider.dart';
-import 'package:slidesync/features/browse/collection/ui/actions/add_contents_actions.dart';
-import 'package:slidesync/features/browse/shared/usecases/contents/handle_archive_uc.dart';
+import 'package:slidesync/features/browse/ui/actions/module_contents/add_contents_actions.dart';
+import 'package:slidesync/features/browse/logic/src/contents/handle_archive_uc.dart';
 import 'package:slidesync/features/settings/providers/settings_provider.dart';
 import 'package:slidesync/features/study/logic/services/drive_browser.dart';
 import 'package:slidesync/routes/app_router.dart';
@@ -123,7 +122,7 @@ class ContentViewGateActions {
         p.extension(filePath).toLowerCase().contains("pdf") || p.extension(urlPath).toLowerCase().contains("pdf");
 
     if (isPdf) {
-      await _stopPaginationIfNeeded(ref, content);
+      // await _stopPaginationIfNeeded(ref, content);
       _navigateTo(Routes.pdfDocumentViewer, content);
       return;
     }
@@ -242,15 +241,5 @@ class ContentViewGateActions {
 
   static void _navigateTo(Routes route, ModuleContent content) {
     GlobalNav.withContext((context) => context.pushNamed(route.name, extra: content));
-  }
-
-  static Future<void> _stopPaginationIfNeeded(MutationTarget ref, ModuleContent content) async {
-    Result.tryRun(() async {
-      final pageProvider = await ref.container.read(
-        CollectionMaterialsProvider.contentPaginationProvider(content.parentId).future,
-      );
-      if (!pageProvider.isUpdating) return;
-      pageProvider.stopIsolate();
-    });
   }
 }

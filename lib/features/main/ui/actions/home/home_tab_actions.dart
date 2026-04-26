@@ -88,7 +88,7 @@ mixin HomeTabActions {
     } else {
       await anyCourse.modules.load();
       final toCollection = anyCourse.modules.first;
-      GlobalNav.withContext((context) => context.pushNamed(Routes.courseMaterials.name, extra: toCollection));
+      GlobalNav.withContext((context) => context.pushNamed(Routes.moduleContentsView.name, extra: toCollection));
       if (toCollection.contents.isEmpty) {
         await 1.inSeconds.delay();
         log("collection is empty");

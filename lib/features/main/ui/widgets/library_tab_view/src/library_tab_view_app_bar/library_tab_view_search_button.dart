@@ -2,14 +2,15 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:isar_community/isar.dart';
+import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
-import 'package:slidesync/features/browse/course/ui/components/collection_card.dart';
-import 'package:slidesync/features/browse/collection/ui/components/material_list_card.dart';
+import 'package:slidesync/features/browse/ui/widgets/module/collection_card.dart';
+import 'package:slidesync/features/browse/ui/widgets/module_contents_view/material_list_card.dart';
 import 'package:slidesync/features/main/ui/actions/library/course_card_actions.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/course_card.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
@@ -104,7 +105,7 @@ class LibraryTabViewSearchButton extends ConsumerWidget with CourseCardActions {
                     return switch (ref.watch((_searchTypeProvider))) {
                       0 => CourseCard(
                         value as Course,
-                        false,
+                        CardViewType.list,
                         onTap: (course) {
                           // controller.closeView("");
                           onTapCourseCard(ref, course: course);

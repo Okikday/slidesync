@@ -1,5 +1,5 @@
 import 'package:slidesync/features/main/providers/src/home_notifier.dart';
-import 'package:slidesync/features/main/providers/src/library_notifier.dart';
+import 'package:slidesync/features/main/providers/src/library_notifier/library_notifier.dart';
 import 'package:slidesync/features/main/providers/src/main_notifier.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 

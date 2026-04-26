@@ -4,7 +4,7 @@ part 'enums.mapper.dart';
 
 enum DeviceType { mobile, tablet, desktop, webMobile, webTablet, webDesktop, unknown }
 
-enum CourseSortOption { nameAsc, nameDesc, dateCreatedAsc, dateCreatedDesc, dateModifiedAsc, dateModifiedDesc }
+enum EntityOrdering { nameAsc, nameDesc, dateCreatedAsc, dateCreatedDesc, dateModifiedAsc, dateModifiedDesc }
 
 enum PlainCourseSortOption { name, dateCreated, dateModified }
 
@@ -18,3 +18,5 @@ enum AppCourseCollections { bookmarks, references }
 
 @MappableEnum()
 enum ContentOrigin { none, local, server }
+
+enum CardViewType { grid, list, other }

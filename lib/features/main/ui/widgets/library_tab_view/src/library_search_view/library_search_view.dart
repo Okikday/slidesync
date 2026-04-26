@@ -7,7 +7,7 @@ import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:isar_community/isar.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
-import 'package:slidesync/features/browse/collection/ui/components/material_list_card.dart';
+import 'package:slidesync/features/browse/ui/widgets/module_contents_view/material_list_card.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/decorations/back_soft_edge_blur.dart';
 import 'package:slidesync/shared/widgets/inputs/app_text_form_field.dart';

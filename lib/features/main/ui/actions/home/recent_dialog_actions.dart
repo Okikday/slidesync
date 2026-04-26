@@ -76,7 +76,7 @@ mixin RecentDialogActions {
     final collection = await ModuleRepo.getByUid(content.parentId);
     if (collection == null) return;
     GlobalNav.withContext((c) {
-      (context.mounted ? context : c).pushReplacementNamed(Routes.courseMaterials.name, extra: collection);
+      (context.mounted ? context : c).pushReplacementNamed(Routes.moduleContentsView.name, extra: collection);
     });
   }
 }

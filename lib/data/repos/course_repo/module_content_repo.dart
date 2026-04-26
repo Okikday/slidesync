@@ -18,12 +18,6 @@ class ModuleContentRepo {
   static Isar get _isar => _isarData.isarInstance;
   static Isar get isar => _isar;
 
-  // static Future<QueryBuilder<CourseContent, CourseContent, QAfterFilterCondition>> _queryById(
-  //   String xxh3Hash,
-  // ) async {
-  //   return (await _isarData.query<CourseContent>((q) => q.idGreaterThan(0))).filter().xxh3HashEqualTo(xxh3Hash);
-  // }
-
   static QueryBuilder<ModuleContent, ModuleContent, QFilterCondition> get filter => _isar.moduleContents.filter();
 
   static Future<void> deleteByDbId(int dbId) async => await _isarData.deleteById(dbId);

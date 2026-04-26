@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/actions/library/course_card_actions.dart';
@@ -11,9 +12,9 @@ import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
 
 class CourseCard extends ConsumerWidget with CourseCardActions {
   final Course course;
-  final bool isGrid;
+  final CardViewType type;
   final void Function(Course course)? onTap;
-  const CourseCard(this.course, this.isGrid, {super.key, this.onTap});
+  const CourseCard(this.course, this.type, {super.key, this.onTap});
 
   void updateTapDownDetailsProvider(WidgetRef ref, Offset det) {
     MainProvider.library.act(ref).cardTapPositionDetails = det;
@@ -39,7 +40,7 @@ class CourseCard extends ConsumerWidget with CourseCardActions {
           }
           onTapCourseCard(ref, course: course);
         },
-        child: isGrid
+        child: type == CardViewType.grid
             ? GridCourseCard(
                 course,
                 onTapIcon: () {

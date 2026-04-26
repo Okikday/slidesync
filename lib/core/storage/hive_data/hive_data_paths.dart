@@ -24,12 +24,12 @@ enum HiveDataPathKey {
   recentContentsIds,
 
   /// Library Tab View
-  libraryCourseSortOption,
-  libraryTabCardViewType,
+  libraryCourseOrdering,
+  libraryCourseCardViewType,
 
   /// Course Materials View
-  courseMaterialscardViewType,
-  courseMaterialsSortOption,
+  moduleContentsCardViewType,
+  moduleContentsOrdering,
 
   /// Pdf Viewer view
   ispdfViewerInDarkMode,

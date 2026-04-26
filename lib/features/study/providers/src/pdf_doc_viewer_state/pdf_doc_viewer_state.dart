@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:isar_community/isar.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:screenshot/screenshot.dart';
-import 'package:slidesync/core/base/use_value_notifier.dart';
+import 'package:slidesync/core/base/mixins/use_value_notifier.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';

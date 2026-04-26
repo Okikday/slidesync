@@ -1,19 +1,29 @@
 import 'dart:developer';
 
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 import 'package:slidesync/data/models/module/module.dart';
+import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/data/repos/course_repo/module_repo.dart';
+import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 
 final _collectionById = StreamNotifierProvider.autoDispose.family<CollectionNotifier, Module, String>(
   (collectionId) => CollectionNotifier(collectionId),
 );
-final _collectionsByParentId = StreamProvider.autoDispose.family<List<Module>, String>((ref, arg) async* {
-  yield* (ModuleRepo.filter).parentIdEqualTo(arg).sortByTitle().watch(fireImmediately: true);
-});
+final _watchCollectionsInCourse = StreamNotifierProvider.autoDispose.family(
+  (String courseId) => StreamedNotifier<List<Module>>(() async* {
+    final course = await CourseRepo.getCourseByUid(courseId);
+    if (course == null) {
+      yield* Stream.empty();
+      return;
+    }
+    yield* course.modules.filter().watch(fireImmediately: true);
+  }),
+);
 
 class CollectionsProviders {
-  static StreamProvider<List<Module>> collectionsProvider(String parentId) => _collectionsByParentId(parentId);
+  static StreamNotifierProvider<StreamedNotifier<List<Module>>, List<Module>> watchCollectionsInCourseProvider(
+    String courseId,
+  ) => _watchCollectionsInCourse(courseId);
 
   static StreamNotifierProvider<CollectionNotifier, Module> collectionProvider(String collectionId) =>
       _collectionById(collectionId);

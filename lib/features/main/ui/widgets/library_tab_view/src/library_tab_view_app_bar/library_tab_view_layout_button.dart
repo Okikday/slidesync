@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/helpers/icon_helper.dart';
 
 class LibraryTabViewLayoutButton extends ConsumerWidget {
   final Color? backgroundColor;
@@ -12,22 +12,23 @@ class LibraryTabViewLayoutButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final AsyncValue<int> asyncIsListView = MainProvider.library.link(ref).cardViewType.watch(ref);
+    final stateValue = MainProvider.library
+        .select((s) => (cardViewType: s.cardViewType, isLoading: s.isLoading))
+        .watch(ref);
 
-    return asyncIsListView.when(
-      data: (data) {
-        final isGrid = data == 0;
-        return BuildButton(
-          onTap: () {
-            MainProvider.library.act(ref).cardViewType.act(ref).toggle();
-          },
-          backgroundColor: backgroundColor,
-          iconData: isGrid ? HugeIconsStroke.grid02 : HugeIconsStroke.menu02,
-        );
+    if (stateValue.isLoading) {
+      return ConstrainedBox(
+        constraints: BoxConstraints(maxHeight: 20, maxWidth: 20),
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    return BuildButton(
+      onTap: () {
+        MainProvider.library.act(ref).toggleCardViewType();
       },
-      error: (e, st) => Icon(Icons.error_rounded),
-      loading: () =>
-          ConstrainedBox(constraints: BoxConstraints(maxHeight: 20, maxWidth: 20), child: CircularProgressIndicator()),
+      backgroundColor: backgroundColor,
+      iconData: IconHelper.getCardViewTypeIconData(stateValue.cardViewType),
     );
   }
 }

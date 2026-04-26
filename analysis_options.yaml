@@ -15,6 +15,9 @@ analyzer:
     - build/**
     - .dart_tool/**
     - lib/generated/**
+    - lib/**/*.g.dart
+    - lib/**/*.mapper.dart
+    - lib/**/*.freezed.dart
   errors:
     experimental_member_access: ignore
     experimental_member_use: ignore
@@ -38,6 +41,6 @@ linter:
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
 
-# custom_lint:
-#   rules:
-#     - riverpod_lint
+custom_lint:
+  rules:
+    - riverpod_lint

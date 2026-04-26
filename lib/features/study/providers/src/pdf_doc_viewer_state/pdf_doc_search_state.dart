@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:pdfrx/pdfrx.dart';
-import 'package:slidesync/core/base/use_value_notifier.dart';
+import 'package:slidesync/core/base/mixins/use_value_notifier.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_alert_dialog.dart';
 

@@ -10,7 +10,7 @@ import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 class LibraryTabViewFilterButton extends ConsumerWidget {
   const LibraryTabViewFilterButton({super.key});
 
-  ({String title, bool asc}) parseCourseSortOption(CourseSortOption o) {
+  ({String title, bool asc}) parseCourseSortOption(EntityOrdering o) {
     final n = o.name;
     final asc = n.endsWith('Asc');
     final core = asc
@@ -26,7 +26,7 @@ class LibraryTabViewFilterButton extends ConsumerWidget {
   List<PlainCourseSortOption> plainListFromCourseSortOptions() {
     final seen = <PlainCourseSortOption>{};
     final out = <PlainCourseSortOption>[];
-    for (final o in CourseSortOption.values) {
+    for (final o in EntityOrdering.values) {
       final p = o.toPlain();
       if (seen.add(p)) out.add(p);
     }
@@ -34,15 +34,15 @@ class LibraryTabViewFilterButton extends ConsumerWidget {
   }
 
   // Find a CourseSortOption for a plain option with the requested direction.
-  CourseSortOption _fromPlain(PlainCourseSortOption p, bool asc) {
-    for (final o in CourseSortOption.values) {
+  EntityOrdering _fromPlain(PlainCourseSortOption p, bool asc) {
+    for (final o in EntityOrdering.values) {
       if (o.toPlain() == p) {
         final n = o.name;
         if (asc && n.endsWith('Asc')) return o;
         if (!asc && n.endsWith('Desc')) return o;
       }
     }
-    return CourseSortOption.dateModifiedDesc;
+    return EntityOrdering.dateModifiedDesc;
   }
 
   @override
@@ -53,7 +53,7 @@ class LibraryTabViewFilterButton extends ConsumerWidget {
     final currSortData = parseCourseSortOption(currSortOption);
     final currPlain = currSortOption.toPlain();
     final plainList = plainListFromCourseSortOptions();
-    final isSortOptionNone = currSortOption == CourseSortOption.dateModifiedDesc;
+    final isSortOptionNone = currSortOption == EntityOrdering.dateModifiedDesc;
 
     return AppPopupMenuButton(
       icon: isSortOptionNone ? HugeIconsSolid.filter : HugeIconsStroke.filter,
