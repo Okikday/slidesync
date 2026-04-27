@@ -1,0 +1,88 @@
+name: Flutter Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > /home/runner/upload-keystore.jks
+
+      - name: Debug - Check secrets are set
+        run: |
+          echo "KEY_PROPERTIES_B64 set: ${{ secrets.KEY_PROPERTIES_B64 != '' }}"
+          echo "ENV_FILE_CONTENT_B64 set: ${{ secrets.ENV_FILE_CONTENT_B64 != '' }}"
+          echo "GOOGLE_SERVICES_JSON_B64 set: ${{ secrets.GOOGLE_SERVICES_JSON_B64 != '' }}"
+          echo "FIREBASE_OPTIONS_DART_B64 set: ${{ secrets.FIREBASE_OPTIONS_DART_B64 != '' }}"
+
+      - name: Create Configuration Files
+        env:
+          KEY_PROPERTIES_B64: ${{ secrets.KEY_PROPERTIES_B64 }}
+          ENV_FILE_CONTENT_B64: ${{ secrets.ENV_FILE_CONTENT_B64 }}
+          GOOGLE_SERVICES_JSON_B64: ${{ secrets.GOOGLE_SERVICES_JSON_B64 }}
+          FIREBASE_OPTIONS_DART_B64: ${{ secrets.FIREBASE_OPTIONS_DART_B64 }}
+        run: |
+          mkdir -p lib android/app
+
+          echo "$KEY_PROPERTIES_B64"        | base64 --decode > android/key.properties
+          echo "$ENV_FILE_CONTENT_B64"      | base64 --decode > .env
+          echo "$GOOGLE_SERVICES_JSON_B64"  | base64 --decode > android/app/google-services.json
+          echo "$FIREBASE_OPTIONS_DART_B64" | base64 --decode > lib/firebase_options.dart
+
+      - name: Debug - Verify files created
+        run: |
+          echo "=== key.properties ===" && cat android/key.properties
+          echo "=== .env ===" && cat .env
+          echo "=== google-services.json (first 5 lines) ===" && head -5 android/app/google-services.json
+          echo "=== firebase_options.dart (first 5 lines) ===" && head -5 lib/firebase_options.dart
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Build APK (Split per ABI)
+        env:
+          KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          STORE_FILE: /home/runner/upload-keystore.jks
+        run: flutter build apk --release --split-per-abi
+
+      - name: Upload APKs as Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apks
+          path: build/app/outputs/flutter-apk/app-*-release.apk
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/app/outputs/flutter-apk/app-*-release.apk
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
