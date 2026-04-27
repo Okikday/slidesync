@@ -21,12 +21,20 @@ jobs:
           channel: 'stable'
 
       - name: Create Firebase Configuration Files
+        shell: bash
         run: |
           mkdir -p lib
           mkdir -p android/app
-          echo "${{ secrets.FIREBASE_OPTIONS_DART }}" > lib/firebase_options.dart
-          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" > android/app/google-services.json
-          echo "${{ secrets.ENV_FILE_CONTENT }}" > .env
+          
+          # Use a heredoc to safely write the JSON content
+          cat <<EOF > android/app/google-services.json
+          ${{ secrets.GOOGLE_SERVICES_JSON }}
+          EOF
+          
+          # Use a heredoc for the Dart file as well
+          cat <<EOF > lib/firebase_options.dart
+          ${{ secrets.FIREBASE_OPTIONS_DART }}
+          EOF
         
       - name: Get dependencies
         run: flutter pub get
