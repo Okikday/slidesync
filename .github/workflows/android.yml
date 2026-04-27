@@ -32,14 +32,22 @@ jobs:
         shell: bash
         run: |
           mkdir -p lib android/app
+          
+          # 1. Create key.properties for Gradle signing
           echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
-          cat <<EOF > .env
+          
+          # 2. Create .env for API keys (using quoted 'EOF' for safety)
+          cat <<'EOF' > .env
           ${{ secrets.ENV_FILE_CONTENT }}
           EOF
-          cat <<EOF > android/app/google-services.json
+          
+          # 3. Create google-services.json for Android
+          cat <<'EOF' > android/app/google-services.json
           ${{ secrets.GOOGLE_SERVICES_JSON }}
           EOF
-          cat <<EOF > lib/firebase_options.dart
+          
+          # 4. Create firebase_options.dart for Flutter
+          cat <<'EOF' > lib/firebase_options.dart
           ${{ secrets.FIREBASE_OPTIONS_DART }}
           EOF
         
@@ -52,7 +60,6 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          
           files: build/app/outputs/flutter-apk/app-*-release.apk
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
