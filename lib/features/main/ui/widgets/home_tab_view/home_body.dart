@@ -28,7 +28,6 @@ class _HomeBodyState extends ConsumerState<HomeBody> with HomeTabActions {
 
   @override
   Widget build(BuildContext context) {
-    final tabIndex = MainProvider.state.select((s) => s.tabIndex).watch(ref);
     return SmoothCustomScrollView(
       physics: const BouncingScrollPhysics(),
       intensity: ScrollIntensity.slow,
@@ -46,14 +45,20 @@ class _HomeBodyState extends ConsumerState<HomeBody> with HomeTabActions {
               return recentContentTrack.when(
                 data: (data) {
                   if (data != null) {
-                    return HomeDashboard(
-                          data: data,
-                          isFirst: true,
-                          onReadingBtnTapped: () => onReadingButtonTapped(ref, data: data),
-                        )
-                        .animate(target: tabIndex == 0 ? 1 : 0)
-                        .scaleXY(begin: 0.95, end: 1.0, duration: 400.inMs, curve: CustomCurves.decelerate)
-                        .fadeIn(duration: 400.inMs, curve: CustomCurves.decelerate);
+                    return AbsorberWatch(
+                      listenable: MainProvider.state.select((s) => s.tabIndex),
+                      builder: (context, tabIndex, ref, child) {
+                        return child!
+                            .animate(target: tabIndex == 0 ? 1 : 0)
+                            .scaleXY(begin: 0.95, end: 1.0, duration: 400.inMs, curve: CustomCurves.decelerate)
+                            .fadeIn(duration: 400.inMs, curve: CustomCurves.decelerate);
+                      },
+                      child: HomeDashboard(
+                        data: data,
+                        isFirst: true,
+                        onReadingBtnTapped: () => onReadingButtonTapped(ref, data: data),
+                      ),
+                    );
                   }
                   return child!;
                 },

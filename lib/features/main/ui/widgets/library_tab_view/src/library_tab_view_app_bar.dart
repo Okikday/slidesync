@@ -1,15 +1,18 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mira_widgets/mira_widgets.dart';
 import 'package:slidesync/core/assets/assets.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
+import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/library_tab_view_filter_button.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/library_tab_view_header_text.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/library_tab_view_layout_button.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/library_tab_view_search_button.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/state/absorber.dart';
 import 'package:soft_edge_blur/soft_edge_blur.dart';
 
 final double libraryAppBarMaxHeight = DeviceUtils.isDesktop() ? 160 : 220;
@@ -54,36 +57,52 @@ class LibraryTabViewAppBar extends ConsumerWidget {
             ).sizedBox(h: 80).clipped,
 
             // Stack
-            [
-                  const LibraryTabViewHeaderText(),
+            Stack(
+              alignment: Alignment.bottomRight,
+              children: [
+                const LibraryTabViewHeaderText(),
 
-                  // Row
-                  [
-                        // const Expanded(child: SizedBox()),
-                        LibraryTabViewSearchButton(backgroundColor: theme.adjustBgAndSecondaryWithLerp),
-                        ConstantSizing.rowSpacing(8.0),
-                        const Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            LibraryTabViewFilterButton(),
-                            LibraryTabViewLayoutButton(backgroundColor: Colors.transparent),
-                          ],
-                        ).decoratedBox(
-                          BoxDecoration(
-                            color: theme.surface.withValues(alpha: 0.75),
-                            borderRadius: BorderRadius.circular(40),
-                            border: Border.fromBorderSide(BorderSide(color: theme.onBackground.withAlpha(10))),
+                // Row
+                SizedBox(
+                  height: kToolbarHeight,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    child: AbsorberWatch(
+                      listenable: MainProvider.state.select((s) => s.tabIndex),
+                      builder: (context, tabIndex, ref, child) {
+                        return child!
+                            .animate(target: tabIndex == 1 ? 1 : 0)
+                            .scaleXY(begin: 0.9, end: 1.0, duration: 400.inMs, curve: CustomCurves.decelerate)
+                            .slideX(begin: 0.5, end: 0.0, duration: 600.inMs, curve: CustomCurves.defaultIosSpring)
+                            .fadeIn(duration: 400.inMs, curve: CustomCurves.decelerate);
+                      },
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          // const Expanded(child: SizedBox()),
+                          LibraryTabViewSearchButton(backgroundColor: theme.adjustBgAndSecondaryWithLerp),
+                          ConstantSizing.rowSpacing(8.0),
+                          const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              LibraryTabViewFilterButton(),
+                              LibraryTabViewLayoutButton(backgroundColor: Colors.transparent),
+                            ],
+                          ).decoratedBox(
+                            BoxDecoration(
+                              color: theme.surface.withValues(alpha: 0.75),
+                              borderRadius: BorderRadius.circular(40),
+                              border: Border.fromBorderSide(BorderSide(color: theme.onBackground.withAlpha(10))),
+                            ),
                           ),
-                        ),
-                      ]
-                      .row(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.end)
-                      // in padding then sizedbox
-                      .padding(const EdgeInsets.symmetric(horizontal: 16, vertical: 4))
-                      .sizedBox(h: kToolbarHeight),
-                ]
-                // in stack then cliprrect
-                .stack(alignment: Alignment.bottomRight)
-                .clipped,
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ],
         ),
       ),
