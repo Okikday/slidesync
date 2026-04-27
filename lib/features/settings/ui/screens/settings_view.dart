@@ -12,6 +12,7 @@ import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/storage_utils/clean_up_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
+import 'package:slidesync/features/browse/logic/src/contents/add_content/store_contents.dart';
 import 'package:slidesync/features/settings/logic/models/settings_model.dart';
 import 'package:slidesync/features/settings/providers/settings_provider.dart';
 import 'package:slidesync/features/settings/ui/components/settings_appearance_dialog.dart';
@@ -230,11 +231,10 @@ class SettingsView extends ConsumerWidget {
                     },
                     child: Center(
                       child: FutureBuilder(
-                        future: AppHiveData.instance.getData(key: HiveDataPathKey.globalFileSizeSum.name),
+                        future: getTotalStorageUsed(),
                         builder: (context, asyncSnapshot) {
                           if (asyncSnapshot.hasData && asyncSnapshot.data != null) {
-                            final mb =
-                                Result.tryRun(() => ((asyncSnapshot.data as int?) ?? 0) / (1024 * 1024)).data ?? 0.0;
+                            final mb = Result.from(() => ((asyncSnapshot.data) ?? 0) / (1024 * 1024));
                             return CustomText(
                               "Storage usage: ${mb.toStringAsFixed(2)} MB",
                               color: theme.supportingText,
