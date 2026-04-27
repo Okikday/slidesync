@@ -9,10 +9,23 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+
+      - name: Create Firebase Configuration Files
+        run: |
+          mkdir -p lib
+          mkdir -p android/app
+          echo "${{ secrets.FIREBASE_OPTIONS_DART }}" > lib/firebase_options.dart
+          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" > android/app/google-services.json
 
       - name: Get dependencies
         run: flutter pub get
@@ -20,9 +33,9 @@ jobs:
       - name: Build APK
         run: flutter build apk --profile
 
-
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+          name: profile-apk
+          path: build/app/outputs/flutter-apk/app-profile.apk
+          
