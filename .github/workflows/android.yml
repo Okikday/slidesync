@@ -25,7 +25,7 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          cache: true  # ✅ speeds up builds
+          cache: true 
 
       - name: Decode Keystore
         run: |
@@ -33,18 +33,18 @@ jobs:
 
       - name: Create Configuration Files
         shell: bash
+        env:
+          KEY_PROPERTIES: ${{ secrets.KEY_PROPERTIES }}
+          ENV_FILE_CONTENT: ${{ secrets.ENV_FILE_CONTENT }}
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+          FIREBASE_OPTIONS_DART: ${{ secrets.FIREBASE_OPTIONS_DART }}
         run: |
           mkdir -p lib android/app
-
-          # ✅ Fixed: removed hyperlink formatting from filename
-          echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
-
-          # ✅ Fixed: use printf to avoid heredoc interpolation issues
-          printf '%s' "${{ secrets.ENV_FILE_CONTENT }}" > .env
-
-          printf '%s' "${{ secrets.GOOGLE_SERVICES_JSON }}" > android/app/google-services.json
-
-          printf '%s' "${{ secrets.FIREBASE_OPTIONS_DART }}" > lib/firebase_options.dart
+          
+          printf '%s' "$KEY_PROPERTIES" > android/key.properties
+          printf '%s' "$ENV_FILE_CONTENT" > .env
+          printf '%s' "$GOOGLE_SERVICES_JSON" > android/app/google-services.json
+          printf '%s' "$FIREBASE_OPTIONS_DART" > lib/firebase_options.dart
 
       - name: Get dependencies
         run: flutter pub get
