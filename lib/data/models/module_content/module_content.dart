@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
 import 'package:dart_mappable/dart_mappable.dart';
@@ -10,8 +11,8 @@ import 'package:slidesync/data/models/module_content/src/module_content_metadata
 
 export 'src/module_content_metadata.dart';
 
-part 'module_content.mapper.dart';
 part 'module_content.g.dart';
+part 'module_content.mapper.dart';
 
 @MappableClass()
 @Collection(ignore: {'copyWith'})

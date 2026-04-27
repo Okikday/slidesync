@@ -123,7 +123,7 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
           icon: Icon(HugeIconsSolid.magicWand01, size: 24, color: theme.onBackground),
           onTap: () {
             context.pop();
-            context.pushNamed(Routes.collectionsView.name, extra: course.uid);
+            context.pushNamed(Routes.modulesView.name, extra: course.uid);
           },
         ),
 

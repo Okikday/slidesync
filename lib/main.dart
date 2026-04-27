@@ -40,12 +40,7 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await Result.tryRunAsync(() async => await _initialize());
 
-  runApp(
-    const ProviderScope(
-      // observers: [obs],
-      child: App(),
-    ),
-  );
+  runApp(const ProviderScope(child: App()));
 }
 
 Future<void> _initialize() async {

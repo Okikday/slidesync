@@ -5,6 +5,7 @@ import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/features/auth/logic/usecases/auth_uc/user_data_functions.dart';
 import 'package:slidesync/routes/src/content_viewer_route.dart';
+import 'package:slidesync/routes/src/contents_action_routes.dart';
 import 'package:slidesync/routes/src/course_mgmt_routes.dart';
 import 'package:slidesync/routes/src/course_nav_routes.dart';
 import 'package:slidesync/routes/src/main_route.dart';
@@ -44,6 +45,7 @@ class AppRouter {
       ...contentViewerRoutes,
 
       ...courseNavRoutes,
+      ...contentActionsRoutes,
 
       settingsRoute,
       syncRoute,

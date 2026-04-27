@@ -75,7 +75,7 @@ class RecentListTile extends ConsumerWidget {
                             child: BuildImagePathWidget(
                               width: 48,
                               height: 48,
-                              fileDetails: FilePath(local: dataModel.previewPath ?? ''),
+                              fileDetails: dataModel.previewPath ?? FilePath.empty(),
                               fallbackWidget: Icon(Iconsax.document_1, size: 26, color: ref.primary),
                             ),
                           ),
@@ -146,6 +146,8 @@ class RecentListTile extends ConsumerWidget {
                             dataModel.subtitle,
                             fontSize: 12,
                             color: theme.supportingText.withValues(alpha: 0.8),
+                            overflow: TextOverflow.fade,
+                            maxLines: 2,
                           ),
                         ),
                       if (dataModel.extraContent.isNotEmpty)
@@ -175,7 +177,7 @@ class RecentListTileModel {
   final String title;
   final String subtitle;
   final String extraContent;
-  final String? previewPath;
+  final FilePath? previewPath;
   final double? progress;
   final ProgressLevel progressLevel;
   final bool isStarred;
@@ -193,30 +195,6 @@ class RecentListTileModel {
     this.onTapTile,
     this.onLongTapTile,
   });
-
-  RecentListTileModel copyWith({
-    String? title,
-    String? subtitle,
-    String? extraContent,
-    String? previewPath,
-    double? progress,
-    ProgressLevel? progressLevel,
-    bool? isStarred,
-    void Function()? onTapTile,
-    void Function()? onLongTapTile,
-  }) {
-    return RecentListTileModel(
-      title: title ?? this.title,
-      subtitle: subtitle ?? this.subtitle,
-      extraContent: extraContent ?? this.extraContent,
-      previewPath: previewPath ?? this.previewPath,
-      progress: progress ?? this.progress,
-      progressLevel: progressLevel ?? this.progressLevel,
-      isStarred: isStarred ?? this.isStarred,
-      onTapTile: onTapTile ?? this.onTapTile,
-      onLongTapTile: onLongTapTile ?? this.onLongTapTile,
-    );
-  }
 
   @override
   bool operator ==(covariant RecentListTileModel other) {

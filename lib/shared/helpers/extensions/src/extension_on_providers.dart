@@ -31,6 +31,14 @@ extension RefExtensions on Ref {
   }
 }
 
+extension WidgetRefExtensions on WidgetRef{
+  void emptyListenMany(List<ProviderListenable> providers) {
+    for (final p in providers) {
+      listen(p, (_, _) {});
+    }
+  }
+}
+
 extension NotifierX<N extends Notifier<S>, S> on NotifierProvider<N, S> {
   N act(WidgetRef ref) => ref.read(notifier);
   N actX(Ref ref) => ref.read(notifier);

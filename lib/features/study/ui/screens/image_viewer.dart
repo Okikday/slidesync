@@ -66,11 +66,7 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
           builder: (context, snapshot) {
             if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
 
-            final contents = snapshot.data!.contents
-                .where((c) => c.type == ModuleContentType.image)
-                .toList()
-                .reversed
-                .toList();
+            final contents = snapshot.data!.contents.where((c) => c.type == ModuleContentType.image).toList();
 
             if (!_isInitialJumpDone && contents.isNotEmpty) {
               final startIndex = contents.indexWhere((c) => c.uid == widget.content.uid);

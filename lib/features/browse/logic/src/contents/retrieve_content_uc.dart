@@ -17,7 +17,8 @@ class RetriveContentUc {
 
 extension PreviewLinkDetailsExtension on PreviewLinkDetails {
   bool checkIsNullOrEmpty(String? value) => value == null || (value.isEmpty);
-  bool get isEmpty => checkIsNullOrEmpty(title) && checkIsNullOrEmpty(description) && checkIsNullOrEmpty(previewUrl);
+  bool get isAllEmpty => checkIsNullOrEmpty(title) && checkIsNullOrEmpty(description) && checkIsNullOrEmpty(previewUrl);
+  bool get isAllNotEmpty => !isAllEmpty;
 }
 
 String _calculateUrl(String baseUrl, String? proxy) {

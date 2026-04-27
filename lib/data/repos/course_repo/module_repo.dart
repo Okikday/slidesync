@@ -10,6 +10,7 @@ import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/data/models/progress_track_models/course_track.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
+import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 
 class ModuleRepo {
@@ -104,7 +105,13 @@ class ModuleRepo {
       // 5. Finish up the deletion of those data from db completely
       await isar.writeTxn(() async {
         if (contentIds.isNotEmpty) {
-          await courseTrack?.contentTracks.save();
+          if (courseTrack != null) {
+            final newProgress = courseTrack.contentTracks.isNotEmpty == true
+                ? ContentTrackRepo.computeProgressForMultiple(courseTrack.contentTracks)
+                : 0.0;
+            await courseTrack.contentTracks.save();
+            await isar.courseTracks.put(courseTrack.copyWith(progress: newProgress));
+          }
           await isar.moduleContents.deleteAllByUid(contentIds);
           await isar.contentTracks.deleteAllByUid(contentIds);
         }
@@ -145,6 +152,7 @@ class ModuleRepo {
     collection.contents.addAll(contents);
 
     await isar.writeTxn(() async {
+      await isar.moduleContents.putAll(contents);
       await collection.contents.save();
       await isar.modules.put(collection);
     });

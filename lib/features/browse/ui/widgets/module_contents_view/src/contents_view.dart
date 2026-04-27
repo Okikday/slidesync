@@ -21,90 +21,87 @@ class ContentsView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final streamedContents = ref.watch(CourseMaterialsController.watchContents(widget.collection.collectionId));
-    final moduleContentsProState = ModuleContentsProvider.state(collection);
-    final pagingController = moduleContentsProState.link(ref).contentsPagination.link(ref).pagingController;
+    final contentsProvider = ModuleContentsProvider.state(collection.id);
+    ref.emptyListenMany([ContentCard.refreshedLinksNotifier(collection.uid)]);
 
+    final contentsNotifier = contentsProvider.link(ref);
+    final pagingController = contentsNotifier.contentsPagination.link(ref).pagingController;
     final gridCrossAxisCount = isFullScreen
         ? context.deviceWidth ~/ 200
         : (context.deviceWidth / (DeviceUtils.isDesktop() ? 3 : 1)) ~/ 160;
 
     return SliverPadding(
       padding: EdgeInsetsGeometry.fromLTRB(16, 12, 16, 0),
-      sliver: Consumer(
-        builder: (context, ref, child) {
-          return PagingListener(
-            controller: pagingController,
-            builder: (context, pagingState, fetchNextPage) {
-              // If there are no items in the [pagingController]
-              if (pagingState.items != null && pagingState.items!.isEmpty) {
-                return EmptyContentsView(collectionId: collection.uid);
-              }
+      sliver: PagingListener(
+        controller: pagingController,
+        builder: (context, pagingState, fetchNextPage) {
+          // If there are no items in the [pagingController]
+          if (pagingState.items != null && pagingState.items!.isEmpty) {
+            return EmptyContentsView(collectionId: collection.uid);
+          }
 
+          return AbsorberWatch(
+            listenable: contentsProvider.select((s) => (s.cardViewType, s.isLoading)),
+            builder: (context, contentsState, ref, _) {
+              final cardViewType = contentsState.$1;
               return AbsorberWatch(
-                listenable: moduleContentsProState.select((s) => s.cardViewType),
-                builder: (context, cardViewType, _, _) {
-                  return AbsorberWatch(
-                    listenable: moduleContentsProState,
-                    builder: (context, proState, _, _) {
-                      final proStateLink = moduleContentsProState.link(ref);
-                      return switch (cardViewType) {
-                        // For GRID
-                        CardViewType.grid => PagedSliverGrid<int, ModuleContent>(
-                          state: pagingState,
-                          fetchNextPage: fetchNextPage,
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: gridCrossAxisCount,
-                            crossAxisSpacing: isFullScreen ? 30 : 12,
-                            mainAxisSpacing: isFullScreen ? 40 : 20,
-                          ),
-                          builderDelegate: PagedChildBuilderDelegate(
-                            // noMoreItemsIndicatorBuilder: (context) => const SizedBox(height: 56),
-                            itemBuilder: (context, item, index) =>
-                                ContentCard(
-                                  content: item,
-                                  select: select(
-                                    isSelecting: proState.hasSelectedContents,
-                                    moduleContentsNotifier: proStateLink,
-                                    item: item,
-                                  ),
-                                ).animate().fadeIn().moveY(
-                                  begin: index.isEven ? 40 : 20,
-                                  end: 0,
-                                  curve: Curves.fastEaseInToSlowEaseOut,
-                                  duration: Durations.medium3,
-                                ),
-                          ),
-                        ),
-
-                        // FOR OTHERS
-                        _ => PagedSliverList<int, ModuleContent>(
-                          state: pagingState,
-                          itemExtent: isFullScreen ? 400 : 200,
-                          fetchNextPage: fetchNextPage,
-                          builderDelegate: PagedChildBuilderDelegate(
-                            itemBuilder: (context, item, index) => Padding(
-                              padding: EdgeInsets.only(bottom: isFullScreen ? 24 : 16),
-                              child:
-                                  ContentCard(
-                                    content: item,
-                                    select: select(
-                                      isSelecting: proState.hasSelectedContents,
-                                      moduleContentsNotifier: proStateLink,
-                                      item: item,
-                                    ),
-                                  ).animate().fadeIn().moveY(
-                                    begin: index.isEven ? 40 : 20,
-                                    end: 0,
-                                    curve: Curves.fastEaseInToSlowEaseOut,
-                                    duration: Durations.medium3,
-                                  ),
+                listenable: contentsProvider,
+                builder: (context, proState, ref, _) {
+                  return switch (cardViewType) {
+                    // For GRID
+                    CardViewType.grid => PagedSliverGrid<int, ModuleContent>(
+                      state: pagingState,
+                      fetchNextPage: fetchNextPage,
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: gridCrossAxisCount,
+                        crossAxisSpacing: isFullScreen ? 30 : 12,
+                        mainAxisSpacing: isFullScreen ? 40 : 20,
+                      ),
+                      builderDelegate: PagedChildBuilderDelegate(
+                        // noMoreItemsIndicatorBuilder: (context) => const SizedBox(height: 56),
+                        itemBuilder: (context, item, index) =>
+                            ContentCard(
+                              content: item,
+                              select: select(
+                                isSelecting: proState.hasSelectedContents,
+                                moduleContentsNotifier: contentsNotifier,
+                                item: item,
+                              ),
+                            ).animate().fadeIn().moveY(
+                              begin: index.isEven ? 40 : 20,
+                              end: 0,
+                              curve: Curves.fastEaseInToSlowEaseOut,
+                              duration: Durations.medium3,
                             ),
-                          ),
+                      ),
+                    ),
+
+                    // FOR OTHERS
+                    _ => PagedSliverList<int, ModuleContent>(
+                      state: pagingState,
+                      itemExtent: isFullScreen ? 400 : 200,
+                      fetchNextPage: fetchNextPage,
+                      builderDelegate: PagedChildBuilderDelegate(
+                        itemBuilder: (context, item, index) => Padding(
+                          padding: EdgeInsets.only(bottom: isFullScreen ? 24 : 16),
+                          child:
+                              ContentCard(
+                                content: item,
+                                select: select(
+                                  isSelecting: proState.hasSelectedContents,
+                                  moduleContentsNotifier: contentsNotifier,
+                                  item: item,
+                                ),
+                              ).animate().fadeIn().moveY(
+                                begin: index.isEven ? 40 : 20,
+                                end: 0,
+                                curve: Curves.fastEaseInToSlowEaseOut,
+                                duration: Durations.medium3,
+                              ),
                         ),
-                      };
-                    },
-                  );
+                      ),
+                    ),
+                  };
                 },
               );
             },
@@ -120,13 +117,13 @@ class ContentsView extends ConsumerWidget {
     required ModuleContentsNotifier moduleContentsNotifier,
   }) {
     return isSelecting
-        ? null
-        : (
+        ? (
             isSelected: moduleContentsNotifier.isContentSelected(item),
             onSelect: (content) => moduleContentsNotifier.isContentSelected(item)
                 ? moduleContentsNotifier.unselectContent(item)
                 : moduleContentsNotifier.selectContent(item),
-          );
+          )
+        : null;
   }
 }
 

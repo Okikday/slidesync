@@ -4,13 +4,12 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/features/main/ui/actions/home/recent_dialog_actions.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recent_dialog/recent_dialog_selection_options.dart';
-import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/helpers/icon_helper.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 class RecentDialog extends ConsumerStatefulWidget {
@@ -56,45 +55,23 @@ class _RecentDialogState extends ConsumerState<RecentDialog> with RecentDialogAc
 
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 80,
-                                height: 80,
-                                clipBehavior: Clip.hardEdge,
-                                margin: EdgeInsets.only(left: 12),
-                                decoration: BoxDecoration(
-                                  color: theme.onSurface.withAlpha(40),
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: BuildImagePathWidget(
-                                  fileDetails: widget.contentTrack.thumbnail,
-                                  fallbackWidget: Icon(Iconsax.document_1, size: 26, color: ref.onBackground),
-                                ),
+                          child: Container(
+                            width: 100,
+                            height: 100,
+                            clipBehavior: Clip.hardEdge,
+                            margin: EdgeInsets.only(left: 12),
+                            decoration: BoxDecoration(
+                              color: theme.onSurface.withAlpha(40),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: BuildImagePathWidget(
+                              fileDetails: widget.contentTrack.thumbnail,
+                              fallbackWidget: Icon(
+                                IconHelper.getContentTypeIconData(widget.contentTrack.type),
+                                size: 26,
+                                color: ref.onBackground,
                               ),
-                              Expanded(
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    BuildButton(
-                                      iconData: null,
-                                      backgroundColor: theme.adjustBgAndSecondaryWithLerp,
-                                      shape: CircleBorder(),
-                                      // contentPadding: EdgeInsets.all(12),
-                                      onTap: () => onAddToBookmark(widget.contentTrack.uid),
-                                      child: Icon(Iconsax.star_copy, size: 26, color: theme.supportingText),
-                                    ),
-                                    BuildButton(
-                                      iconData: null,
-                                      backgroundColor: theme.adjustBgAndSecondaryWithLerp,
-                                      shape: const CircleBorder(),
-                                      onTap: () {},
-                                      child: Icon(Iconsax.note_add_copy, size: 26, color: theme.supportingText),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
 
@@ -104,39 +81,24 @@ class _RecentDialogState extends ConsumerState<RecentDialog> with RecentDialogAc
                           alignment: Alignment.centerLeft,
                           child: Padding(
                             padding: const EdgeInsets.only(left: 24.0, right: 12.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                CustomText(
-                                  () {
-                                    final title = widget.contentTrack.title;
-                                    return title.isEmpty ? "No title" : title;
-                                  }(),
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.onBackground,
-                                ),
-                                ConstantSizing.columnSpacingSmall,
-                                SizedBox(
-                                  height: 16,
-                                  child: CustomText(
-                                    widget.contentTrack.description,
-                                    overflow: TextOverflow.ellipsis,
-                                    fontSize: 12.0,
-                                    color: theme.supportingText,
-                                  ),
-                                ),
-                              ],
+                            child: CustomText(
+                              () {
+                                final title = widget.contentTrack.title;
+                                return title.isEmpty ? "No title" : title;
+                              }(),
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              color: theme.onBackground,
                             ),
                           ),
                         ),
 
-                        if (widget.contentTrack.description.isNotEmpty) ConstantSizing.columnSpacingSmall,
+                        if (widget.contentTrack.description.trim().isNotEmpty) ConstantSizing.columnSpacingSmall,
 
-                        if (widget.contentTrack.description.isNotEmpty)
+                        if (widget.contentTrack.description.trim().isNotEmpty)
                           Padding(padding: const EdgeInsets.symmetric(horizontal: 12.0), child: divider),
 
-                        if (widget.contentTrack.description.isNotEmpty)
+                        if (widget.contentTrack.description.trim().isNotEmpty)
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Padding(
@@ -152,11 +114,11 @@ class _RecentDialogState extends ConsumerState<RecentDialog> with RecentDialogAc
                                   ),
                                   ConstantSizing.columnSpacingSmall,
                                   CustomText(
-                                    widget.contentTrack.description
-                                        .substring(0, widget.contentTrack.description.length.clamp(0, 128))
-                                        .padRight(3, "."),
+                                    widget.contentTrack.description,
                                     fontSize: 13,
                                     color: theme.supportingText,
+                                    maxLines: 5,
+                                    overflow: TextOverflow.fade,
                                   ),
                                 ],
                               ),

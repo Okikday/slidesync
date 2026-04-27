@@ -708,7 +708,7 @@ class DriveListingController {
         continue;
       }
 
-      final content = await ModuleContentRepo.getByContentId(result.contentId!);
+      final content = await ModuleContentRepo.getByUid(result.contentId!);
       if (content == null) {
         continue;
       }

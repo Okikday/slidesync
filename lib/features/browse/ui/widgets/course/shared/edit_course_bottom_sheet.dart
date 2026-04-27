@@ -48,7 +48,7 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
   void initPostFrame() async {
     if (mounted) UiUtils.showLoadingDialog(context, canPop: false, message: "Loading course details...");
     try {
-      final readCourse = await ref.read(CourseProviders.courseProvider(widget.courseId).future);
+      final readCourse = await ref.read(CourseProviders.watchCourseProvider(widget.courseId).future);
 
       courseNameTextController.text = readCourse.courseName;
       if (readCourse.courseCode.isNotEmpty) courseCodeController.text = readCourse.courseCode;
@@ -75,7 +75,7 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final Course course = ref.watch(CourseProviders.courseProvider(widget.courseId)).value ?? defaultCourse;
+    final Course course = ref.watch(CourseProviders.watchCourseProvider(widget.courseId)).value ?? defaultCourse;
 
     final double keyboardInsets = double.parse(
       (context.viewInsets.bottom / context.deviceHeight).toStringAsFixed(2),
@@ -222,7 +222,7 @@ class PositionedUpdateDetailsButton extends ConsumerWidget {
               description: descriptionTextController.text,
               isCourseCodeFieldVisible: ref.read(isCourseCodeFieldVisible),
               canExitProvider: canExitProvider,
-              modifyCourseProvider: CourseProviders.courseProvider(courseId),
+              modifyCourseProvider: CourseProviders.watchCourseProvider(courseId),
             );
           },
           contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),

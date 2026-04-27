@@ -31,7 +31,7 @@ class IconHelper {
       case CardViewType.list:
         return HugeIconsStroke.menu02;
       case CardViewType.grid:
-        return HugeIconsStroke.grid02;
+        return HugeIconsStroke.gridView;
       default:
         return HugeIconsStroke.orthogonalEdge;
     }

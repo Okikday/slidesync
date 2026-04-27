@@ -5,7 +5,10 @@ class ModuleContentsPaginationState {
   final EntityOrdering contentsOrdering;
   final bool isLoading;
 
-  const ModuleContentsPaginationState({this.contentsOrdering = EntityOrdering.dateModifiedAsc, this.isLoading = false});
+  const ModuleContentsPaginationState({
+    this.contentsOrdering = EntityOrdering.dateModifiedDesc,
+    this.isLoading = false,
+  });
 
   @override
   bool operator ==(covariant ModuleContentsPaginationState other) {
@@ -17,9 +20,9 @@ class ModuleContentsPaginationState {
   @override
   int get hashCode => contentsOrdering.hashCode ^ isLoading.hashCode;
 
-  ModuleContentsPaginationState copyWith({EntityOrdering? sortOption, bool? isLoading}) {
+  ModuleContentsPaginationState copyWith({EntityOrdering? contentsOrdering, bool? isLoading}) {
     return ModuleContentsPaginationState(
-      contentsOrdering: sortOption ?? this.contentsOrdering,
+      contentsOrdering: contentsOrdering ?? this.contentsOrdering,
       isLoading: isLoading ?? this.isLoading,
     );
   }

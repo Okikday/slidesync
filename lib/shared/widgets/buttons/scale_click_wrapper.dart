@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/routes/transition.dart';
-import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class ScaleClickWrapper extends ConsumerStatefulWidget {
   final double borderRadius;
@@ -16,7 +15,10 @@ class ScaleClickWrapper extends ConsumerStatefulWidget {
   final Duration animationDuration;
   final Duration? delayReverseDuration;
   final Curve? curve;
+  final Color? splashColor;
+  final Color? overlayColor;
   final Widget child;
+  final HitTestBehavior? behavior;
   const ScaleClickWrapper({
     super.key,
     this.scaleBetween = (1.0, 0.9),
@@ -24,9 +26,12 @@ class ScaleClickWrapper extends ConsumerStatefulWidget {
     this.onTapUp,
     this.onTap,
     this.onLongPress,
+    this.splashColor,
+    this.overlayColor,
     this.animationDuration = Durations.medium2,
     this.delayReverseDuration,
     this.borderRadius = 0,
+    this.behavior,
     this.curve,
     required this.child,
   });
@@ -36,12 +41,7 @@ class ScaleClickWrapper extends ConsumerStatefulWidget {
 }
 
 class _ScaleClickWrapperState extends ConsumerState<ScaleClickWrapper> {
-  late final ValueNotifier<bool> scaleClickNotifier;
-  @override
-  void initState() {
-    super.initState();
-    scaleClickNotifier = ValueNotifier(false);
-  }
+  final ValueNotifier<bool> scaleClickNotifier = ValueNotifier(false);
 
   @override
   void dispose() {
@@ -58,13 +58,15 @@ class _ScaleClickWrapperState extends ConsumerState<ScaleClickWrapper> {
           scale: value ? widget.scaleBetween.$2 : widget.scaleBetween.$1,
           duration: widget.animationDuration,
           curve: widget.curve ?? defaultCurve,
-          child: InnerScaleClickWrapper(
+          child: _InnerScaleClickWrapper(
             scaleClickNotifier: scaleClickNotifier,
             borderRadius: widget.borderRadius,
             onTapDown: widget.onTapDown,
             onTapUp: widget.onTapUp,
             onTap: widget.onTap,
+            delayReverseDuration: widget.delayReverseDuration,
             onLongPress: widget.onLongPress,
+            behavior: widget.behavior,
             child: widget.child,
           ),
         );
@@ -73,9 +75,8 @@ class _ScaleClickWrapperState extends ConsumerState<ScaleClickWrapper> {
   }
 }
 
-class InnerScaleClickWrapper extends ConsumerWidget {
-  const InnerScaleClickWrapper({
-    super.key,
+class _InnerScaleClickWrapper extends ConsumerWidget {
+  const _InnerScaleClickWrapper({
     required this.scaleClickNotifier,
     this.borderRadius = 0,
     this.onTapDown,
@@ -83,6 +84,7 @@ class InnerScaleClickWrapper extends ConsumerWidget {
     this.onTap,
     this.onLongPress,
     this.delayReverseDuration,
+    this.behavior,
     required this.child,
   });
 
@@ -93,6 +95,7 @@ class InnerScaleClickWrapper extends ConsumerWidget {
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
   final Duration? delayReverseDuration;
+  final HitTestBehavior? behavior;
   final Widget child;
 
   void updateScaleClickNotifier(bool newValue) {
@@ -102,14 +105,11 @@ class InnerScaleClickWrapper extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
-
     return Material(
       type: MaterialType.transparency,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(borderRadius),
-        overlayColor: WidgetStatePropertyAll(theme.altBackgroundPrimary),
-        splashColor: theme.altBackgroundPrimary,
+      borderRadius: BorderRadius.circular(borderRadius),
+      child: GestureDetector(
+        behavior: behavior,
         onTapDown: (details) {
           updateScaleClickNotifier(true);
           if (onTapDown != null) onTapDown!(details);

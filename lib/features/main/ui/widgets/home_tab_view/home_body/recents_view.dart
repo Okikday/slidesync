@@ -34,7 +34,6 @@ class RecentsView extends ConsumerWidget {
             padding: EdgeInsets.only(bottom: kBottomNavigationBarHeight + context.bottomPadding / 2),
             itemBuilder: (context, index) {
               final content = data[index];
-              final previewPath = content.thumbnail.local;
               return RecentListTile(
                 dataModel: RecentListTileModel(
                   title: content.title.isEmpty ? "No title" : content.title,
@@ -45,12 +44,12 @@ class RecentsView extends ConsumerWidget {
                         : "No subtitle";
                   }(),
                   // extraContent: DummySlides.dummySlides[index]['extraContent'] as String? ?? "",
-                  previewPath: previewPath,
+                  previewPath: content.thumbnail,
                   progressLevel: ProgressLevel.neutral,
                   isStarred: false,
                   progress: content.progress.clamp(0, 1.0),
                   onTapTile: () async {
-                    final toPushContent = await ModuleContentRepo.getByContentId(content.uid);
+                    final toPushContent = await ModuleContentRepo.getByUid(content.uid);
                     if (toPushContent == null) return;
                     GlobalNav.withContext((context) => ContentViewGateActions.redirectToViewer(ref, toPushContent));
                   },

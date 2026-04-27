@@ -6,24 +6,46 @@ import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/features/browse/logic/src/contents/modify_content_uc.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
+import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 
 class ModifyContentsAction {
-  Future<String?> onDeleteContent(String contentId, {int? courseDbId}) async {
-    if (rootNavigatorKey.currentContext!.mounted) {
-      UiUtils.showLoadingDialog(rootNavigatorKey.currentContext!, message: "Deleting content...");
-    }
-    final content = await ModuleContentRepo.getByContentId(contentId);
-    if (content == null) return "Couldn't find content";
-    final Result<String?> delOutcome = await Result.tryRunAsync(() async {
-      return await ModifyContentUc().deleteContent(content);
-    });
-    Navigator.pop(rootNavigatorKey.currentContext!);
+  Future<void> showDeleteDialog(String contentId) async {
+    GlobalNav.withContext(
+      (context) => UiUtils.showCustomDialog(
+        context,
 
-    if (delOutcome.isSuccess) {
-      return delOutcome.data;
-    } else {
-      return "An error occured while deleting content!";
-    }
+        child: ConfirmDeletionDialog(
+          content: "Are you sure you want to delete this item?",
+          onPop: () => GlobalNav.popGlobal(),
+          onCancel: () => GlobalNav.popGlobal(),
+          onDelete: () async {
+            GlobalNav.popGlobal();
+
+            GlobalNav.withContext(
+              (context) => UiUtils.showLoadingDialog(context, message: "Removing content", canPop: false),
+            );
+            final content = await ModuleContentRepo.getByUid(contentId);
+            if (content == null) {
+              GlobalNav.popGlobal();
+              return;
+            }
+            final outcome = await Result.fromAsyncNullable(() async => await ModifyContentUc().deleteContent(content));
+
+            GlobalNav.popGlobal();
+
+            GlobalNav.withContext((context) {
+              UiUtils.showFlushBar(
+                context,
+                msg: outcome ?? "Deleted content(s)",
+                vibe: outcome == null
+                    ? FlushbarVibe.success
+                    : (outcome.toLowerCase().contains("error") ? FlushbarVibe.error : FlushbarVibe.warning),
+              );
+            });
+          },
+        ),
+      ),
+    );
   }
 
   Future<String?> onRenameContent(ModuleContent content, {required String newTitle}) async {

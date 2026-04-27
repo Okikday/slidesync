@@ -25,7 +25,7 @@ enum Routes {
   createCourse,
   // modifyCourse,
   // selectToModifyCourse,
-  collectionsView,
+  modulesView,
   // modifyContents,
   pdfDocumentViewer,
   imageViewer,
@@ -36,6 +36,9 @@ enum Routes {
   downloads,
   uploads,
   syncView,
+
+  storeContents,
+  moveContents,
 }
 
 extension RoutesExtension on Routes {

@@ -37,6 +37,11 @@ class ContentTrackMapper extends ClassMapperBase<ContentTrack> {
     'courseId',
     _$courseId,
   );
+  static ModuleContentType _$type(ContentTrack v) => v.type;
+  static const Field<ContentTrack, ModuleContentType> _f$type = Field(
+    'type',
+    _$type,
+  );
   static String _$title(ContentTrack v) => v.title;
   static const Field<ContentTrack, String> _f$title = Field('title', _$title);
   static String _$description(ContentTrack v) => v.description;
@@ -75,6 +80,7 @@ class ContentTrackMapper extends ClassMapperBase<ContentTrack> {
     #id: _f$id,
     #uid: _f$uid,
     #courseId: _f$courseId,
+    #type: _f$type,
     #title: _f$title,
     #description: _f$description,
     #progress: _f$progress,
@@ -89,6 +95,7 @@ class ContentTrackMapper extends ClassMapperBase<ContentTrack> {
       id: data.dec(_f$id),
       uid: data.dec(_f$uid),
       courseId: data.dec(_f$courseId),
+      type: data.dec(_f$type),
       title: data.dec(_f$title),
       description: data.dec(_f$description),
       progress: data.dec(_f$progress),
@@ -167,6 +174,7 @@ abstract class ContentTrackCopyWith<$R, $In extends ContentTrack, $Out>
     int? id,
     String? uid,
     String? courseId,
+    ModuleContentType? type,
     String? title,
     String? description,
     double? progress,
@@ -201,6 +209,7 @@ class _ContentTrackCopyWithImpl<$R, $Out>
     int? id,
     String? uid,
     String? courseId,
+    ModuleContentType? type,
     String? title,
     String? description,
     double? progress,
@@ -213,6 +222,7 @@ class _ContentTrackCopyWithImpl<$R, $Out>
       if (id != null) #id: id,
       if (uid != null) #uid: uid,
       if (courseId != null) #courseId: courseId,
+      if (type != null) #type: type,
       if (title != null) #title: title,
       if (description != null) #description: description,
       if (progress != null) #progress: progress,
@@ -227,6 +237,7 @@ class _ContentTrackCopyWithImpl<$R, $Out>
     id: data.get(#id, or: $value.id),
     uid: data.get(#uid, or: $value.uid),
     courseId: data.get(#courseId, or: $value.courseId),
+    type: data.get(#type, or: $value.type),
     title: data.get(#title, or: $value.title),
     description: data.get(#description, or: $value.description),
     progress: data.get(#progress, or: $value.progress),

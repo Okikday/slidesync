@@ -40,7 +40,7 @@ class LibraryNotifier extends Notifier<LibraryState> {
 
     // Keep scroll offset notifier alive as long as the library tab is alive
     initState();
-    return LibraryState(isLoading: true);
+    return LibraryState(isLoading: false);
   }
 
   void initState() {
@@ -79,9 +79,12 @@ class LibraryNotifier extends Notifier<LibraryState> {
   /// ===================================================================================================
 
   void toggleCardViewType() async {
-    final value = await ref.read(_cardViewTypeNotifier.future);
+    final value = ref.read(_cardViewTypeNotifier).value;
+    if (value == null) return;
     ref.read(_cardViewTypeNotifier.notifier).set(value == CardViewType.list ? CardViewType.grid : CardViewType.list);
   }
+
+  void setLoading(bool isLoading) => state = state.copyWith(isLoading: isLoading);
 }
 
 ///|
@@ -90,7 +93,7 @@ class LibraryNotifier extends Notifier<LibraryState> {
 /// OTHERS
 /// ===================================================================================================
 final _scrollOffsetNotifier = NotifierProvider.autoDispose(() => DoubleNotifier());
-final _coursesPaginationNotifier = NotifierProvider.autoDispose<CoursesPaginationNotifier, CoursePaginationState>(
+final _coursesPaginationNotifier = NotifierProvider<CoursesPaginationNotifier, CoursePaginationState>(
   CoursesPaginationNotifier.new,
 );
 

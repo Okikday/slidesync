@@ -7,12 +7,12 @@ import 'package:isar_community/isar.dart';
 
 import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
+import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/features/browse/providers/entities/module_contents_pagination_entities/module_contents_pagination_state.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
-import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 export 'package:slidesync/features/browse/providers/entities/module_contents_pagination_entities/module_contents_pagination_state.dart';
 
@@ -21,12 +21,7 @@ part 'ext_module_contents_pagination_notifier.dart';
 const int limit = 20;
 
 class ModuleContentsPaginationNotifier extends Notifier<ModuleContentsPaginationState> {
-  ModuleContentsPaginationNotifier(this.module) {
-    pagingController = PagingController(
-      getNextPageKey: _getNextPageKey,
-      fetchPage: (pageKey) => fetchPage(pageKey, limit),
-    );
-  }
+  ModuleContentsPaginationNotifier(this.moduleId);
 
   ///
   ///
@@ -34,13 +29,19 @@ class ModuleContentsPaginationNotifier extends Notifier<ModuleContentsPagination
   /// DECLARATIONS
   /// ===================================================================================================
 
-  final Module module;
+  Module? module;
+  final int moduleId;
 
-  late PagingController<int, ModuleContent> pagingController;
+  late final PagingController<int, ModuleContent> pagingController = PagingController(
+    getNextPageKey: _getNextPageKey,
+    fetchPage: (pageKey) => fetchPage(pageKey, limit),
+  );
 
   bool isUpdating = false;
 
   bool extraCheck = false;
+
+  bool _pendingRefresh = false;
 
   ///
   ///
@@ -50,19 +51,20 @@ class ModuleContentsPaginationNotifier extends Notifier<ModuleContentsPagination
 
   @override
   ModuleContentsPaginationState build() {
-    final orderingProvider = _moduleContentsOrderingProvider.readX(ref);
-    final initialOrdering = orderingProvider.value ?? EntityOrdering.dateModifiedDesc;
-
+    final contentsOrdering = ref.read(_moduleContentsOrderingProvider).value;
     ref.listen(
       _moduleContentsOrderingProvider,
-      (prev, next) => next.whenData((newSort) => updateSortOption(newSort, refresh: true)),
-      fireImmediately: true,
+      (prev, next) => next.whenData((newSort) => updateContentsOrdering(newSort, refresh: true)),
     );
+
+    ref.listen(_watchContentsChange(moduleId), (prev, next) async => await syncModuleContents());
 
     ref.onDispose(_dispose);
 
-    ref.listen(_watchContentsChange(module.uid), (prev, next) async => await syncModuleContents());
-    return ModuleContentsPaginationState(isLoading: true, contentsOrdering: initialOrdering);
+    return ModuleContentsPaginationState(
+      isLoading: true,
+      contentsOrdering: contentsOrdering ?? EntityOrdering.dateModifiedDesc,
+    );
   }
 
   void _dispose() async {
@@ -70,27 +72,61 @@ class ModuleContentsPaginationNotifier extends Notifier<ModuleContentsPagination
     log("Disposed $runtimeType");
   }
 
-  void updateSortOption(EntityOrdering newSortOption, {bool refresh = true}) {
-    if (state.contentsOrdering == newSortOption) return;
-
-    ref.read(_moduleContentsOrderingProvider.notifier).set(newSortOption);
-    state = state.copyWith(sortOption: newSortOption);
-
-    if (refresh) pagingController.refresh();
+  Future<void> _initModule() async {
+    await Result.tryRunAsync(() async => module = await ModuleRepo.getByDbId(moduleId));
+    log("Initialized module");
+    return;
   }
-
-  Future<List<ModuleContent>> fetchPage(int pageKey, int limit) async =>
-      _fetchModuleContents(pageKey: pageKey, limit: limit);
 
   ///
   ///
   /// ===================================================================================================
   /// FUNCTIONS
   /// ===================================================================================================
+
+  void updateContentsOrdering(EntityOrdering newSortOption, {bool refresh = true}) {
+    if (state.contentsOrdering == newSortOption) return;
+
+    ref.read(_moduleContentsOrderingProvider.notifier).set(newSortOption);
+    state = state.copyWith(contentsOrdering: newSortOption, isLoading: false);
+
+    if (refresh) _refreshAndFetchFirstPage();
+  }
+
+  Future<List<ModuleContent>> fetchPage(int pageKey, int limit) async {
+    if (module == null) {
+      await _initModule();
+      state = state.copyWith(isLoading: false);
+    }
+    if (_pendingRefresh && pageKey == 1) {
+      _pendingRefresh = false;
+      scheduleMicrotask(
+        () => pagingController
+          ..refresh()
+          ..fetchNextPage(),
+      );
+    }
+
+    final result = await _fetchModuleContents(pageKey: pageKey, limit: limit);
+
+    return result;
+  }
+
+  Future<void> _refreshAndFetchFirstPage() async {
+    if (pagingController.value.isLoading) {
+      _pendingRefresh = true;
+      return;
+    }
+    _pendingRefresh = false;
+    pagingController.refresh();
+    pagingController.fetchNextPage();
+  }
+
   Future<List<ModuleContent>> _fetchModuleContents({required int pageKey, required int limit}) async {
+    final filter = module!.contents.filter();
     final offset = (pageKey - 1) * limit;
-    final filter = module.contents.filter();
-    if (!ref.mounted) return const [];
+
+    if (!ref.mounted) return [];
     final contentsOrdering = state.contentsOrdering;
 
     final query = switch (contentsOrdering) {
@@ -114,12 +150,8 @@ class ModuleContentsPaginationNotifier extends Notifier<ModuleContentsPagination
 /// EXTRA PROVIDERS
 /// ===================================================================================================
 final _watchContentsChange = StreamNotifierProvider.autoDispose.family(
-  (String? arg) => StreamedNotifier<int>(() async* {
-    if (arg == null) {
-      yield* Stream.empty();
-      return;
-    }
-    final module = await ModuleRepo.getByUid(arg);
+  (int arg) => StreamedNotifier<int>(() async* {
+    final module = await ModuleRepo.getByDbId(arg);
     yield* module?.contents
             .filter()
             .watchLazy(fireImmediately: true)
@@ -128,7 +160,7 @@ final _watchContentsChange = StreamNotifierProvider.autoDispose.family(
   }),
 );
 
-final _moduleContentsOrderingProvider = AsyncNotifierProvider(
+final _moduleContentsOrderingProvider = AsyncNotifierProvider.autoDispose(
   () => HiveAsyncImpliedNotifier<String, EntityOrdering>(
     HiveDataPathKey.moduleContentsOrdering.name,
     EntityOrdering.dateModifiedAsc,

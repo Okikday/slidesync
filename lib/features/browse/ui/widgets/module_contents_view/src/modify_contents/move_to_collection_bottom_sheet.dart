@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:isar_community/isar.dart';
+import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
@@ -34,7 +36,7 @@ enum ContentSheetMode {
   store, // Storing new files to a collection
 }
 
-class MoveOrStoreContentBottomSheet extends ConsumerStatefulWidget {
+class MoveOrStoreContentScreen extends ConsumerStatefulWidget {
   /// For moving existing contents
   final List<ModuleContent>? contentsToMove;
 
@@ -44,12 +46,12 @@ class MoveOrStoreContentBottomSheet extends ConsumerStatefulWidget {
   /// Determines the mode
   final ContentSheetMode mode;
 
-  const MoveOrStoreContentBottomSheet.move({super.key, required List<ModuleContent> contents})
+  const MoveOrStoreContentScreen.move({super.key, required List<ModuleContent> contents})
     : contentsToMove = contents,
       filePaths = null,
       mode = ContentSheetMode.move;
 
-  const MoveOrStoreContentBottomSheet.store({super.key, required List<String> files})
+  const MoveOrStoreContentScreen.store({super.key, required List<String> files})
     : filePaths = files,
       contentsToMove = null,
       mode = ContentSheetMode.store;
@@ -58,7 +60,7 @@ class MoveOrStoreContentBottomSheet extends ConsumerStatefulWidget {
   ConsumerState<ConsumerStatefulWidget> createState() => _MoveOrStoreContentBottomSheetState();
 }
 
-class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreContentBottomSheet> {
+class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreContentScreen> {
   Timer? _searchDebounceTimer;
   late final ValueNotifier<List<Course>?> coursesNotifier;
   late final ValueNotifier<List<Module>?> collectionsNotifier;
@@ -93,183 +95,177 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
   Widget build(BuildContext context) {
     final theme = ref;
 
-    return PopScope(
+    return AppScaffold(
+      title: "",
       canPop: false,
-      onPopInvokedWithResult: (didPop, result) {
-        context.pop(false);
-      },
-      child: AppScaffold(
-        title: "",
-        extendBodyBehindAppBar: true,
-        appBar: AppBarContainer(child: AppBarContainerChild(context.isDarkMode, title: "Save file")),
-        body: SmoothCustomScrollView(
-          slivers: [
-            const SliverToBoxAdapter(child: TopPadding(withHeight: kToolbarHeight + 4)),
-            PinnedHeaderSliver(
-              child: ColoredBox(
-                color: theme.background,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 16, top: 12),
-                  child: ValueListenableBuilder(
-                    valueListenable: collectionsNotifier,
-                    builder: (context, collections, child) {
-                      return CustomText(
-                        collections == null ? "Select a course.." : "Select a collection",
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: ref.theme.onBackground,
-                      );
-                    },
-                  ),
-                ),
-              ),
-            ),
-            SliverToBoxAdapter(
-              child: ColoredBox(color: theme.background, child: ConstantSizing.columnSpacingMedium),
-            ),
-            PinnedHeaderSliver(
-              child: ColoredBox(
-                color: theme.background,
+      onPopInvokedWithResult: (didPop, result) => Result.tryRun(() => context.pop(false)),
+      extendBodyBehindAppBar: true,
+      appBar: AppBarContainer(child: AppBarContainerChild(context.isDarkMode, title: "Save file")),
+      body: SmoothCustomScrollView(
+        slivers: [
+          const SliverToBoxAdapter(child: TopPadding(withHeight: kToolbarHeight + 4)),
+          PinnedHeaderSliver(
+            child: ColoredBox(
+              color: theme.background,
+              child: Padding(
+                padding: const EdgeInsets.only(left: 16, top: 12),
                 child: ValueListenableBuilder(
                   valueListenable: collectionsNotifier,
                   builder: (context, collections, child) {
-                    return MoveToCollectionSearchBar(
-                      isCollection: collections != null,
-                      onBackButtonPressed: collections == null
-                          ? null
-                          : () async {
-                              collectionsNotifier.value = null;
-
-                              final courses = await CourseRepo.getAllCourses();
-                              coursesNotifier.value = courses;
-                            },
-                      courseId: collections?.first.parentId,
-                      onSearchChanged: (query) {
-                        // Cancel previous timer
-                        _searchDebounceTimer?.cancel();
-
-                        // Start new timer
-                        _searchDebounceTimer = Timer(const Duration(milliseconds: 300), () async {
-                          // Update courses based on search
-                          if (collectionsNotifier.value == null) {
-                            // Searching courses - use findAll()
-                            if (query.isEmpty) {
-                              final courses = await CourseRepo.getAllCourses();
-                              coursesNotifier.value = courses;
-                            } else {
-                              final courses = await CourseRepo.filter
-                                  .titleContains(query, caseSensitive: false)
-                                  .findAll();
-                              coursesNotifier.value = courses;
-                            }
-                          } else {
-                            // Searching collections
-                            searchQueryNotifier.value = query;
-                          }
-                        });
-                      },
+                    return CustomText(
+                      collections == null ? "Select a course.." : "Select a collection",
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: ref.theme.onBackground,
                     );
                   },
                 ),
               ),
             ),
+          ),
+          SliverToBoxAdapter(
+            child: ColoredBox(color: theme.background, child: ConstantSizing.columnSpacingMedium),
+          ),
+          PinnedHeaderSliver(
+            child: ColoredBox(
+              color: theme.background,
+              child: ValueListenableBuilder(
+                valueListenable: collectionsNotifier,
+                builder: (context, collections, child) {
+                  return MoveToCollectionSearchBar(
+                    isCollection: collections != null,
+                    onBackButtonPressed: collections == null
+                        ? null
+                        : () async {
+                            collectionsNotifier.value = null;
 
-            // Collections list (when a course is selected)
-            ValueListenableBuilder(
-              valueListenable: collectionsNotifier,
-              builder: (context, collections, child) {
-                if (collections != null && collections.isNotEmpty) {
-                  return ValueListenableBuilder(
-                    valueListenable: searchQueryNotifier,
-                    builder: (context, searchQuery, child) {
-                      final filteredCollections = searchQuery.isEmpty
-                          ? collections
-                          : collections
-                                .where((c) => c.title.toLowerCase().contains(searchQuery.toLowerCase()))
-                                .toList();
-                      return SliverList.builder(
-                        itemCount: filteredCollections.length,
-                        itemBuilder: (context, index) {
-                          final collection = filteredCollections[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
-                            child:
-                                CollectionCard(
-                                      collection: collection,
-                                      onTap: () => _handleCollectionSelection(context, collection),
-                                    )
-                                    .animate()
-                                    .slideY(
-                                      begin: 0.1 * ((index + 1) / filteredCollections.length),
-                                      end: 0,
-                                      duration: Durations.extralong1,
-                                      curve: CustomCurves.defaultIosSpring,
-                                    )
-                                    .fadeIn(),
-                          );
-                        },
-                      );
+                            final courses = await CourseRepo.getAllCourses();
+                            coursesNotifier.value = courses;
+                          },
+                    courseId: collections?.first.parentId,
+                    onSearchChanged: (query) {
+                      // Cancel previous timer
+                      _searchDebounceTimer?.cancel();
+
+                      // Start new timer
+                      _searchDebounceTimer = Timer(const Duration(milliseconds: 300), () async {
+                        // Update courses based on search
+                        if (collectionsNotifier.value == null) {
+                          // Searching courses - use findAll()
+                          if (query.isEmpty) {
+                            final courses = await CourseRepo.getAllCourses();
+                            coursesNotifier.value = courses;
+                          } else {
+                            final courses = await CourseRepo.filter
+                                .titleContains(query, caseSensitive: false)
+                                .findAll();
+                            coursesNotifier.value = courses;
+                          }
+                        } else {
+                          // Searching collections
+                          searchQueryNotifier.value = query;
+                        }
+                      });
                     },
                   );
-                }
-                return const SliverToBoxAdapter();
-              },
+                },
+              ),
             ),
+          ),
 
-            ValueListenableBuilder(
-              valueListenable: collectionsNotifier,
-              builder: (context, collections, child) {
-                if (collections == null) {
-                  return ValueListenableBuilder(
-                    valueListenable: coursesNotifier,
-                    builder: (context, courses, child) {
-                      if (courses == null) {
-                        return const SliverToBoxAdapter(child: LoadingLogo());
-                      }
+          // Collections list (when a course is selected)
+          ValueListenableBuilder(
+            valueListenable: collectionsNotifier,
+            builder: (context, collections, child) {
+              if (collections != null && collections.isNotEmpty) {
+                return ValueListenableBuilder(
+                  valueListenable: searchQueryNotifier,
+                  builder: (context, searchQuery, child) {
+                    final filteredCollections = searchQuery.isEmpty
+                        ? collections
+                        : collections.where((c) => c.title.toLowerCase().contains(searchQuery.toLowerCase())).toList();
+                    return SliverList.builder(
+                      itemCount: filteredCollections.length,
+                      itemBuilder: (context, index) {
+                        final collection = filteredCollections[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
+                          child:
+                              CollectionCard(
+                                    collection: collection,
+                                    onTap: () => _handleCollectionSelection(context, collection),
+                                  )
+                                  .animate()
+                                  .slideY(
+                                    begin: 0.1 * ((index + 1) / filteredCollections.length),
+                                    end: 0,
+                                    duration: Durations.extralong1,
+                                    curve: CustomCurves.defaultIosSpring,
+                                  )
+                                  .fadeIn(),
+                        );
+                      },
+                    );
+                  },
+                );
+              }
+              return const SliverToBoxAdapter();
+            },
+          ),
 
-                      if (courses.isEmpty) {
-                        return EmptyCoursesView();
-                      }
+          ValueListenableBuilder(
+            valueListenable: collectionsNotifier,
+            builder: (context, collections, child) {
+              if (collections == null) {
+                return ValueListenableBuilder(
+                  valueListenable: coursesNotifier,
+                  builder: (context, courses, child) {
+                    if (courses == null) {
+                      return const SliverToBoxAdapter(child: LoadingLogo());
+                    }
 
-                      return SliverList.builder(
-                        itemCount: courses.length,
-                        itemBuilder: (context, index) {
-                          final course = courses[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
-                            child:
-                                EditCourseTile(
-                                      courseName: course.courseName,
-                                      courseCode: course.courseCode,
-                                      categoriesCount: course.modules.length,
-                                      selectionState: (selected: false, isSelecting: false),
-                                      imgFilePath: course.localThumbnailPath,
-                                      onTap: () => _handleCourseSelection(context, course),
-                                      onSelected: () {},
-                                    )
-                                    .animate()
-                                    .slideY(
-                                      begin: 0.1 * ((index + 1) / courses.length),
-                                      end: 0,
-                                      duration: Durations.extralong1,
-                                      curve: CustomCurves.defaultIosSpring,
-                                    )
-                                    .fadeIn(),
-                          );
-                        },
-                      );
-                    },
-                  );
-                }
-                return const SliverToBoxAdapter();
-              },
-            ),
+                    if (courses.isEmpty) {
+                      return EmptyCoursesView();
+                    }
 
-            const SliverToBoxAdapter(child: BottomPadding()),
+                    return SliverList.builder(
+                      itemCount: courses.length,
+                      itemBuilder: (context, index) {
+                        final course = courses[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
+                          child:
+                              EditCourseTile(
+                                    courseName: course.courseName,
+                                    courseCode: course.courseCode,
+                                    categoriesCount: course.modules.length,
+                                    selectionState: (selected: false, isSelecting: false),
+                                    imgFilePath: course.localThumbnailPath,
+                                    onTap: () => _handleCourseSelection(context, course),
+                                    onSelected: () {},
+                                  )
+                                  .animate()
+                                  .slideY(
+                                    begin: 0.1 * ((index + 1) / courses.length),
+                                    end: 0,
+                                    duration: Durations.extralong1,
+                                    curve: CustomCurves.defaultIosSpring,
+                                  )
+                                  .fadeIn(),
+                        );
+                      },
+                    );
+                  },
+                );
+              }
+              return const SliverToBoxAdapter();
+            },
+          ),
 
-            const SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
-          ],
-        ),
+          const SliverToBoxAdapter(child: BottomPadding()),
+
+          const SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
+        ],
       ),
     );
   }
@@ -300,7 +296,10 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
   /// Handle moving existing contents to a collection
   Future<void> _handleMoveContents(BuildContext context, Module collection) async {
     // context.pop(true);
-    if (widget.contentsToMove!.isNotEmpty && collection.uid == widget.contentsToMove!.first.parentId) {
+    final contentsToMove = widget.contentsToMove;
+    if (contentsToMove == null || contentsToMove.isEmpty) {
+      log("No contents to move");
+      UiUtils.showFlushBar(context, msg: "No contents to move", vibe: FlushbarVibe.warning);
       return;
     }
 

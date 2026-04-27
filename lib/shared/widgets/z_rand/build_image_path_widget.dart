@@ -140,7 +140,7 @@ class ImageFromFile extends StatelessWidget {
           return child;
         } else {
           return SizedBox.expand(child: ColoredBox(color: ref.primaryColor.withAlpha(40)))
-              .animate(onComplete: (controller) => controller.repeat())
+              .animate(onInit: (controller) => controller.repeat())
               .shimmer(duration: const Duration(seconds: 1), curve: Curves.decelerate)
               .blurXY(begin: 2, end: 0, duration: Duration(seconds: 1))
               .animate(onComplete: (controller) => controller.repeat(reverse: true))

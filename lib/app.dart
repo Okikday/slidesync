@@ -143,7 +143,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     GlobalNav.withContextAsync<bool>((context) async {
       final pushRes = await Navigator.of(
         context,
-      ).push(MaterialPageRoute(builder: (context) => MoveOrStoreContentBottomSheet.store(files: files)));
+      ).push(MaterialPageRoute(builder: (context) => MoveOrStoreContentScreen.store(files: files)));
       if (pushRes is bool) return pushRes;
       return false;
     }).then((res) {

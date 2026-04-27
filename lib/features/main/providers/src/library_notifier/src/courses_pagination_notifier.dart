@@ -1,10 +1,7 @@
 import 'dart:developer';
 import 'dart:async';
-import 'dart:collection';
 import 'dart:math' as math;
-import 'dart:ui';
 
-import 'package:flutter/services.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:isar_community/isar.dart';
 import 'package:slidesync/core/constants/src/enums/enums.dart';
@@ -13,212 +10,172 @@ import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/main/providers/entities/library_entities/course_pagination_state.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
-import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
-  /// ===================================================================================================
-  /// MUTABLE VARIABLES (Internal Manager State)
-  /// ===================================================================================================
   late final PagingController<int, Course> pagingController = PagingController(
+    // value: PagingState(hasNextPage: false),
     getNextPageKey: (state) => state.lastPageIsEmpty ? null : state.nextIntPageKey,
     fetchPage: (pageKey) => fetchPage(pageKey, limit),
   );
-  final Queue<Completer<List<Course>>> _waitingQueue = Queue();
-  final coursesFilter = _coursesOrderingProvider;
 
-  bool _fetching = false;
   bool isUpdating = false;
-  int count = -1;
+  bool extraCheck = false;
+  bool _pendingRefresh = false;
   static const int limit = 20;
-
-  /// ===================================================================================================
-  /// LIFECYCLE (Build & Dispose)
-  /// ===================================================================================================
 
   @override
   CoursePaginationState build() {
     log("Build $runtimeType");
-    final filterPro = _coursesOrderingProvider.readX(ref);
-    final initialSort = filterPro.value ?? EntityOrdering.dateModifiedDesc;
+    final coursesOrdering = ref.read(_coursesOrderingProvider).value;
 
     ref.listen(
       _coursesOrderingProvider,
-      (prev, next) => next.whenData((newSort) => updateSortOption(newSort, refresh: true)),
-      fireImmediately: true,
+      (prev, next) => next.whenData((ordering) => updateCoursesOrdering(ordering, refresh: true)),
     );
 
     ref.onDispose(() {
-      _clearQueue();
       pagingController.dispose();
+      log("Disposed $runtimeType!");
     });
 
-    ref.listen(_coursesUpdateStream, (prev, next) async => await compareCoursesAndUpdate());
+    ref.listen(_coursesUpdateStream, (prev, next) async => await _syncCourses());
 
-    return CoursePaginationState(sortOption: initialSort);
+    return CoursePaginationState(coursesOrdering: coursesOrdering ?? EntityOrdering.dateModifiedDesc);
   }
 
-  /// ===================================================================================================
-  /// PUBLIC METHODS
-  /// ===================================================================================================
+  void updateCoursesOrdering(EntityOrdering coursesOrdering, {bool refresh = true}) {
+    if (state.coursesOrdering == coursesOrdering) return;
 
-  void updateSortOption(EntityOrdering newSortOption, {bool refresh = true}) {
-    if (state.sortOption == newSortOption) return;
+    state = state.copyWith(coursesOrdering: coursesOrdering);
+    ref.read(_coursesOrderingProvider.notifier).set(coursesOrdering);
 
-    ref.read(_coursesOrderingProvider.notifier).set(newSortOption);
-    state = state.copyWith(sortOption: newSortOption);
-
-    if (refresh) pagingController.refresh();
+    if (refresh) _refreshAndFetchFirstPage();
   }
 
-  /// The main fetch gateway with concurrency handling
-  Future<List<Course>> fetchPage(int pageKey, int limit) async {
-    // Initialize count if first run
-    if (count <= 0) {
-      Future.microtask(() async => count = await CourseRepo.isar.courses.count());
+  Future<List<Course>> fetchPage(int pageKey, int limit) {
+    if (_pendingRefresh && pageKey == 1) {
+      _pendingRefresh = false;
+      scheduleMicrotask(
+        () => pagingController
+          ..refresh()
+          ..fetchNextPage(),
+      );
     }
-
-    if (_fetching) {
-      final completer = Completer<List<Course>>();
-      _waitingQueue.add(completer);
-      return completer.future;
-    }
-
-    _fetching = true;
-    try {
-      final token = RootIsolateToken.instance;
-      if (token == null) return const [];
-
-      // Perform the actual Isar fetch
-      final result = await _doFetch(pageKey, limit, state.sortOption);
-
-      // Resolve any callers waiting in the queue
-      while (_waitingQueue.isNotEmpty) {
-        _waitingQueue.removeFirst().complete(result);
-      }
-
-      return result;
-    } catch (error) {
-      while (_waitingQueue.isNotEmpty) {
-        _waitingQueue.removeFirst().completeError(error);
-      }
-      rethrow;
-    } finally {
-      _fetching = false;
-    }
+    return _doFetch(pageKey, limit, state.coursesOrdering);
   }
 
-  /// Advanced diffing: compares UI pages with DB and updates in-place
-  Future<void> compareCoursesAndUpdate() async {
-    if (isUpdating) {
-      log("Courses Pagination is already updating!");
+  Future<void> _refreshAndFetchFirstPage() async {
+    if (pagingController.value.isLoading) {
+      _pendingRefresh = true;
       return;
     }
+    _pendingRefresh = false;
+    pagingController.refresh();
+    pagingController.fetchNextPage();
+  }
 
-    final isar = CourseRepo.isar;
-    final presentCount = await isar.courses.count();
+  Future<void> _syncCourses() async {
+    if (isUpdating) {
+      extraCheck = true;
+      return;
+    }
 
     isUpdating = true;
 
     try {
-      if (count < 0) {
-        count = presentCount;
-        return;
+      await _runComparison();
+
+      if (extraCheck) {
+        extraCheck = false;
+        await _runComparison();
       }
-
-      final List<List<Course>>? coursesOnPagesList = pagingController.value.pages;
-      if (coursesOnPagesList == null) return;
-
-      int coursesOnPagesCount = coursesOnPagesList.fold(0, (sum, page) => sum + page.length);
-      log("Counted the courses displaying: $coursesOnPagesCount");
-
-      if (presentCount == coursesOnPagesCount) {
-        // SCENARIO 1: Count is the same, check for modified content
-        final coursesLoadedOnPages = coursesOnPagesList.expand((i) => i).toList();
-        final coursesOnPagesMap = {for (final course in coursesLoadedOnPages) course.id: course};
-
-        final filterRepo = CourseRepo.filter;
-        final coursesFromIsar = await filterRepo.anyOf(coursesLoadedOnPages, (a, b) => a.idEqualTo(b.id)).findAll();
-
-        final Map<int, Course> modifiedCoursesMap = {};
-        for (final isarCourse in coursesFromIsar) {
-          final pageCourse = coursesOnPagesMap[isarCourse.id];
-          if (pageCourse != null && isarCourse.lastModified.compareTo(pageCourse.lastModified) != 0) {
-            modifiedCoursesMap[isarCourse.id] = isarCourse;
-          }
-        }
-
-        if (modifiedCoursesMap.isNotEmpty) {
-          log("Found ${modifiedCoursesMap.length} modified courses");
-          final updatedPagesList = coursesOnPagesList.map((page) {
-            return page.map((c) => modifiedCoursesMap[c.id] ?? c).toList();
-          }).toList();
-
-          pagingController.value = pagingController.value.copyWith(pages: updatedPagesList);
-        }
-      } else {
-        // SCENARIO 2: Count changed (Items added or removed)
-        final numberOfCurrentPages = coursesOnPagesList.length;
-        final difference = presentCount - coursesOnPagesCount;
-
-        if (difference <= 0) {
-          pagingController.refresh();
-          return;
-        }
-
-        int pagesToFetch;
-        if (difference > 0) {
-          final additionalItemsPages = (difference / limit).ceil();
-          pagesToFetch = numberOfCurrentPages + math.min(additionalItemsPages, 1);
-        } else {
-          pagesToFetch = math.max((presentCount / limit).ceil(), 1);
-        }
-
-        final List<List<Course>> newPagesList = [];
-        final List<int> newKeysList = [];
-
-        for (int i = 0; i < pagesToFetch; i++) {
-          final pageKey = i + 1;
-          final fetchedPage = await _doFetch(pageKey, limit, state.sortOption);
-
-          if (fetchedPage.isEmpty) break;
-
-          newPagesList.add(fetchedPage);
-          newKeysList.add(pageKey);
-        }
-
-        count = presentCount;
-        if (newPagesList.isNotEmpty) {
-          pagingController.value = pagingController.value.copyWith(pages: newPagesList, keys: newKeysList);
-        }
-      }
-    } catch (e) {
-      log("Error during update: $e");
     } finally {
       isUpdating = false;
+      extraCheck = false;
     }
   }
 
-  /// ===================================================================================================
-  /// PRIVATE FETCHERS (Internal logic)
-  /// ===================================================================================================
+  Future<void> _runComparison() async {
+    final List<List<Course>>? pages = pagingController.value.pages;
+    if (pages == null || pages.isEmpty) return;
 
-  void _clearQueue() {
-    while (_waitingQueue.isNotEmpty) {
-      _waitingQueue.removeFirst().completeError(StateError('Queue cleared'));
+    final isar = CourseRepo.isar;
+    final presentCount = await isar.courses.count();
+    final displayedCount = pages.fold(0, (sum, page) => sum + page.length);
+
+    log("DB: $presentCount  Displayed: $displayedCount");
+
+    if (presentCount == displayedCount) {
+      await _handleModifications(pages);
+    } else {
+      await _handleCountChange(pages, presentCount);
+    }
+  }
+
+  Future<void> _handleModifications(List<List<Course>> pages) async {
+    final displayedCourses = pages.expand((p) => p).toList();
+    final displayedMap = {for (final c in displayedCourses) c.id: c};
+
+    final freshCourses = await CourseRepo.filter.anyOf(displayedCourses, (q, c) => q.idEqualTo(c.id)).findAll();
+
+    final modifiedMap = <int, Course>{};
+    for (final fresh in freshCourses) {
+      final displayed = displayedMap[fresh.id];
+      if (displayed != null && fresh.lastModified.compareTo(displayed.lastModified) != 0) {
+        modifiedMap[fresh.id] = fresh;
+      }
+    }
+
+    if (modifiedMap.isEmpty) return;
+
+    log("Updating ${modifiedMap.length} modified courses");
+
+    pagingController.value = pagingController.value.copyWith(
+      pages: pages.map((page) {
+        return page.map((c) => modifiedMap[c.id] ?? c).toList();
+      }).toList(),
+    );
+  }
+
+  Future<void> _handleCountChange(List<List<Course>> pages, int presentCount) async {
+    final displayedCount = pages.fold(0, (sum, page) => sum + page.length);
+    final difference = presentCount - displayedCount;
+
+    if (difference < 0) {
+      pagingController.refresh();
+      return;
+    }
+
+    final additionalPages = (difference / limit).ceil();
+    final pagesToFetch = pages.length + math.min(additionalPages, 1);
+
+    final newPages = <List<Course>>[];
+    final newKeys = <int>[];
+
+    for (int i = 0; i < pagesToFetch; i++) {
+      final pageKey = i + 1;
+      final fetched = await _doFetch(pageKey, limit, state.coursesOrdering);
+      if (fetched.isEmpty) break;
+      newPages.add(fetched);
+      newKeys.add(pageKey);
+    }
+
+    if (newPages.isNotEmpty) {
+      pagingController.value = pagingController.value.copyWith(pages: newPages, keys: newKeys);
     }
   }
 
   Future<List<Course>> _doFetch(int pageKey, int limit, EntityOrdering sortOption) async {
     final offset = (pageKey - 1) * limit;
-    final query = (CourseRepo.isar).courses.where();
+    final query = CourseRepo.isar.courses.where();
 
     return switch (sortOption) {
-      EntityOrdering.nameAsc => await query.sortByTitle().offset(offset).limit(limit).findAll(),
-      EntityOrdering.nameDesc => await query.sortByTitleDesc().offset(offset).limit(limit).findAll(),
-      EntityOrdering.dateCreatedAsc => await query.sortByCreatedAt().offset(offset).limit(limit).findAll(),
-      EntityOrdering.dateCreatedDesc => await query.sortByCreatedAtDesc().offset(offset).limit(limit).findAll(),
-      EntityOrdering.dateModifiedAsc => await query.sortByLastModified().offset(offset).limit(limit).findAll(),
-      EntityOrdering.dateModifiedDesc => await query.sortByLastModifiedDesc().offset(offset).limit(limit).findAll(),
+      EntityOrdering.nameAsc => query.sortByTitle().offset(offset).limit(limit).findAll(),
+      EntityOrdering.nameDesc => query.sortByTitleDesc().offset(offset).limit(limit).findAll(),
+      EntityOrdering.dateCreatedAsc => query.sortByCreatedAt().offset(offset).limit(limit).findAll(),
+      EntityOrdering.dateCreatedDesc => query.sortByCreatedAtDesc().offset(offset).limit(limit).findAll(),
+      EntityOrdering.dateModifiedAsc => query.sortByLastModified().offset(offset).limit(limit).findAll(),
+      EntityOrdering.dateModifiedDesc => query.sortByLastModifiedDesc().offset(offset).limit(limit).findAll(),
     };
   }
 }

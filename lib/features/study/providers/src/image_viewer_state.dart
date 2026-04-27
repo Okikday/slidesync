@@ -96,7 +96,7 @@ class ImageViewerState with ValueNotifierFactoryMixin {
   // ============================================================================
 
   Future<ContentTrack?> _getLastProgressTrack(String contentId) async {
-    final content = await ModuleContentRepo.getByContentId(contentId);
+    final content = await ModuleContentRepo.getByUid(contentId);
     if (content == null) return null;
 
     final ptm = await (ContentTrackRepo.isar).contentTracks.where().uidEqualTo(contentId).findFirst();
@@ -123,6 +123,7 @@ class ImageViewerState with ValueNotifierFactoryMixin {
         uid: content.uid,
         courseId: parentId,
         title: content.title,
+        type: content.type,
         description: content.description,
         progress: 0.0,
         pages: const [],

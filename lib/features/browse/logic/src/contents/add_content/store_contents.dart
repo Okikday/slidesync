@@ -189,7 +189,8 @@ Future<List<Map<String, dynamic>>> storeContents(
 
 final Queue<Completer> _storageSizeUpdateQueue = Queue<Completer>();
 Future<Result> aggregateFileSizeToStorage(int addSize) async => Result.tryRunAsync(() async {
-  final file = File(p.join(AppPaths.rootFolder, "storage_usage.json"));
+  final dir = await FileUtils.getAppDocumentsDirectory();
+  final file = File(p.join(dir.path, AppPaths.rootFolder, "storage_usage.json"));
   int totalSize = 0;
 
   if (file.existsSync()) {

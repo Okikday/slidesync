@@ -12,10 +12,10 @@ import 'package:slidesync/features/browse/ui/widgets/module_contents_view/materi
 import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
-class MaterialsSearchButton extends ConsumerWidget {
+class ModuleContentsSearchButton extends ConsumerWidget {
   final Color? backgroundColor;
   final String collectionId;
-  const MaterialsSearchButton({super.key, this.backgroundColor, required this.collectionId});
+  const ModuleContentsSearchButton({super.key, this.backgroundColor, required this.collectionId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

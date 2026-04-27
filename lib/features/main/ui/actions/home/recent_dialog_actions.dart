@@ -34,7 +34,7 @@ mixin RecentDialogActions {
   /// Opens content viewer for the contentId provided
   Future<void> onContinueReading(WidgetRef ref, String contentId) async {
     final context = ref.context;
-    final newContent = await ModuleContentRepo.getByContentId(contentId);
+    final newContent = await ModuleContentRepo.getByUid(contentId);
     if (context.mounted) UiUtils.hideDialog(context);
     if (newContent == null) {
       if (context.mounted) {
@@ -46,8 +46,9 @@ mixin RecentDialogActions {
   }
 
   /// Adds content to bookmarks collection
-  void onAddToBookmark(String contentId) async {
-    final content = await ModuleContentRepo.getByContentId(contentId);
+  void onAddToBookmark(WidgetRef ref, String contentId) async {
+    final content = await ModuleContentRepo.getByUid(contentId);
+    if (ref.context.mounted) UiUtils.hideDialog(ref.context);
     if (content == null) {
       GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "Couldn't add content..."));
       return;
@@ -58,7 +59,7 @@ mixin RecentDialogActions {
 
   /// Opens content viewer for the contentId provided, with openOutsideApp flag set to true
   void onOpenOutsideApp(WidgetRef ref, String contentId) async {
-    final content = await ModuleContentRepo.getByContentId(contentId);
+    final content = await ModuleContentRepo.getByUid(contentId);
     if (content == null) return;
     if (ref.context.mounted) UiUtils.hideDialog(ref.context);
     ContentViewGateActions.redirectToViewer(ref, content, openOutsideApp: true);
@@ -71,7 +72,7 @@ mixin RecentDialogActions {
 
   /// Navigates to the collection page of the contentId provided
   void onGoToCollection(BuildContext context, String contentId) async {
-    final content = await ModuleContentRepo.getByContentId(contentId);
+    final content = await ModuleContentRepo.getByUid(contentId);
     if (content == null) return;
     final collection = await ModuleRepo.getByUid(content.parentId);
     if (collection == null) return;

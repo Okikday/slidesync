@@ -60,7 +60,7 @@ class ModifyContentUc {
     return (await Result.tryRunAsync(() async {
       ModuleContent? stContent = await ModuleContentRepo.getByDbId(content.id);
       if (stContent == null) {
-        stContent = await ModuleContentRepo.getByContentId(content.uid);
+        stContent = await ModuleContentRepo.getByUid(content.uid);
         if (stContent == null) return;
       }
 

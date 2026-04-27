@@ -24,9 +24,7 @@ class LibraryTabViewLayoutButton extends ConsumerWidget {
     }
 
     return BuildButton(
-      onTap: () {
-        MainProvider.library.act(ref).toggleCardViewType();
-      },
+      onTap: () => MainProvider.library.act(ref).toggleCardViewType(),
       backgroundColor: backgroundColor,
       iconData: IconHelper.getCardViewTypeIconData(stateValue.cardViewType),
     );

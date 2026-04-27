@@ -9,6 +9,7 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/browse/ui/widgets/course/course_view/course_view_fab.dart';
 import 'package:slidesync/features/browse/ui/widgets/module/modules_list/modules_list_with_search_sliver.dart';
 import 'package:slidesync/features/browse/ui/widgets/course/course_view/course_view_header/course_view_header.dart';
+import 'package:slidesync/shared/global/providers/course_providers.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 
@@ -25,6 +26,7 @@ class CourseView extends ConsumerStatefulWidget {
 class _CourseViewState extends ConsumerState<CourseView> with ScrollOffsetNotifierMixin {
   @override
   Widget build(BuildContext context) {
+    ref.listen(CourseProviders.watchCourseProvider(widget.courseId), (p, n) {});
     return AppScaffold(
       title: "",
       systemUiOverlayStyle: UiUtils.getSystemUiOverlayStyle(
@@ -42,7 +44,7 @@ class _CourseViewState extends ConsumerState<CourseView> with ScrollOffsetNotifi
           if (!DeviceUtils.isDesktop())
             PinnedHeaderSliver(child: AdjustSpacing(scrollOffsetNotifier: scrollOffsetNotifier)),
         ],
-        body: ModulesListWithSearchScrollViwe(
+        body: ModulesListWithSearchScrollView(
           courseId: widget.courseId,
           topPadding: null,
           isPinned: true,

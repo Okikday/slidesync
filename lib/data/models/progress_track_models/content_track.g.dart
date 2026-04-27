@@ -52,7 +52,13 @@ const ContentTrackSchema = CollectionSchema(
       target: r'FilePath',
     ),
     r'title': PropertySchema(id: 8, name: r'title', type: IsarType.string),
-    r'uid': PropertySchema(id: 9, name: r'uid', type: IsarType.string),
+    r'type': PropertySchema(
+      id: 9,
+      name: r'type',
+      type: IsarType.string,
+      enumMap: _ContentTracktypeEnumValueMap,
+    ),
+    r'uid': PropertySchema(id: 10, name: r'uid', type: IsarType.string),
   },
 
   estimateSize: _contentTrackEstimateSize,
@@ -126,6 +132,7 @@ int _contentTrackEstimateSize(
         allOffsets,
       );
   bytesCount += 3 + object.title.length * 3;
+  bytesCount += 3 + object.type.name.length * 3;
   bytesCount += 3 + object.uid.length * 3;
   return bytesCount;
 }
@@ -150,7 +157,8 @@ void _contentTrackSerialize(
     object.thumbnail,
   );
   writer.writeString(offsets[8], object.title);
-  writer.writeString(offsets[9], object.uid);
+  writer.writeString(offsets[9], object.type.name);
+  writer.writeString(offsets[10], object.uid);
 }
 
 ContentTrack _contentTrackDeserialize(
@@ -175,7 +183,10 @@ ContentTrack _contentTrackDeserialize(
         ) ??
         FilePath(),
     title: reader.readString(offsets[8]),
-    uid: reader.readString(offsets[9]),
+    type:
+        _ContentTracktypeValueEnumMap[reader.readStringOrNull(offsets[9])] ??
+        ModuleContentType.unknown,
+    uid: reader.readString(offsets[10]),
   );
   return object;
 }
@@ -212,11 +223,34 @@ P _contentTrackDeserializeProp<P>(
     case 8:
       return (reader.readString(offset)) as P;
     case 9:
+      return (_ContentTracktypeValueEnumMap[reader.readStringOrNull(offset)] ??
+              ModuleContentType.unknown)
+          as P;
+    case 10:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
+
+const _ContentTracktypeEnumValueMap = {
+  r'unknown': r'unknown',
+  r'document': r'document',
+  r'image': r'image',
+  r'link': r'link',
+  r'note': r'note',
+  r'reference': r'reference',
+  r'group': r'group',
+};
+const _ContentTracktypeValueEnumMap = {
+  r'unknown': ModuleContentType.unknown,
+  r'document': ModuleContentType.document,
+  r'image': ModuleContentType.image,
+  r'link': ModuleContentType.link,
+  r'note': ModuleContentType.note,
+  r'reference': ModuleContentType.reference,
+  r'group': ModuleContentType.group,
+};
 
 Id _contentTrackGetId(ContentTrack object) {
   return object.id;
@@ -1508,6 +1542,153 @@ extension ContentTrackQueryFilter
     });
   }
 
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition> typeEqualTo(
+    ModuleContentType value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'type',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+  typeGreaterThan(
+    ModuleContentType value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'type',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition> typeLessThan(
+    ModuleContentType value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'type',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition> typeBetween(
+    ModuleContentType lower,
+    ModuleContentType upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'type',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+  typeStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'type',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition> typeEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'type',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition> typeContains(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'type',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition> typeMatches(
+    String pattern, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'type',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+  typeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'type', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+  typeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'type', value: ''),
+      );
+    });
+  }
+
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition> uidEqualTo(
     String value, {
     bool caseSensitive = true,
@@ -1759,6 +1940,18 @@ extension ContentTrackQuerySortBy
     });
   }
 
+  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> sortByType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'type', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> sortByTypeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'type', Sort.desc);
+    });
+  }
+
   QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> sortByUid() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'uid', Sort.asc);
@@ -1872,6 +2065,18 @@ extension ContentTrackQuerySortThenBy
     });
   }
 
+  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> thenByType() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'type', Sort.asc);
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> thenByTypeDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'type', Sort.desc);
+    });
+  }
+
   QueryBuilder<ContentTrack, ContentTrack, QAfterSortBy> thenByUid() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'uid', Sort.asc);
@@ -1943,6 +2148,14 @@ extension ContentTrackQueryWhereDistinct
     });
   }
 
+  QueryBuilder<ContentTrack, ContentTrack, QDistinct> distinctByType({
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'type', caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<ContentTrack, ContentTrack, QDistinct> distinctByUid({
     bool caseSensitive = true,
   }) {
@@ -2011,6 +2224,13 @@ extension ContentTrackQueryProperty
   QueryBuilder<ContentTrack, String, QQueryOperations> titleProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'title');
+    });
+  }
+
+  QueryBuilder<ContentTrack, ModuleContentType, QQueryOperations>
+  typeProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'type');
     });
   }
 

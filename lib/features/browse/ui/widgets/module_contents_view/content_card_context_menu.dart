@@ -25,10 +25,8 @@ import 'package:slidesync/features/sync/providers/sync_provider.dart';
 import 'package:slidesync/features/sync/providers/transfer_state_provider.dart';
 import 'package:slidesync/features/sync/providers/upload_feed_provider.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
-import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/helpers/icon_helper.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
-import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 class ContentCardContextMenu extends ConsumerStatefulWidget {
@@ -75,195 +73,157 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                     ),
                   ),
                   padding: EdgeInsets.only(top: 16.0, bottom: 8.0),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
-                        child: Row(
-                          spacing: 8,
-                          children: [
-                            Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: theme.onSurface.withAlpha(20),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                              child: BuildImagePathWidget(
-                                fileDetails: widget.content.thumbnailDetails,
-                                fallbackWidget: Icon(IconHelper.getContentTypeIconData(widget.content.type), size: 20),
-                              ),
-                            ),
-                            Expanded(
-                              child: CustomText(
-                                widget.content.title,
-                                fontSize: 14,
-                                color: theme.onSurface,
-                                maxLines: 2,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      ConstantSizing.columnSpacingMedium,
-                      divider,
-                      ConstantSizing.columnSpacingSmall,
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            _buildLeadingMenuOption(
-                              "Open in browser",
-                              iconData: HugeIconsStroke.playCircle,
-                              onTap: () {
-                                Navigator.pop(context);
-                                // ContentViewGateActions.redirectToViewer(ref, widget.content, openOutsideApp: false);
-                              },
-                            ),
-                            _buildLeadingMenuOption(
-                              "View details",
-                              iconData: HugeIconsStroke.playCircle,
-                              onTap: () {
-                                Navigator.pop(context);
-
-                                UiUtils.showCustomDialog(
-                                  context,
-                                  child: PreviewLinkTypeDialog(content: widget.content),
-                                );
-                              },
-                            ),
-                            widget.content.type == ModuleContentType.link
-                                ? _buildLeadingMenuOption(
-                                    "Copy",
-                                    iconData: HugeIconsStroke.copyLink,
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                      final url = widget.content.path.url;
-                                      if (url != null) {
-                                        Clipboard.setData(ClipboardData(text: url));
-                                        UiUtils.showFlushBar(context, msg: "Link copied to clipboard");
-                                      }
-                                    },
-                                  )
-                                : _buildLeadingMenuOption(
-                                    "Launch",
-                                    iconData: HugeIconsStroke.sendToMobile,
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                      ContentViewGateActions.redirectToViewer(
-                                        ref,
-                                        widget.content,
-                                        openOutsideApp: true,
-                                      );
-                                    },
+                  child: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                          child: Row(
+                            spacing: 8,
+                            children: [
+                              Container(
+                                width: 40,
+                                height: 40,
+                                decoration: BoxDecoration(
+                                  color: theme.onSurface.withAlpha(20),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: BuildImagePathWidget(
+                                  fileDetails: widget.content.thumbnailDetails,
+                                  fallbackWidget: Icon(
+                                    IconHelper.getContentTypeIconData(widget.content.type),
+                                    size: 20,
                                   ),
-                            _buildLeadingMenuOption(
-                              "Share",
-                              iconData: HugeIconsStroke.share01,
-                              onTap: () {
-                                Navigator.pop(context);
-                                ShareContentActions.shareContent(context, widget.content.uid);
-                              },
-                            ),
-                          ],
+                                ),
+                              ),
+                              Expanded(
+                                child: CustomText(
+                                  widget.content.title,
+                                  fontSize: 14,
+                                  color: theme.onSurface,
+                                  maxLines: 2,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      divider,
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            BuildPlainActionButton(
-                              title: "Select",
-                              icon: Icon(HugeIconsStroke.checkmarkCircle01, color: theme.onSurface),
-                              onTap: () {
-                                ModuleContentsProvider.state(widget.collection).act(ref).selectContent(widget.content);
-                                Navigator.pop(context);
-                              },
-                            ),
-                            divider,
-                            BuildPlainActionButton(
-                              title: "Rename",
-                              icon: Icon(HugeIconsStroke.cursorEdit01, color: theme.onSurface),
-                              onTap: () {
-                                Navigator.pop(context);
-                                ContentCardContextMenuActions.onRenameContent(context, widget.content);
-                              },
-                            ),
-                            divider,
-                            BuildPlainActionButton(
-                              title: "Upload",
-                              icon: Icon(HugeIconsStroke.cursorEdit01, color: theme.onSurface),
-                              onTap: () async {
-                                Navigator.pop(context);
-                                await _uploadContentToPublicRepository();
-                              },
-                            ),
-                            divider,
-                            BuildPlainActionButton(
-                              title: "Delete",
-                              textStyle: TextStyle(fontSize: 14, color: Colors.red),
-                              icon: Icon(HugeIconsSolid.delete02, color: Colors.red.withAlpha(200)),
-                              onTap: () {
-                                Navigator.pop(context);
-                                UiUtils.showCustomDialog(
-                                  context,
-                                  child: ConfirmDeletionDialog(
-                                    content: "Are you sure you want to delete this item?",
-                                    onPop: () {
-                                      if (context.mounted) {
-                                        Navigator.pop(context);
-                                      } else {
-                                        GlobalNav.popGlobal();
-                                      }
-                                    },
-                                    onCancel: () {
-                                      GlobalNav.popGlobal();
-                                    },
-                                    onDelete: () async {
-                                      Navigator.pop(context);
+                        ConstantSizing.columnSpacingMedium,
+                        divider,
+                        ConstantSizing.columnSpacingSmall,
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              if (widget.content.type == ModuleContentType.link) ...[
+                                _buildLeadingMenuOption(
+                                  "View",
+                                  iconData: HugeIconsStroke.view,
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    UiUtils.showCustomDialog(
+                                      context,
+                                      child: PreviewLinkTypeDialog(content: widget.content),
+                                    );
+                                  },
+                                ),
+                                _buildLeadingMenuOption(
+                                  "Copy",
+                                  iconData: HugeIconsStroke.copyLink,
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    final url = widget.content.path.url;
+                                    if (url != null) {
+                                      Clipboard.setData(ClipboardData(text: url));
+                                      UiUtils.showFlushBar(context, msg: "Link copied to clipboard");
+                                    }
+                                  },
+                                ),
+                              ] else ...[
+                                _buildLeadingMenuOption(
+                                  "Open",
+                                  iconData: HugeIconsStroke.playCircle,
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    ContentViewGateActions.redirectToViewer(ref, widget.content, openOutsideApp: false);
+                                  },
+                                ),
 
-                                      if (context.mounted) {
-                                        UiUtils.showLoadingDialog(context, message: "Removing content");
-                                      }
-                                      final outcome = await ModifyContentsAction().onDeleteContent(widget.content.uid);
+                                _buildLeadingMenuOption(
+                                  "Launch",
+                                  iconData: HugeIconsStroke.sendToMobile,
+                                  onTap: () {
+                                    Navigator.pop(context);
+                                    ContentViewGateActions.redirectToViewer(ref, widget.content, openOutsideApp: true);
+                                  },
+                                ),
+                              ],
 
-                                      GlobalNav.popGlobal();
-
-                                      if (context.mounted) {
-                                        if (outcome == null) {
-                                          UiUtils.showFlushBar(
-                                            context,
-                                            msg: "Deleted content!",
-                                            vibe: FlushbarVibe.success,
-                                          );
-                                        } else if (outcome.toLowerCase().contains("error")) {
-                                          UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.error);
-                                        } else {
-                                          UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.warning);
-                                        }
-                                      }
-                                    },
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
+                              /// other
+                              _buildLeadingMenuOption(
+                                "Share",
+                                iconData: HugeIconsStroke.share01,
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  ShareContentActions.shareContent(context, widget.content.uid);
+                                },
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                    ],
+                        divider,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              BuildPlainActionButton(
+                                title: "Select",
+                                icon: Icon(HugeIconsStroke.checkmarkCircle01, color: theme.onSurface),
+                                onTap: () {
+                                  ModuleContentsProvider.state(
+                                    widget.collection.id,
+                                  ).act(ref).selectContent(widget.content);
+                                  Navigator.pop(context);
+                                },
+                              ),
+
+                              divider,
+                              BuildPlainActionButton(
+                                title: "Rename",
+                                icon: Icon(HugeIconsStroke.cursorEdit01, color: theme.onSurface),
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  ContentCardContextMenuActions.onRenameContent(context, widget.content);
+                                },
+                              ),
+                              divider,
+                              BuildPlainActionButton(
+                                title: "Upload",
+                                icon: Icon(HugeIconsStroke.upload03, color: theme.onSurface),
+                                onTap: () async {
+                                  Navigator.pop(context);
+                                  await _uploadContentToPublicRepository();
+                                },
+                              ),
+                              divider,
+                              BuildPlainActionButton(
+                                title: "Delete",
+                                textStyle: TextStyle(fontSize: 14, color: Colors.red),
+                                icon: Icon(HugeIconsSolid.delete02, color: Colors.red.withAlpha(200)),
+                                onTap: () async {
+                                  Navigator.pop(context);
+                                  await ModifyContentsAction().showDeleteDialog(widget.content.uid);
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-                // .animate().fadeIn().scaleXY(
-                //   alignment: Alignment.topCenter,
-                //   begin: 0.4,
-                //   end: 1,
-                //   curve: CustomCurves.defaultIosSpring,
-                //   duration: Duration(milliseconds: 550),
-                // ),
               ),
             ),
           ),

@@ -10,11 +10,10 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/features/share/logic/usecases/share_content_uc.dart';
-import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class ShareContentActions {
   static Future<void> shareContent(BuildContext context, String contentId) async {
-    final content = await ModuleContentRepo.getByContentId(contentId);
+    final content = await ModuleContentRepo.getByUid(contentId);
     if (content == null) return;
     if (content.type == ModuleContentType.document ||
         content.type == ModuleContentType.image ||
@@ -30,10 +29,9 @@ class ShareContentActions {
 
   static Future<void> shareFileContent(BuildContext context, String contentId) async {
     UiUtils.showFlushBar(context, msg: "Preparing file...");
-    final content = await ModuleContentRepo.getByContentId(contentId);
+    final content = await ModuleContentRepo.getByUid(contentId);
     if (content == null) return;
-    final metadata = (content.metadataJson.decodeJson);
-    final origFilename = (metadata['originalFilename'] as String?);
+    final origFilename = (content.metadata?.originalFileName);
     // final fileName = (metadata['filename'] ?? metadata['fileName']) as String? ?? content.title;
     final localPath = content.path.local ?? '';
     await ShareContentUc().shareFile(

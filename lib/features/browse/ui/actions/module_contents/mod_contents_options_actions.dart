@@ -6,18 +6,16 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/features/browse/providers/src/module_contents_notifier/module_contents_notifier.dart';
 import 'package:slidesync/features/browse/ui/actions/module_contents/content_card_context_menu_actions.dart';
-import 'package:slidesync/features/browse/ui/widgets/module_contents_view/src/modify_contents/move_to_collection_bottom_sheet.dart';
 import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
 import 'package:slidesync/routes/app_router.dart';
+import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 
 class ModContentsOptionsActions {
   static void onMove(BuildContext context, ModuleContentsNotifier n) async {
     final contents = n.selectedContents.toList();
     n.unselectAllContents();
-    await Navigator.of(
-      context,
-    ).push(MaterialPageRoute(builder: (context) => MoveOrStoreContentBottomSheet.move(contents: contents)));
+    context.pushNamed(Routes.moveContents.name, extra: contents);
   }
 
   static void onShare(BuildContext context, ModuleContentsNotifier n) async {

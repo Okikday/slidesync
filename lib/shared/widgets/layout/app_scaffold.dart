@@ -5,7 +5,7 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 
-class AppScaffold extends ConsumerWidget {
+class AppScaffold<T> extends ConsumerWidget {
   final bool extendBodyBehindAppBar;
   final bool extendBody;
   final Color? backgroundColor;
@@ -26,7 +26,7 @@ class AppScaffold extends ConsumerWidget {
   final Widget? bottomNavigationBar;
   final SystemUiOverlayStyle? systemUiOverlayStyle;
   final bool canPop;
-  final void Function(bool, dynamic)? onPopInvokedWithResult;
+  final PopInvokedWithResultCallback? onPopInvokedWithResult;
   final EdgeInsets? viewPadding;
   final void Function()? onBackButtonPressed;
   final Widget? drawer;
@@ -81,7 +81,7 @@ class AppScaffold extends ConsumerWidget {
                 ref.isDarkMode,
                 statusBarColor: Colors.transparent,
               ));
-    return PopScope(
+    return PopScope<T>(
       canPop: canPop,
       onPopInvokedWithResult: onPopInvokedWithResult,
       child: systemUiOverlayStyle == null

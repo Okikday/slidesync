@@ -21,7 +21,6 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/formatter.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/helpers/icon_helper.dart';
-import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
@@ -150,42 +149,7 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
         label: "Delete",
         icon: Icons.delete,
         onTap: () async {
-          UiUtils.showCustomDialog(
-            context,
-            child: ConfirmDeletionDialog(
-              content: "Are you sure you want to delete this item?",
-              onPop: () {
-                if (context.mounted) {
-                  UiUtils.hideDialog(context);
-                } else {
-                  GlobalNav.popGlobal();
-                }
-              },
-              onCancel: () {
-                GlobalNav.popGlobal();
-              },
-              onDelete: () async {
-                UiUtils.hideDialog(context);
-
-                if (context.mounted) {
-                  UiUtils.showLoadingDialog(context, message: "Removing content");
-                }
-                final outcome = await ModifyContentsAction().onDeleteContent(content.uid);
-
-                GlobalNav.popGlobal();
-
-                if (context.mounted) {
-                  if (outcome == null) {
-                    UiUtils.showFlushBar(context, msg: "Deleted content!", vibe: FlushbarVibe.success);
-                  } else if (outcome.toLowerCase().contains("error")) {
-                    UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.error);
-                  } else {
-                    UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.warning);
-                  }
-                }
-              },
-            ),
-          );
+          await ModifyContentsAction().showDeleteDialog(content.uid);
         },
       ),
       CourseMaterialListCardActionModel(

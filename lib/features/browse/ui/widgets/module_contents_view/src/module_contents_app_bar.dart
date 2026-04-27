@@ -25,7 +25,7 @@ class ModuleContentsAppBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    final state = ModuleContentsProvider.state(collection);
+    final state = ModuleContentsProvider.state(collection.id);
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -61,14 +61,12 @@ class ModuleContentsAppBar extends ConsumerWidget {
                 overlayColor: WidgetStateProperty.all(theme.secondary.withAlpha(40)),
                 backgroundColor: WidgetStateProperty.all(Colors.transparent),
               ),
-              icon: HugeIconsSolid.more,
+              icon: HugeIconsSolid.more01,
               actions: [
                 PopupMenuAction(
                   title: "View",
                   iconData: IconHelper.getCardViewTypeIconData(cardViewType),
-                  onTap: () {
-                    state.act(ref).toggleCardViewType();
-                  },
+                  onTap: () => state.act(ref).toggleCardViewType(),
                 ),
                 PopupMenuAction(
                   title: "Sort",
@@ -101,7 +99,7 @@ class ModuleContentsAppBar extends ConsumerWidget {
                                           borderRadius: 0,
                                           onClick: () async {
                                             final newValue = EntityOrdering.values[index];
-                                            state.act(ref).contentsPagination.act(ref).updateSortOption(newValue);
+                                            state.act(ref).contentsPagination.act(ref).updateContentsOrdering(newValue);
                                             if (context.mounted) UiUtils.hideDialog(context);
                                           },
                                           child: Row(

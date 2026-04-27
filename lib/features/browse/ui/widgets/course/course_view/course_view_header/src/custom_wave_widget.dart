@@ -30,7 +30,11 @@ class CustomShapeWaveFilledWidget extends ConsumerWidget {
         Positioned(
           width: waveSize.width,
           height: waveSize.height,
-          child: Wave(value: progress, color: waveColor ?? theme.primaryColor.withAlpha(150), direction: Axis.vertical),
+          child: Wave(
+            value: progress.isNaN || progress.isInfinite ? 0.0 : progress.clamp(0.0, 1.0),
+            color: waveColor ?? theme.primaryColor.withAlpha(150),
+            direction: Axis.vertical,
+          ),
         ),
         if (backgroundWidget != null) Positioned.fill(child: backgroundWidget!),
         if (showProgress)
@@ -84,6 +88,7 @@ class _WaveState extends State<Wave> with SingleTickerProviderStateMixin {
       animation: CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
       child: ColoredBox(color: widget.color),
       builder: (context, child) => ClipPath(
+        clipBehavior: Clip.hardEdge,
         clipper: _WaveClipper(
           animationValue: _animationController.value,
           value: widget.value,
@@ -102,8 +107,18 @@ class _WaveClipper extends CustomClipper<Path> {
 
   _WaveClipper({required this.animationValue, required this.value, required this.direction});
 
+  // Clamp value to [0.0, 1.0], defaulting to 0 if null/NaN
+  double get _safeValue {
+    final v = value;
+    if (v == null || v.isNaN || v.isInfinite) return 0.0;
+    return v.clamp(0.0, 1.0);
+  }
+
   @override
   Path getClip(Size size) {
+    // Guard against zero-size layouts
+    if (size.width == 0 || size.height == 0) return Path();
+
     if (direction == Axis.horizontal) {
       Path path = Path()
         ..addPolygon(_generateHorizontalWavePath(size), false)
@@ -125,7 +140,7 @@ class _WaveClipper extends CustomClipper<Path> {
     final waveList = <Offset>[];
     for (int i = -2; i <= size.height.toInt() + 2; i++) {
       final waveHeight = (size.width / 20);
-      final dx = math.sin((animationValue * 360 - i) % 360 * (math.pi / 180)) * waveHeight + (size.width * value!);
+      final dx = math.sin((animationValue * 360 - i) % 360 * (math.pi / 180)) * waveHeight + (size.width * _safeValue);
       waveList.add(Offset(dx, i.toDouble()));
     }
     return waveList;
@@ -137,7 +152,7 @@ class _WaveClipper extends CustomClipper<Path> {
       final waveHeight = (size.height / 20);
       final dy =
           math.sin((animationValue * 360 - i) % 360 * (math.pi / 180)) * waveHeight +
-          (size.height - (size.height * value!));
+          (size.height - (size.height * _safeValue));
       waveList.add(Offset(i.toDouble(), dy));
     }
     return waveList;

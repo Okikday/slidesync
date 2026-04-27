@@ -2,7 +2,6 @@ import 'package:isar_community/isar.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/models/progress_track_models/course_track.dart';
-import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 
 class CourseRepo {
   static final IsarData<Course> _isarData = IsarData<Course>();
@@ -23,17 +22,18 @@ class CourseRepo {
   static Future<int> addCourse(Course course) async {
     if (course.uid.trim().isEmpty || course.uid == "_") return -1;
 
-    final existingCourseTrack = await (CourseTrackRepo.filter).uidEqualTo(course.uid).findFirst();
-
-    if (existingCourseTrack == null) {
-      final newCourseTrack = CourseTrack.create(
-        courseId: course.uid,
-        title: course.title,
-        description: course.description,
-      );
-      await CourseTrackRepo.isarData.store(newCourseTrack);
-    }
-    return await _isarData.store(course);
+    return await _isar.writeTxn(() async {
+      final existingCourseTrack = await _isar.courseTracks.filter().uidEqualTo(course.uid).findFirst();
+      if (existingCourseTrack == null) {
+        final newCourseTrack = CourseTrack.create(
+          courseId: course.uid,
+          title: course.title,
+          description: course.description,
+        );
+        await _isar.courseTracks.put(newCourseTrack);
+      }
+      return await _isar.courses.put(course);
+    });
   }
 
   // static Future<List<int>> addMultipleCourses(List<Course> courses) async => await _isarData.storeAll(courses);

@@ -73,7 +73,7 @@ class _HeaderContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final _CourseSelectData courseSelectData = ref.watch(
-      CourseProviders.courseProvider(courseId).select(
+      CourseProviders.watchCourseProvider(courseId).select(
         (s) => (
           courseName: s.value?.courseName ?? '',
           courseCode: s.value?.courseCode ?? '',

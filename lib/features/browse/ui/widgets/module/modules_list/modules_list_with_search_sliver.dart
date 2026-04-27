@@ -19,8 +19,8 @@ import 'package:slidesync/shared/global/providers/collections_providers.dart';
 import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 
-class ModulesListWithSearchScrollViwe extends ConsumerStatefulWidget {
-  const ModulesListWithSearchScrollViwe({
+class ModulesListWithSearchScrollView extends ConsumerStatefulWidget {
+  const ModulesListWithSearchScrollView({
     super.key,
     required this.courseId,
     required this.topPadding,
@@ -34,10 +34,10 @@ class ModulesListWithSearchScrollViwe extends ConsumerStatefulWidget {
   final bool showMoreOptionsButton;
   final ScrollController? controller;
   @override
-  ConsumerState<ModulesListWithSearchScrollViwe> createState() => _CourseDetailsCollectionSectionState();
+  ConsumerState<ModulesListWithSearchScrollView> createState() => ModulesListWithSearchScrollViewState();
 }
 
-class _CourseDetailsCollectionSectionState extends ConsumerState<ModulesListWithSearchScrollViwe> {
+class ModulesListWithSearchScrollViewState extends ConsumerState<ModulesListWithSearchScrollView> {
   final textSearchNotifier = ValueNotifier<String>('');
 
   @override

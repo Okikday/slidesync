@@ -28,8 +28,7 @@ class CoursesView extends ConsumerStatefulWidget {
 class _CoursesViewState extends ConsumerState<CoursesView> {
   @override
   Widget build(BuildContext context) {
-    final libraryNotifier = MainProvider.library.link(ref);
-    final cp = libraryNotifier.coursesPagination.link(ref);
+    final cp = MainProvider.library.link(ref).coursesPagination.link(ref);
 
     return SliverPadding(
       padding: EdgeInsetsGeometry.symmetric(horizontal: 16),
@@ -39,7 +38,7 @@ class _CoursesViewState extends ConsumerState<CoursesView> {
           return AbsorberWatch(
             listenable: MainProvider.library.select((s) => (cardType: s.cardViewType, loading: s.isLoading)),
             builder: (context, libState, ref, _) {
-              if (libState.loading) return SliverToBoxAdapter(child: LoadingListCourseCardSkeletonizer(count: 2));
+              if (state.isLoading) return SliverToBoxAdapter(child: LoadingListCourseCardSkeletonizer(count: 2));
               if (libState.cardType == CardViewType.grid) {
                 return PagedSliverGrid<int, Course>(
                   state: state,
@@ -60,21 +59,20 @@ class _CoursesViewState extends ConsumerState<CoursesView> {
                     itemBuilder: (context, item, index) => CourseCard(item, libState.cardType),
                   ),
                 );
-              } else {
-                return PagedSliverList<int, Course>(
-                  state: state,
-                  itemExtent: 120,
-                  fetchNextPage: fetchNextPage,
-                  builderDelegate: PagedChildBuilderDelegate(
-                    noItemsFoundIndicatorBuilder: (context) => EmptyLibraryView(asSliver: false),
-                    newPageProgressIndicatorBuilder: (context) => LoadingListCourseCardSkeletonizer(count: 1),
-                    firstPageProgressIndicatorBuilder: (context) => LoadingListCourseCardSkeletonizer(count: 2),
-                    firstPageErrorIndicatorBuilder: (context) =>
-                        RotatedBox(quarterTurns: 2, child: Icon(Iconsax.info_circle)),
-                    itemBuilder: (context, item, index) => CourseCard(item, libState.cardType),
-                  ),
-                );
               }
+              return PagedSliverList<int, Course>(
+                state: state,
+                itemExtent: 120,
+                fetchNextPage: fetchNextPage,
+                builderDelegate: PagedChildBuilderDelegate(
+                  noItemsFoundIndicatorBuilder: (context) => EmptyLibraryView(asSliver: false),
+                  newPageProgressIndicatorBuilder: (context) => LoadingListCourseCardSkeletonizer(count: 1),
+                  firstPageProgressIndicatorBuilder: (context) => LoadingListCourseCardSkeletonizer(count: 2),
+                  firstPageErrorIndicatorBuilder: (context) =>
+                      RotatedBox(quarterTurns: 2, child: Icon(Iconsax.info_circle)),
+                  itemBuilder: (context, item, index) => CourseCard(item, libState.cardType),
+                ),
+              );
             },
           );
         },

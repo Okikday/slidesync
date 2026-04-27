@@ -1,15 +1,17 @@
+import 'dart:async';
+
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/data/models/module/module.dart';
-import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:slidesync/features/browse/ui/actions/module_contents/add_link_actions.dart';
 import 'package:slidesync/features/browse/logic/src/contents/retrieve_content_uc.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/bottom_sheets/input_text_bottom_sheet.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
@@ -22,26 +24,32 @@ class AddLinkBottomSheet extends ConsumerStatefulWidget {
 }
 
 class _AddLinkBottomSheetState extends ConsumerState<AddLinkBottomSheet> {
-  late final TextEditingController linkInputController;
-  late final ValueNotifier<String?> previewDataNotifier;
-  late final ValueNotifier<PreviewLinkDetails> additionalDetails;
+  final linkInputController = TextEditingController();
+  final linkDetailsNotifier = ValueNotifier<PreviewLinkDetails?>(null);
+  Timer? debounceTimer;
 
   @override
   void initState() {
     super.initState();
-    linkInputController = TextEditingController();
-    previewDataNotifier = ValueNotifier(null);
-    additionalDetails = ValueNotifier((title: null, description: null, previewUrl: null));
-    linkInputController.addListener(updateLinkInput);
+    linkInputController.addListener(_fetchDetailsOnInput);
   }
 
-  void updateLinkInput() => previewDataNotifier.value = linkInputController.text;
+  void _fetchDetailsOnInput() {
+    if (debounceTimer?.isActive ?? false) debounceTimer?.cancel();
+    debounceTimer = Timer(const Duration(milliseconds: 400), () async {
+      final link = linkInputController.text;
+      if (link.length >= 4 && link.length <= 256) {
+        if (mounted) linkDetailsNotifier.value = await RetriveContentUc.getLinkPreviewData(link);
+      }
+    });
+  }
 
   @override
   void dispose() {
+    debounceTimer?.cancel();
+    linkInputController.removeListener(_fetchDetailsOnInput);
     linkInputController.dispose();
-    previewDataNotifier.dispose();
-    additionalDetails.dispose();
+    linkDetailsNotifier.dispose();
     super.dispose();
   }
 
@@ -55,22 +63,31 @@ class _AddLinkBottomSheetState extends ConsumerState<AddLinkBottomSheet> {
           textEditingController: linkInputController,
           onSubmitted: (String text) async {
             if (text.isEmpty || text.length < 4 || text.length > 256) {
-              UiUtils.showFlushBar(context, msg: "Invalid link input!");
+              UiUtils.showFlushBar(
+                context,
+                msg: text.length < 4
+                    ? "Link too short!"
+                    : text.length > 256
+                    ? "Link too long!"
+                    : "Try inputting a valid link!",
+              );
               return;
             }
-            rootNavigatorKey.currentContext?.pop();
+            context.pop();
 
-            final bool result = await AddLinkActions.onAddLinkContent(
+            await AddLinkActions.onAddLinkContent(
               text,
               parentId: widget.collection.uid,
-              previewLinkDetails: additionalDetails.value,
+              details: linkDetailsNotifier.value,
+            ).then(
+              (result) => GlobalNav.withContext(
+                (c) => UiUtils.showFlushBar(
+                  context.mounted ? context : c,
+                  msg: result ? "Successfully added link" : "Unable to add link to collection",
+                  vibe: result ? FlushbarVibe.success : FlushbarVibe.error,
+                ),
+              ),
             );
-
-            if (result) {
-              if (context.mounted) UiUtils.showFlushBar(context, msg: "Successfully added link");
-            } else {
-              if (context.mounted) UiUtils.showFlushBar(context, msg: "Couldn't add link to collections");
-            }
           },
         ),
         Positioned(
@@ -85,33 +102,14 @@ class _AddLinkBottomSheetState extends ConsumerState<AddLinkBottomSheet> {
               boxShadow: [BoxShadow(color: ref.onBackground.withValues(alpha: 0.2))],
             ),
             child: ValueListenableBuilder(
-              valueListenable: previewDataNotifier,
-              builder: (context, value, child) {
-                return FutureBuilder(
-                  future: RetriveContentUc.getLinkPreviewData(value),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData &&
-                        snapshot.data != null &&
-                        !snapshot.data!.isEmpty &&
-                        snapshot.data?.previewUrl != null) {
-                      final previewData = snapshot.data;
-                      final prevDetails = additionalDetails.value;
-                      additionalDetails.value = (
-                        title: previewData?.title ?? prevDetails.title,
-                        description: previewData?.description ?? prevDetails.description,
-                        previewUrl: previewData?.previewUrl ?? prevDetails.previewUrl,
-                      );
-
-                      return BuildImagePathWidget(
-                        fileDetails: FilePath(url: snapshot.data!.previewUrl!),
-                        fit: BoxFit.cover,
-                        width: 100,
-                        height: 100,
-                      );
-                    } else {
-                      return const SizedBox();
-                    }
-                  },
+              valueListenable: linkDetailsNotifier,
+              builder: (context, linkDetails, child) {
+                if (linkDetails == null || linkDetails.previewUrl == null) return const SizedBox();
+                return BuildImagePathWidget(
+                  fileDetails: FilePath(url: linkDetails.previewUrl),
+                  fit: BoxFit.cover,
+                  width: 100,
+                  height: 100,
                 );
               },
             ),

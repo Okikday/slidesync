@@ -1,9 +1,9 @@
 import 'dart:collection';
+import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
-import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/features/browse/providers/entities/module_contents_state.dart';
 import 'package:slidesync/features/browse/providers/src/module_contents_pagination_notifier/module_contents_pagination_notifier.dart';
@@ -12,8 +12,8 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 part 'ext_module_contents_notifier.dart';
 
-final _moduleContentsPaginationNotifier = NotifierProvider.family.autoDispose(
-  (Module module) => ModuleContentsPaginationNotifier(module),
+final _moduleContentsPaginationNotifier = NotifierProvider.autoDispose.family(
+  (int moduleId) => ModuleContentsPaginationNotifier(moduleId),
 );
 
 final _cardViewTypeNotifier = AsyncNotifierProvider.autoDispose(
@@ -26,12 +26,12 @@ class ModuleContentsNotifier extends Notifier<ModuleContentsState> {
   /// ===================================================================================================
   /// DECLARATIONS
   /// ===================================================================================================
-  final Module module;
+
   final NotifierProvider<ModuleContentsPaginationNotifier, ModuleContentsPaginationState> contentsPagination;
 
-  final selectedContents = LinkedHashSet<ModuleContent>(equals: (a, b) => a.uid == b.uid);
+  final selectedContents = LinkedHashSet<ModuleContent>(equals: (a, b) => a.id == b.id && a.uid == b.uid);
 
-  ModuleContentsNotifier(this.module) : contentsPagination = _moduleContentsPaginationNotifier(module);
+  ModuleContentsNotifier(int moduleId) : contentsPagination = _moduleContentsPaginationNotifier(moduleId);
 
   ///
   ///
@@ -40,9 +40,12 @@ class ModuleContentsNotifier extends Notifier<ModuleContentsState> {
   /// ===================================================================================================
   @override
   ModuleContentsState build() {
-    ref.listen(_cardViewTypeNotifier, (p, n) => n.whenData((cb) => state.copyWith(cardViewType: cb)));
+    final cardViewType = _cardViewTypeNotifier.readX(ref).value;
+    ref.listen(_cardViewTypeNotifier, (p, n) => n.whenData((value) => state = state.copyWith(cardViewType: value)));
+
     ref.emptyListenMany([contentsPagination]);
-    return ModuleContentsState();
+    ref.onDispose(() => log("disposed: $runtimeType"));
+    return ModuleContentsState(cardViewType: cardViewType ?? CardViewType.grid);
   }
 
   void toggleCardViewType() async {

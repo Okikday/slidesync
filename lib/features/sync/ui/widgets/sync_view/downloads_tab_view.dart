@@ -309,7 +309,7 @@ class _DownloadTile extends ConsumerWidget {
       return;
     }
 
-    final content = await ModuleContentRepo.getByContentId(contentId);
+    final content = await ModuleContentRepo.getByUid(contentId);
     if (content == null) {
       GlobalNav.withContext((context) => _showSnack(context, 'Could not find the content record.'));
       return;

@@ -34,8 +34,8 @@ final courseNavRoutes = [
     ],
   ),
   GoRoute(
-    name: Routes.collectionsView.name,
-    path: Routes.collectionsView.path,
+    name: Routes.modulesView.name,
+    path: Routes.modulesView.path,
     // pageBuilder: (context, state) =>
     //     defaultTransition(state.pageKey, child: CollectionsView(courseId: (state.extra as String))),
     builder: (context, state) => ModulesView(courseId: (state.extra as String)),

@@ -6,7 +6,7 @@ final defaultCourse = Course.create(title: "_", uid: '_');
 final _watchCourseById = StreamNotifierProvider.autoDispose.family((String arg) => CourseStreamNotifier(arg));
 
 class CourseProviders {
-  static StreamNotifierProvider<CourseStreamNotifier, Course> courseProvider(String courseId) =>
+  static StreamNotifierProvider<CourseStreamNotifier, Course> watchCourseProvider(String courseId) =>
       _watchCourseById(courseId);
 }
 

@@ -34,13 +34,13 @@ class ModifyCourseActions {
 
     Future<void> closeAndWaitThenExecute({required void Function() operation}) {
       if (context.mounted) CustomDialog.hide(context);
-      return Future.delayed(Durations.short1).then((_) => operation);
+      return Future.delayed(Durations.short1).then((_) => operation());
     }
 
     List<({String title, IconData iconData, void Function() onTap})> options = [
       (
         title: hasImage ? "View" : "Set Image",
-        iconData: hasImage ? HugeIconsSolid.image01 : HugeIconsSolid.imageAdd01,
+        iconData: hasImage ? HugeIconsSolid.view : HugeIconsSolid.imageAdd02,
         onTap: () async => closeAndWaitThenExecute(
           operation: () => hasImage
               ? _previewImageActionRoute(courseImagePath: course.metadata.thumbnail ?? FilePath.empty())
@@ -50,26 +50,26 @@ class ModifyCourseActions {
       if (hasImage) ...[
         (
           title: "Change",
-          iconData: HugeIconsSolid.edit01,
+          iconData: HugeIconsSolid.imageUpload,
           onTap: () async => closeAndWaitThenExecute(operation: () => _pickImageActionRoute(courseDbId: course.id)),
         ),
         (
-          title: "Delete",
-          iconData: HugeIconsSolid.imageRemove01,
+          title: "Remove image",
+          iconData: HugeIconsSolid.delete02,
           onTap: () async => closeAndWaitThenExecute(operation: () => _deleteCourseImageAction(courseDbId: course.id)),
         ),
       ],
     ];
 
-    final dialogModels = options
-        .map(
-          (e) => AppActionDialogModel(
-            title: e.title,
-            icon: Icon(e.iconData, size: 28, color: e.title.toLowerCase() == 'delete' ? Colors.red : iconColor),
-            onTap: e.onTap,
-          ),
-        )
-        .toList();
+    final dialogModels = options.map((e) {
+      final resolveColor = e.title.startsWith("Remove") ? Colors.red : iconColor;
+      return AppActionDialogModel(
+        title: e.title,
+        titleColor: resolveColor,
+        icon: Icon(e.iconData, size: 28, color: resolveColor),
+        onTap: e.onTap,
+      );
+    }).toList();
 
     GlobalNav.withContext(
       (context) => CustomDialog.show(
@@ -84,7 +84,7 @@ class ModifyCourseActions {
               leading: Padding(
                 padding: const EdgeInsets.only(left: 12, bottom: 16),
                 child: CustomText(
-                  hasImage ? course.title : "No image set",
+                  hasImage ? course.courseName : "No image set",
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: ref.onBackground,

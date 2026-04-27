@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -49,7 +48,7 @@ class LibraryTabViewFilterButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
 
-    final currSortOption = MainProvider.library.link(ref).coursesPagination.select((s) => s.sortOption).watch(ref);
+    final currSortOption = MainProvider.library.link(ref).coursesPagination.select((s) => s.coursesOrdering).watch(ref);
     final currSortData = parseCourseSortOption(currSortOption);
     final currPlain = currSortOption.toPlain();
     final plainList = plainListFromCourseSortOptions();
@@ -68,16 +67,16 @@ class LibraryTabViewFilterButton extends ConsumerWidget {
             icon: item == currPlain
                 ? Icon(
                     item == PlainCourseSortOption.dateModified
-                        ? Icons.check
+                        ? HugeIconsSolid.checkmarkCircle01
                         : currSortData.asc
-                        ? Iconsax.arrow_circle_up
-                        : Iconsax.arrow_circle_down,
+                        ? HugeIconsSolid.circleArrowUp02
+                        : HugeIconsSolid.circleArrowDown02,
                     color: theme.primary,
                   )
                 : null,
             onTap: () async {
               final newOpt = item == currPlain ? _fromPlain(item, !currSortData.asc) : _fromPlain(item, true);
-              MainProvider.library.act(ref).coursesPagination.act(ref).updateSortOption(newOpt, refresh: true);
+              MainProvider.library.act(ref).coursesPagination.act(ref).updateCoursesOrdering(newOpt, refresh: true);
             },
           ),
       ],

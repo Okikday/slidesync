@@ -11,7 +11,7 @@ import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
 
 class ContentProgressTracker {
   Future<ContentTrack?> registerContentAccess(String contentId) async {
-    final content = await ModuleContentRepo.getByContentId(contentId);
+    final content = await ModuleContentRepo.getByUid(contentId);
     if (content == null) return null;
 
     final ptm = await (ContentTrackRepo.isar).contentTracks.where().uidEqualTo(contentId).findFirst();
@@ -44,6 +44,7 @@ class ContentProgressTracker {
         uid: content.uid,
         courseId: parentId,
         title: content.title,
+        type: content.type,
         description: content.description,
         progress: 0.0,
         pages: const ["1"],

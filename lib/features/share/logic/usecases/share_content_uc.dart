@@ -5,7 +5,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
-import 'package:slidesync/core/utils/storage_utils/clean_up_utils.dart';
 // import 'package:printing/printing.dart';
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
@@ -51,7 +50,6 @@ class ShareContentUc {
         previewThumbnail: await _genPreview(previewThumbnail),
       ),
     );
-    CleanUpUtils().clearCacheOrTemp();
   }
 
   Future<void> shareFiles(
@@ -106,8 +104,8 @@ class ShareContentUc {
       ),
     );
 
-    // Clear any temporary files you created
-    await CleanUpUtils().clearCacheOrTemp();
+    // // Clear any temporary files you created
+    // await CleanUpUtils().clearCacheOrTemp();
   }
 
   Future<void> shareFileFromBytes(

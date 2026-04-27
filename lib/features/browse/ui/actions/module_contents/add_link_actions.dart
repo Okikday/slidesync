@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
@@ -8,6 +7,7 @@ import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
+import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/features/browse/logic/src/contents/retrieve_content_uc.dart';
 import 'package:super_clipboard/super_clipboard.dart';
 
@@ -15,57 +15,73 @@ class AddLinkActions {
   static Future<bool> onAddLinkContent(
     String link, {
     required String parentId,
-    required PreviewLinkDetails previewLinkDetails,
+    required PreviewLinkDetails? details,
   }) async {
-    log("previewLinkDetails: $previewLinkDetails");
-    if (parentId.isEmpty) return false;
-    final collection = await ModuleRepo.getByUid(parentId);
-    if (collection == null) return false;
-    final xxh3Hash = CryptoUtils.calculateStringHash(link);
-    final ModuleContent? sameHashedContent = await ModuleContentRepo.findFirstDuplicateContentByHash(
-      collection,
-      xxh3Hash,
-    );
-    final ModuleContent newContent;
-    if (sameHashedContent != null) {
-      if (xxh3Hash == sameHashedContent.xxh3Hash && link == sameHashedContent.path.url) {
-        if (previewLinkDetails.isEmpty) return false;
-        if ((previewLinkDetails.title != null && previewLinkDetails.title == sameHashedContent.title)) {
-          if (previewLinkDetails.description != null &&
-              previewLinkDetails.description == sameHashedContent.description) {
-            if ((previewLinkDetails.previewUrl != null &&
-                previewLinkDetails.previewUrl == jsonDecode(sameHashedContent.metadataJson)['previewUrl'])) {
-              return false;
-            }
-          }
-        }
-        // log("They are the same, modify");
+    log("previewLinkDetails: $details");
+    if (link.isEmpty || parentId.isEmpty) return false;
 
+    final module = await ModuleRepo.getByUid(parentId);
+    if (module == null) return false;
+
+    final xxh3Hash = CryptoUtils.calculateStringHash(link);
+    final sameHashedContent = await ModuleContentRepo.findFirstDuplicateContentByHash(module, xxh3Hash);
+
+    final ModuleContent newContent;
+    final bool isExistingSameLinkInModule = sameHashedContent != null && link == sameHashedContent.path.url;
+    if (isExistingSameLinkInModule) {
+      // They are the same
+      {
         newContent = sameHashedContent.copyWith(
           xxh3Hash: xxh3Hash,
-          title: previewLinkDetails.title != "Unknown link" ? previewLinkDetails.title : "Unknown link",
-          description: previewLinkDetails.description != '' ? previewLinkDetails.description : '',
-          metadata: ModuleContentMetadata.fromMap({
-            ...jsonDecode(sameHashedContent.metadataJson),
-            'previewUrl': previewLinkDetails.previewUrl,
-          }),
+          title: details?.title ?? sameHashedContent.title,
+          description: details?.description ?? sameHashedContent.description,
+          lastModified: DateTime.now(),
+          metadata: sameHashedContent.metadata?.copyWith(
+            thumbnail: FilePath(
+              url: details?.previewUrl ?? sameHashedContent.metadata?.thumbnail?.url,
+              local: sameHashedContent.metadata?.thumbnail?.local,
+            ),
+          ),
         );
-        return await ModuleContentRepo.addMultipleContents(newContent.collectionId, [newContent]);
       }
     } else {
+      if (link != sameHashedContent?.path.url) {
+        details ??= await RetriveContentUc.getLinkPreviewData(link); // Try again
+      }
       newContent = ModuleContent.create(
         xxh3Hash: xxh3Hash,
-        parentId: collection.uid,
-        title: previewLinkDetails.title ?? "Unknown link",
-        description: previewLinkDetails.description ?? '',
-        path: FilePath(url: link),
-        fileSizeInBytes: link.length,
+        parentId: module.uid,
+        title: details?.title ?? link,
         type: ModuleContentType.link,
-        metadata: ModuleContentMetadata.create(fields: {'previewUrl': previewLinkDetails.previewUrl}),
+        description: details?.description ?? '',
+        path: FilePath(url: link),
+        metadata: ModuleContentMetadata.create(
+          thumbnail: FilePath(url: details?.previewUrl),
+          contentOrigin: ContentOrigin.server,
+        ),
       );
-      return await ModuleContentRepo.addMultipleContents(newContent.collectionId, [newContent]);
     }
-    return false;
+
+    // When the same link already exists in this module, update that record directly.
+    // Routing through addContent() would attempt to create another ContentTrack with the same uid.
+    if (isExistingSameLinkInModule) {
+      await ModuleContentRepo.add(newContent);
+
+      final existingTrack = await ContentTrackRepo.getByContentId(newContent.uid);
+      if (existingTrack != null) {
+        await ContentTrackRepo.add(
+          existingTrack.copyWith(
+            title: newContent.title,
+            description: newContent.description,
+            thumbnail: newContent.metadata?.thumbnail ?? existingTrack.thumbnail,
+          ),
+        );
+      }
+
+      return true;
+    }
+
+    return await ModuleContentRepo.addContent(newContent.parentId, newContent);
   }
 
   static void pasteFromClipboard(TextEditingController linkInputController) async {

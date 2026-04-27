@@ -87,9 +87,13 @@ class Result<T> {
   static Future<T?> fromAsyncNullable<T>(Future<T?> Function() operation, {bool logError = true}) =>
       Result.tryRunAsync(operation, logError: logError).then((v) => v.data);
 
-  static T from<T>(T Function() operation) => fromNullable(operation, logError: false)!;
-  static Future<T> fromAsync<T>(Future<T> Function() operation) =>
-      fromAsyncNullable(operation, logError: false).then((v) => v!);
+  /// Crashes if the result and fallback is null
+  static T from<T>(T Function() operation, {T? fallback, bool logError = false}) =>
+      (fromNullable(operation, logError: logError) ?? fallback)!;
+
+  /// Crashes if the result and fallback is null
+  static Future<T> fromAsync<T>(Future<T> Function() operation, {T? fallback, bool logError = false}) =>
+      fromAsyncNullable(operation, logError: logError).then((v) => (v ?? fallback)!);
 
   Result<T> onError(void Function(String message, [StackTrace? st]) handler) {
     if (isError) {

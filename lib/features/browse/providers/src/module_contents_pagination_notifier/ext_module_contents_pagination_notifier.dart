@@ -26,7 +26,8 @@ extension ExtModuleContentsPaginationNotifier on ModuleContentsPaginationNotifie
   Future<void> _runComparison() async {
     final List<List<ModuleContent>>? pages = pagingController.value.pages;
     if (pages == null || pages.isEmpty) return;
-
+    final module = this.module;
+    if (module == null) return;
     await module.contents.load();
     final freshContents = module.contents.toList();
     final presentCount = freshContents.length;

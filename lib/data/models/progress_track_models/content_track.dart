@@ -2,6 +2,7 @@
 import 'package:dart_mappable/dart_mappable.dart';
 
 import 'package:isar_community/isar.dart';
+import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/data/models/file_path/file_path.dart';
 
 part 'content_track.mapper.dart';
@@ -13,6 +14,8 @@ class ContentTrack with ContentTrackMappable {
   Id id;
   @Index(unique: true)
   String uid;
+  @Enumerated(EnumType.name)
+  ModuleContentType type;
   @Index()
   String courseId;
   String title;
@@ -27,6 +30,7 @@ class ContentTrack with ContentTrackMappable {
     this.id = Isar.autoIncrement,
     required this.uid,
     required this.courseId,
+    required this.type,
     required this.title,
     required this.description,
     required this.progress,
@@ -47,6 +51,7 @@ class ContentTrack with ContentTrackMappable {
     required String uid,
     required String courseId,
     required String title,
+    required ModuleContentType type,
     String? description,
     required double progress,
     String? extraDetail,
@@ -57,6 +62,7 @@ class ContentTrack with ContentTrackMappable {
     uid: uid,
     courseId: courseId,
     title: title,
+    type: type,
     description: description ?? "",
     progress: progress,
     extraDetail: extraDetail,

@@ -17,7 +17,7 @@ class FilePath with FilePathMappable {
 }
 
 extension FilePathExtension on FilePath {
-  bool get containsLocalPath => (local != null && local!.isNotEmpty);
-  bool get containsUrlPath => (url != null && url!.isNotEmpty);
+  bool get containsLocalPath => (local != null && local!.trim().isNotEmpty);
+  bool get containsUrlPath => (url != null && url!.trim().isNotEmpty);
   bool get containsAnyPath => containsLocalPath || containsUrlPath;
 }

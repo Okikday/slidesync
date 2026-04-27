@@ -29,7 +29,7 @@ class _ModulesViewState extends ConsumerState<ModulesView> with IsScrolledNotifi
 
   @override
   Widget build(BuildContext context) {
-    final courseProvider = CourseProviders.courseProvider(widget.courseId);
+    final courseProvider = CourseProviders.watchCourseProvider(widget.courseId);
 
     return AnnotatedRegion(
       value: UiUtils.getSystemUiOverlayStyle(context.scaffoldBackgroundColor, context.isDarkMode),
@@ -63,7 +63,7 @@ class _ModulesViewState extends ConsumerState<ModulesView> with IsScrolledNotifi
           },
         ),
 
-        body: ModulesListWithSearchScrollViwe(
+        body: ModulesListWithSearchScrollView(
           courseId: widget.courseId,
           topPadding: 60,
           isPinned: false,

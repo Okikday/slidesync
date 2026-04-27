@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
 import 'package:slidesync/core/assets/assets.gen.dart';
+import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/actions/home/recent_dialog_actions.dart';
@@ -35,9 +36,12 @@ class RecentsSectionBody extends ConsumerWidget with RecentDialogActions {
             return RecentListTile(
                   dataModel: RecentListTileModel(
                     title: contentTrack.title.isEmpty ? "No title" : contentTrack.title,
-                    subtitle: contentTrack.pages.isEmpty ? "" : "Page ${contentTrack.pages.last}",
+                    subtitle: switch (contentTrack.type) {
+                      ModuleContentType.document => contentTrack.pages.isEmpty ? "" : "Page ${contentTrack.pages.last}",
+                      _ => contentTrack.description.isNotEmpty ? contentTrack.description : "No subtitle",
+                    },
                     // extraContent: DummySlides.dummySlides[index]['extraContent'] as String? ?? "",
-                    previewPath: contentTrack.thumbnail.local,
+                    previewPath: contentTrack.thumbnail,
                     progressLevel: ProgressLevel.neutral,
                     isStarred: false,
                     progress: contentTrack.progress.clamp(0, 1.0),

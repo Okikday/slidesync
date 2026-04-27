@@ -32,7 +32,7 @@ class ModContentsOptions extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final moduleContentsPro = ModuleContentsProvider.state(collection);
+    final moduleContentsPro = ModuleContentsProvider.state(collection.id);
     ref.listen(moduleContentsPro, (p, n) => n);
 
     final theme = ref;
@@ -47,7 +47,7 @@ class ModContentsOptions extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                proState.hasSelectedContents
+                !proState.hasSelectedContents
                     ? SizedBox.shrink()
                     : Container(
                         height: 50,

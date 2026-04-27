@@ -136,19 +136,25 @@ class ContentViewGateActions {
 
   static Future<void> _handleLink(ModuleContent content) async {
     final urlPath = content.path.url ?? '';
-    final isUnresolvedDriveLink =
-        content.metadataJson.decodeJson['resolved'] != true && DriveBrowser.isGoogleDriveLink(urlPath);
+    final isUnresolvedDriveLink = Result.from(
+      () => content.metadataJson.decodeJson['resolved'] != true && DriveBrowser.isGoogleDriveLink(urlPath),
+      fallback: false,
+    );
 
     if (isUnresolvedDriveLink) {
       _navigateTo(Routes.driveLinkViewer, content);
       return;
     }
-    final launchResult = (await Result.tryRunAsync(() async => await launchUrl(Uri.parse(urlPath)))).data ?? false;
+    final launchResult = await Result.fromAsync(() async => await launchUrl(Uri.parse(urlPath)), fallback: false);
 
     if (!launchResult) {
       GlobalNav.withContext(
-        (context) =>
-            UiUtils.showFlushBar(context, msg: "Unable to open link. Invalid link or try connecting to the internet"),
+        (context) => UiUtils.showFlushBar(
+          context,
+          msg: urlPath.contains('.')
+              ? "Unable to open link. Invalid link or try connecting to the internet"
+              : "Invalid link!. Try adjusting or removing",
+        ),
       );
     }
   }
