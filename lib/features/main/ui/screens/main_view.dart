@@ -61,11 +61,30 @@ class _MainViewState extends ConsumerState<MainView> with MainViewActions {
           ),
         );
       },
-      child: PageView(
-        controller: pageController,
-        physics: const NeverScrollableScrollPhysics(),
-        onPageChanged: (index) => MainProvider.state.act(ref).setTabIndex(index),
-        children: tabs,
+      // child: PageView(
+      //   controller: pageController,
+      //   physics: const NeverScrollableScrollPhysics(),
+      //   onPageChanged: (index) => MainProvider.state.act(ref).setTabIndex(index),
+      //   children: tabs,
+      // ),
+      child: AbsorberWatch(
+        listenable: MainProvider.state.select((s) => s.tabIndex),
+        builder: (_, tabIndex, ref, _) {
+          // return IndexedStack(index: tabIndex, children: tabs);
+          return AnimatedSwitcher(
+            duration: 200.inMs,
+            switchInCurve: Curves.easeInOut,
+            switchOutCurve: Curves.easeInOut,
+            // swap
+            transitionBuilder: (child, animation) {
+              return FadeTransition(opacity: animation, child: child);
+            },
+            layoutBuilder: (currentChild, previousChildren) {
+              return Stack(fit: StackFit.expand, children: <Widget>[...previousChildren, ?currentChild]);
+            },
+            child: KeyedSubtree(key: ValueKey(tabIndex), child: tabs[tabIndex]),
+          );
+        },
       ),
     );
   }

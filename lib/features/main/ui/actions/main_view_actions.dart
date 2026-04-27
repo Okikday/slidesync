@@ -10,7 +10,7 @@ mixin MainViewActions {
         if (v.read(r).tabIndex != index) {
           v.act(r).setTabIndex(index);
           // pageController.animateToPage(index, duration: 700.inMs, curve: CustomCurves.defaultIosSpring);
-          pageController.jumpToPage(index);
+          // pageController.jumpToPage(index);
         }
       });
 }
