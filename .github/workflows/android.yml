@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -24,38 +25,43 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          cache: true  # ✅ speeds up builds
 
       - name: Decode Keystore
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > $HOME/upload-keystore.jks
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > $HOME/upload-keystore.jks
 
       - name: Create Configuration Files
         shell: bash
         run: |
           mkdir -p lib android/app
-          
-          # 1. Create key.properties for Gradle signing
+
+          # ✅ Fixed: removed hyperlink formatting from filename
           echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
-          
-          # 2. Create .env for API keys (using quoted 'EOF' for safety)
-          cat <<'EOF' > .env
-          ${{ secrets.ENV_FILE_CONTENT }}
-          EOF
-          
-          # 3. Create google-services.json for Android
-          cat <<'EOF' > android/app/google-services.json
-          ${{ secrets.GOOGLE_SERVICES_JSON }}
-          EOF
-          
-          # 4. Create firebase_options.dart for Flutter
-          cat <<'EOF' > lib/firebase_options.dart
-          ${{ secrets.FIREBASE_OPTIONS_DART }}
-          EOF
-        
+
+          # ✅ Fixed: use printf to avoid heredoc interpolation issues
+          printf '%s' "${{ secrets.ENV_FILE_CONTENT }}" > .env
+
+          printf '%s' "${{ secrets.GOOGLE_SERVICES_JSON }}" > android/app/google-services.json
+
+          printf '%s' "${{ secrets.FIREBASE_OPTIONS_DART }}" > lib/firebase_options.dart
+
       - name: Get dependencies
         run: flutter pub get
 
       - name: Build APK (Split per ABI)
+        env:
+          KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          STORE_FILE: /home/runner/upload-keystore.jks
         run: flutter build apk --release --split-per-abi
+
+      - name: Upload APKs as Artifacts (backup)
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apks
+          path: build/app/outputs/flutter-apk/app-*-release.apk
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
