@@ -20,18 +20,23 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Create Firebase Configuration Files
+      - name: Create Configuration Files
         shell: bash
         run: |
           mkdir -p lib
           mkdir -p android/app
           
-          # Use a heredoc to safely write the JSON content
+          # Create the .env file required by pubspec.yaml
+          cat <<EOF > .env
+          ${{ secrets.ENV_FILE_CONTENT }}
+          EOF
+
+          # Create the Firebase JSON for Android
           cat <<EOF > android/app/google-services.json
           ${{ secrets.GOOGLE_SERVICES_JSON }}
           EOF
           
-          # Use a heredoc for the Dart file as well
+          # Create the Firebase Dart options for Flutter
           cat <<EOF > lib/firebase_options.dart
           ${{ secrets.FIREBASE_OPTIONS_DART }}
           EOF
