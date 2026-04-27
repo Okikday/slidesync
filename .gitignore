@@ -50,3 +50,7 @@ lib/firebase_options.dart
 
 .env
 .env.*
+
+# Executables and installers
+*.exe
+installer_output/
