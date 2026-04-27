@@ -1,10 +1,15 @@
-name: Flutter Build
+name: Flutter Build & Release
 
-on: [push]
+on:
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -20,23 +25,20 @@ jobs:
         with:
           channel: 'stable'
 
+      - name: Decode Keystore
+        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > $HOME/upload-keystore.jks
+
       - name: Create Configuration Files
         shell: bash
         run: |
-          mkdir -p lib
-          mkdir -p android/app
-          
-          # Create the .env file required by pubspec.yaml
+          mkdir -p lib android/app
+          echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
           cat <<EOF > .env
           ${{ secrets.ENV_FILE_CONTENT }}
           EOF
-
-          # Create the Firebase JSON for Android
           cat <<EOF > android/app/google-services.json
           ${{ secrets.GOOGLE_SERVICES_JSON }}
           EOF
-          
-          # Create the Firebase Dart options for Flutter
           cat <<EOF > lib/firebase_options.dart
           ${{ secrets.FIREBASE_OPTIONS_DART }}
           EOF
@@ -44,12 +46,16 @@ jobs:
       - name: Get dependencies
         run: flutter pub get
 
-      - name: Build APK
-        run: flutter build apk --profile
+      - name: Build APK (Split per ABI)
+        run: flutter build apk --release --split-per-abi
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          name: profile-apk
-          path: build/app/outputs/flutter-apk/app-profile.apk
-          
+          files: build/app/outputs/flutter-apk/app-*-release.apk
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
