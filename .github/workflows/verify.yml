@@ -1,0 +1,54 @@
+name: Verify & Analyze
+
+on:
+  push:
+    branches: [ "main", "develop" ] # Change to your branch name
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  analyze_and_test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+
+      - name: Create Configuration Files
+        shell: bash
+        run: |
+          mkdir -p lib android/app
+          
+          # Using 'EOF' is critical to prevent Dart $ signs from breaking
+          echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
+          
+          cat <<'EOF' > .env
+          ${{ secrets.ENV_FILE_CONTENT }}
+          EOF
+          
+          cat <<'EOF' > android/app/google-services.json
+          ${{ secrets.GOOGLE_SERVICES_JSON }}
+          EOF
+          
+          cat <<'EOF' > lib/firebase_options.dart
+          ${{ secrets.FIREBASE_OPTIONS_DART }}
+          EOF
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Check for Syntax & Lint Errors
+        run: flutter analyze
+
+      - name: Verify Compilation (Debug Build)
+        run: flutter build apk --debug

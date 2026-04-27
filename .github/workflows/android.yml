@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -24,35 +25,45 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
+          cache: true 
 
       - name: Decode Keystore
-        run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > $HOME/upload-keystore.jks
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > $HOME/upload-keystore.jks
 
       - name: Create Configuration Files
-        shell: bash
+        env:
+          KEY_PROPERTIES_B64: ${{ secrets.KEY_PROPERTIES_B64 }}
+          ENV_FILE_CONTENT_B64: ${{ secrets.ENV_FILE_CONTENT_B64 }}
+          GOOGLE_SERVICES_JSON_B64: ${{ secrets.GOOGLE_SERVICES_JSON_B64 }}
+          FIREBASE_OPTIONS_DART_B64: ${{ secrets.FIREBASE_OPTIONS_DART_B64 }}
         run: |
           mkdir -p lib android/app
-          echo "${{ secrets.KEY_PROPERTIES }}" > android/key.properties
-          cat <<EOF > .env
-          ${{ secrets.ENV_FILE_CONTENT }}
-          EOF
-          cat <<EOF > android/app/google-services.json
-          ${{ secrets.GOOGLE_SERVICES_JSON }}
-          EOF
-          cat <<EOF > lib/firebase_options.dart
-          ${{ secrets.FIREBASE_OPTIONS_DART }}
-          EOF
-        
+          echo "$KEY_PROPERTIES_B64"      | base64 --decode > android/key.properties
+          echo "$ENV_FILE_CONTENT_B64"    | base64 --decode > .env
+          echo "$GOOGLE_SERVICES_JSON_B64" | base64 --decode > android/app/google-services.json
+          echo "$FIREBASE_OPTIONS_DART_B64" | base64 --decode > lib/firebase_options.dart
+
       - name: Get dependencies
         run: flutter pub get
 
       - name: Build APK (Split per ABI)
+        env:
+          KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          STORE_FILE: /home/runner/upload-keystore.jks
         run: flutter build apk --release --split-per-abi
+
+      - name: Upload APKs as Artifacts (backup)
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apks
+          path: build/app/outputs/flutter-apk/app-*-release.apk
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          
           files: build/app/outputs/flutter-apk/app-*-release.apk
           tag_name: ${{ github.ref_name }}
           name: Release ${{ github.ref_name }}
