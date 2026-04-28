@@ -3,6 +3,7 @@ import 'package:flutter/painting.dart';
 import 'package:isar_community/isar.dart';
 import 'package:slidesync/core/utils/theme_utils.dart';
 import 'package:slidesync/data/models/file_path/file_path.dart';
+import 'package:slidesync/shared/theme/src/app_palette.dart';
 
 part 'course_metadata.mapper.dart';
 part 'course_metadata.g.dart';
@@ -21,11 +22,12 @@ class CourseMetadata with CourseMetadataMappable {
   factory CourseMetadata.empty() => CourseMetadata();
 
   static CourseMetadata create({String? courseCode, String? author, FilePath? thumbnail, Color? color}) {
+    final randColor = color ?? AppPalette.getRandom();
     return CourseMetadata(
       courseCode: courseCode,
       author: author,
       thumbnail: thumbnail,
-      rawColor: color != null ? ThemeUtils.colorToHex(color) : null,
+      rawColor: ThemeUtils.colorToHex(randColor),
     );
   }
 }

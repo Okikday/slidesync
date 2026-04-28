@@ -47,12 +47,10 @@ class SignInView extends ConsumerWidget {
               child: SafeArea(
                 child: TextButton(
                   onPressed: () {
-                    context.goNamed(Routes.home.name);
                     Future.microtask(
-                      () => AppHiveData.instance
-                          .setData(key: HiveDataPathKey.hasOnboarded.name, value: true)
-                          .then((_) => log("Set hasOnboarded")),
+                      () => AppHiveData.instance.setData(key: HiveDataPathKey.hasOnboarded.name, value: true),
                     );
+                    context.goNamed(Routes.home.name);
                   },
                   child: CustomText("Skip", color: theme.onBackground, fontWeight: FontWeight.w700),
                 ),
@@ -118,14 +116,23 @@ class SignInView extends ConsumerWidget {
 
                       if (result.isSuccess && context.mounted) {
                         context.goNamed(Routes.home.name);
-                        UiUtils.showFlushBar(context, msg: "Successfully signed in!");
+                        GlobalNav.withContext(
+                          (c) =>
+                              UiUtils.showFlushBar(context, msg: "Successfully signed in!", vibe: FlushbarVibe.success),
+                        );
                       } else {
                         if (context.mounted) {
                           context.pop();
                         } else {
                           GlobalNav.withContext((c) => c.pop());
                         }
-                        if (context.mounted) UiUtils.showFlushBar(context, msg: "An error occured while signing in!");
+                        GlobalNav.withContext(
+                          (c) => UiUtils.showFlushBar(
+                            context,
+                            msg: "An error occured while signing in!",
+                            vibe: FlushbarVibe.error,
+                          ),
+                        );
                         log("Error signing in... ${result.message}");
                       }
                     },

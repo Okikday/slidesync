@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:developer';
 import 'package:flutter_riverpod/experimental/mutation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as p;
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
+import 'package:slidesync/core/utils/storage_utils/clean_up_utils.dart';
 import 'package:slidesync/features/study/logic/usecases/content_progress_tracker.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -13,8 +15,11 @@ import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
+import 'package:slidesync/data/models/course/course.dart';
+import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/repos/course_repo/module_repo.dart';
+import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/browse/ui/actions/module_contents/add_contents_actions.dart';
 import 'package:slidesync/features/browse/logic/src/contents/handle_archive_uc.dart';
 import 'package:slidesync/features/settings/providers/settings_provider.dart';
@@ -37,14 +42,14 @@ class ContentViewGateActions {
     // Determine if should use built-in viewer
     final shouldUseBuiltInViewer = await _shouldUseBuiltInViewer(ref, content, openOutsideApp);
 
-    if (!shouldUseBuiltInViewer && content.type != ModuleContentType.link) {
+    if (!shouldUseBuiltInViewer) {
       await _openExternally(content);
       return;
     }
 
     if (ref is WidgetRef && !ref.context.mounted) return;
     await _routeToViewer(refCon, content);
-    ContentProgressTracker().registerContentAccess(content.uid);
+    ProgressTracker.registerContentAccess(content.uid);
   }
 
   // ==================== Private Helper Methods ====================
@@ -53,10 +58,10 @@ class ContentViewGateActions {
     final isLink = content.type == ModuleContentType.link;
     if (isLink) {
       final url = content.path.url;
-      if (url != null) await launchUrl(Uri.parse(url));
-      ContentProgressTracker().registerContentAccess(content.uid);
+      await _tryLaunchLink(url);
+      ProgressTracker.registerContentAccess(content.uid);
     } else {
-      ContentProgressTracker().registerContentAccess(content.uid);
+      ProgressTracker.registerContentAccess(content.uid);
       final local = content.path.local;
       if (local == null || local.isEmpty) {
         GlobalNav.withContext(
@@ -137,13 +142,14 @@ class ContentViewGateActions {
 
   static Future<void> _handleLink(ModuleContent content) async {
     final urlPath = content.path.url ?? '';
+    if (urlPath.isEmpty) return;
     final isUnresolvedDriveLink = Result.from(() => DriveBrowser.isGoogleDriveLink(urlPath), fallback: true);
 
     if (isUnresolvedDriveLink) {
       _navigateTo(Routes.driveLinkViewer, content);
       return;
     }
-    final launchResult = await Result.fromAsync(() async => await launchUrl(Uri.parse(urlPath)), fallback: false);
+    final launchResult = await _tryLaunchLink(urlPath);
 
     if (!launchResult) {
       GlobalNav.withContext(
@@ -157,12 +163,31 @@ class ContentViewGateActions {
     }
   }
 
+  static Future<bool> _tryLaunchLink(String? url) => Result.fromAsync(() async {
+    if (url != null) {
+      final uri = Uri.parse(url);
+      final couldLaunch = await Result.fromAsync(
+        () => launchUrl(uri, mode: LaunchMode.platformDefault),
+        fallback: false,
+      );
+      if (!couldLaunch) await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+    }
+    return true;
+  }, fallback: false);
+
   static Future<void> _handleUnknownType(ModuleContent content) async {
     final filePath = content.path.local ?? '';
     final file = File(filePath);
 
+    GlobalNav.withContext(
+      (context) => UiUtils.showLoadingDialog(context, message: "Attempting to recognize content...", canPop: false),
+    );
+
+    final isArchive = await HandleArchiveUc().isSupportedByArchive(file);
+
+    GlobalNav.withContext((context) => UiUtils.hideDialog(context));
     // Check if it's an archive file
-    if (await HandleArchiveUc().isSupportedByArchive(file)) {
+    if (isArchive) {
       await _handleArchiveFile(file, content);
       return;
     }
@@ -183,11 +208,9 @@ class ContentViewGateActions {
         context,
         child: AppAlertDialog(
           title: "Unknown archive file",
-          content: "We detected this to be an archive file, Would you want to extract it?",
+          content: "We detected this to be an archive file, Would you like to extract it?",
           onCancel: () => context.pop(),
-          onConfirm: () async {
-            await _extractAndAddArchive(file, content);
-          },
+          onConfirm: () async => await _extractAndAddArchive(file, content),
         ),
       );
     });
@@ -199,46 +222,96 @@ class ContentViewGateActions {
 
     GlobalNav.popGlobal();
 
-    // Check file size
+    var loadingDialogOpen = false;
+    Future<void> closeLoadingDialog() async {
+      if (!loadingDialogOpen) return;
+      loadingDialogOpen = false;
+      try {
+        navState.pop();
+      } catch (_) {}
+    }
+
     GlobalNav.withContext(
       (context) => UiUtils.showLoadingDialog(context, message: "Processing archive, please wait...", canPop: false),
     );
+    loadingDialogOpen = true;
 
     final fileSize = await file.length();
-    const maxSize = 1024 * 1000 * 200; // 200MB
+    const maxSize = 1024 * 1000 * 1024; // 1gb
 
     if (fileSize > maxSize) {
-      navState.pop();
+      await closeLoadingDialog();
       GlobalNav.withContext(
         (context) => UiUtils.showFlushBar(navState.context, msg: "Archive size is too large, couldn't extract."),
       );
       return;
     }
 
-    // Get parent collection
-    final collection = await ModuleRepo.getByUid(content.parentId);
-    if (collection == null) {
-      navState.pop();
+    try {
+      final groupedContents = await HandleArchiveUc().extractArchiveToCache(file);
+      if (groupedContents.isEmpty) {
+        await closeLoadingDialog();
+        GlobalNav.withContext(
+          (context) => UiUtils.showFlushBar(navState.context, msg: "No extractable files were found in the archive."),
+        );
+        return;
+      }
+
+      final course = Course.create(title: content.title, description: 'Imported from archive: ${content.title}');
+      final courseDbId = await CourseRepo.addCourse(course);
+      if (courseDbId == -1) {
+        await closeLoadingDialog();
+        GlobalNav.withContext(
+          (context) => UiUtils.showFlushBar(navState.context, msg: "Unable to create a course for the archive."),
+        );
+        return;
+      }
+
+      final sortedNames = groupedContents.keys.toList()
+        ..sort((left, right) {
+          if (left == 'Base') return -1;
+          if (right == 'Base') return 1;
+          return left.toLowerCase().compareTo(right.toLowerCase());
+        });
+
+      final modulesToAdd = [
+        for (final name in sortedNames)
+          Module.create(parentId: course.uid, title: name, description: 'Archive collection: $name'),
+      ];
+
+      final addedCollections = await ModuleRepo.addMultipleCollections(course.uid, modulesToAdd);
+      await closeLoadingDialog();
+
+      if (addedCollections.isEmpty) {
+        GlobalNav.withContext(
+          (context) => UiUtils.showFlushBar(navState.context, msg: "Unable to create collections for the archive."),
+        );
+        return;
+      }
+
+      for (final collection in addedCollections) {
+        final contentsToAdd = groupedContents[collection.title] ?? const <String>[];
+        if (contentsToAdd.isEmpty) continue;
+
+        try {
+          await AddContentsActions.onClickToAddContentNoRef(collection: collection, filePaths: contentsToAdd);
+        } catch (e) {
+          log('Failed to add archive collection ${collection.title}: $e');
+        }
+      }
+
+      await CleanUpUtils().clearCacheOrTemp();
+
+      GlobalNav.withContext((context) => UiUtils.showFlushBar(navState.context, msg: 'Archive imported successfully.'));
+    } catch (e, stackTrace) {
+      log('❌ Error extracting archive: $e\n$stackTrace');
+      await closeLoadingDialog();
+      await CleanUpUtils().clearCacheOrTemp();
       GlobalNav.withContext(
-        (context) => UiUtils.showFlushBar(navState.context, msg: "Unable to load collection for this content."),
+        (context) =>
+            UiUtils.showFlushBar(navState.context, msg: 'Error importing archive: $e', vibe: FlushbarVibe.error),
       );
-
-      return;
     }
-
-    navState.pop();
-
-    // Extract archive
-
-    GlobalNav.withContext(
-      (context) => UiUtils.showLoadingDialog(navState.context, message: "Unpacking archive", canPop: false),
-    );
-
-    final contentsToAdd = await HandleArchiveUc().extractArchiveToCache(file);
-    navState.pop();
-
-    log("${rootNavigatorKey.currentWidget}");
-    AddContentsActions.onClickToAddContentNoRef(collection: collection, filePaths: contentsToAdd);
   }
 
   // ==================== Navigation Helpers ====================

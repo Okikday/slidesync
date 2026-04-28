@@ -40,10 +40,10 @@ class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
 
     ref.listen(_coursesUpdateStream, (prev, next) async => await _syncCourses());
 
-    return CoursePaginationState(coursesOrdering: coursesOrdering ?? EntityOrdering.dateModifiedDesc);
+    return CoursePaginationState(coursesOrdering: coursesOrdering ?? CoursesOrdering.dateModifiedDesc);
   }
 
-  void updateCoursesOrdering(EntityOrdering coursesOrdering, {bool refresh = true}) {
+  void updateCoursesOrdering(CoursesOrdering coursesOrdering, {bool refresh = true}) {
     if (state.coursesOrdering == coursesOrdering) return;
 
     state = state.copyWith(coursesOrdering: coursesOrdering);
@@ -165,18 +165,50 @@ class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
     }
   }
 
-  Future<List<Course>> _doFetch(int pageKey, int limit, EntityOrdering sortOption) async {
+  Future<List<Course>> _doFetch(int pageKey, int limit, CoursesOrdering sortOption) async {
     final offset = (pageKey - 1) * limit;
     final query = CourseRepo.isar.courses.where();
 
     return switch (sortOption) {
-      EntityOrdering.nameAsc => query.sortByTitle().offset(offset).limit(limit).findAll(),
-      EntityOrdering.nameDesc => query.sortByTitleDesc().offset(offset).limit(limit).findAll(),
-      EntityOrdering.dateCreatedAsc => query.sortByCreatedAt().offset(offset).limit(limit).findAll(),
-      EntityOrdering.dateCreatedDesc => query.sortByCreatedAtDesc().offset(offset).limit(limit).findAll(),
-      EntityOrdering.dateModifiedAsc => query.sortByLastModified().offset(offset).limit(limit).findAll(),
-      EntityOrdering.dateModifiedDesc => query.sortByLastModifiedDesc().offset(offset).limit(limit).findAll(),
+      CoursesOrdering.nameAsc => query.sortByTitle().offset(offset).limit(limit).findAll(),
+      CoursesOrdering.nameDesc => query.sortByTitleDesc().offset(offset).limit(limit).findAll(),
+      CoursesOrdering.dateCreatedAsc => query.sortByCreatedAt().offset(offset).limit(limit).findAll(),
+      CoursesOrdering.dateCreatedDesc => query.sortByCreatedAtDesc().offset(offset).limit(limit).findAll(),
+      CoursesOrdering.dateModifiedAsc => query.sortByLastModified().offset(offset).limit(limit).findAll(),
+      CoursesOrdering.dateModifiedDesc => query.sortByLastModifiedDesc().offset(offset).limit(limit).findAll(),
+      CoursesOrdering.courseCodeAsc => _fetchByCourseCode(query, offset, limit, ascending: true),
+      CoursesOrdering.courseCodeDesc => _fetchByCourseCode(query, offset, limit, ascending: false),
     };
+  }
+
+  Future<List<Course>> _fetchByCourseCode(
+    QueryBuilder<Course, Course, QWhere> query,
+    int offset,
+    int limit, {
+    required bool ascending,
+  }) async {
+    final courses = await query.findAll();
+
+    courses.sort((left, right) {
+      final leftCode = left.metadata.courseCode?.trim();
+      final rightCode = right.metadata.courseCode?.trim();
+      final leftMissing = leftCode == null || leftCode.isEmpty;
+      final rightMissing = rightCode == null || rightCode.isEmpty;
+
+      if (leftMissing && rightMissing) return 0;
+      if (leftMissing) return 1;
+      if (rightMissing) return -1;
+
+      final comparison = leftCode.toLowerCase().compareTo(rightCode.toLowerCase());
+      if (comparison != 0) {
+        return ascending ? comparison : -comparison;
+      }
+
+      final titleComparison = left.title.toLowerCase().compareTo(right.title.toLowerCase());
+      return ascending ? titleComparison : -titleComparison;
+    });
+
+    return courses.skip(offset).take(limit).toList();
   }
 }
 
@@ -189,12 +221,12 @@ class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
 // );
 
 final _coursesOrderingProvider = AsyncNotifierProvider(
-  () => HiveAsyncImpliedNotifier<String, EntityOrdering>(
+  () => HiveAsyncImpliedNotifier<String, CoursesOrdering>(
     HiveDataPathKey.libraryCourseOrdering.name,
-    EntityOrdering.dateModifiedDesc,
+    CoursesOrdering.dateModifiedDesc,
     transformer: (raw) => raw.name,
     builder: (data) async =>
-        EntityOrdering.values.firstWhere((e) => e.name == data, orElse: () => EntityOrdering.dateModifiedDesc),
+        CoursesOrdering.values.firstWhere((e) => e.name == data, orElse: () => CoursesOrdering.dateModifiedDesc),
   ),
 );
 

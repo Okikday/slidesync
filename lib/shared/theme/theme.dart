@@ -16,7 +16,7 @@ export 'package:slidesync/shared/theme/src/app_theme.dart';
 final appThemeProvider = NotifierProvider(
   () => HiveImpliedNotifier<Map, UnifiedThemeModel>(
     HiveDataPathKey.appTheme.name,
-    defaultUnifiedThemeModels[0],
+    defaultUnifiedThemeModels[0].copyWith(currentBrightness: Brightness.dark),
     transformer: (raw) => raw.toMap(),
     builder: (data) => data == null ? null : UnifiedThemeModel.fromMap(Map.castFrom(data)),
   ),

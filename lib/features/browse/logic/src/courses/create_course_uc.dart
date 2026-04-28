@@ -1,12 +1,10 @@
 import 'dart:developer';
 
 import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/core/utils/theme_utils.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/auth/logic/usecases/auth_uc/user_data_functions.dart';
 import 'package:slidesync/features/browse/logic/src/contents/add_content/content_thumbnail_creator.dart';
-import 'package:slidesync/shared/theme/src/app_palette.dart';
 
 class CreateCourseUc {
   Future<Result<Course>> createCourseAction({
@@ -27,10 +25,7 @@ class CreateCourseUc {
       final author = (await UserDataFunctions().getUserDetails()).data?.userID;
       log("   Author ID: $author");
       final course = tempCourse.copyWith(
-        metadata: (tempCourse.metadata.copyWith(
-          author: author,
-          rawColor: ThemeUtils.colorToHex(AppPalette.getRandom()),
-        )),
+        metadata: (tempCourse.metadata.copyWith(author: author)),
         lastModified: DateTime.now(),
       );
 

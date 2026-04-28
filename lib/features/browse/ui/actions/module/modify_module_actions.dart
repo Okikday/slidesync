@@ -12,7 +12,6 @@ import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/features/browse/logic/src/collections/modify_collection_uc.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
-import 'package:slidesync/shared/theme/src/app_palette.dart';
 
 class ModifyModuleActions {
   /// Add collection to course
@@ -25,11 +24,7 @@ class ModifyModuleActions {
     if (course.modules.length >= 30) {
       return "Collections under a course must be under 30";
     }
-    final newCollection = Module.create(
-      parentId: course.uid,
-      title: title,
-      metadata: ModuleMetadata.create(color: AppPalette.getRandom()),
-    );
+    final newCollection = Module.create(parentId: course.uid, title: title);
     final String? result = await ModuleRepo.addCollectionNoDuplicateTitle(newCollection);
     return result;
   }
@@ -90,6 +85,52 @@ class ModifyModuleActions {
       log("${renameOutcome.message}");
       return "An error occured whilst renaming collection!";
     }
+  }
+
+  Future<Course?> pickMoveTargetCourse(BuildContext context, {required String excludeCourseId}) async {
+    final courses = await CourseRepo.getAllCourses();
+    if (!context.mounted || courses.isEmpty) return null;
+
+    final availableCourses = courses.where((course) => course.uid != excludeCourseId).toList();
+    if (availableCourses.isEmpty) return null;
+
+    return await showModalBottomSheet<Course>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                CustomText('Move collection to', fontSize: 18, fontWeight: FontWeight.w700),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    itemCount: availableCourses.length,
+                    separatorBuilder: (_, _) => const SizedBox(height: 8),
+                    itemBuilder: (_, index) {
+                      final course = availableCourses[index];
+                      return ListTile(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        tileColor: Theme.of(sheetContext).colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
+                        title: CustomText(course.title, fontWeight: FontWeight.w600),
+                        subtitle: CustomText(course.description, fontSize: 12),
+                        onTap: () => Navigator.of(sheetContext).pop(course),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> onRenameCollection(BuildContext context, {required String newText, required Module collection}) async {

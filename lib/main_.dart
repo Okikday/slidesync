@@ -47,7 +47,7 @@ Future<void> _firstAppLaunch() async {
   }
 }
 
-Future<void> _initDesktop() async {
+Future<void> _initIfDesktop() async {
   if (defaultTargetPlatform == TargetPlatform.windows ||
       defaultTargetPlatform == TargetPlatform.macOS ||
       defaultTargetPlatform == TargetPlatform.linux) {

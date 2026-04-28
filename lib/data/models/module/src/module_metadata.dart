@@ -3,6 +3,7 @@ import 'package:flutter/painting.dart';
 import 'package:isar_community/isar.dart';
 import 'package:slidesync/core/utils/theme_utils.dart';
 import 'package:slidesync/data/models/file_path/file_path.dart';
+import 'package:slidesync/shared/theme/src/app_palette.dart';
 
 part 'module_metadata.mapper.dart';
 part 'module_metadata.g.dart';
@@ -20,11 +21,8 @@ class ModuleMetadata with ModuleMetadataMappable {
   factory ModuleMetadata.empty() => ModuleMetadata();
 
   static ModuleMetadata create({String? author, FilePath? thumbnail, Color? color}) {
-    return ModuleMetadata(
-      author: author,
-      thumbnail: thumbnail,
-      rawColor: color != null ? ThemeUtils.colorToHex(color) : null,
-    );
+    final randColor = color ?? AppPalette.getRandom();
+    return ModuleMetadata(author: author, thumbnail: thumbnail, rawColor: ThemeUtils.colorToHex(randColor));
   }
 }
 

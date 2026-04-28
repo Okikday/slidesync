@@ -133,7 +133,7 @@ class AddContentsActions {
     );
   }
 
-  static void onClickToAddContentNoRef({required Module collection, required List<String> filePaths}) async {
+  static Future<void> onClickToAddContentNoRef({required Module collection, required List<String> filePaths}) async {
     await _executeAddContentFlow(
       collection: collection,
       initialMessage: "Offloading contents",

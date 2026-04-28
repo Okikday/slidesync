@@ -64,6 +64,32 @@ class ContentTrackRepo {
     });
   }
 
+  static Future<ContentTrack?> clearLastRead(String contentId) async {
+    final track = await getByContentId(contentId);
+    if (track == null) return null;
+
+    track.lastRead = null;
+
+    return await isar.writeTxn<ContentTrack?>(() async {
+      await isar.contentTracks.put(track);
+      return track;
+    });
+  }
+
+  static Future<int> clearAllLastRead() async {
+    final tracks = await _isar.contentTracks.filter().lastReadIsNotNull().findAll();
+    if (tracks.isEmpty) return 0;
+
+    for (final track in tracks) {
+      track.lastRead = null;
+    }
+
+    return await _isar.writeTxn(() async {
+      await _isar.contentTracks.putAll(tracks);
+      return tracks.length;
+    });
+  }
+
   static double computeProgressForMultiple(IsarLinks<ContentTrack> contentTracks) {
     final totalProgress = contentTracks.fold<double>(0.0, (sum, track) => sum + (track.progress));
     return totalProgress / contentTracks.length;

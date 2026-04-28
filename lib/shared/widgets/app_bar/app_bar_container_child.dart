@@ -72,6 +72,7 @@ class AppBarContainerChild extends ConsumerWidget {
                                       fontWeight: FontWeight.bold,
                                       overflow: TextOverflow.ellipsis,
                                       color: theme.onBackground,
+                                      maxLines: 1,
                                     ),
                                     CustomText(
                                       subtitle!,
@@ -79,6 +80,7 @@ class AppBarContainerChild extends ConsumerWidget {
                                       color: theme.background.lightenColor(theme.isDarkMode ? .4 : .6),
                                       overflow: TextOverflow.ellipsis,
                                       style: subtitleStyle,
+                                      maxLines: 1,
                                     ),
                                   ],
                                 )
@@ -89,6 +91,7 @@ class AppBarContainerChild extends ConsumerWidget {
                                   overflow: TextOverflow.ellipsis,
                                   style: titleStyle,
                                   color: theme.onBackground,
+                                  maxLines: 2,
                                 )),
                     ),
                   ),

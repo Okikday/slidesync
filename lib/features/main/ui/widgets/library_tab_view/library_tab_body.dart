@@ -22,7 +22,7 @@ class LibraryTabBody extends ConsumerWidget {
 
             CoursesView(),
 
-            SliverToBoxAdapter(child: BottomPadding(withHeight: 24)),
+            SliverToBoxAdapter(child: BottomPadding(withHeight: kToolbarHeight)),
           ],
         )
         .animate(target: tabIndex == 1 ? 1 : 0)

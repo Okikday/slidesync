@@ -78,6 +78,7 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
         child: AppBarContainerChild(
           context.isDarkMode,
           title: title,
+          subtitle: _selectedCourse?.title,
           onBackButtonClicked: () => _handleBackPressed(context),
         ),
       ),
@@ -118,6 +119,7 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
   }
 
   Future<void> _handleCollectionSelection(BuildContext context, Module collection) async {
+    context.goNamed(Routes.library.name);
     switch (widget.mode) {
       case ContentSheetMode.move:
         await _handleMoveContents(context, collection);
@@ -134,11 +136,19 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
   Future<void> _handleMoveContents(BuildContext context, Module collection) async {
     final contentsToMove = widget.contentsToMove;
     if (contentsToMove == null || contentsToMove.isEmpty) {
-      UiUtils.showFlushBar(context, msg: 'No contents to move', vibe: FlushbarVibe.warning);
+      GlobalNav.withContext(
+        (context) => UiUtils.showFlushBar(context, msg: 'No contents to move', vibe: FlushbarVibe.warning),
+      );
+
       return;
     }
-
-    UiUtils.showLoadingDialog(context, message: 'Hold on for a moment while we move your materials', canPop: false);
+    GlobalNav.withContext(
+      (context) => UiUtils.showLoadingDialog(
+        context,
+        message: 'Hold on for a moment while we move your materials',
+        canPop: false,
+      ),
+    );
 
     final moved = await ModuleContentRepo.moveContents(contentsToMove, collection.uid);
     GlobalNav.popGlobal();
@@ -157,11 +167,20 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
   Future<void> _handleCopyContents(BuildContext context, Module collection) async {
     final contentsToCopy = widget.contentsToCopy;
     if (contentsToCopy == null || contentsToCopy.isEmpty) {
-      UiUtils.showFlushBar(context, msg: 'No contents to copy', vibe: FlushbarVibe.warning);
+      GlobalNav.withContext(
+        (context) => UiUtils.showFlushBar(context, msg: 'No contents to copy', vibe: FlushbarVibe.warning),
+      );
+
       return;
     }
 
-    UiUtils.showLoadingDialog(context, message: 'Hold on for a moment while we copy your materials', canPop: false);
+    GlobalNav.withContext(
+      (context) => UiUtils.showLoadingDialog(
+        context,
+        message: 'Hold on for a moment while we copy your materials',
+        canPop: false,
+      ),
+    );
 
     final copied = await ModuleContentRepo.copyModuleContents(collection.uid, contentsToCopy);
     GlobalNav.popGlobal();
@@ -180,11 +199,17 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
   Future<void> _handleStoreFiles(BuildContext context, Module collection) async {
     final filePaths = widget.filePaths;
     if (filePaths == null || filePaths.isEmpty) {
-      UiUtils.showFlushBar(context, msg: 'No files to store', vibe: FlushbarVibe.warning);
+      GlobalNav.withContext(
+        (context) => UiUtils.showFlushBar(context, msg: 'No files to store', vibe: FlushbarVibe.warning),
+      );
+
       return;
     }
+    GlobalNav.withContext(
+      (context) =>
+          UiUtils.showLoadingDialog(context, message: 'Hold on for a moment while we store your files', canPop: false),
+    );
 
-    UiUtils.showLoadingDialog(context, message: 'Hold on for a moment while we store your files', canPop: false);
     await _storeContentsToCollection(collectionId: collection.uid, filePaths: filePaths);
     GlobalNav.popGlobal();
 

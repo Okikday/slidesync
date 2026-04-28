@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -26,15 +25,13 @@ class OnlineViewer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: UiUtils.getSystemUiOverlayStyle(context.scaffoldBackgroundColor, context.isDarkMode),
-      child: AppScaffold(
-        title: args.title,
-        body: switch (args.kind) {
-          OnlineViewerKind.pdf => _OnlinePdfBody(args: args),
-          OnlineViewerKind.image => _OnlineImageBody(args: args),
-        },
-      ),
+    return AppScaffold(
+      title: args.title,
+      systemUiOverlayStyle: UiUtils.getSystemUiOverlayStyle(context.scaffoldBackgroundColor, context.isDarkMode),
+      body: switch (args.kind) {
+        OnlineViewerKind.pdf => _OnlinePdfBody(args: args),
+        OnlineViewerKind.image => _OnlineImageBody(args: args),
+      },
     );
   }
 }

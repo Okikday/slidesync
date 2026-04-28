@@ -25,6 +25,7 @@ import 'package:slidesync/features/sync/providers/sync_provider.dart';
 import 'package:slidesync/features/sync/providers/transfer_state_provider.dart';
 import 'package:slidesync/features/sync/providers/upload_feed_provider.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/helpers/icon_helper.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
@@ -204,6 +205,19 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                                 icon: Icon(HugeIconsStroke.upload03, color: theme.onSurface),
                                 onTap: () async {
                                   Navigator.pop(context);
+                                  final email = (await UserDataFunctions().getUserDetails()).data?.email;
+                                  if (email == null ||
+                                      !({"okikiolagbele@gmail.com", "okikday@gmail.com"}.contains(email))) {
+                                    GlobalNav.withContext(
+                                      (context) => UiUtils.showFlushBar(
+                                        context,
+                                        msg:
+                                            'You do not have permission to upload to the public repository. Contact admin.',
+                                        vibe: FlushbarVibe.error,
+                                      ),
+                                    );
+                                    return;
+                                  }
                                   await _uploadContentToPublicRepository();
                                 },
                               ),

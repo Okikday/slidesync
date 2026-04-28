@@ -10,145 +10,188 @@ import 'package:path_provider/path_provider.dart';
 // AI generated...
 class HandleArchiveUc {
   /// Extracts an archive into the application's temporary/cache directory.
-/// Returns a List<String> of absolute paths created (files and directories).
-Future<List<String>> extractArchiveToCache(File archiveFile, {String? destSubDirName}) async {
-  if (!await archiveFile.exists()) {
-    throw ArgumentError('archiveFile does not exist: ${archiveFile.path}');
-  }
+  /// Returns a map of collection/subfolder name to extracted file paths.
+  Future<Map<String, List<String>>> extractArchiveToCache(File archiveFile, {String? destSubDirName}) async {
+    if (!await archiveFile.exists()) {
+      throw ArgumentError('archiveFile does not exist: ${archiveFile.path}');
+    }
 
-  final bytes = await archiveFile.readAsBytes();
-  final archive = _decodeArchiveSafe(bytes);
+    final bytes = await archiveFile.readAsBytes();
+    final archive = _decodeArchiveSafe(bytes);
 
-  if (archive == null || archive.isEmpty) {
-    throw FormatException('Not a supported/extractable archive.');
-  }
+    if (archive == null || archive.isEmpty) {
+      throw FormatException('Not a supported/extractable archive.');
+    }
 
-  final cacheDir = await getTemporaryDirectory();
-  final baseName = destSubDirName ??
-      '${p.basenameWithoutExtension(archiveFile.path)}_${DateTime.now().millisecondsSinceEpoch}';
-  final outDir = Directory(p.join(cacheDir.path, baseName));
-  await outDir.create(recursive: true);
+    final cacheDir = await getTemporaryDirectory();
+    final baseName =
+        destSubDirName ?? '${p.basenameWithoutExtension(archiveFile.path)}_${DateTime.now().millisecondsSinceEpoch}';
+    final outDir = Directory(p.join(cacheDir.path, baseName));
+    await outDir.create(recursive: true);
 
-  final List<String> createdPaths = [];
+    final List<_ArchiveExtractionJob> jobs = [];
 
-  for (final file in archive.files) {
-    final rawName = file.name;
-    if (rawName.isEmpty) continue;
+    for (final archiveEntry in archive.files) {
+      final rawName = archiveEntry.name;
+      if (rawName.isEmpty || !archiveEntry.isFile) continue;
 
-    final safeRelPath = _sanitizeMemberPath(rawName);
-    if (safeRelPath.isEmpty) continue;
+      final safeRelPath = _sanitizeMemberPath(rawName);
+      if (safeRelPath.isEmpty) continue;
 
-    final outPath = p.join(outDir.path, safeRelPath);
+      final pathParts = p.split(safeRelPath);
+      if (pathParts.isEmpty) continue;
 
-    if (file.isFile) {
+      final collectionName = pathParts.length > 1 ? pathParts.first : 'Base';
+      final relativeWithinCollection = pathParts.length > 1 ? p.joinAll(pathParts.skip(1)) : pathParts.last;
+
+      jobs.add(
+        _ArchiveExtractionJob(
+          collectionName: collectionName,
+          relativePath: relativeWithinCollection,
+          archiveFile: archiveEntry,
+        ),
+      );
+    }
+
+    final Map<String, List<String>> groupedPaths = {};
+    if (jobs.isEmpty) {
+      return groupedPaths;
+    }
+
+    await _runInBatches<_ArchiveExtractionJob>(jobs, 4, (job) async {
+      final outPath = p.join(outDir.path, job.collectionName, job.relativePath);
       final outFile = File(outPath);
       await outFile.parent.create(recursive: true);
-      final data = file.content as List<int>;
-      await outFile.writeAsBytes(data, flush: true);
-      createdPaths.add(outFile.path);
-    } else {
-      final dir = Directory(outPath);
-      await dir.create(recursive: true);
-      createdPaths.add(dir.path);
-    }
+
+      final data = job.archiveFile.content;
+      final bytes = data;
+      await outFile.writeAsBytes(bytes, flush: true);
+
+      groupedPaths.putIfAbsent(job.collectionName, () => <String>[]).add(outFile.path);
+    });
+
+    return groupedPaths;
   }
 
-  return createdPaths;
-}
+  /// Clears the app temporary/cache directory. If [subDirName] is provided,
+  /// only that sub-directory inside the cache will be deleted; otherwise all
+  /// entries inside the cache directory will be removed (but the cache dir itself remains).
+  Future<void> clearCacheDir({String? subDirName}) async {
+    final cacheDir = await getTemporaryDirectory();
 
-/// Clears the app temporary/cache directory. If [subDirName] is provided,
-/// only that sub-directory inside the cache will be deleted; otherwise all
-/// entries inside the cache directory will be removed (but the cache dir itself remains).
-Future<void> clearCacheDir({String? subDirName}) async {
-  final cacheDir = await getTemporaryDirectory();
-
-  if (subDirName != null && subDirName.isNotEmpty) {
-    final target = Directory(p.join(cacheDir.path, subDirName));
-    if (await target.exists()) {
-      await target.delete(recursive: true);
-    }
-    return;
-  }
-
-  // remove all children of cacheDir
-  await for (final entity in cacheDir.list(followLinks: false)) {
-    try {
-      if (entity is File) {
-        await entity.delete();
-      } else if (entity is Directory) {
-        await entity.delete(recursive: true);
-      } else {
-        await entity.delete();
+    if (subDirName != null && subDirName.isNotEmpty) {
+      final target = Directory(p.join(cacheDir.path, subDirName));
+      if (await target.exists()) {
+        await target.delete(recursive: true);
       }
-    } catch (_) {
-      // ignore individual failures
+      return;
+    }
+
+    // remove all children of cacheDir
+    await for (final entity in cacheDir.list(followLinks: false)) {
+      try {
+        if (entity is File) {
+          await entity.delete();
+        } else if (entity is Directory) {
+          await entity.delete(recursive: true);
+        } else {
+          await entity.delete();
+        }
+      } catch (_) {
+        // ignore individual failures
+      }
+    }
+  }
+
+  /// Returns true if the file appears to be a supported archive (we try to decode
+  /// it using common decoders). This physically attempts decode attempts but does
+  /// not write anything.
+  Future<bool> isSupportedByArchive(File archiveFile) async {
+    if (!await archiveFile.exists()) return false;
+    final bytes = await archiveFile.readAsBytes();
+    final archive = _decodeArchiveSafe(bytes);
+    return archive != null && archive.isNotEmpty;
+  }
+
+  /// ----------------- Internal helpers -----------------
+
+  /// Try multiple decoders safely and return the first successful Archive, or null.
+  Archive? _decodeArchiveSafe(Uint8List bytes) {
+    // 1) try zip
+    try {
+      final arch = ZipDecoder().decodeBytes(bytes, verify: true);
+      if (arch.isNotEmpty) return arch;
+    } catch (_) {}
+
+    // 2) try tar (raw)
+    try {
+      final arch = TarDecoder().decodeBytes(bytes);
+      if (arch.isNotEmpty) return arch;
+    } catch (_) {}
+
+    // 3) try gzip -> tar (tar.gz, .tgz)
+    try {
+      final decompressed = GZipDecoder().decodeBytes(bytes);
+      try {
+        final arch = TarDecoder().decodeBytes(decompressed);
+        if (arch.isNotEmpty) return arch;
+      } catch (_) {
+        // if gz contained a single file (not tar), convert to Archive manually
+        final file = ArchiveFile('file', decompressed.length, decompressed);
+        return Archive()..addFile(file);
+      }
+    } catch (_) {}
+
+    // 4) try bzip2 -> tar (tar.bz2)
+    try {
+      final decompressed = BZip2Decoder().decodeBytes(bytes);
+      try {
+        final arch = TarDecoder().decodeBytes(decompressed);
+        if (arch.isNotEmpty) return arch;
+      } catch (_) {
+        final file = ArchiveFile('file', decompressed.length, decompressed);
+        return Archive()..addFile(file);
+      }
+    } catch (_) {}
+
+    // If nothing matched, return null
+    return null;
+  }
+
+  /// Sanitize member paths to avoid traversal (zip-slip).
+  /// Removes drive letters, converts backslashes to forward slashes,
+  /// removes '..' and leading separators.
+  String _sanitizeMemberPath(String raw) {
+    var normalized = raw.replaceAll(r'\', '/'); // unify windows paths
+    normalized = normalized.replaceAll(RegExp(r'^[A-Za-z]:/'), ''); // remove windows drive if present
+    final parts = p.split(normalized).where((s) => s.isNotEmpty && s != '..').toList();
+    return p.joinAll(parts);
+  }
+
+  Future<void> _runInBatches<T>(List<T> items, int maxConcurrency, Future<void> Function(T item) task) async {
+    final effectiveConcurrency = maxConcurrency < 1 ? 1 : maxConcurrency;
+
+    for (int index = 0; index < items.length; index += effectiveConcurrency) {
+      final endIndex = index + effectiveConcurrency > items.length ? items.length : index + effectiveConcurrency;
+      final batch = items.sublist(index, endIndex);
+
+      await Future.wait(
+        batch.map((item) async {
+          try {
+            await task(item);
+          } catch (e) {
+            // Skip individual file failures so one bad entry doesn't abort the archive.
+          }
+        }),
+      );
     }
   }
 }
 
-/// Returns true if the file appears to be a supported archive (we try to decode
-/// it using common decoders). This physically attempts decode attempts but does
-/// not write anything.
-Future<bool> isSupportedByArchive(File archiveFile) async {
-  if (!await archiveFile.exists()) return false;
-  final bytes = await archiveFile.readAsBytes();
-  final archive = _decodeArchiveSafe(bytes);
-  return archive != null && archive.isNotEmpty;
-}
+class _ArchiveExtractionJob {
+  final String collectionName;
+  final String relativePath;
+  final ArchiveFile archiveFile;
 
-/// ----------------- Internal helpers -----------------
-
-/// Try multiple decoders safely and return the first successful Archive, or null.
-Archive? _decodeArchiveSafe(Uint8List bytes) {
-  // 1) try zip
-  try {
-    final arch = ZipDecoder().decodeBytes(bytes, verify: true);
-    if (arch.isNotEmpty) return arch;
-  } catch (_) {}
-
-  // 2) try tar (raw)
-  try {
-    final arch = TarDecoder().decodeBytes(bytes);
-    if (arch.isNotEmpty) return arch;
-  } catch (_) {}
-
-  // 3) try gzip -> tar (tar.gz, .tgz)
-  try {
-    final decompressed = GZipDecoder().decodeBytes(bytes);
-    try {
-      final arch = TarDecoder().decodeBytes(decompressed);
-      if (arch.isNotEmpty) return arch;
-    } catch (_) {
-      // if gz contained a single file (not tar), convert to Archive manually
-      final file = ArchiveFile('file', decompressed.length, decompressed);
-      return Archive()..addFile(file);
-    }
-  } catch (_) {}
-
-  // 4) try bzip2 -> tar (tar.bz2)
-  try {
-    final decompressed = BZip2Decoder().decodeBytes(bytes);
-    try {
-      final arch = TarDecoder().decodeBytes(decompressed);
-      if (arch.isNotEmpty) return arch;
-    } catch (_) {
-      final file = ArchiveFile('file', decompressed.length, decompressed);
-      return Archive()..addFile(file);
-    }
-  } catch (_) {}
-
-  // If nothing matched, return null
-  return null;
-}
-
-/// Sanitize member paths to avoid traversal (zip-slip).
-/// Removes drive letters, converts backslashes to forward slashes,
-/// removes '..' and leading separators.
-String _sanitizeMemberPath(String raw) {
-  var normalized = raw.replaceAll(r'\', '/'); // unify windows paths
-  normalized = normalized.replaceAll(RegExp(r'^[A-Za-z]:/'), ''); // remove windows drive if present
-  final parts = p.split(normalized).where((s) => s.isNotEmpty && s != '..').toList();
-  return p.joinAll(parts);
-}
-
+  _ArchiveExtractionJob({required this.collectionName, required this.relativePath, required this.archiveFile});
 }

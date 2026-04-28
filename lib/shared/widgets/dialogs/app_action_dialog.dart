@@ -10,7 +10,7 @@ class AppActionDialogModel {
   final String title;
   final Color? titleColor;
   final Widget icon;
-  final void Function() onTap;
+  final void Function()? onTap;
 
   AppActionDialogModel({required this.title, this.titleColor, required this.icon, required this.onTap});
 
@@ -78,6 +78,17 @@ class AppActionDialog extends ConsumerWidget {
           final action = actions[index];
 
           if (index == actions.length - 1) {
+            if (action.onTap == null) {
+              return Opacity(
+                opacity: 0.3,
+                child: BuildPlainActionButton(
+                  title: action.title,
+                  titleColor: action.titleColor,
+                  icon: action.icon,
+                  onTap: action.onTap,
+                ),
+              );
+            }
             return BuildPlainActionButton(
               title: action.title,
               titleColor: action.titleColor,
@@ -89,12 +100,23 @@ class AppActionDialog extends ConsumerWidget {
           return Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              BuildPlainActionButton(
-                title: action.title,
-                titleColor: action.titleColor,
-                icon: action.icon,
-                onTap: action.onTap,
-              ),
+              if (action.onTap == null)
+                Opacity(
+                  opacity: 0.3,
+                  child: BuildPlainActionButton(
+                    title: action.title,
+                    titleColor: action.titleColor,
+                    icon: action.icon,
+                    onTap: action.onTap,
+                  ),
+                )
+              else
+                BuildPlainActionButton(
+                  title: action.title,
+                  titleColor: action.titleColor,
+                  icon: action.icon,
+                  onTap: action.onTap,
+                ),
               divider,
             ],
           );

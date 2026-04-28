@@ -2,12 +2,12 @@
 import 'package:slidesync/core/constants/constants.dart';
 
 class CoursePaginationState {
-  final EntityOrdering coursesOrdering;
+  final CoursesOrdering coursesOrdering;
   final bool isLoading;
 
-  const CoursePaginationState({this.coursesOrdering = EntityOrdering.dateModifiedAsc, this.isLoading = false});
+  const CoursePaginationState({this.coursesOrdering = CoursesOrdering.dateModifiedAsc, this.isLoading = false});
 
-  CoursePaginationState copyWith({EntityOrdering? coursesOrdering, bool? isLoading}) {
+  CoursePaginationState copyWith({CoursesOrdering? coursesOrdering, bool? isLoading}) {
     return CoursePaginationState(
       coursesOrdering: coursesOrdering ?? this.coursesOrdering,
       isLoading: isLoading ?? this.isLoading,

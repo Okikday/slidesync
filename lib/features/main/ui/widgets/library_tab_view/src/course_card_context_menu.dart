@@ -8,6 +8,7 @@ import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/features/browse/ui/actions/course/modify_course_actions.dart';
 import 'package:slidesync/features/browse/ui/widgets/course/shared/edit_course_bottom_sheet.dart';
+import 'package:slidesync/features/share/ui/screens/export/course_export_manager.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
@@ -191,14 +192,14 @@ class CourseCardContextMenu extends ConsumerWidget {
                     ),
                     divider,
 
-                    BuildExpandCardButton(
-                      title: "Select",
-                      iconData: HugeIconsSolid.select01,
-                      onTap: () {
-                        UiUtils.hideDialog(context);
-                      },
-                    ),
-                    divider,
+                    // BuildExpandCardButton(
+                    //   title: "Select",
+                    //   iconData: HugeIconsSolid.select01,
+                    //   onTap: () {
+                    //     UiUtils.hideDialog(context);
+                    //   },
+                    // ),
+                    // divider,
                     BuildExpandCardButton(
                       title: "Edit course",
                       iconData: HugeIconsSolid.edit01,
@@ -216,8 +217,20 @@ class CourseCardContextMenu extends ConsumerWidget {
                     ),
                     divider,
 
-                    // BuildExpandCardButton(title: "Share", iconData: Icons.share_outlined, onTap: () {}),
+                    // BuildExpandCardButton(title: "Share", iconData: HugeIconsSolid.share02, onTap: () {
+                    //   UiUtils.hideDialog(context);
+
+                    // }),
                     // divider,
+                    BuildExpandCardButton(
+                      title: "Export to Device",
+                      iconData: HugeIconsSolid.share02,
+                      onTap: () {
+                        UiUtils.hideDialog(context);
+                        CourseFolderExportManager.showExportScreen(context, course.uid);
+                      },
+                    ),
+                    divider,
                     BuildExpandCardButton(
                       title: "Delete",
                       iconData: HugeIconsSolid.delete02,

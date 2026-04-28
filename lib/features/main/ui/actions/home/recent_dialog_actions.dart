@@ -1,7 +1,9 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/constants/src/enums/enums.dart';
+import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/data/repos/course_repo/module_repo.dart';
@@ -21,13 +23,9 @@ mixin RecentDialogActions {
   Future<void> onRemoveFromRecents(BuildContext context, ContentTrack contentTrack) async {
     // final contentId = contentId;
     if (context.mounted) UiUtils.hideDialog(context);
-    final resultRemoveFromRecents = await ContentTrackRepo.add(contentTrack.copyWith(lastRead: null, progress: 0.0));
+    await Result.tryRunAsync(() => ContentTrackRepo.clearLastRead(contentTrack.uid));
     if (context.mounted) {
-      if (resultRemoveFromRecents != -1) {
-        await UiUtils.showFlushBar(context, msg: "Removed from recent reads!", vibe: FlushbarVibe.none);
-      } else {
-        await UiUtils.showFlushBar(context, msg: "Unable to remove from recents", vibe: FlushbarVibe.error);
-      }
+      await UiUtils.showFlushBar(context, msg: "Removed from recent reads!", vibe: FlushbarVibe.none);
     }
   }
 
@@ -68,6 +66,18 @@ mixin RecentDialogActions {
   /// Shares the content file for the contentId provided
   void onShare(BuildContext context, String contentId) async {
     await ShareContentActions.shareFileContent(context, contentId);
+  }
+
+  /// Copies the link
+  void onCopy(BuildContext context, String contentId) async {
+    final content = await ModuleContentRepo.getByUid(contentId);
+    final url = content?.path.url;
+    if (url != null) {
+      Clipboard.setData(ClipboardData(text: url));
+      GlobalNav.withContext(
+        (c) => UiUtils.showFlushBar(context.mounted ? context : c, msg: "Link copied to clipboard"),
+      );
+    }
   }
 
   /// Navigates to the collection page of the contentId provided

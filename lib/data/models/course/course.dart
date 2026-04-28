@@ -36,17 +36,6 @@ class Course with CourseMappable {
     required this.metadata,
   });
 
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is Course &&
-          runtimeType == other.runtimeType &&
-          uid == other.uid &&
-          lastModified.compareTo(other.lastModified) <= 0;
-
-  @override
-  int get hashCode => uid.hashCode;
-
   static const fromJson = CourseMapper.fromJson;
 
   static Course create({required String title, String? uid, String? description, CourseMetadata? metadata}) {
@@ -57,7 +46,7 @@ class Course with CourseMappable {
       description: description ?? '',
       createdAt: now,
       lastModified: now,
-      metadata: metadata ?? CourseMetadata.empty(),
+      metadata: metadata ?? CourseMetadata.create(),
     );
   }
 }

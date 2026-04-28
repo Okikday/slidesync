@@ -127,6 +127,36 @@ class _ModuleCardState extends ConsumerState<ModuleCard> {
                         },
                       ),
 
+                    if (widget.select == null)
+                      PopupMenuAction(
+                        title: "Move",
+                        iconData: Iconsax.tick_circle,
+                        onTap: () async {
+                          final targetCourse = await ModifyModuleActions().pickMoveTargetCourse(
+                            context,
+                            excludeCourseId: collection.parentId,
+                          );
+                          if (targetCourse == null) return;
+
+                          GlobalNav.withContext(
+                            (c) => UiUtils.showLoadingDialog(c, message: 'Moving collection', canPop: false),
+                          );
+
+                          final movedModules = await ModuleRepo.moveModules([collection], targetCourse.uid);
+                          GlobalNav.popGlobal();
+
+                          if (movedModules.isEmpty) {
+                            GlobalNav.withContext(
+                              (c) =>
+                                  UiUtils.showFlushBar(c, msg: 'Unable to move collection', vibe: FlushbarVibe.warning),
+                            );
+                            return;
+                          }
+
+                          GlobalNav.withContext((c) => UiUtils.showFlushBar(c, msg: 'Successfully moved collection'));
+                        },
+                      ),
+
                     PopupMenuAction(
                       title: "Share",
                       iconData: HugeIconsSolid.share01,
@@ -139,7 +169,7 @@ class _ModuleCardState extends ConsumerState<ModuleCard> {
                       title: "Rename",
                       iconData: HugeIconsSolid.edit01,
                       onTap: () async {
-                        CustomDialog.hide(context);
+                        // CustomDialog.hide(context);
                         final coll = await ModuleRepo.getByUid(collection.uid);
                         if (coll == null) return;
                         GlobalNav.withContext(

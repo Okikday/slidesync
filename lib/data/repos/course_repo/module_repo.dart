@@ -136,6 +136,144 @@ class ModuleRepo {
     return "An error occured while adding collection";
   }
 
+  static Future<List<Module>> addMultipleCollections(String courseId, List<Module> collections) async {
+    if (courseId.isEmpty || collections.isEmpty) return [];
+
+    final course = await CourseRepo.getCourseByUid(courseId);
+    if (course == null) return [];
+
+    await course.modules.load();
+
+    final existingTitles = course.modules.map((module) => module.title.toLowerCase()).toSet();
+    final uniqueCollections = <Module>[];
+
+    for (final collection in collections) {
+      if (collection.title.trim().isEmpty) continue;
+
+      collection.parentId = courseId;
+      final normalizedTitle = collection.title.toLowerCase();
+      if (existingTitles.contains(normalizedTitle)) continue;
+
+      existingTitles.add(normalizedTitle);
+      uniqueCollections.add(collection);
+    }
+
+    if (uniqueCollections.isEmpty) return [];
+
+    await isar.writeTxn(() async {
+      await isar.modules.putAll(uniqueCollections);
+      course.modules.addAll(uniqueCollections);
+      await course.modules.save();
+      await isar.courses.put(course.copyWith(lastModified: DateTime.now()));
+    });
+
+    return uniqueCollections;
+  }
+
+  static Future<List<Module>> moveModules(List<Module> modules, String targetCourseId) async {
+    if (modules.isEmpty || targetCourseId.trim().isEmpty) return [];
+
+    final targetCourse = await CourseRepo.getCourseByUid(targetCourseId);
+    if (targetCourse == null) return [];
+
+    final targetCourseTrack = await CourseTrackRepo.getByUid(targetCourseId);
+    if (targetCourseTrack == null) return [];
+
+    await targetCourse.modules.load();
+    await targetCourseTrack.contentTracks.load();
+
+    final inputByUid = <String, Module>{
+      for (final module in modules)
+        if (module.uid.isNotEmpty) module.uid: module,
+    };
+    if (inputByUid.isEmpty) return [];
+
+    final resolvedModules = <Module>[];
+    final sourceCoursesByUid = <String, Course>{};
+    final sourceCourseTracksByUid = <String, CourseTrack>{};
+    final contentTracksToPersistByUid = <String, ContentTrack>{};
+
+    for (final uid in inputByUid.keys) {
+      final storedModule = await getByUid(uid) ?? inputByUid[uid];
+      if (storedModule == null || storedModule.parentId == targetCourseId) {
+        continue;
+      }
+
+      final sourceCourseId = storedModule.parentId;
+      final sourceCourse = sourceCoursesByUid[sourceCourseId] ?? await CourseRepo.getCourseByUid(sourceCourseId);
+      if (sourceCourse == null) continue;
+
+      if (!sourceCoursesByUid.containsKey(sourceCourse.uid)) {
+        await sourceCourse.modules.load();
+        sourceCoursesByUid[sourceCourse.uid] = sourceCourse;
+      }
+
+      final sourceCourseTrack =
+          sourceCourseTracksByUid[sourceCourse.uid] ?? await CourseTrackRepo.getByUid(sourceCourse.uid);
+      if (sourceCourseTrack != null && !sourceCourseTracksByUid.containsKey(sourceCourseTrack.uid)) {
+        await sourceCourseTrack.contentTracks.load();
+        sourceCourseTracksByUid[sourceCourseTrack.uid] = sourceCourseTrack;
+      }
+
+      await storedModule.contents.load();
+
+      sourceCourse.modules.removeWhere((module) => module.uid == storedModule.uid);
+      targetCourse.modules.removeWhere((module) => module.uid == storedModule.uid);
+
+      storedModule.parentId = targetCourseId;
+      targetCourse.modules.add(storedModule);
+      resolvedModules.add(storedModule);
+
+      for (final content in storedModule.contents) {
+        final contentTrack = await ContentTrackRepo.getByContentId(content.uid);
+        if (contentTrack == null) continue;
+
+        sourceCourseTrack?.contentTracks.removeWhere((track) => track.uid == contentTrack.uid);
+        targetCourseTrack.contentTracks.removeWhere((track) => track.uid == contentTrack.uid);
+
+        contentTrack.courseId = targetCourseId;
+        targetCourseTrack.contentTracks.add(contentTrack);
+        contentTracksToPersistByUid[contentTrack.uid] = contentTrack;
+      }
+    }
+
+    if (resolvedModules.isEmpty) return [];
+
+    final movedContentTracks = contentTracksToPersistByUid.values.toList();
+    final now = DateTime.now();
+
+    await isar.writeTxn(() async {
+      await isar.modules.putAll(resolvedModules);
+      if (movedContentTracks.isNotEmpty) {
+        await isar.contentTracks.putAll(movedContentTracks);
+      }
+
+      for (final sourceCourse in sourceCoursesByUid.values) {
+        await sourceCourse.modules.save();
+        await isar.courses.put(sourceCourse.copyWith(lastModified: now));
+      }
+
+      await targetCourse.modules.save();
+      await isar.courses.put(targetCourse.copyWith(lastModified: now));
+
+      for (final sourceCourseTrack in sourceCourseTracksByUid.values) {
+        final newProgress = sourceCourseTrack.contentTracks.isNotEmpty
+            ? ContentTrackRepo.computeProgressForMultiple(sourceCourseTrack.contentTracks)
+            : 0.0;
+        await sourceCourseTrack.contentTracks.save();
+        await isar.courseTracks.put(sourceCourseTrack.copyWith(progress: newProgress));
+      }
+
+      final targetProgress = targetCourseTrack.contentTracks.isNotEmpty
+          ? ContentTrackRepo.computeProgressForMultiple(targetCourseTrack.contentTracks)
+          : 0.0;
+      await targetCourseTrack.contentTracks.save();
+      await isar.courseTracks.put(targetCourseTrack.copyWith(progress: targetProgress));
+    });
+
+    return resolvedModules;
+  }
+
   static Future<Module?> getByTitleAndParentId({required String title, required String parentId}) async =>
       await _isar.modules.filter().titleEqualTo(title).parentIdEqualTo(parentId).findFirst();
 

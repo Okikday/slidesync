@@ -1,20 +1,14 @@
-import 'dart:developer';
 import 'dart:math' as math;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:isar_community/isar.dart';
 import 'package:photo_view/photo_view.dart';
 // import 'package:screenshot/screenshot.dart';
 import 'package:slidesync/core/base/mixins/use_value_notifier.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
-import 'package:slidesync/data/repos/course_repo/module_repo.dart';
-import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
-import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
-import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
+import 'package:slidesync/features/study/logic/usecases/content_progress_tracker.dart';
 
 class ImageViewerState with ValueNotifierFactoryMixin {
   // static final ScreenshotController screenshotController = ScreenshotController();
@@ -47,7 +41,7 @@ class ImageViewerState with ValueNotifierFactoryMixin {
 
   Future<void> _initialize() async {
     await Result.tryRunAsync(() async {
-      progressTrack = await _getLastProgressTrack(contentId);
+      progressTrack = await ProgressTracker.getLastTrack(contentId);
       rotationNotifier.value = (await AppHiveData.instance.getData(key: "${contentId}_rotation") as int?) ?? 0;
     });
     controller.rotation = (math.pi / 2) * rotationNotifier.value;
@@ -61,8 +55,10 @@ class ImageViewerState with ValueNotifierFactoryMixin {
     // Mark as fully read if user stayed long enough
     if (_viewStopwatch.elapsed >= readValidityDuration && progressTrack != null) {
       Future.microtask(() async {
-        await _updateProgressTrack(progressTrack!.copyWith(progress: 1.0, lastRead: DateTime.now()));
-        await _updateCourseTrackProgress();
+        progressTrack = await ProgressTracker.saveTrack(
+          progressTrack!.copyWith(progress: 1.0, lastRead: DateTime.now()),
+        );
+        await ProgressTracker.updateCourseTrackProgress(contentId);
       });
     }
 
@@ -94,67 +90,4 @@ class ImageViewerState with ValueNotifierFactoryMixin {
   // ============================================================================
   // PRIVATE METHODS
   // ============================================================================
-
-  Future<ContentTrack?> _getLastProgressTrack(String contentId) async {
-    final content = await ModuleContentRepo.getByUid(contentId);
-    if (content == null) return null;
-
-    final ptm = await (ContentTrackRepo.isar).contentTracks.where().uidEqualTo(contentId).findFirst();
-
-    if (ptm == null) {
-      return await _createProgressTrackModel(content);
-    } else {
-      return await _updateProgressTrack(
-        ptm.copyWith(lastRead: DateTime.now(), thumbnail: content.metadata?.thumbnail ?? ptm.thumbnail),
-      );
-    }
-  }
-
-  Future<ContentTrack?> _createProgressTrackModel(ModuleContent content) async {
-    log("Creating progress track model for image");
-    final result = await Result.tryRunAsync<ContentTrack?>(() async {
-      final courseId = (await ModuleRepo.getByUid(content.parentId))?.parentId;
-      if (courseId == null) return null;
-
-      final parentId = (await CourseTrackRepo.getByUid(courseId))?.uid;
-      if (parentId == null) return null;
-
-      final ContentTrack newPtm = ContentTrack.create(
-        uid: content.uid,
-        courseId: parentId,
-        title: content.title,
-        type: content.type,
-        description: content.description,
-        progress: 0.0,
-        pages: const [],
-        lastRead: DateTime.now(),
-        thumbnail: content.metadata?.thumbnail,
-      );
-
-      return await ContentTrackRepo.isarData.getById(await ContentTrackRepo.isarData.store(newPtm));
-    });
-    return result.data;
-  }
-
-  Future<ContentTrack> _updateProgressTrack(ContentTrack ptm) async {
-    log("Updating progress track model for image");
-    progressTrack = await ContentTrackRepo.isarData.getById(await ContentTrackRepo.isarData.store(ptm)) ?? ptm;
-    return progressTrack!;
-  }
-
-  Future<void> _updateCourseTrackProgress() async {
-    if (progressTrack == null) return;
-
-    final courseTrack = await CourseTrackRepo.getByUid(progressTrack!.courseId);
-    if (courseTrack == null) return;
-
-    await courseTrack.contentTracks.load();
-    final contentsLength = courseTrack.contentTracks.length;
-    if (contentsLength == 0) return;
-
-    final totalProgress = courseTrack.contentTracks.fold<double>(0.0, (sum, track) => sum + (track.progress));
-
-    final newProgress = totalProgress / contentsLength;
-    await CourseTrackRepo.isarData.store(courseTrack.copyWith(progress: newProgress));
-  }
 }

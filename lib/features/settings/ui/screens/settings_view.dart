@@ -15,9 +15,11 @@ import 'package:slidesync/core/utils/storage_utils/clean_up_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/auth/logic/services/user_auth/firebase_google_auth.dart';
 import 'package:slidesync/features/browse/logic/src/contents/add_content/store_contents.dart';
+import 'package:slidesync/features/share/ui/screens/export/course_export_manager.dart';
 import 'package:slidesync/features/settings/logic/models/settings_model.dart';
 import 'package:slidesync/features/settings/providers/settings_provider.dart';
 import 'package:slidesync/features/settings/ui/components/settings_appearance_dialog.dart';
+import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/theme/theme.dart';
@@ -178,6 +180,84 @@ class SettingsView extends ConsumerWidget {
                   //   iconData: Icons.view_agenda,
                   //   content: "Allows to view more than one content by overlaying the others maxing out at 3",
                   // ),
+                  SettingsCard(
+                    title: "Clear recent reads",
+                    iconData: Iconsax.clock,
+                    content: "Remove all content from your recent reads list.",
+                    trailing: CustomElevatedButton(
+                      label: "Clear",
+                      backgroundColor: theme.altBackgroundPrimary,
+                      textColor: theme.supportingText,
+                      textSize: 14,
+                      onClick: () {
+                        UiUtils.showCustomDialog(
+                          context,
+                          child: ConfirmDeletionDialog(
+                            content: "This will remove all recent reads from the app. Continue?",
+                            onPop: () {
+                              context.pop();
+                            },
+                            onCancel: () {
+                              context.pop();
+                            },
+                            onDelete: () async {
+                              context.pop();
+                              final clearedCount = await ContentTrackRepo.clearAllLastRead();
+                              GlobalNav.withContext(
+                                (context) => UiUtils.showFlushBar(
+                                  context,
+                                  msg: clearedCount == 0
+                                      ? "No recent reads to clear."
+                                      : "Cleared $clearedCount recent reads.",
+                                ),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  ConstantSizing.columnSpacingMedium,
+
+                  SettingsCard(
+                    title: "Export all courses",
+                    iconData: Iconsax.export,
+                    content: "Export all courses and their contents to a selected folder.",
+                    trailing: CustomElevatedButton(
+                      label: "Export",
+                      backgroundColor: theme.altBackgroundPrimary,
+                      textColor: theme.supportingText,
+                      textSize: 14,
+                      onClick: () {
+                        UiUtils.showCustomDialog(
+                          context,
+                          child: ConfirmDeletionDialog(
+                            content: 'Export all courses to a chosen folder. Continue?',
+                            onPop: () {
+                              context.pop();
+                            },
+                            onCancel: () {
+                              context.pop();
+                            },
+                            onDelete: () async {
+                              context.pop();
+                              UiUtils.showLoadingDialog(context, canPop: false, message: 'Exporting courses...');
+                              if (DeviceUtils.isDesktop()) {
+                                await CourseFolderExportManager.exportAllCoursesWindows(context);
+                              } else {
+                                await CourseFolderExportManager.exportAllCourses(context);
+                              }
+                              GlobalNav.popGlobal();
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  ConstantSizing.columnSpacingMedium,
+
                   SettingsCard(
                     title: "Clear App's cache",
                     iconData: Icons.view_agenda,

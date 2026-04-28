@@ -2,17 +2,12 @@ import 'dart:collection';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
-import 'package:isar_community/isar.dart';
 import 'package:pdfrx/pdfrx.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:slidesync/core/base/mixins/use_value_notifier.dart';
 import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
-import 'package:slidesync/data/repos/course_repo/module_repo.dart';
-import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
-import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
-import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
+import 'package:slidesync/features/study/logic/usecases/content_progress_tracker.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 
 class PdfDocViewerState with ValueNotifierFactoryMixin {
@@ -56,7 +51,7 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
     controller.addListener(_posListener);
 
     // Async initialization
-    progressTrack = await _getLastProgressTrack(contentId);
+    progressTrack = await ProgressTracker.getLastTrack(contentId, defaultPages: const ["1"]);
     {
       if (progressTrack != null) {
         initialPage = progressTrack!.pages.isNotEmpty ? (int.tryParse(progressTrack!.pages.last) ?? 1) : 1;
@@ -75,7 +70,7 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
     controller.removeListener(_monitorPageListener);
     _pageStayStopwatch.stop();
     disposeNotifiers();
-    Future.microtask(() => _updateCourseTrackProgress(progressTrack));
+    Future.microtask(() => ProgressTracker.updateCourseTrackProgress(contentId));
   }
 
   // ============================================================================
@@ -99,76 +94,6 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
     final newValue = double.parse(controller.value.row1[3].abs().clamp(0.0, double.infinity).toStringAsFixed(2));
 
     ref.read(scrollOffsetProvider.notifier).update((cb) => newValue);
-  }
-
-  Future<ContentTrack?> _getLastProgressTrack(String contentId) async {
-    final content = await ModuleContentRepo.getByUid(contentId);
-    if (content == null) return null;
-
-    final ptm = await (ContentTrackRepo.isar).contentTracks.where().uidEqualTo(contentId).findFirst();
-
-    if (ptm == null) {
-      return await _createProgressTrackModel(content);
-    } else {
-      return await _updateProgressTrack(
-        ptm.copyWith(
-          title: content.title,
-          description: content.description,
-          lastRead: DateTime.now(),
-          pages: ptm.pages.isEmpty ? const ["1"] : ptm.pages,
-          thumbnail: content.metadata?.thumbnail ?? ptm.thumbnail,
-        ),
-      );
-    }
-  }
-
-  Future<ContentTrack?> _createProgressTrackModel(ModuleContent content) async {
-    log("Creating progress track model");
-    final result = await Result.tryRunAsync<ContentTrack?>(() async {
-      final courseId = (await ModuleRepo.getByUid(content.parentId))?.parentId;
-      if (courseId == null) return null;
-
-      final parentId = (await CourseTrackRepo.getByUid(courseId))?.uid;
-      if (parentId == null) return null;
-
-      final ContentTrack newPtm = ContentTrack.create(
-        uid: content.uid,
-        courseId: parentId,
-        title: content.title,
-        type: content.type,
-        description: content.description,
-        progress: 0.0,
-        pages: const ["1"],
-        lastRead: DateTime.now(),
-        thumbnail: content.metadata?.thumbnail,
-      );
-
-      return await ContentTrackRepo.isarData.getById(await ContentTrackRepo.isarData.store(newPtm));
-    });
-    return result.data;
-  }
-
-  Future<ContentTrack> _updateProgressTrack(ContentTrack ptm) async {
-    log("Updating progress track model");
-    progressTrack = await ContentTrackRepo.isarData.getById(await ContentTrackRepo.isarData.store(ptm)) ?? ptm;
-    return progressTrack!;
-  }
-
-  Future<void> _updateCourseTrackProgress(ContentTrack? oldPtm) async {
-    final ptm = await _getLastProgressTrack(contentId);
-    if (ptm == null) return;
-
-    final courseTrack = await CourseTrackRepo.getByUid(ptm.courseId);
-    if (courseTrack == null) return;
-
-    await courseTrack.contentTracks.load();
-    final contentsLength = courseTrack.contentTracks.length;
-    if (contentsLength == 0) return;
-
-    final totalProgress = courseTrack.contentTracks.fold<double>(0.0, (sum, track) => sum + (track.progress));
-
-    final newProgress = totalProgress / contentsLength;
-    await CourseTrackRepo.isarData.store(courseTrack.copyWith(progress: newProgress));
   }
 
   void _monitorPageListener() async {
@@ -213,7 +138,7 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
                 .toList();
         final totalPageCount = controller.pageCount;
 
-        await _updateProgressTrack(
+        progressTrack = await ProgressTracker.saveTrack(
           progressTrack!.copyWith(
             pages: newPages,
             progress: newPages.length / totalPageCount,
@@ -231,7 +156,8 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
         _pageStayStopwatch.stop();
         isUpdatingProgressTrack = true;
 
-        final currentProgressTrack = progressTrack ?? await _getLastProgressTrack(contentId);
+        final currentProgressTrack =
+            progressTrack ?? await ProgressTracker.getLastTrack(contentId, defaultPages: const ["1"]);
         if (currentProgressTrack == null) {
           isUpdatingProgressTrack = false;
           _pageStayStopwatch.start();
@@ -241,7 +167,7 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
         final LinkedHashSet<String> pagesToAdd = LinkedHashSet<String>.from(currentProgressTrack.pages)
           ..remove(pageNumber.toString())
           ..add(pageNumber.toString());
-        await _updateProgressTrack(
+        progressTrack = await ProgressTracker.saveTrack(
           currentProgressTrack.copyWith(
             lastRead: DateTime.now(),
             pages: currentProgressTrack.pages.isEmpty ? const ["1"] : pagesToAdd.toList(),

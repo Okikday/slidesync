@@ -51,12 +51,20 @@ class RecentDialogSelectionOptions extends ConsumerWidget with RecentDialogActio
 
         divider,
 
-        BuildPlainActionButton(
-          title: "Share",
-          icon: Icon(HugeIconsSolid.share03, size: 24, color: theme.supportingText),
-          textStyle: TextStyle(fontSize: 15, color: theme.onBackground),
-          onTap: () => onShare(context, contentTrack.uid),
-        ),
+        if (contentTrack.type != ModuleContentType.link)
+          BuildPlainActionButton(
+            title: "Share",
+            icon: Icon(HugeIconsSolid.share03, size: 24, color: theme.supportingText),
+            textStyle: TextStyle(fontSize: 15, color: theme.onBackground),
+            onTap: () => onShare(context, contentTrack.uid),
+          )
+        else
+          BuildPlainActionButton(
+            title: "Copy link",
+            icon: Icon(HugeIconsSolid.copyLink, size: 24, color: theme.supportingText),
+            textStyle: TextStyle(fontSize: 15, color: theme.onBackground),
+            onTap: () => onCopy(context, contentTrack.uid),
+          ),
 
         divider,
 

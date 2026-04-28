@@ -51,7 +51,9 @@ Future<void> _initialize() async {
 
   if (!kIsWeb) await IsarData.initializeDefault();
   pdfrxFlutterInitialize();
-  await _firstAppLaunch();
-  await _appLaunchRoutine();
-  await _initDesktop();
+  await _initIfDesktop();
+  Result.tryRunAsync(() => Future.microtask(() => Future.wait([_firstAppLaunch(), _appLaunchRoutine()])));
+  // await _firstAppLaunch();
+  // await _appLaunchRoutine();
+  // await _initDesktop();
 }

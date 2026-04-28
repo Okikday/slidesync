@@ -8,6 +8,9 @@ import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/widgets/layout/app_padding.dart';
+import 'course_folder_import_manager.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/result.dart';
@@ -51,17 +54,7 @@ class FolderNode {
   }
 }
 
-/// File type filter options
-class FileTypeFilter {
-  final String extension;
-  final String displayName;
-  final IconData icon;
-  bool isEnabled;
-
-  FileTypeFilter({required this.extension, required this.displayName, required this.icon, this.isEnabled = false});
-}
-
-/// Configuration for folder import
+/// Configuration for folder import on desktop.
 class FolderImportConfig {
   final String baseFolderPath;
   final bool useAsBaseFolder;
@@ -74,34 +67,10 @@ class FolderImportConfig {
     required this.baseFolderPath,
     this.useAsBaseFolder = true,
     this.selectedSubfolderPath,
-    this.includeSubfolders = false,
+    this.includeSubfolders = true,
     required this.fileFilters,
     this.maxContents = 1000,
   });
-}
-
-/// Import progress state
-class ImportProgress {
-  final String message;
-  final double? progress;
-  final int? currentCollection;
-  final int? totalCollections;
-  final String? currentCollectionName;
-
-  ImportProgress({
-    required this.message,
-    this.progress,
-    this.currentCollection,
-    this.totalCollections,
-    this.currentCollectionName,
-  });
-
-  String get displayMessage {
-    if (currentCollection != null && totalCollections != null) {
-      return 'Processing collection $currentCollection of $totalCollections\n${currentCollectionName ?? ""}\n$message';
-    }
-    return message;
-  }
 }
 
 /// Main class for managing folder imports on Windows
@@ -110,32 +79,7 @@ class CourseFolderImportManagerWindows {
 
   /// Default file type filters (NO audio/video)
   static List<FileTypeFilter> getDefaultFileFilters() {
-    return [
-      // Documents
-      FileTypeFilter(extension: '.pdf', displayName: 'PDF Documents', icon: Icons.picture_as_pdf, isEnabled: true),
-      FileTypeFilter(extension: '.docx', displayName: 'Word Documents', icon: Icons.description, isEnabled: false),
-      FileTypeFilter(extension: '.doc', displayName: 'Word Documents (Old)', icon: Icons.description, isEnabled: false),
-      FileTypeFilter(extension: '.pptx', displayName: 'PowerPoint', icon: Icons.slideshow, isEnabled: false),
-      FileTypeFilter(extension: '.ppt', displayName: 'PowerPoint (Old)', icon: Icons.slideshow, isEnabled: false),
-      FileTypeFilter(extension: '.xlsx', displayName: 'Excel Spreadsheets', icon: Icons.table_chart, isEnabled: false),
-      FileTypeFilter(extension: '.xls', displayName: 'Excel (Old)', icon: Icons.table_chart, isEnabled: false),
-      FileTypeFilter(extension: '.txt', displayName: 'Text Files', icon: Icons.text_snippet, isEnabled: false),
-      FileTypeFilter(extension: '.rtf', displayName: 'Rich Text Format', icon: Icons.text_fields, isEnabled: false),
-      FileTypeFilter(extension: '.odt', displayName: 'OpenDocument Text', icon: Icons.article, isEnabled: false),
-
-      // Images
-      FileTypeFilter(extension: '.jpg', displayName: 'JPEG Images', icon: Icons.image, isEnabled: true),
-      FileTypeFilter(extension: '.jpeg', displayName: 'JPEG Images', icon: Icons.image, isEnabled: true),
-      FileTypeFilter(extension: '.png', displayName: 'PNG Images', icon: Icons.image, isEnabled: true),
-      FileTypeFilter(extension: '.gif', displayName: 'GIF Images', icon: Icons.gif, isEnabled: true),
-      FileTypeFilter(extension: '.webp', displayName: 'WebP Images', icon: Icons.image, isEnabled: true),
-      FileTypeFilter(extension: '.bmp', displayName: 'Bitmap Images', icon: Icons.image, isEnabled: false),
-      FileTypeFilter(extension: '.svg', displayName: 'SVG Graphics', icon: Icons.brush, isEnabled: false),
-
-      // Archives
-      FileTypeFilter(extension: '.zip', displayName: 'ZIP Archives', icon: Icons.folder_zip, isEnabled: false),
-      FileTypeFilter(extension: '.rar', displayName: 'RAR Archives', icon: Icons.folder_zip, isEnabled: false),
-    ];
+    return CourseFolderImportManagerCore.getDefaultFileFilters();
   }
 
   /// Pick a folder using file_picker
@@ -173,19 +117,15 @@ class CourseFolderImportManagerWindows {
 
         final List<FolderNode> subfolders = [];
         final List<File> files = [];
+        final directories = <Directory>[];
 
-        // Process each item
+        // Split directories and files first so subfolder scans can run in parallel.
         for (final item in contents) {
           try {
             if (item is Directory) {
               final dirName = p.basename(item.path);
               log('   └─ Is Directory: $dirName');
-
-              // Recursively scan subfolder
-              final subfolder = await scanFolder(item.path);
-              if (subfolder.isSuccess && subfolder.data != null) {
-                subfolders.add(subfolder.data!);
-              }
+              directories.add(item);
             } else if (item is File) {
               final fileName = p.basename(item.path);
               log('   └─ Is File: $fileName');
@@ -195,6 +135,15 @@ class CourseFolderImportManagerWindows {
             log('⚠️ Error processing item ${p.basename(item.path)}: $e');
             continue;
           }
+        }
+
+        if (directories.isNotEmpty) {
+          await CourseFolderImportManagerCore.runInBatches<Directory>(directories, 5, (directory) async {
+            final subfolder = await scanFolder(directory.path);
+            if (subfolder.isSuccess && subfolder.data != null) {
+              subfolders.add(subfolder.data!);
+            }
+          });
         }
 
         // Extract folder name from path
@@ -213,34 +162,14 @@ class CourseFolderImportManagerWindows {
 
   /// Get all files from a folder node based on filters
   static List<File> getFilteredFiles(FolderNode node, List<FileTypeFilter> filters, bool includeSubfolders) {
-    final List<File> allFiles = [];
-    final enabledExtensions = filters.where((f) => f.isEnabled).map((f) => f.extension.toLowerCase()).toSet();
-
-    log('🔍 Getting filtered files from ${node.name}. Enabled extensions: $enabledExtensions');
-
-    if (enabledExtensions.isEmpty) {
-      log('⚠️ No file type filters enabled');
-      return allFiles;
-    }
-
-    // Add files from current folder
-    for (final file in node.files) {
-      final ext = p.extension(file.path).toLowerCase();
-      if (enabledExtensions.contains(ext)) {
-        allFiles.add(file);
-      }
-    }
-
-    log('📄 Found ${allFiles.length} matching files in ${node.name}');
-
-    // Add files from subfolders if enabled
-    if (includeSubfolders) {
-      for (final subfolder in node.subfolders) {
-        allFiles.addAll(getFilteredFiles(subfolder, filters, true));
-      }
-    }
-
-    return allFiles;
+    return CourseFolderImportManagerCore.getFilteredFiles<FolderNode, File>(
+      folder: node,
+      filters: filters,
+      includeSubfolders: includeSubfolders,
+      getFiles: (folder) => folder.files,
+      getSubfolders: (folder) => folder.subfolders,
+      getFileExtension: (file) => p.extension(file.path),
+    );
   }
 
   /// Calculate what will actually be imported
@@ -249,46 +178,15 @@ class CourseFolderImportManagerWindows {
     List<FileTypeFilter> filters,
     bool includeSubfolders,
   ) {
-    final Map<String, List<File>> collections = {};
-    final hasSubfolders = targetFolder.subfolders.isNotEmpty;
-
-    log('📊 Calculating import structure for ${targetFolder.name}');
-    log('   Has subfolders: $hasSubfolders, Include subfolders: $includeSubfolders');
-
-    if (hasSubfolders) {
-      // Create collection for each subfolder
-      for (final subfolder in targetFolder.subfolders) {
-        final files = getFilteredFiles(subfolder, filters, includeSubfolders);
-        if (files.isNotEmpty) {
-          collections[subfolder.name] = files;
-          log('   Collection "${subfolder.name}": ${files.length} files');
-        }
-      }
-
-      // Add root files as "Base" collection if they exist
-      final rootFiles = targetFolder.files.where((file) {
-        final ext = p.extension(file.path).toLowerCase();
-        final enabledExtensions = filters.where((f) => f.isEnabled).map((f) => f.extension.toLowerCase()).toSet();
-        return enabledExtensions.contains(ext);
-      }).toList();
-
-      if (rootFiles.isNotEmpty) {
-        collections['Base'] = rootFiles;
-        log('   Collection "Base": ${rootFiles.length} files');
-      }
-    } else {
-      // No subfolders, create single "Materials" collection
-      final files = getFilteredFiles(targetFolder, filters, false);
-      if (files.isNotEmpty) {
-        collections['Materials'] = files;
-        log('   Collection "Materials": ${files.length} files');
-      }
-    }
-
-    final totalFiles = collections.values.fold<int>(0, (sum, files) => sum + files.length);
-    log('✅ Total structure: ${collections.length} collections, $totalFiles files');
-
-    return collections;
+    return CourseFolderImportManagerCore.calculateImportStructure<FolderNode, File>(
+      targetFolder: targetFolder,
+      filters: filters,
+      includeSubfolders: includeSubfolders,
+      getFiles: (folder) => folder.files,
+      getSubfolders: (folder) => folder.subfolders,
+      getFolderName: (folder) => folder.name,
+      getFileExtension: (file) => p.extension(file.path),
+    );
   }
 
   /// Show the folder import screen
@@ -350,6 +248,8 @@ class CourseFolderImportManagerWindows {
       final folderNode = scanResult.data!;
       log('📂 Folder scanned: ${folderNode.name}');
 
+      final enabledExtensions = CourseFolderImportManagerCore.getEnabledExtensions(config.fileFilters);
+
       progressNotifier.value = ImportProgress(message: 'Creating course...');
 
       // Determine if we have subfolders or just files
@@ -371,10 +271,6 @@ class CourseFolderImportManagerWindows {
       // Get filtered root files
       final rootFiles = folderNode.files.where((file) {
         final ext = p.extension(file.path).toLowerCase();
-        final enabledExtensions = config.fileFilters
-            .where((f) => f.isEnabled)
-            .map((f) => f.extension.toLowerCase())
-            .toSet();
         return enabledExtensions.contains(ext);
       }).toList();
 
@@ -551,9 +447,12 @@ class CourseFolderImportManagerWindows {
 
     final limitedFiles = files.take(kMaxContents).toList();
     final Directory tempDir = await getApplicationCacheDirectory();
-    final List<String> copiedFilePaths = [];
-    final List<String> uuids = [];
-    final List<String> uuidFileNames = [];
+    final List<String?> copiedFilePaths = List<String?>.filled(limitedFiles.length, null);
+    final List<String?> uuids = List<String?>.filled(limitedFiles.length, null);
+    final List<String?> uuidFileNames = List<String?>.filled(limitedFiles.length, null);
+    final indexedFiles = [for (int i = 0; i < limitedFiles.length; i++) (index: i, file: limitedFiles[i])];
+    int processedCount = 0;
+    DateTime? lastProgressUpdate;
 
     try {
       progressNotifier.value = ImportProgress(
@@ -563,41 +462,47 @@ class CourseFolderImportManagerWindows {
         currentCollectionName: collectionName,
       );
 
-      for (int i = 0; i < limitedFiles.length; i++) {
-        final file = limitedFiles[i];
+      await CourseFolderImportManagerCore.runInBatches<({int index, File file})>(indexedFiles, 4, (entry) async {
+        final file = entry.file;
 
         try {
-          // Generate UUID and keep original file name
           final uuid = const Uuid().v4();
           final originalFileName = p.basename(file.path);
-
-          uuids.add(uuid);
-          uuidFileNames.add(originalFileName);
-
-          // Copy to temp directory with original filename
           final tempFile = File(p.join(tempDir.path, originalFileName));
+
           await file.copy(tempFile.path);
 
-          copiedFilePaths.add(tempFile.path);
+          uuids[entry.index] = uuid;
+          uuidFileNames[entry.index] = originalFileName;
+          copiedFilePaths[entry.index] = tempFile.path;
 
-          if (i % 5 == 0) {
+          processedCount++;
+          if (CourseFolderImportManagerCore.shouldThrottleProgressUpdate(
+            processedCount: processedCount,
+            totalCount: limitedFiles.length,
+            lastUpdate: lastProgressUpdate,
+          )) {
+            lastProgressUpdate = DateTime.now();
             progressNotifier.value = ImportProgress(
-              message: 'Processing files... ${i + 1}/${limitedFiles.length}',
+              message: 'Processing files... $processedCount/${limitedFiles.length}',
               currentCollection: currentCollection,
               totalCollections: totalCollections,
               currentCollectionName: collectionName,
             );
           }
 
-          log('✅ Copied file ${i + 1}/${limitedFiles.length}: $originalFileName');
+          log('✅ Copied file ${entry.index + 1}/${limitedFiles.length}: $originalFileName');
         } catch (e) {
+          processedCount++;
           log('❌ Failed to copy file ${p.basename(file.path)}: $e');
-          // Continue with next file instead of failing entire import
-          continue;
         }
-      }
+      });
 
-      if (copiedFilePaths.isEmpty) {
+      final successfulFilePaths = copiedFilePaths.whereType<String>().toList();
+      final successfulUuids = uuids.whereType<String>().toList();
+      final successfulFileNames = uuidFileNames.whereType<String>().toList();
+
+      if (successfulFilePaths.isEmpty) {
         throw Exception('No files could be copied from the selected folder');
       }
 
@@ -606,7 +511,7 @@ class CourseFolderImportManagerWindows {
         await AppHiveData.instance.setData(
           key: HiveDataPathKey.contentsAddingProgressList.name,
           value: <String, dynamic>{
-            for (int i = 0; i < uuidFileNames.length; i++) uuidFileNames[i]: copiedFilePaths[i],
+            for (int i = 0; i < successfulFileNames.length; i++) successfulFileNames[i]: successfulFilePaths[i],
             'collectionId': collection.uid,
           },
         );
@@ -615,8 +520,8 @@ class CourseFolderImportManagerWindows {
       final args = StoreContentArgs(
         token: rootIsolateToken,
         collectionId: collection.uid,
-        filePaths: copiedFilePaths,
-        uuids: uuids,
+        filePaths: successfulFilePaths,
+        uuids: successfulUuids,
         deleteCache: true,
       ).toMap();
 
@@ -667,7 +572,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
   void initState() {
     super.initState();
     useAsBaseFolder = true;
-    includeSubfolders = false;
+    includeSubfolders = true;
     fileFilters = CourseFolderImportManagerWindows.getDefaultFileFilters();
     log('Import screen initialized');
   }
@@ -679,79 +584,73 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
     return AppScaffold(
       title: "",
       backgroundColor: theme.background,
-      appBar: AppBar(
-        backgroundColor: theme.surface,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.close, color: theme.onSurface),
-          onPressed: () => context.pop(),
-        ),
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CustomText('Import Course from Folder', fontSize: 18, fontWeight: FontWeight.bold, color: theme.onSurface),
-            CustomText('Step ${_currentStep + 1} of 3', fontSize: 12, color: theme.supportingText),
-          ],
+      appBar: AppBarContainer(
+        child: AppBarContainerChild(
+          context.isDarkMode,
+          title: "Import Course from Folder",
+          subtitle: 'Step ${_currentStep + 1} of 3',
         ),
       ),
-      body: Theme(
-        data: Theme.of(context).copyWith(
-          colorScheme: ColorScheme.fromSeed(seedColor: theme.primary, brightness: theme.brightness),
-        ),
-        child: Stepper(
-          currentStep: _currentStep,
-          onStepContinue: _onStepContinue,
-          onStepCancel: _currentStep > 0 ? () => setState(() => _currentStep--) : null,
-          controlsBuilder: (context, details) {
-            return Padding(
-              padding: const EdgeInsets.only(top: 16),
-              child: Row(
-                children: [
-                  if (_currentStep < 2)
-                    ElevatedButton(
-                      onPressed: details.onStepContinue,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.primary,
-                        foregroundColor: theme.onPrimary,
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                      ),
-                      child: const Text('Continue'),
-                    ),
-                  if (_currentStep > 0) ...[
-                    const SizedBox(width: 12),
-                    TextButton(
-                      onPressed: details.onStepCancel,
-                      child: Text('Back', style: TextStyle(color: theme.supportingText)),
-                    ),
-                  ],
-                ],
-              ),
-            );
-          },
-          steps: [
-            Step(
-              title: Text('Select Base Folder', style: TextStyle(color: theme.onSurface)),
-              content: _buildBaseFolderStep(),
-              isActive: _currentStep >= 0,
-              state: _currentStep > 0 ? StepState.complete : StepState.indexed,
+      body: SingleChildScrollView(
+        child: TopPadding(
+          withHeight: kToolbarHeight,
+          child: BottomPadding(
+            child: Stepper(
+              currentStep: _currentStep,
+              onStepContinue: _onStepContinue,
+              onStepCancel: _currentStep > 0 ? () => setState(() => _currentStep--) : null,
+              controlsBuilder: (context, details) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Row(
+                    children: [
+                      if (_currentStep < 2)
+                        ElevatedButton(
+                          onPressed: details.onStepContinue,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: theme.primary,
+                            foregroundColor: theme.onPrimary,
+                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                          ),
+                          child: const Text('Continue'),
+                        ),
+                      if (_currentStep > 0) ...[
+                        const SizedBox(width: 12),
+                        TextButton(
+                          onPressed: details.onStepCancel,
+                          child: Text('Back', style: TextStyle(color: theme.supportingText)),
+                        ),
+                      ],
+                    ],
+                  ),
+                );
+              },
+              steps: [
+                Step(
+                  title: Text('Select Base Folder', style: TextStyle(color: theme.onSurface)),
+                  content: _buildBaseFolderStep(),
+                  isActive: _currentStep >= 0,
+                  state: _currentStep > 0 ? StepState.complete : StepState.indexed,
+                ),
+                Step(
+                  title: Text('Configure Options', style: TextStyle(color: theme.onSurface)),
+                  content: _buildOptionsStep(),
+                  isActive: _currentStep >= 1,
+                  state: _currentStep > 1
+                      ? StepState.complete
+                      : _currentStep == 1
+                      ? StepState.indexed
+                      : StepState.disabled,
+                ),
+                Step(
+                  title: Text('Review & Import', style: TextStyle(color: theme.onSurface)),
+                  content: _buildPreviewStep(),
+                  isActive: _currentStep >= 2,
+                  state: _currentStep == 2 ? StepState.indexed : StepState.disabled,
+                ),
+              ],
             ),
-            Step(
-              title: Text('Configure Options', style: TextStyle(color: theme.onSurface)),
-              content: _buildOptionsStep(),
-              isActive: _currentStep >= 1,
-              state: _currentStep > 1
-                  ? StepState.complete
-                  : _currentStep == 1
-                  ? StepState.indexed
-                  : StepState.disabled,
-            ),
-            Step(
-              title: Text('Review & Import', style: TextStyle(color: theme.onSurface)),
-              content: _buildPreviewStep(),
-              isActive: _currentStep >= 2,
-              state: _currentStep == 2 ? StepState.indexed : StepState.disabled,
-            ),
-          ],
+          ),
         ),
       ),
     );

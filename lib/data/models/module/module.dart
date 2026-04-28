@@ -57,7 +57,7 @@ class Module with ModuleMappable {
       description: description ?? '',
       createdAt: createdAt ?? now,
       lastModified: now,
-      metadata: metadata ?? ModuleMetadata.empty(),
+      metadata: metadata ?? ModuleMetadata.create(),
     );
   }
 

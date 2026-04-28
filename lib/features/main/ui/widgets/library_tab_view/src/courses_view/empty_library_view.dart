@@ -49,19 +49,19 @@ class EmptyLibraryView extends ConsumerWidget {
             ),
           ),
 
-          ConstantSizing.columnSpacingMedium,
+          // ConstantSizing.columnSpacingMedium,
 
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: CustomElevatedButton(
-              backgroundColor: theme.primaryColor,
-              borderRadius: 12,
-              pixelHeight: 44,
-              label: "Explore Courses",
-              textSize: 15,
-              textColor: theme.onPrimary,
-            ),
-          ),
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          //   child: CustomElevatedButton(
+          //     backgroundColor: theme.primaryColor,
+          //     borderRadius: 12,
+          //     pixelHeight: 44,
+          //     label: "Explore Courses",
+          //     textSize: 15,
+          //     textColor: theme.onPrimary,
+          //   ),
+          // ),
         ],
       ),
     );
