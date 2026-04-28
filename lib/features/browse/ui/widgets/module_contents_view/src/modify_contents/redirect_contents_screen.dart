@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:developer';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
@@ -6,25 +5,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:isar_community/isar.dart';
+import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
+import 'package:slidesync/core/constants/src/enums/enums.dart';
+import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
+import 'package:slidesync/features/browse/ui/screens/course_view.dart';
 import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
-import 'package:slidesync/features/browse/ui/widgets/module_contents_view/src/modify_contents/edit_course_tile.dart';
-import 'package:slidesync/features/browse/ui/widgets/module_contents_view/src/modify_contents/empty_courses_view.dart';
-import 'package:slidesync/features/browse/ui/widgets/module/collection_card.dart';
 import 'package:slidesync/features/browse/logic/src/contents/add_content/add_contents_uc.dart';
 import 'package:slidesync/features/browse/ui/widgets/course/shared/create_collection_bottom_sheet.dart';
+import 'package:slidesync/features/browse/ui/widgets/course/course_view/course_view_fab.dart';
+import 'package:slidesync/features/browse/ui/widgets/module/modules_list/modules_list_with_search_scroll_view.dart';
+import 'package:slidesync/features/main/providers/main_provider.dart';
+import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/course_card.dart';
+import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/empty_library_view.dart';
 import 'package:slidesync/routes/routes.dart';
-import 'package:slidesync/data/models/course/course.dart';
-import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/widgets/app_bar/app_bar_container_child.dart';
 import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
@@ -46,261 +48,84 @@ class RedirectContentsScreen extends ConsumerStatefulWidget {
 
   /// For storing new files - Map of file path to UUID
   final List<String>? filePaths;
-
-  /// Determines the mode
-  final ContentSheetMode mode;
-
-  const RedirectContentsScreen.move({super.key, required List<ModuleContent> contents})
+  Module? _selectedCourse;
     : contentsToMove = contents,
       contentsToCopy = null,
       filePaths = null,
       mode = ContentSheetMode.move;
-
-  const RedirectContentsScreen.copy({super.key, required List<ModuleContent> contents})
-    : contentsToCopy = contents,
-      contentsToMove = null,
-      filePaths = null,
-      mode = ContentSheetMode.copy;
-
-  const RedirectContentsScreen.store({super.key, required List<String> files})
-    : filePaths = files,
-      contentsToMove = null,
-      contentsToCopy = null,
-      mode = ContentSheetMode.store;
-
-  @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _RedirectContentsScreenState();
-}
-
-class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen> {
-  Timer? _searchDebounceTimer;
   late final ValueNotifier<List<Course>?> coursesNotifier;
   late final ValueNotifier<List<Module>?> collectionsNotifier;
   late final ValueNotifier<String> searchQueryNotifier;
   bool isLoadingCourses = true;
 
+    final coursePagination = MainProvider.library.link(ref).coursesPagination.link(ref);
+    final isSelectingCourse = _selectedCourse == null;
   @override
-  void initState() {
-    super.initState();
-    coursesNotifier = ValueNotifier(null);
+      ContentSheetMode.move || ContentSheetMode.copy || ContentSheetMode.store =>
+        isSelectingCourse ? 'Select a course' : 'Select a collection',
     collectionsNotifier = ValueNotifier(null);
     searchQueryNotifier = ValueNotifier('');
     _loadInitialCourses();
   }
 
-  Future<void> _loadInitialCourses() async {
-    final courses = await CourseRepo.getAllCourses();
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _handleBackPressed(context);
+      },
+      onBackButtonPressed: () => _handleBackPressed(context),
     coursesNotifier.value = courses;
-    isLoadingCourses = false;
-  }
-
-  @override
-  void dispose() {
-    coursesNotifier.dispose();
-    collectionsNotifier.dispose();
-    searchQueryNotifier.dispose();
-    _searchDebounceTimer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = ref;
-    final title = switch (widget.mode) {
-      ContentSheetMode.move => 'Move contents',
-      ContentSheetMode.copy => 'Copy contents',
-      ContentSheetMode.store => 'Save file',
-    };
-
-    return AppScaffold(
-      title: "",
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) => Result.tryRun(() => context.pop(false)),
-      onBackButtonPressed: () => Result.tryRun(() => context.pop(false)),
-      extendBodyBehindAppBar: true,
-      appBar: AppBarContainer(child: AppBarContainerChild(context.isDarkMode, title: title)),
-      body: SmoothCustomScrollView(
-        slivers: [
-          const SliverToBoxAdapter(child: TopPadding(withHeight: kToolbarHeight + 4)),
-          PinnedHeaderSliver(
-            child: ColoredBox(
-              color: theme.background,
-              child: Padding(
-                padding: const EdgeInsets.only(left: 16, top: 12),
-                child: ValueListenableBuilder(
-                  valueListenable: collectionsNotifier,
-                  builder: (context, collections, child) {
-                    return CustomText(
-                      collections == null ? "Select a course.." : "Select a collection",
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: ref.theme.onBackground,
-                    );
-                  },
+      appBar: AppBarContainer(
+        child: AppBarContainerChild(
+          context.isDarkMode,
+          title: title,
+          onBackButtonClicked: isSelectingCourse ? () => _handleBackPressed(context) : () => _clearSelectedCourse(),
+        ),
+      ),
+      floatingActionButton: isSelectingCourse || _selectedCourse == null
+          ? null
+          : CourseViewFAB(courseId: _selectedCourse!.uid),
+      body: AnimatedSwitcher(
+        duration: Durations.medium3,
+        switchInCurve: Curves.easeInOut,
+        switchOutCurve: Curves.easeInOut,
+        transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
+        layoutBuilder: (currentChild, previousChildren) => Stack(
+          fit: StackFit.expand,
+          children: <Widget>[...previousChildren, if (currentChild != null) currentChild],
+        ),
+        child: KeyedSubtree(
+          key: ValueKey(_selectedCourse?.uid ?? 'courses'),
+          child: isSelectingCourse
+              ? _CourseSelectionView(
+                  coursePagination: coursePagination,
+                  onTapCourse: _selectCourse,
+                )
+              : _ModuleSelectionView(
+                  course: _selectedCourse!,
+                  mode: widget.mode,
+                  onTapModule: _handleCollectionSelection,
                 ),
-              ),
-            ),
-          ),
-          SliverToBoxAdapter(
-            child: ColoredBox(color: theme.background, child: ConstantSizing.columnSpacingMedium),
-          ),
-          PinnedHeaderSliver(
-            child: ColoredBox(
-              color: theme.background,
-              child: ValueListenableBuilder(
-                valueListenable: collectionsNotifier,
-                builder: (context, collections, child) {
-                  return MoveToCollectionSearchBar(
-                    isCollection: collections != null,
-                    onBackButtonPressed: collections == null
-                        ? null
-                        : () async {
-                            collectionsNotifier.value = null;
-
-                            final courses = await CourseRepo.getAllCourses();
-                            coursesNotifier.value = courses;
-                          },
-                    courseId: collections?.first.parentId,
-                    onSearchChanged: (query) {
-                      // Cancel previous timer
-                      _searchDebounceTimer?.cancel();
-
-                      // Start new timer
-                      _searchDebounceTimer = Timer(const Duration(milliseconds: 300), () async {
-                        // Update courses based on search
-                        if (collectionsNotifier.value == null) {
-                          // Searching courses - use findAll()
-                          if (query.isEmpty) {
-                            final courses = await CourseRepo.getAllCourses();
-                            coursesNotifier.value = courses;
-                          } else {
-                            final courses = await CourseRepo.filter
-                                .titleContains(query, caseSensitive: false)
-                                .findAll();
-                            coursesNotifier.value = courses;
-                          }
-                        } else {
-                          // Searching collections
-                          searchQueryNotifier.value = query;
-                        }
-                      });
-                    },
-                  );
-                },
-              ),
-            ),
-          ),
-
-          // Collections list (when a course is selected)
-          ValueListenableBuilder(
-            valueListenable: collectionsNotifier,
-            builder: (context, collections, child) {
-              if (collections != null && collections.isNotEmpty) {
-                return ValueListenableBuilder(
-                  valueListenable: searchQueryNotifier,
-                  builder: (context, searchQuery, child) {
-                    final filteredCollections = searchQuery.isEmpty
-                        ? collections
-                        : collections.where((c) => c.title.toLowerCase().contains(searchQuery.toLowerCase())).toList();
-                    return SliverList.builder(
-                      itemCount: filteredCollections.length,
-                      itemBuilder: (context, index) {
-                        final collection = filteredCollections[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
-                          child:
-                              CollectionCard(
-                                    collection: collection,
-                                    onTap: () => _handleCollectionSelection(context, collection),
-                                  )
-                                  .animate()
-                                  .slideY(
-                                    begin: 0.1 * ((index + 1) / filteredCollections.length),
-                                    end: 0,
-                                    duration: Durations.extralong1,
-                                    curve: CustomCurves.defaultIosSpring,
-                                  )
-                                  .fadeIn(),
-                        );
-                      },
-                    );
-                  },
-                );
-              }
-              return const SliverToBoxAdapter();
-            },
-          ),
-
-          ValueListenableBuilder(
-            valueListenable: collectionsNotifier,
-            builder: (context, collections, child) {
-              if (collections == null) {
-                return ValueListenableBuilder(
-                  valueListenable: coursesNotifier,
-                  builder: (context, courses, child) {
-                    if (courses == null) {
-                      return const SliverToBoxAdapter(child: LoadingLogo());
-                    }
-
-                    if (courses.isEmpty) {
-                      return EmptyCoursesView();
-                    }
-
-                    return SliverList.builder(
-                      itemCount: courses.length,
-                      itemBuilder: (context, index) {
-                        final course = courses[index];
-                        return Padding(
-                          padding: const EdgeInsets.only(left: 16, right: 16, top: 16),
-                          child:
-                              EditCourseTile(
-                                    courseName: course.courseName,
-                                    courseCode: course.courseCode,
-                                    categoriesCount: course.modules.length,
-                                    selectionState: (selected: false, isSelecting: false),
-                                    imgFilePath: course.localThumbnailPath,
-                                    onTap: () => _handleCourseSelection(context, course),
-                                    onSelected: () {},
-                                  )
-                                  .animate()
-                                  .slideY(
-                                    begin: 0.1 * ((index + 1) / courses.length),
-                                    end: 0,
-                                    duration: Durations.extralong1,
-                                    curve: CustomCurves.defaultIosSpring,
-                                  )
-                                  .fadeIn(),
-                        );
-                      },
-                    );
-                  },
-                );
-              }
-              return const SliverToBoxAdapter();
-            },
-          ),
-
-          const SliverToBoxAdapter(child: BottomPadding()),
-
-          const SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
-        ],
+        ),
       ),
     );
   }
 
-  Future<void> _handleCourseSelection(BuildContext context, Course course) async {
-    final holdCourses = coursesNotifier.value;
-    coursesNotifier.value = null;
-
-    await course.modules.load();
-    if (course.modules.isEmpty) {
-      if (context.mounted) {
-        UiUtils.showFlushBar(context, msg: "No collection to add to...");
-      }
-      coursesNotifier.value = holdCourses;
-    } else {
-      collectionsNotifier.value = List.from(course.modules.toList());
+  void _handleBackPressed(BuildContext context) {
+    if (_selectedCourse == null) {
+      Result.tryRun(() => context.pop(false));
+      return;
     }
+    _clearSelectedCourse();
+  }
+
+  void _clearSelectedCourse() {
+    if (!mounted) return;
+    setState(() => _selectedCourse = null);
+  }
+
+  void _selectCourse(Course course) {
+    if (!mounted) return;
+    setState(() => _selectedCourse = course);
   }
 
   Future<void> _handleCollectionSelection(BuildContext context, Module collection) async {
@@ -315,7 +140,6 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
 
   /// Handle moving existing contents to a collection
   Future<void> _handleMoveContents(BuildContext context, Module collection) async {
-    // context.pop(true);
     final contentsToMove = widget.contentsToMove;
     if (contentsToMove == null || contentsToMove.isEmpty) {
       log("No contents to move");
@@ -364,7 +188,6 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
     await _storeContentsToCollection(collectionId: collection.uid, filePaths: widget.filePaths!);
     GlobalNav.popGlobal();
 
-    // GlobalNav.withContext((c) => c.pop());
     GlobalNav.withContext((c) => c.pushNamed(Routes.moduleContentsView.name, extra: collection));
     GlobalNav.withContext((c) => UiUtils.showFlushBar(c, msg: "Successfully stored files"));
   }
@@ -378,38 +201,67 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
   }
 }
 
-class MoveToCollectionSearchBar extends ConsumerWidget {
-  final void Function(String) onSearchChanged;
-  final void Function()? onBackButtonPressed;
-  final String? courseId;
-  final bool isCollection;
-  const MoveToCollectionSearchBar({
-    super.key,
-    required this.onSearchChanged,
-    required this.onBackButtonPressed,
-    this.courseId,
-    required this.isCollection,
-  });
+class _CourseSelectionView extends ConsumerWidget {
+  const _CourseSelectionView({required this.coursePagination, required this.onTapCourse});
+
+  final dynamic coursePagination;
+  final void Function(Course course) onTapCourse;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
-    return Padding(
-      padding: EdgeInsets.only(top: 12, bottom: 12, right: 12, left: onBackButtonPressed == null ? 12 : 0),
-      child: Row(
-        children: [
-          if (onBackButtonPressed != null) BackButton(onPressed: onBackButtonPressed),
-          Expanded(
-            child: SearchBar(
-              hintText: "Search for a ${(isCollection ? "Collection" : "Course")}",
-              onChanged: onSearchChanged,
-              leading: const Padding(
-                padding: EdgeInsets.only(left: 8, right: 4),
-                child: Icon(Iconsax.search_normal_1_copy),
-              ),
-              backgroundColor: WidgetStatePropertyAll(theme.surface),
-              elevation: const WidgetStatePropertyAll(0),
-              shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(8))),
+    return SmoothCustomScrollView(
+      slivers: [
+        const SliverToBoxAdapter(child: TopPadding(withHeight: kToolbarHeight + 4)),
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          sliver: PagingListener(
+            controller: coursePagination.pagingController,
+            builder: (context, state, fetchNextPage) {
+              return PagedSliverList<int, Course>(
+                state: state,
+                itemExtent: 120,
+                fetchNextPage: fetchNextPage,
+                builderDelegate: PagedChildBuilderDelegate(
+                  noItemsFoundIndicatorBuilder: (context) => EmptyLibraryView(asSliver: false),
+                  firstPageProgressIndicatorBuilder: (context) => const SliverToBoxAdapter(child: LoadingLogo()),
+                  newPageProgressIndicatorBuilder: (context) => const SliverToBoxAdapter(child: LoadingLogo()),
+                  itemBuilder: (context, item, index) => CourseCard(
+                    item,
+                    CardViewType.list,
+                    onTap: () => onTapCourse(item),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        const SliverToBoxAdapter(child: BottomPadding()),
+      ],
+    );
+  }
+}
+
+class _ModuleSelectionView extends StatelessWidget {
+  const _ModuleSelectionView({required this.course, required this.mode, required this.onTapModule});
+
+  final Course course;
+  final ContentSheetMode mode;
+  final Future<void> Function(BuildContext context, Module collection) onTapModule;
+
+  @override
+  Widget build(BuildContext context) {
+    return ModulesListWithSearchScrollView(
+      courseId: course.uid,
+      topPadding: kToolbarHeight + 4,
+      isPinned: true,
+      showMoreOptionsButton: false,
+      onTapModuleCard: (module) {
+        onTapModule(context, module);
+      },
+    );
+  }
+}
+}
             ),
           ),
           if (courseId != null)

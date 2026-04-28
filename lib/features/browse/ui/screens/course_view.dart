@@ -7,7 +7,7 @@ import 'package:slidesync/core/base/mixins/scroll_offset_notifier_mixin.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/browse/ui/widgets/course/course_view/course_view_fab.dart';
-import 'package:slidesync/features/browse/ui/widgets/module/modules_list/modules_list_with_search_sliver.dart';
+import 'package:slidesync/features/browse/ui/widgets/module/modules_list/modules_list_with_search_scroll_view.dart';
 import 'package:slidesync/features/browse/ui/widgets/course/course_view/course_view_header/course_view_header.dart';
 import 'package:slidesync/shared/global/providers/course_providers.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';

@@ -12,7 +12,7 @@ import 'package:slidesync/features/browse/ui/screens/course_view.dart';
 import 'package:slidesync/features/browse/ui/widgets/module/modules_list/src/collections_search_bar.dart';
 import 'package:slidesync/features/settings/providers/settings_provider.dart';
 import 'package:slidesync/routes/routes.dart';
-import 'package:slidesync/features/browse/ui/widgets/module/collection_card.dart';
+import 'package:slidesync/features/browse/ui/widgets/module/module_card.dart';
 import 'package:slidesync/features/browse/ui/widgets/course/shared/create_collection_bottom_sheet.dart';
 import 'package:slidesync/features/browse/ui/widgets/module/no_collection_view.dart';
 import 'package:slidesync/shared/global/providers/collections_providers.dart';
@@ -27,12 +27,14 @@ class ModulesListWithSearchScrollView extends ConsumerStatefulWidget {
     required this.isPinned,
     required this.showMoreOptionsButton,
     this.controller,
+    this.onTapModuleCard,
   });
   final String courseId;
   final double? topPadding;
   final bool isPinned;
   final bool showMoreOptionsButton;
   final ScrollController? controller;
+  final void Function(Module module)? onTapModuleCard;
   @override
   ConsumerState<ModulesListWithSearchScrollView> createState() => ModulesListWithSearchScrollViewState();
 }
@@ -55,7 +57,11 @@ class ModulesListWithSearchScrollViewState extends ConsumerState<ModulesListWith
 
         widget.isPinned ? PinnedHeaderSliver(child: _buildSearchBar()) : SliverFloatingHeader(child: _buildSearchBar()),
 
-        ModulesListView(courseId: widget.courseId, textSearchNotifier: textSearchNotifier),
+        ModulesListView(
+          courseId: widget.courseId,
+          textSearchNotifier: textSearchNotifier,
+          onTapModuleCard: widget.onTapModuleCard,
+        ),
 
         const SliverToBoxAdapter(child: BottomPadding(withHeight: ConstantSizing.spaceMedium)),
       ],
@@ -78,9 +84,15 @@ class ModulesListWithSearchScrollViewState extends ConsumerState<ModulesListWith
 }
 
 class ModulesListView extends ConsumerWidget {
-  const ModulesListView({super.key, required this.courseId, required this.textSearchNotifier});
+  const ModulesListView({
+    super.key,
+    required this.courseId,
+    required this.textSearchNotifier,
+    required this.onTapModuleCard,
+  });
   final String courseId;
   final ValueNotifier<String> textSearchNotifier;
+  final void Function(Module module)? onTapModuleCard;
 
   List<Module> filterModules(List<Module> modules, String search) => search.trim().isEmpty
       ? modules
@@ -132,20 +144,7 @@ class ModulesListView extends ConsumerWidget {
                   ];
                   return Animate(
                     effects: isSearching ? null : animEffect,
-                    child: CollectionCard(
-                      collection: filteredModules[index],
-                      onTap: () async {
-                        final isFullScreen = DeviceUtils.isDesktop()
-                            ? (await ref.readSettings).showMaterialsInFullScreen
-                            : false;
-                        Result.tryRun(
-                          () => context.pushNamed(
-                            "${Routes.moduleContentsView.name}${isFullScreen ? "full" : ''}",
-                            extra: filteredModules[index],
-                          ),
-                        );
-                      },
-                    ),
+                    child: ModuleCard(module: filteredModules[index], onTap: () => onTap(ref, filteredModules[index])),
                   );
                 },
               ),
@@ -156,6 +155,17 @@ class ModulesListView extends ConsumerWidget {
       error: (error, st) => _buildErrorSliver(),
       loading: () => const ModulesSliverListLoadingShimmer(),
     );
+  }
+
+  void onTap(WidgetRef ref, Module module) async {
+    if (onTapModuleCard != null) {
+      onTapModuleCard!(module);
+    } else {
+      final isFullScreen = DeviceUtils.isDesktop() ? (await ref.readSettings).showMaterialsInFullScreen : false;
+      Result.tryRun(
+        () => ref.context.pushNamed("${Routes.moduleContentsView.name}${isFullScreen ? "full" : ''}", extra: module),
+      );
+    }
   }
 
   Widget _buildErrorSliver() => SliverToBoxAdapter(
@@ -185,7 +195,7 @@ class ModulesSliverListLoadingShimmer extends ConsumerWidget {
           itemBuilder: (context, index) => Skeletonizer(
             child: Padding(
               padding: const EdgeInsets.only(bottom: 8.0),
-              child: CollectionCard(collection: Module.empty(), onTap: () {}),
+              child: ModuleCard(module: Module.empty(), onTap: () {}),
             ),
           ),
         ),

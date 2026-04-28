@@ -2,7 +2,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/base/mixins/is_scrolled_notifier_mixin.dart';
-import 'package:slidesync/features/browse/ui/widgets/module/modules_list/modules_list_with_search_sliver.dart';
+import 'package:slidesync/features/browse/ui/widgets/module/modules_list/modules_list_with_search_scroll_view.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/shared/global/providers/course_providers.dart';
 import 'package:slidesync/data/models/course/course.dart';

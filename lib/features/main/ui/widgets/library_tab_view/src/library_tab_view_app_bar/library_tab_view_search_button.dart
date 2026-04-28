@@ -9,9 +9,9 @@ import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
-import 'package:slidesync/features/browse/ui/widgets/module/collection_card.dart';
+import 'package:slidesync/features/browse/ui/widgets/module/module_card.dart';
 import 'package:slidesync/features/browse/ui/widgets/module_contents_view/material_list_card.dart';
-import 'package:slidesync/features/main/ui/actions/library/course_card_actions.dart';
+import 'package:slidesync/features/main/ui/actions/library/courses_view_actions.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/course_card.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
@@ -22,7 +22,7 @@ import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 final _searchTypeProvider = NotifierProvider.autoDispose(IntNotifier.new);
 const strCategories = ['Courses', 'Collections', 'Materials'];
 
-class LibraryTabViewSearchButton extends ConsumerWidget with CourseCardActions {
+class LibraryTabViewSearchButton extends ConsumerWidget with CoursesViewActions {
   final Color? backgroundColor;
   const LibraryTabViewSearchButton({super.key, this.backgroundColor});
 
@@ -106,9 +106,9 @@ class LibraryTabViewSearchButton extends ConsumerWidget with CourseCardActions {
                       0 => CourseCard(
                         value as Course,
                         CardViewType.list,
-                        onTap: (course) {
+                        onTap: () {
                           // controller.closeView("");
-                          onTapCourseCard(ref, course: course);
+                          onTapCourseCard(ref, course: value);
                         },
                       ),
                       1 => Padding(
@@ -116,8 +116,8 @@ class LibraryTabViewSearchButton extends ConsumerWidget with CourseCardActions {
                         child: FutureBuilder(
                           future: CourseRepo.getCourseByUid((value as Module).parentId),
                           builder: (context, courseSnapshot) {
-                            return CollectionCard(
-                              collection: (value),
+                            return ModuleCard(
+                              module: (value),
                               subtitleText: "${value.contents.length} items -> ${courseSnapshot.data?.title ?? ""}",
                               onTap: () async {
                                 // controller.closeView("");

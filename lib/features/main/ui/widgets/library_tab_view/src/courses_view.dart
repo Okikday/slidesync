@@ -7,6 +7,7 @@ import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
+import 'package:slidesync/features/main/ui/actions/library/courses_view_actions.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/course_card/list_course_card.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/empty_library_view.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/course_card.dart';
@@ -25,7 +26,7 @@ class CoursesView extends ConsumerStatefulWidget {
   ConsumerState<CoursesView> createState() => _CoursesViewState();
 }
 
-class _CoursesViewState extends ConsumerState<CoursesView> {
+class _CoursesViewState extends ConsumerState<CoursesView> with CoursesViewActions {
   @override
   Widget build(BuildContext context) {
     final cp = MainProvider.library.link(ref).coursesPagination.link(ref);
@@ -56,7 +57,13 @@ class _CoursesViewState extends ConsumerState<CoursesView> {
                     firstPageProgressIndicatorBuilder: (context) => LoadingGridCourseCardSkeletonizer(count: 2),
                     firstPageErrorIndicatorBuilder: (context) =>
                         RotatedBox(quarterTurns: 2, child: Icon(Iconsax.info_circle)),
-                    itemBuilder: (context, item, index) => CourseCard(item, libState.cardType),
+                    itemBuilder: (context, item, index) => CourseCard(
+                      item,
+                      libState.cardType,
+                      onTap: () => onTapCourseCard(ref, course: item),
+                      onLongPress: () => onHoldCourseCard(ref, course: item),
+                      onTapDown: (det) => onTapDown(ref, det.globalPosition),
+                    ),
                   ),
                 );
               }
@@ -70,7 +77,13 @@ class _CoursesViewState extends ConsumerState<CoursesView> {
                   firstPageProgressIndicatorBuilder: (context) => LoadingListCourseCardSkeletonizer(count: 2),
                   firstPageErrorIndicatorBuilder: (context) =>
                       RotatedBox(quarterTurns: 2, child: Icon(Iconsax.info_circle)),
-                  itemBuilder: (context, item, index) => CourseCard(item, libState.cardType),
+                  itemBuilder: (context, item, index) => CourseCard(
+                    item,
+                    libState.cardType,
+                    onTap: () => onTapCourseCard(ref, course: item),
+                    onLongPress: () => onHoldCourseCard(ref, course: item),
+                    onTapDown: (det) => onTapDown(ref, det.globalPosition),
+                  ),
                 ),
               );
             },
@@ -79,6 +92,8 @@ class _CoursesViewState extends ConsumerState<CoursesView> {
       ),
     );
   }
+
+  void onTapDown(WidgetRef ref, Offset det) => MainProvider.library.act(ref).cardTapPositionDetails = det;
 }
 
 class LoadingGridCourseCardSkeletonizer extends StatelessWidget {

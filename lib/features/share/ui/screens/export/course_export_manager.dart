@@ -13,7 +13,7 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
-import 'package:slidesync/features/browse/ui/widgets/module/collection_card.dart';
+import 'package:slidesync/features/browse/ui/widgets/module/module_card.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/theme/src/app_theme.dart';
@@ -664,7 +664,7 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
 
                   return Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: CollectionCard(collection: collection, onTap: () {}),
+                    child: ModuleCard(module: collection, onTap: () {}),
                   );
                 },
               ),

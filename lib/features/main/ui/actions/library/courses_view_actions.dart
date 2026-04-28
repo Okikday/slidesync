@@ -10,7 +10,7 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/course_card_context_menu.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
-mixin CourseCardActions {
+mixin CoursesViewActions {
   void onTapCourseCard(WidgetRef ref, {required Course course}) async {
     final context = ref.context;
     final libraryNotifier = MainProvider.library.act(ref);

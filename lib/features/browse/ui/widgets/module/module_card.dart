@@ -15,26 +15,24 @@ import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
 import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 
-class CollectionCard extends ConsumerStatefulWidget {
-  final Module collection;
+typedef ModuleCardSelect = ({bool? selected, void Function() onSelected});
+
+class ModuleCard extends ConsumerStatefulWidget {
+  final Module module;
   final void Function() onTap;
+
+  /// if [select] is null, there won't be an option to select
+  /// if [select.selected] is true, the card will be shown as selected
+  /// if [select.selected] is null, the card won't have a selection state
   final ({bool? selected, void Function() onSelected})? select;
-  final bool showSelectOption;
   final String? subtitleText;
-  const CollectionCard({
-    super.key,
-    required this.collection,
-    required this.onTap,
-    this.select,
-    this.showSelectOption = false,
-    this.subtitleText,
-  });
+  const ModuleCard({super.key, required this.module, required this.onTap, this.select, this.subtitleText});
 
   @override
-  ConsumerState<CollectionCard> createState() => _CollectionCardState();
+  ConsumerState<ModuleCard> createState() => _ModuleCardState();
 }
 
-class _CollectionCardState extends ConsumerState<CollectionCard> {
+class _ModuleCardState extends ConsumerState<ModuleCard> {
   // final List<RoundedPolygon> shapes = List.from(materialShapes.map((e) => e.shape));
   // late final RoundedPolygon shape;
   // @override
@@ -47,7 +45,7 @@ class _CollectionCardState extends ConsumerState<CollectionCard> {
   @override
   Widget build(BuildContext context) {
     final theme = ref;
-    final collection = widget.collection;
+    final collection = widget.module;
     return ScaleClickWrapper(
       borderRadius: 12,
       onTap: widget.select == null ? widget.onTap : widget.select?.onSelected,
@@ -120,7 +118,7 @@ class _CollectionCardState extends ConsumerState<CollectionCard> {
               if (widget.select == null || widget.select?.selected == null)
                 AppPopupMenuButton(
                   actions: [
-                    if (widget.showSelectOption)
+                    if (widget.select != null)
                       PopupMenuAction(
                         title: "Select",
                         iconData: Iconsax.tick_circle,

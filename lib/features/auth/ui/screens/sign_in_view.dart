@@ -40,20 +40,7 @@ class SignInView extends ConsumerWidget {
                 colorBlendMode: BlendMode.srcIn,
               ),
             ),
-            Positioned(
-  top: 0,
-  right: 0,
-  child: SafeArea(
-    top: true,
-    child: TextButton(
-      onPressed: () {
-        context.pushNamed(Routes.home.name);
-      },
-      child: const Text('Your Text'),
-    ),
-  ),
-),
-            
+
             Positioned(
               top: 0,
               right: 0,
@@ -62,13 +49,16 @@ class SignInView extends ConsumerWidget {
                   onPressed: () {
                     context.goNamed(Routes.home.name);
                     Future.microtask(
-                      () => AppHiveData.instance.setData(key: HiveDataPathKey.hasOnboarded.name, value: true),
+                      () => AppHiveData.instance
+                          .setData(key: HiveDataPathKey.hasOnboarded.name, value: true)
+                          .then((_) => log("Set hasOnboarded")),
                     );
                   },
                   child: CustomText("Skip", color: theme.onBackground, fontWeight: FontWeight.w700),
                 ),
               ),
             ),
+
             Positioned(
               top: 0,
               bottom: 0,
