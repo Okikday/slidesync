@@ -41,6 +41,20 @@ class SignInView extends ConsumerWidget {
               ),
             ),
             Positioned(
+  top: 0,
+  right: 0,
+  child: SafeArea(
+    top: true,
+    child: TextButton(
+      onPressed: () {
+        context.pushNamed(Routes.home.name);
+      },
+      child: const Text('Your Text'),
+    ),
+  ),
+),
+            
+            Positioned(
               top: 0,
               right: 0,
               child: SafeArea(
