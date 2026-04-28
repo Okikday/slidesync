@@ -11,6 +11,7 @@ import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/course_track_repo.dart';
+import 'package:uuid/uuid.dart';
 
 class ModuleContentRepo {
   static final IsarData<ModuleContent> _isarData = IsarData<ModuleContent>();
@@ -187,6 +188,42 @@ class ModuleContentRepo {
 
     log("Successfully added multiple contents");
     return true;
+  }
+
+  static ModuleContent _cloneContentForCollection(ModuleContent content, String collectionId) {
+    return ModuleContent.create(
+      contentId: const Uuid().v4(),
+      xxh3Hash: content.xxh3Hash,
+      title: content.title,
+      description: content.description,
+      path: content.path.copyWith(),
+      type: content.type,
+      parentId: collectionId,
+      fileSizeInBytes: content.fileSizeInBytes,
+      metadata: content.metadata?.copyWith(thumbnail: content.metadata?.thumbnail?.copyWith()),
+      createdAt: content.createdAt,
+      lastModified: content.lastModified,
+    );
+  }
+
+  static Future<bool> copyModuleContents(String collectionId, List<ModuleContent> contents) async {
+    if (collectionId.isEmpty || contents.isEmpty) return false;
+
+    if (await ModuleRepo.getByUid(collectionId) == null) return false;
+
+    final Map<String, ModuleContent> inputByUid = {
+      for (final content in contents)
+        if (content.uid.isNotEmpty) content.uid: content,
+    };
+    if (inputByUid.isEmpty) return false;
+
+    final List<ModuleContent> contentsToCopy = [];
+    for (final entry in inputByUid.entries) {
+      final sourceContent = await getByUid(entry.key) ?? entry.value;
+      contentsToCopy.add(_cloneContentForCollection(sourceContent, collectionId));
+    }
+
+    return addMultipleContents(collectionId, contentsToCopy);
   }
 
   static Future<bool> deleteMultipleContents(String collectionId, List<ModuleContent> contents) async {

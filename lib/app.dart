@@ -10,7 +10,7 @@ import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
-import 'package:slidesync/features/browse/ui/widgets/module_contents_view/src/modify_contents/move_to_collection_bottom_sheet.dart';
+import 'package:slidesync/features/browse/ui/widgets/module_contents_view/src/modify_contents/redirect_contents_screen.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
@@ -143,7 +143,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     GlobalNav.withContextAsync<bool>((context) async {
       final pushRes = await Navigator.of(
         context,
-      ).push(MaterialPageRoute(builder: (context) => MoveOrStoreContentScreen.store(files: files)));
+      ).push(MaterialPageRoute(builder: (context) => RedirectContentsScreen.store(files: files)));
       if (pushRes is bool) return pushRes;
       return false;
     }).then((res) {

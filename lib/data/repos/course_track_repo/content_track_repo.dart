@@ -47,6 +47,10 @@ class ContentTrackRepo {
         .map((list) => list.firstOrNull);
   }
 
+  static Stream<ContentTrack?> watchById(int id) async* {
+    yield* _isarData.watchById(id, fireImmediately: true);
+  }
+
   static Future<void> deleteByDbId(int dbId) async => await _isarData.deleteById(dbId);
 
   static Future<ContentTrack?> deleteByContentId(String contentId) async {

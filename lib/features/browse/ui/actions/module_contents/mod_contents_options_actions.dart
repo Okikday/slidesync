@@ -18,6 +18,12 @@ class ModContentsOptionsActions {
     context.pushNamed(Routes.moveContents.name, extra: contents);
   }
 
+  static void onCopy(BuildContext context, ModuleContentsNotifier n) async {
+    final contents = n.selectedContents.toList();
+    n.unselectAllContents();
+    context.pushNamed(Routes.copyContents.name, extra: contents);
+  }
+
   static void onShare(BuildContext context, ModuleContentsNotifier n) async {
     final contents = n.selectedContents.toList();
     n.unselectAllContents();

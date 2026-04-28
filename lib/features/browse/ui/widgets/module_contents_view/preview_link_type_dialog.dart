@@ -111,7 +111,10 @@ class PreviewLinkTypeDialog extends ConsumerWidget {
               child: SizedBox.expand(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(15),
-                  child: Opacity(opacity: 0.6, child: ContentCardPreviewImage(content: content)),
+                  child: Opacity(
+                    opacity: 0.6,
+                    child: ContentCardPreviewImage(content: content, isSelected: false, isRefreshing: false),
+                  ),
                 ),
               ),
             ),

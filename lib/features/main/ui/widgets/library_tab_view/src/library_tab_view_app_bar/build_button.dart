@@ -37,7 +37,7 @@ class BuildButton extends ConsumerWidget {
           contentPadding: EdgeInsets.zero,
           pixelHeight: size?.height ?? (DeviceUtils.isDesktop() ? 44 : 48),
           pixelWidth: size?.width ?? (DeviceUtils.isDesktop() ? 44 : 48),
-          backgroundColor: theme.altBackgroundPrimary.withValues(alpha: 0.8),
+          backgroundColor: backgroundColor ?? theme.altBackgroundPrimary.withValues(alpha: 0.8),
           shape:
               shape ??
               CircleBorder(

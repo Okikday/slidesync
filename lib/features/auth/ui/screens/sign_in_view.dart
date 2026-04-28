@@ -4,6 +4,8 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/features/ask_ai/ui/widgets/shimmery_gradient_background.dart';
 import 'package:slidesync/features/auth/logic/services/user_auth/firebase_google_auth.dart';
 
@@ -36,6 +38,21 @@ class SignInView extends ConsumerWidget {
                 fit: BoxFit.cover,
                 color: primaryPurple.withValues(alpha: 0.5),
                 colorBlendMode: BlendMode.srcIn,
+              ),
+            ),
+            Positioned(
+              top: 0,
+              right: 0,
+              child: SafeArea(
+                child: TextButton(
+                  onPressed: () {
+                    context.goNamed(Routes.home.name);
+                    Future.microtask(
+                      () => AppHiveData.instance.setData(key: HiveDataPathKey.hasOnboarded.name, value: true),
+                    );
+                  },
+                  child: CustomText("Skip", color: theme.onBackground, fontWeight: FontWeight.w700),
+                ),
               ),
             ),
             Positioned(
@@ -90,6 +107,10 @@ class SignInView extends ConsumerWidget {
                       // if (context.mounted) {
                       //   context.pop();
                       // }
+
+                      Future.microtask(
+                        () => AppHiveData.instance.setData(key: HiveDataPathKey.hasOnboarded.name, value: true),
+                      );
 
                       if (result.isSuccess && context.mounted) {
                         context.goNamed(Routes.home.name);

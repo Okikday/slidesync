@@ -39,6 +39,7 @@ enum Routes {
 
   storeContents,
   moveContents,
+  copyContents,
 }
 
 extension RoutesExtension on Routes {

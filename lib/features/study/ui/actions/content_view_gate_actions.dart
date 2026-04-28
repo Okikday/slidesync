@@ -21,7 +21,6 @@ import 'package:slidesync/features/settings/providers/settings_provider.dart';
 import 'package:slidesync/features/study/logic/services/drive_browser.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/routes/routes.dart';
-import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_alert_dialog.dart';
 
 class ContentViewGateActions {
@@ -136,10 +135,7 @@ class ContentViewGateActions {
 
   static Future<void> _handleLink(ModuleContent content) async {
     final urlPath = content.path.url ?? '';
-    final isUnresolvedDriveLink = Result.from(
-      () => content.metadataJson.decodeJson['resolved'] != true && DriveBrowser.isGoogleDriveLink(urlPath),
-      fallback: false,
-    );
+    final isUnresolvedDriveLink = Result.from(() => DriveBrowser.isGoogleDriveLink(urlPath), fallback: true);
 
     if (isUnresolvedDriveLink) {
       _navigateTo(Routes.driveLinkViewer, content);

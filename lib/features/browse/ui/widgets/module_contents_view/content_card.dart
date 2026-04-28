@@ -4,10 +4,8 @@ import 'dart:ui';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:heroine/heroine.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
-import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/repos/course_repo/module_repo.dart';
@@ -24,110 +22,100 @@ import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart'
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/helpers/icon_helper.dart';
+import 'package:slidesync/shared/widgets/state/absorber.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
-final _refreshedLinksNotifier = NotifierProvider.autoDispose.family((collectionId) => ImpliedNotifier<Set<int>>({}));
-typedef ContentCardSelectCallback = ({bool isSelected, void Function(ModuleContent content) onSelect});
+final _refreshedLinksNotifier = NotifierProvider.autoDispose.family(
+  (String collectionId) => ImpliedNotifier<Set<int>>({}),
+);
+final _progressStreamNotifier = StreamNotifierProvider.autoDispose.family(
+  (int contentId) => StreamedNotifier(() => ContentTrackRepo.watchById(contentId).map((c) => c?.progress ?? 0.0)),
+);
+typedef ContentCardSelectRecord = ({bool isSelected, void Function(ModuleContent content) onSelect});
 
-class ContentCard extends ConsumerStatefulWidget {
+class ContentCard extends ConsumerWidget {
   const ContentCard({super.key, required this.content, this.select});
 
   final ModuleContent content;
-  final ContentCardSelectCallback? select;
-
-  @override
-  ConsumerState<ContentCard> createState() => _ContentCardState();
+  final ContentCardSelectRecord? select;
 
   static NotifierProvider<ImpliedNotifier, Set<int>> refreshedLinksNotifier(String collectionId) =>
       _refreshedLinksNotifier(collectionId);
-}
 
-class _ContentCardState extends ConsumerState<ContentCard> {
   @override
-  Widget build(BuildContext context) {
-    final theme = ref;
-    final content = widget.content;
+  Widget build(BuildContext context, WidgetRef ref) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Flexible(
-          child: InkWell(
-            borderRadius: BorderRadius.circular(14),
-            onTap: () {
-              if (widget.select == null) {
-                ContentViewGateActions.redirectToViewer(ref, content);
-              } else {
-                widget.select?.onSelect(content);
-              }
-            },
-            child: Heroine(
-              tag: widget.content.uid,
-              child: Container(
-                // curve: CustomCurves.defaultIosSpring,
-                // duration: Durations.extralong1,
-                constraints: BoxConstraints(maxHeight: 400, maxWidth: 700),
-                clipBehavior: Clip.antiAlias,
-                decoration: _getCardDecoration(theme),
-                child: Stack(
-                  // clipBehavior: Clip.antiAlias,
-                  fit: StackFit.expand,
-                  children: [
-                    _StackedBelow(content: content, select: widget.select),
-                    ContentTypeBadge(content: content),
-                  ],
-                ),
-              ),
-            ),
+          child: GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onTap: () =>
+                select == null ? ContentViewGateActions.redirectToViewer(ref, content) : select?.onSelect(content),
+            child: _CardOuterShell(content: content, select: select),
           ),
         ),
       ],
     );
   }
+}
 
-  BoxDecoration _getCardDecoration(WidgetRef theme) {
-    final isDarkMode = theme.isDarkMode;
-    return BoxDecoration(
-      color: theme.background.lightenColor(isDarkMode ? 0.1 : 0.9),
-      borderRadius: BorderRadius.circular(16),
-      border: Border.fromBorderSide(
-        BorderSide(
-          color: widget.select?.isSelected == true ? theme.altBackgroundPrimary : theme.onBackground.withAlpha(40),
+class _CardOuterShell extends ConsumerWidget {
+  const _CardOuterShell({required this.content, required this.select});
+
+  final ModuleContent content;
+  final ContentCardSelectRecord? select;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = ref;
+    return Heroine(
+      tag: content.uid,
+      flightShuttleBuilder: const FlipShuttleBuilder(),
+      child: Material(
+        type: MaterialType.transparency,
+        child: Container(
+          constraints: const BoxConstraints(maxHeight: 400, maxWidth: 700),
+          clipBehavior: Clip.antiAlias,
+          decoration: _getCardDecoration(theme),
+          child: _CardStack(content: content, select: select),
         ),
       ),
-      boxShadow: _getCardShadow(isDarkMode),
     );
   }
 
-  List<BoxShadow> _getCardShadow(bool isDarkMode) {
-    return isDarkMode
-        ? [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              offset: Offset(0, 1),
-              blurRadius: 3,
-              spreadRadius: 0,
-            ),
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.06),
-              offset: Offset(0, 4),
-              blurRadius: 6,
-              spreadRadius: 0,
-            ),
-          ]
-        : [
-            BoxShadow(
-              color: Colors.white.withValues(alpha: 0.05),
-              offset: Offset(0, 1),
-              blurRadius: 2,
-              spreadRadius: 0,
-            ),
-            BoxShadow(
-              color: Colors.white.withValues(alpha: 0.04),
-              offset: Offset(0, 6),
-              blurRadius: 12,
-              spreadRadius: -2,
-            ),
-          ];
+  BoxDecoration _getCardDecoration(WidgetRef theme) {
+    final shadow = select?.isSelected == true ? theme.shadow : theme.shadow.withValues(alpha: 0.8);
+    return BoxDecoration(
+      color: theme.cardColor,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.fromBorderSide(
+        BorderSide(color: theme.outline.withValues(alpha: select?.isSelected == true ? 1 : 0.8)),
+      ),
+      boxShadow: [
+        BoxShadow(color: shadow, offset: const Offset(0, 1), blurRadius: 3, spreadRadius: 0),
+        BoxShadow(color: shadow, offset: const Offset(0, 4), blurRadius: 6, spreadRadius: 0),
+      ],
+    );
+  }
+}
+
+class _CardStack extends StatelessWidget {
+  const _CardStack({required this.content, required this.select});
+
+  final ModuleContent content;
+  final ContentCardSelectRecord? select;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      // clipBehavior: Clip.antiAlias,
+      fit: StackFit.expand,
+      children: [
+        _StackedBelow(content: content, select: select),
+        ContentTypeBadge(content: content),
+      ],
+    );
   }
 }
 
@@ -135,43 +123,38 @@ class _StackedBelow extends ConsumerStatefulWidget {
   const _StackedBelow({required this.content, required this.select});
 
   final ModuleContent content;
-  final ContentCardSelectCallback? select;
+  final ContentCardSelectRecord? select;
 
   @override
   ConsumerState<_StackedBelow> createState() => _StackedBelowState();
 }
 
 class _StackedBelowState extends ConsumerState<_StackedBelow> {
-  bool isRefreshing = false;
-  late Stream<double> progressStream;
-
+  late bool isRefreshing = refreshable;
+  late final progressProvider = _progressStreamNotifier(widget.content.id);
   @override
   void initState() {
     super.initState();
     _initializeData();
   }
 
-  void _initializeData() {
-    progressStream = ContentTrackRepo.watchByContentId(
-      widget.content.uid,
-    ).map((c) => c?.progress ?? 0.0).asBroadcastStream();
-    if (widget.content.type == ModuleContentType.link && !_shouldNotRefresh(widget.content)) {
-      setState(() => isRefreshing = true);
-      Future.microtask(() async {
-        await revalidateIfIsLink(ref, widget.content);
-        if (mounted) setState(() => isRefreshing = false);
-      });
-    }
-  }
+  void _initializeData() =>
+      Future.microtask(() => isRefreshing ? _revalidateContentIfNeeded(ref, widget.content) : () {}).then(
+        (_) => WidgetsBinding.instance.addPostFrameCallback(
+          (_) => mounted && isRefreshing ? setState(() => isRefreshing = false) : () {},
+        ),
+      );
 
   @override
   void didUpdateWidget(covariant _StackedBelow oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.content != widget.content) {
+      isRefreshing = refreshable;
       _initializeData();
-      setState(() {});
     }
   }
+
+  bool get refreshable => widget.content.type == ModuleContentType.link;
 
   @override
   Widget build(BuildContext context) {
@@ -180,153 +163,167 @@ class _StackedBelowState extends ConsumerState<_StackedBelow> {
     return Column(
       children: [
         Expanded(
-          child: SizedBox.expand(
-            child: ClipRRect(
-              borderRadius: BorderRadius.only(topLeft: Radius.circular(15), topRight: Radius.circular(15)),
-              child: isRefreshing
-                  ? ColoredBox(
-                          color: theme.background.lightenColor(isDarkMode ? 0.15 : 0.85).withAlpha(200),
-                          child: SizedBox.expand(),
-                        )
-                        .animate(onInit: (c) => c.repeat())
-                        .shimmer(color: theme.primary.withAlpha(20), duration: 1.5.seconds)
-                  : ContentCardPreviewImage(content: widget.content)
-                        .animate(key: ValueKey(widget.content.uid), target: widget.select?.isSelected == true ? 0 : 1)
-                        .fade(begin: isDarkMode ? 0.4 : 0.7, end: isDarkMode ? 0.6 : 1.0),
-            ),
+          child: ContentCardPreviewImage(
+            content: widget.content,
+            isSelected: widget.select?.isSelected ?? false,
+            isRefreshing: isRefreshing,
           ),
         ),
-        StreamBuilder(
-          stream: progressStream,
-          builder: (context, asyncSnapshot) {
-            return LinearProgressIndicator(
-              value: asyncSnapshot.hasData && asyncSnapshot.data != null ? asyncSnapshot.data : 0.0,
-              color: theme.primaryColor,
-              backgroundColor: theme.background.lightenColor(isDarkMode ? 0.15 : 0.85).withAlpha(200),
-            );
-          },
+
+        AbsorberWatch(
+          listenable: progressProvider,
+          builder: (context, progressAsync, ref, _) => LinearProgressIndicator(
+            value: progressAsync.value,
+            color: theme.primaryColor,
+            backgroundColor: theme.background.lightenColor(isDarkMode ? 0.15 : 0.85).withAlpha(200),
+          ),
         ),
 
-        Container(
-          padding: EdgeInsets.fromLTRB(8, 8, 4, 8),
-          decoration: BoxDecoration(
-            color: theme.background.lightenColor(isDarkMode ? 0.15 : 0.85).withAlpha(200),
-            borderRadius: BorderRadius.only(
-              bottomLeft: const Radius.circular(16),
-              bottomRight: const Radius.circular(16),
-            ),
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  spacing: 2.5,
-                  children: [
-                    Flexible(child: ContentCardTitle(content: widget.content)),
-                    isRefreshing
-                        ? CustomText("Loading link...", fontSize: 10, color: theme.primary)
-                        : StreamBuilder(
-                            stream: progressStream,
-                            builder: (context, asyncSnapshot) {
-                              final progress = asyncSnapshot.hasData && asyncSnapshot.data != null
-                                  ? asyncSnapshot.data
-                                  : 0.0;
-                              return CustomText(
-                                progress == 0.0
-                                    ? "Start reading!"
-                                    : progress == 1.0
-                                    ? "Completed!"
-                                    : (progress != null && progress > .95)
-                                    ? "Almost done!"
-                                    : "${((progress?.clamp(0, 100) ?? 0.0) * 100.0).toInt()}% read",
-                                fontSize: 10,
-                                color: progress == 1.0 ? theme.primary : theme.supportingText,
-                              );
-                            },
-                          ),
-                  ],
-                ),
-              ),
-
-              // ContentCardPopUpMenuButton(content: content, previewDetailsFuture: previewDetailsFuture),
-              if (widget.select?.isSelected == null)
-                Material(
-                  type: MaterialType.transparency,
-                  child: InkWell(
-                    customBorder: const CircleBorder(),
-
-                    overlayColor: WidgetStatePropertyAll(theme.onSurface),
-                    onTap: () async {
-                      final collection = await ModuleRepo.getByUid(widget.content.parentId);
-                      if (collection == null) return;
-                      GlobalNav.withContext(
-                        (c) => Navigator.push(
-                          context.mounted ? context : c,
-                          PageAnimation.pageRouteBuilder(
-                            ContentCardContextMenu(collection: collection, content: widget.content),
-                            opaque: false,
-                          ),
-                        ),
-                      );
-                    },
-                    child: SizedBox.square(dimension: 36, child: Icon(HugeIconsSolid.moreHorizontal)),
-                  ),
-                )
-              else
-                () {
-                  return Icon(
-                    widget.select?.isSelected == true ? Iconsax.tick_circle : Icons.circle,
-                    color: widget.select?.isSelected == true ? theme.primary : theme.onPrimary.withAlpha(100),
-                    size: 24,
-                  );
-                }(),
-            ],
-          ),
+        _CardAboveFooter(
+          isRefreshing: isRefreshing,
+          progressProvider: progressProvider,
+          content: widget.content,
+          isSelected: widget.select?.isSelected,
         ),
       ],
     );
   }
 }
 
-class ContentCardTitle extends ConsumerWidget {
-  const ContentCardTitle({super.key, required this.content});
-
+class _CardAboveFooter extends ConsumerWidget {
+  const _CardAboveFooter({
+    required this.isRefreshing,
+    required this.progressProvider,
+    required this.content,
+    required this.isSelected,
+  });
   final ModuleContent content;
+  final bool? isSelected;
+  final bool isRefreshing;
+  final StreamNotifierProvider<StreamedNotifier<double>, double> progressProvider;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 8, 4, 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              spacing: 2.5,
+              children: [
+                Flexible(
+                  child: Tooltip(
+                    showDuration: 4.inSeconds,
+                    message: content.title,
+                    triggerMode: isSelected == null ? TooltipTriggerMode.tap : TooltipTriggerMode.longPress,
+                    child: CustomText(
+                      content.title,
+                      color: theme.onBackground,
+                      fontWeight: FontWeight.w600,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ),
+                if (isRefreshing)
+                  CustomText("Loading link...", fontSize: 10, color: theme.primary)
+                else
+                  AbsorberWatch(
+                    listenable: progressProvider,
+                    builder: (context, progressAsync, ref, _) {
+                      final progress = progressAsync.value;
+                      return CustomText(
+                        progress == null
+                            ? "Loading progress..."
+                            : progress == 0.0
+                            ? "Start reading!"
+                            : progress == 1.0
+                            ? "Completed!"
+                            : (progress > .95)
+                            ? "Almost done!"
+                            : "${((progress.clamp(0, 100)) * 100.0).toInt()}% read",
+                        fontSize: 10,
+                        color: progress == 1.0 ? theme.primary : theme.supportingText,
+                      );
+                    },
+                  ),
+              ],
+            ),
+          ),
 
-    return Tooltip(
-      showDuration: 4.inSeconds,
-      message: content.title,
-      triggerMode: TooltipTriggerMode.tap,
-      child: CustomText(
-        content.title,
-        color: theme.onBackground,
-        fontWeight: FontWeight.w600,
-        overflow: TextOverflow.ellipsis,
+          if (isSelected == null)
+            Material(
+              type: MaterialType.transparency,
+              shape: const CircleBorder(),
+              child: InkWell(
+                overlayColor: WidgetStatePropertyAll(theme.onSurface),
+                onTap: () async {
+                  final collection = await ModuleRepo.getByUid(content.parentId);
+                  if (collection == null) return;
+                  GlobalNav.withContext(
+                    (c) => Navigator.push(
+                      context.mounted ? context : c,
+                      PageAnimation.pageRouteBuilder(
+                        ContentCardContextMenu(collection: collection, content: content),
+                        opaque: false,
+                      ),
+                    ),
+                  );
+                },
+                child: SizedBox.square(dimension: 36, child: Icon(HugeIconsSolid.moreHorizontal)),
+              ),
+            )
+          else
+            Builder(
+              builder: (context) {
+                return Icon(
+                  isSelected == true ? HugeIconsSolid.tick04 : HugeIconsSolid.circle,
+                  color: isSelected == true ? theme.primary : theme.onPrimary.withAlpha(100),
+                  size: 24,
+                );
+              },
+            ),
+        ],
       ),
     );
   }
 }
 
-class ContentCardPreviewImage extends StatelessWidget {
-  const ContentCardPreviewImage({super.key, required this.content});
+class ContentCardPreviewImage extends ConsumerWidget {
+  const ContentCardPreviewImage({
+    super.key,
+    required this.content,
+    required this.isSelected,
+    required this.isRefreshing,
+  });
 
   final ModuleContent content;
+  final bool isSelected;
+  final bool isRefreshing;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    if (isRefreshing) {
+      final theme = ref;
+      ColoredBox(
+        color: theme.background.lightenColor(ref.isDarkMode ? 0.15 : 0.85).withAlpha(200),
+        child: SizedBox.expand(),
+      ).animate(onInit: (c) => c.repeat()).shimmer(color: theme.primary.withAlpha(20), duration: 1.5.seconds);
+    }
     return SizedBox.expand(
-      child: ImageFiltered(
-        imageFilter: ColorFilter.mode(Colors.black.withAlpha(10), BlendMode.color),
-        child: BuildImagePathWidget(
-          fileDetails: content.metadata?.thumbnail ?? FilePath.empty(),
-          fit: BoxFit.cover,
-          fallbackWidget: Icon(IconHelper.getContentTypeIconData(content.type, false), size: 36),
+      child: ClipRRect(
+        borderRadius: const BorderRadius.only(topLeft: Radius.circular(15), topRight: Radius.circular(15)),
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 300),
+          opacity: isSelected ? 0.6 : 1.0,
+          child: BuildImagePathWidget(
+            fileDetails: content.metadata?.thumbnail ?? FilePath.empty(),
+            fit: BoxFit.cover,
+            fallbackWidget: Icon(IconHelper.getContentTypeIconData(content.type, false), size: 36),
+          ),
         ),
       ),
     );
@@ -367,12 +364,13 @@ class ContentTypeBadge extends ConsumerWidget {
   }
 }
 
-Future<dynamic> revalidateIfIsLink(WidgetRef ref, ModuleContent content) async => switch (content.type) {
+Future<dynamic> _revalidateContentIfNeeded(WidgetRef ref, ModuleContent content) async => switch (content.type) {
   ModuleContentType.link => _refreshLinkIfNeeded(ref, content),
   _ => '',
 };
 
 Future<void> _refreshLinkIfNeeded(WidgetRef ref, ModuleContent content) async {
+  if (!_shouldRefresh(content)) return;
   if (!ref.context.mounted) return;
   final refreshProvider = ref.read(ContentCard.refreshedLinksNotifier(content.parentId));
   if (refreshProvider.contains(content.id)) return;
@@ -381,15 +379,12 @@ Future<void> _refreshLinkIfNeeded(WidgetRef ref, ModuleContent content) async {
   final path = content.path;
   if (!path.containsUrlPath) return;
 
-  final shouldNotRefresh = _shouldNotRefresh(content);
-
-  if (shouldNotRefresh) return;
   log("Refreshing link content url ${content.path.url}");
   final previewLinkDetails = await RetriveContentUc.getLinkPreviewData(content.path.url);
   await AddLinkActions.onAddLinkContent(path.url!, parentId: content.parentId, details: previewLinkDetails);
 }
 
-bool _shouldNotRefresh(ModuleContent content) =>
-    content.metadata?.thumbnail?.containsUrlPath == true &&
-    content.title.trim().isNotEmpty &&
-    content.lastModified.isAfter(DateTime.now().subtract(7.days));
+bool _shouldRefresh(ModuleContent content) =>
+    content.metadata?.thumbnail?.containsUrlPath != true &&
+    content.title.trim().isEmpty &&
+    content.lastModified.isBefore(DateTime.now().subtract(7.days));

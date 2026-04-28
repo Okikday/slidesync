@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -59,20 +58,20 @@ class ContentsView extends ConsumerWidget {
                       ),
                       builderDelegate: PagedChildBuilderDelegate(
                         // noMoreItemsIndicatorBuilder: (context) => const SizedBox(height: 56),
-                        itemBuilder: (context, item, index) =>
-                            ContentCard(
-                              content: item,
-                              select: select(
-                                isSelecting: proState.hasSelectedContents,
-                                moduleContentsNotifier: contentsNotifier,
-                                item: item,
-                              ),
-                            ).animate().fadeIn().moveY(
-                              begin: index.isEven ? 40 : 20,
-                              end: 0,
-                              curve: Curves.fastEaseInToSlowEaseOut,
-                              duration: Durations.medium3,
-                            ),
+                        itemBuilder: (context, item, index) => ContentCard(
+                          content: item,
+                          select: select(
+                            isSelecting: proState.hasSelectedContents,
+                            moduleContentsNotifier: contentsNotifier,
+                            item: item,
+                          ),
+                        ),
+                        // .animate().fadeIn().moveY(
+                        //   begin: index.isEven ? 40 : 20,
+                        //   end: 0,
+                        //   curve: Curves.fastEaseInToSlowEaseOut,
+                        //   duration: Durations.medium3,
+                        // ),
                       ),
                     ),
 
@@ -83,21 +82,21 @@ class ContentsView extends ConsumerWidget {
                       fetchNextPage: fetchNextPage,
                       builderDelegate: PagedChildBuilderDelegate(
                         itemBuilder: (context, item, index) => Padding(
-                          padding: EdgeInsets.only(bottom: isFullScreen ? 24 : 16),
-                          child:
-                              ContentCard(
-                                content: item,
-                                select: select(
-                                  isSelecting: proState.hasSelectedContents,
-                                  moduleContentsNotifier: contentsNotifier,
-                                  item: item,
-                                ),
-                              ).animate().fadeIn().moveY(
-                                begin: index.isEven ? 40 : 20,
-                                end: 0,
-                                curve: Curves.fastEaseInToSlowEaseOut,
-                                duration: Durations.medium3,
-                              ),
+                          padding: EdgeInsets.only(bottom: isFullScreen ? 24 : 20),
+                          child: ContentCard(
+                            content: item,
+                            select: select(
+                              isSelecting: proState.hasSelectedContents,
+                              moduleContentsNotifier: contentsNotifier,
+                              item: item,
+                            ),
+                          ),
+                          // .animate().fadeIn().moveY(
+                          //   begin: index.isEven ? 40 : 20,
+                          //   end: 0,
+                          //   curve: Curves.fastEaseInToSlowEaseOut,
+                          //   duration: Durations.medium3,
+                          // ),
                         ),
                       ),
                     ),

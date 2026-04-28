@@ -54,3 +54,4 @@ lib/firebase_options.dart
 # Executables and installers
 *.exe
 installer_output/
+*.jks

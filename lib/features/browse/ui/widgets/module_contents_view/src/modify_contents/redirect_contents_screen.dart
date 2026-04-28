@@ -33,12 +33,16 @@ import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 /// Mode for the bottom sheet
 enum ContentSheetMode {
   move, // Moving existing contents between collections
+  copy, // Copying existing contents to another collection
   store, // Storing new files to a collection
 }
 
-class MoveOrStoreContentScreen extends ConsumerStatefulWidget {
+class RedirectContentsScreen extends ConsumerStatefulWidget {
   /// For moving existing contents
   final List<ModuleContent>? contentsToMove;
+
+  /// For copying existing contents
+  final List<ModuleContent>? contentsToCopy;
 
   /// For storing new files - Map of file path to UUID
   final List<String>? filePaths;
@@ -46,21 +50,29 @@ class MoveOrStoreContentScreen extends ConsumerStatefulWidget {
   /// Determines the mode
   final ContentSheetMode mode;
 
-  const MoveOrStoreContentScreen.move({super.key, required List<ModuleContent> contents})
+  const RedirectContentsScreen.move({super.key, required List<ModuleContent> contents})
     : contentsToMove = contents,
+      contentsToCopy = null,
       filePaths = null,
       mode = ContentSheetMode.move;
 
-  const MoveOrStoreContentScreen.store({super.key, required List<String> files})
+  const RedirectContentsScreen.copy({super.key, required List<ModuleContent> contents})
+    : contentsToCopy = contents,
+      contentsToMove = null,
+      filePaths = null,
+      mode = ContentSheetMode.copy;
+
+  const RedirectContentsScreen.store({super.key, required List<String> files})
     : filePaths = files,
       contentsToMove = null,
+      contentsToCopy = null,
       mode = ContentSheetMode.store;
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _MoveOrStoreContentBottomSheetState();
+  ConsumerState<ConsumerStatefulWidget> createState() => _RedirectContentsScreenState();
 }
 
-class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreContentScreen> {
+class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen> {
   Timer? _searchDebounceTimer;
   late final ValueNotifier<List<Course>?> coursesNotifier;
   late final ValueNotifier<List<Module>?> collectionsNotifier;
@@ -94,13 +106,19 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
   @override
   Widget build(BuildContext context) {
     final theme = ref;
+    final title = switch (widget.mode) {
+      ContentSheetMode.move => 'Move contents',
+      ContentSheetMode.copy => 'Copy contents',
+      ContentSheetMode.store => 'Save file',
+    };
 
     return AppScaffold(
       title: "",
       canPop: false,
       onPopInvokedWithResult: (didPop, result) => Result.tryRun(() => context.pop(false)),
+      onBackButtonPressed: () => Result.tryRun(() => context.pop(false)),
       extendBodyBehindAppBar: true,
-      appBar: AppBarContainer(child: AppBarContainerChild(context.isDarkMode, title: "Save file")),
+      appBar: AppBarContainer(child: AppBarContainerChild(context.isDarkMode, title: title)),
       body: SmoothCustomScrollView(
         slivers: [
           const SliverToBoxAdapter(child: TopPadding(withHeight: kToolbarHeight + 4)),
@@ -288,6 +306,8 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
   Future<void> _handleCollectionSelection(BuildContext context, Module collection) async {
     if (widget.mode == ContentSheetMode.move) {
       await _handleMoveContents(context, collection);
+    } else if (widget.mode == ContentSheetMode.copy) {
+      await _handleCopyContents(context, collection);
     } else {
       await _handleStoreFiles(context, collection);
     }
@@ -310,6 +330,28 @@ class _MoveOrStoreContentBottomSheetState extends ConsumerState<MoveOrStoreConte
 
     GlobalNav.withContext((c) => c.pushReplacementNamed(Routes.moduleContentsView.name, extra: collection));
     GlobalNav.withContext((c) => UiUtils.showFlushBar(c, msg: "Successfully moved contents"));
+  }
+
+  Future<void> _handleCopyContents(BuildContext context, Module collection) async {
+    final contentsToCopy = widget.contentsToCopy;
+    if (contentsToCopy == null || contentsToCopy.isEmpty) {
+      log("No contents to copy");
+      UiUtils.showFlushBar(context, msg: "No contents to copy", vibe: FlushbarVibe.warning);
+      return;
+    }
+
+    UiUtils.showLoadingDialog(context, message: "Hold on for a moment while we copy your materials", canPop: false);
+
+    final copied = await ModuleContentRepo.copyModuleContents(collection.uid, contentsToCopy);
+    GlobalNav.withContext((c) => c.pop());
+
+    if (!copied) {
+      GlobalNav.withContext((c) => UiUtils.showFlushBar(c, msg: "Unable to copy contents", vibe: FlushbarVibe.warning));
+      return;
+    }
+
+    GlobalNav.withContext((c) => c.pushReplacementNamed(Routes.moduleContentsView.name, extra: collection));
+    GlobalNav.withContext((c) => UiUtils.showFlushBar(c, msg: "Successfully copied contents"));
   }
 
   /// Handle storing new files to a collection

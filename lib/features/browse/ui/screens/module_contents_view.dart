@@ -61,7 +61,6 @@ class _ModuleContentsViewState extends ConsumerState<ModuleContentsView> with Is
           controller: scrollController,
           physics: const BouncingScrollPhysics(),
           slivers: [
-            SliverToBoxAdapter(child: TopPadding(withHeight: 72)),
             ModContentsOptions(collection: widget.collection),
             ContentsView(collection: widget.collection, isFullScreen: widget.isFullScreen),
             SliverToBoxAdapter(child: BottomPadding(withHeight: 64)),
