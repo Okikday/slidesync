@@ -14,7 +14,6 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
-import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
@@ -22,7 +21,7 @@ import 'package:slidesync/features/browse/logic/src/contents/add_content/store_c
 import 'package:slidesync/features/browse/logic/entities/add_content_result.dart';
 import 'package:slidesync/features/browse/logic/entities/store_content_args.dart';
 import 'package:slidesync/features/study/logic/services/drive_browser.dart' as drive_service;
-import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
+import 'package:slidesync/features/study/ui/screens/online_viewer.dart';
 import 'package:slidesync/features/study/ui/screens/link_viewer/entities/drive_import_models.dart';
 import 'package:slidesync/features/sync/logic/notification_service.dart';
 import 'package:slidesync/features/sync/providers/download_feed_provider.dart';
@@ -139,6 +138,14 @@ class DriveListingController {
       return;
     }
 
+    final displayFile = await _resolveFileForOpenOptions(file);
+    final inAppKind = _resolveInAppOpenKind(displayFile);
+
+    if (inAppKind == null) {
+      await _openInBrowser(file);
+      return;
+    }
+
     final actions = <AppActionDialogModel>[
       AppActionDialogModel(
         title: 'Open in browser',
@@ -153,7 +160,7 @@ class DriveListingController {
         icon: const Icon(Icons.launch_rounded, color: Colors.green),
         onTap: () async {
           GlobalNav.popGlobal();
-          await _openInApp(file);
+          await _openInApp(file, preResolvedFile: displayFile, preferredKind: inAppKind);
         },
       ),
     ];
@@ -817,7 +824,11 @@ class DriveListingController {
     }
   }
 
-  Future<void> _openInApp(drive_service.DriveFile file) async {
+  Future<void> _openInApp(
+    drive_service.DriveFile file, {
+    drive_service.DriveFile? preResolvedFile,
+    _DriveInAppOpenKind? preferredKind,
+  }) async {
     final apiKey = dotenv.env['DRIVE_API_KEY'] ?? '';
     if (apiKey.isEmpty) {
       _showDriveMessage('Drive API key is missing', FlushbarVibe.error);
@@ -830,9 +841,15 @@ class DriveListingController {
     }
 
     try {
-      final resolvedFile = await _resolveDriveDownloadSource(file, apiKey);
+      final resolvedFile = preResolvedFile ?? await _resolveDriveDownloadSource(file, apiKey);
       if (resolvedFile == null) {
         _showDriveMessage('Could not resolve the shortcut target', FlushbarVibe.error);
+        return;
+      }
+
+      final openKind = preferredKind ?? _resolveInAppOpenKind(resolvedFile);
+      if (openKind == null) {
+        await _openInBrowser(file);
         return;
       }
 
@@ -841,40 +858,24 @@ class DriveListingController {
       final targetPath = p.join(tempDir.path, _downloadFileName(resolvedFile));
       await File(targetPath).writeAsBytes(bytes, flush: true);
 
-      final tempContent = _buildTemporaryCourseContent(resolvedFile, targetPath, bytes.length);
-      await ContentViewGateActions.redirectToViewer(ref, tempContent);
+      GlobalNav.withContext((context) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (_) => OnlineViewer(
+              args: OnlineViewerArgs(
+                title: resolvedFile.name ?? p.basenameWithoutExtension(targetPath),
+                localPath: targetPath,
+                fallbackUrl: resolvedFile.webViewLink ?? _driveLinkForFile(resolvedFile),
+                kind: openKind == _DriveInAppOpenKind.pdf ? OnlineViewerKind.pdf : OnlineViewerKind.image,
+              ),
+            ),
+          ),
+        );
+      });
     } catch (error, stackTrace) {
       log('DriveListingView: open in app failed', error: error, stackTrace: stackTrace);
       _showDriveMessage('Could not open file: $error', FlushbarVibe.error);
     }
-  }
-
-  ModuleContent _buildTemporaryCourseContent(drive_service.DriveFile file, String localPath, int fileSize) {
-    final resolvedType = _resolveContentType(file);
-    final originalName = file.name ?? p.basename(localPath);
-
-    return ModuleContent.create(
-      xxh3Hash: file.md5Checksum ?? file.id ?? localPath,
-      contentId: file.id ?? 'drive_${DateTime.now().millisecondsSinceEpoch}',
-      parentId: collectionId,
-      title: p.basenameWithoutExtension(originalName),
-      path: FilePath(local: localPath, url: file.webViewLink ?? _driveLinkForFile(file)),
-      fileSizeInBytes: fileSize,
-      type: resolvedType,
-      description: file.description ?? '',
-      metadata: ModuleContentMetadata.create(
-        originalFileName: originalName,
-        contentOrigin: ContentOrigin.local,
-        thumbnail: file.thumbnailLink != null ? FilePath(url: file.thumbnailLink!) : FilePath(),
-        fields: {
-          'resolved': true,
-          'driveId': file.id,
-          'mimeType': file.mimeType,
-          'webViewLink': file.webViewLink,
-          'thumbnailLink': file.thumbnailLink,
-        },
-      ),
-    );
   }
 
   List<drive_service.DriveFile> _selectedFiles(drive_service.DriveResource resource, Set<String> selectedIds) {
@@ -950,25 +951,35 @@ class DriveListingController {
     return TransferType.content;
   }
 
-  ModuleContentType _resolveContentType(drive_service.DriveFile file) {
+  Future<drive_service.DriveFile> _resolveFileForOpenOptions(drive_service.DriveFile file) async {
+    if (!file.isShortcut) return file;
+
+    final apiKey = dotenv.env['DRIVE_API_KEY'] ?? '';
+    if (apiKey.isEmpty) {
+      return file;
+    }
+
+    try {
+      return await _resolveDriveDownloadSource(file, apiKey) ?? file;
+    } catch (_) {
+      return file;
+    }
+  }
+
+  _DriveInAppOpenKind? _resolveInAppOpenKind(drive_service.DriveFile file) {
     final mimeType = (file.mimeType ?? '').toLowerCase();
+    final extension = (file.fileExtension ?? p.extension(file.name ?? '')).replaceFirst('.', '').toLowerCase();
 
-    if (file.isFolderLike) {
-      return ModuleContentType.reference;
-    }
-    if (mimeType.startsWith('image/')) {
-      return ModuleContentType.image;
-    }
-    if (mimeType.contains('pdf') ||
-        mimeType.contains('document') ||
-        mimeType.contains('sheet') ||
-        mimeType.contains('spreadsheet') ||
-        mimeType.contains('presentation') ||
-        mimeType.startsWith('text/')) {
-      return ModuleContentType.document;
+    if (mimeType.startsWith('image/') ||
+        const {'png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'heic'}.contains(extension)) {
+      return _DriveInAppOpenKind.image;
     }
 
-    return ModuleContentType.unknown;
+    if (mimeType.contains('pdf') || extension == 'pdf') {
+      return _DriveInAppOpenKind.pdf;
+    }
+
+    return null;
   }
 
   String _downloadFileName(drive_service.DriveFile file) {
@@ -1019,6 +1030,8 @@ class DriveListingController {
     });
   }
 }
+
+enum _DriveInAppOpenKind { pdf, image }
 
 final driveListingControllerProvider = Provider.autoDispose.family<DriveListingController, String>((ref, collectionId) {
   KeepAliveLink? keepAliveLink;

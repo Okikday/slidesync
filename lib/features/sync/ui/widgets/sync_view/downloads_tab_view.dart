@@ -4,6 +4,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/crypto_utils.dart';
+import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
 import 'package:slidesync/features/sync/providers/download_feed_provider.dart';
@@ -188,6 +189,7 @@ class _DownloadTile extends ConsumerWidget {
     final theme = ref;
     final transferNotifier = ref.read(transferStateProvider.notifier);
     final feedNotifier = ref.read(downloadFeedProvider.notifier);
+    final latestMessage = _latestMessage(item);
 
     return ScaleClickWrapper(
       borderRadius: 16,
@@ -279,13 +281,9 @@ class _DownloadTile extends ConsumerWidget {
                 color: theme.supportingText,
               ),
             ],
-            if (item.note != null && item.note!.isNotEmpty) ...[
+            if (latestMessage != null) ...[
               const SizedBox(height: 8),
-              CustomText(item.note!, fontSize: 11, color: theme.supportingText),
-            ],
-            if (item.logs.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              CustomText(item.logs.last, fontSize: 11, color: theme.supportingText, maxLines: 2),
+              CustomText(latestMessage, fontSize: 11, color: theme.supportingText, maxLines: 2),
             ],
           ],
         ),
@@ -308,19 +306,19 @@ class _DownloadTile extends ConsumerWidget {
 
   Future<void> _openCompletedContent(BuildContext context, WidgetRef ref, String? contentId) async {
     if (contentId == null || contentId.isEmpty) {
-      _showSnack(context, 'This download has no linked content yet.');
+      UiUtils.showFlushBar(context, msg: 'This download has no linked content yet.');
       return;
     }
 
     final content = await ModuleContentRepo.getByUid(contentId);
     if (content == null) {
-      GlobalNav.withContext((context) => _showSnack(context, 'Could not find the content record.'));
+      GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: 'Could not find the content record.'));
       return;
     }
 
     final localPath = content.path.local;
     if (localPath == null || localPath.isEmpty || !await File(localPath).exists()) {
-      GlobalNav.withContext((context) => _showSnack(context, 'The downloaded file is missing.'));
+      GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: 'The downloaded file is missing.'));
       return;
     }
 
@@ -338,14 +336,20 @@ class _DownloadTile extends ConsumerWidget {
       try {
         await ContentViewGateActions.redirectToViewer(ref, content);
       } catch (_) {
-        GlobalNav.withContext((context) => _showSnack(context, 'Failed to open content: ${content.title}'));
+        GlobalNav.withContext(
+          (context) => UiUtils.showFlushBar(context, msg: 'Failed to open content: ${content.title}'),
+        );
       }
     }
   }
 
-  void _showSnack(BuildContext context, String message) {
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  String? _latestMessage(_UnifiedDownloadItem item) {
+    final note = item.note?.trim();
+    if (note != null && note.isNotEmpty) return note;
+
+    if (item.logs.isEmpty) return null;
+    final lastLog = item.logs.last.trim();
+    return lastLog.isEmpty ? null : lastLog;
   }
 
   String _formatBytes(int bytes) {

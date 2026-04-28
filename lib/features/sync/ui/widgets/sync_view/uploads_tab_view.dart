@@ -1,9 +1,13 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/core/utils/ui_utils.dart';
+import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
+import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
 import 'package:slidesync/features/sync/providers/transfer_state_provider.dart';
 import 'package:slidesync/features/sync/providers/upload_feed_provider.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
 import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
@@ -66,9 +70,13 @@ class _UploadCard extends ConsumerWidget {
     final theme = ref;
     final feedNotifier = ref.read(uploadFeedProvider.notifier);
     final transferNotifier = ref.read(transferStateProvider.notifier);
+    final canOpenContent =
+        item.contentId != null && item.contentId!.isNotEmpty && item.status == UploadFeedStatus.completed;
+    final latestMessage = _latestMessage(item);
 
     return ScaleClickWrapper(
       borderRadius: 16,
+      onTap: canOpenContent ? () => _openCompletedContent(context, ref, item.contentId) : null,
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
@@ -125,6 +133,7 @@ class _UploadCard extends ConsumerWidget {
                       transferNotifier.removeTransfer(item.id);
                     },
                   ),
+                if (canOpenContent) Icon(Icons.open_in_new_rounded, size: 18, color: theme.primaryColor),
               ],
             ),
             if (_showProgress(item)) ...[
@@ -144,13 +153,9 @@ class _UploadCard extends ConsumerWidget {
                 color: theme.supportingText,
               ),
             ],
-            if (item.note != null && item.note!.isNotEmpty) ...[
+            if (latestMessage != null) ...[
               const SizedBox(height: 8),
-              CustomText(item.note!, fontSize: 11, color: theme.supportingText),
-            ],
-            if (item.logs.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              CustomText(item.logs.last, fontSize: 11, color: theme.supportingText, maxLines: 2),
+              CustomText(latestMessage, fontSize: 11, color: theme.supportingText, maxLines: 2),
             ],
           ],
         ),
@@ -193,6 +198,39 @@ class _UploadCard extends ConsumerWidget {
     return item.status == UploadFeedStatus.running ||
         item.status == UploadFeedStatus.paused ||
         item.status == UploadFeedStatus.queued;
+  }
+
+  String? _latestMessage(UploadFeedState item) {
+    final note = item.note?.trim();
+    if (note != null && note.isNotEmpty) return note;
+
+    if (item.logs.isEmpty) return null;
+    final lastLog = item.logs.last.trim();
+    return lastLog.isEmpty ? null : lastLog;
+  }
+
+  Future<void> _openCompletedContent(BuildContext context, WidgetRef ref, String? contentId) async {
+    if (contentId == null || contentId.isEmpty) {
+      GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: 'No content available to open.'));
+      return;
+    }
+
+    final content = await ModuleContentRepo.getByUid(contentId);
+    if (content == null) {
+      GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: 'Could not find the content record.'));
+      return;
+    }
+
+    try {
+      await ContentViewGateActions.redirectToViewer(ref, content);
+    } catch (_) {
+      GlobalNav.withContext((context) => _showSnack(context, 'Failed to open content: ${content.title}'));
+    }
+  }
+
+  void _showSnack(BuildContext context, String message) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
   String _formatBytes(int bytes) {

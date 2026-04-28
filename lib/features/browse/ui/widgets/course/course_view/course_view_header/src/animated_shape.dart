@@ -237,7 +237,7 @@ class _MorphClipper extends CustomClipper<Path> {
   Path getClip(Size size) {
     // Scale the path to fit the widget size
     final matrix = Matrix4.identity();
-    matrix.scale(size.width, size.height);
+    matrix.scaleByDouble(size.width, size.height, 1.0, 1.0);
 
     return path.transform(matrix.storage);
   }
@@ -258,7 +258,7 @@ class MorphClipper extends CustomClipper<Path> {
   Path getClip(Size size) {
     // Scale the path to fit the widget size
     final matrix = Matrix4.identity();
-    matrix.scale(size.width, size.height);
+    matrix.scaleByDouble(size.width, size.height, 1.0, 1.0);
 
     return path.transform(matrix.storage);
   }

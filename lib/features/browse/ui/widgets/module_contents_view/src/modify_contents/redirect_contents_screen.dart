@@ -21,7 +21,6 @@ import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
-import 'package:slidesync/shared/widgets/app_bar/app_bar_container_child.dart';
 import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
@@ -88,10 +87,8 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
         switchInCurve: Curves.easeInOut,
         switchOutCurve: Curves.easeInOut,
         transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
-        layoutBuilder: (currentChild, previousChildren) => Stack(
-          fit: StackFit.expand,
-          children: <Widget>[...previousChildren, if (currentChild != null) currentChild],
-        ),
+        layoutBuilder: (currentChild, previousChildren) =>
+            Stack(fit: StackFit.expand, children: <Widget>[...previousChildren, ?currentChild]),
         child: KeyedSubtree(
           key: ValueKey(_selectedCourse?.uid ?? 'courses'),
           child: isCoursePhase
@@ -147,7 +144,9 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
     GlobalNav.popGlobal();
 
     if (!moved) {
-      UiUtils.showFlushBar(context, msg: 'Unable to move contents', vibe: FlushbarVibe.warning);
+      GlobalNav.withContext(
+        (context) => UiUtils.showFlushBar(context, msg: 'Unable to move contents', vibe: FlushbarVibe.warning),
+      );
       return;
     }
 
@@ -168,7 +167,9 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
     GlobalNav.popGlobal();
 
     if (!copied) {
-      UiUtils.showFlushBar(context, msg: 'Unable to copy contents', vibe: FlushbarVibe.warning);
+      GlobalNav.withContext(
+        (context) => UiUtils.showFlushBar(context, msg: 'Unable to copy contents', vibe: FlushbarVibe.warning),
+      );
       return;
     }
 
