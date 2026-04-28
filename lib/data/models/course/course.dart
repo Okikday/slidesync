@@ -3,8 +3,6 @@ import 'package:isar_community/isar.dart';
 import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:uuid/uuid.dart';
 
-import 'package:slidesync/core/constants/src/type_defs.dart';
-import 'package:slidesync/shared/helpers/formatter.dart';
 import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/data/models/course/src/course_metadata.dart';
 
@@ -51,7 +49,7 @@ class Course with CourseMappable {
 
   static const fromJson = CourseMapper.fromJson;
 
-  static Course create({required String title, String? uid, String? description}) {
+  static Course create({required String title, String? uid, String? description, CourseMetadata? metadata}) {
     final now = DateTime.now();
     return Course(
       uid: uid ?? const Uuid().v4(),
@@ -59,15 +57,15 @@ class Course with CourseMappable {
       description: description ?? '',
       createdAt: now,
       lastModified: now,
-      metadata: CourseMetadata.empty(),
+      metadata: metadata ?? CourseMetadata.empty(),
     );
   }
 }
 
 extension CourseExtension on Course {
-  CourseTitleRecord get _sorterCourseTitle => Formatter.separateCodeFromTitle(title);
-  String get courseName => _sorterCourseTitle.courseName;
-  String get courseCode => _sorterCourseTitle.courseCode;
+  // CourseTitleRecord get _sorterCourseTitle => Formatter.separateCodeFromTitle(title);
+  // String get courseName => _sorterCourseTitle.courseName;
+  // String get courseCode => _sorterCourseTitle.courseCode;
 
   String get previewPath => metadata.thumbnail?.local ?? '';
   String get localThumbnailPath => previewPath;

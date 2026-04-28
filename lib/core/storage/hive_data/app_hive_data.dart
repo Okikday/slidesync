@@ -87,4 +87,10 @@ class AppHiveData {
     }
     return null;
   }
+
+  Future<bool> resetAll(String acknowledge) => Result.tryRunAsync(() async {
+    await _box.clear();
+    await _secureBox.clear();
+    await _secureStorage.delete(key: 'hiveKey');
+  }).then((_) => true).catchError((_) => false);
 }

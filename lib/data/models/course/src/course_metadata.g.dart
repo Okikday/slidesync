@@ -14,13 +14,18 @@ const CourseMetadataSchema = Schema(
   id: -4465050667655202996,
   properties: {
     r'author': PropertySchema(id: 0, name: r'author', type: IsarType.string),
-    r'rawColor': PropertySchema(
+    r'courseCode': PropertySchema(
       id: 1,
+      name: r'courseCode',
+      type: IsarType.string,
+    ),
+    r'rawColor': PropertySchema(
+      id: 2,
       name: r'rawColor',
       type: IsarType.string,
     ),
     r'thumbnail': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'thumbnail',
       type: IsarType.object,
 
@@ -42,6 +47,12 @@ int _courseMetadataEstimateSize(
   var bytesCount = offsets.last;
   {
     final value = object.author;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
+  {
+    final value = object.courseCode;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
     }
@@ -70,9 +81,10 @@ void _courseMetadataSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.author);
-  writer.writeString(offsets[1], object.rawColor);
+  writer.writeString(offsets[1], object.courseCode);
+  writer.writeString(offsets[2], object.rawColor);
   writer.writeObject<FilePath>(
-    offsets[2],
+    offsets[3],
     allOffsets,
     FilePathSchema.serialize,
     object.thumbnail,
@@ -87,9 +99,10 @@ CourseMetadata _courseMetadataDeserialize(
 ) {
   final object = CourseMetadata(
     author: reader.readStringOrNull(offsets[0]),
-    rawColor: reader.readStringOrNull(offsets[1]),
+    courseCode: reader.readStringOrNull(offsets[1]),
+    rawColor: reader.readStringOrNull(offsets[2]),
     thumbnail: reader.readObjectOrNull<FilePath>(
-      offsets[2],
+      offsets[3],
       FilePathSchema.deserialize,
       allOffsets,
     ),
@@ -109,6 +122,8 @@ P _courseMetadataDeserializeProp<P>(
     case 1:
       return (reader.readStringOrNull(offset)) as P;
     case 2:
+      return (reader.readStringOrNull(offset)) as P;
+    case 3:
       return (reader.readObjectOrNull<FilePath>(
             offset,
             FilePathSchema.deserialize,
@@ -277,6 +292,165 @@ extension CourseMetadataQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(property: r'author', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<CourseMetadata, CourseMetadata, QAfterFilterCondition>
+  courseCodeIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'courseCode'),
+      );
+    });
+  }
+
+  QueryBuilder<CourseMetadata, CourseMetadata, QAfterFilterCondition>
+  courseCodeIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'courseCode'),
+      );
+    });
+  }
+
+  QueryBuilder<CourseMetadata, CourseMetadata, QAfterFilterCondition>
+  courseCodeEqualTo(String? value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'courseCode',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CourseMetadata, CourseMetadata, QAfterFilterCondition>
+  courseCodeGreaterThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'courseCode',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CourseMetadata, CourseMetadata, QAfterFilterCondition>
+  courseCodeLessThan(
+    String? value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'courseCode',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CourseMetadata, CourseMetadata, QAfterFilterCondition>
+  courseCodeBetween(
+    String? lower,
+    String? upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'courseCode',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CourseMetadata, CourseMetadata, QAfterFilterCondition>
+  courseCodeStartsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'courseCode',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CourseMetadata, CourseMetadata, QAfterFilterCondition>
+  courseCodeEndsWith(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'courseCode',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CourseMetadata, CourseMetadata, QAfterFilterCondition>
+  courseCodeContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'courseCode',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CourseMetadata, CourseMetadata, QAfterFilterCondition>
+  courseCodeMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'courseCode',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<CourseMetadata, CourseMetadata, QAfterFilterCondition>
+  courseCodeIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'courseCode', value: ''),
+      );
+    });
+  }
+
+  QueryBuilder<CourseMetadata, CourseMetadata, QAfterFilterCondition>
+  courseCodeIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'courseCode', value: ''),
       );
     });
   }

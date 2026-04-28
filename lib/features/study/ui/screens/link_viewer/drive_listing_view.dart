@@ -25,6 +25,8 @@ class DriveListingView extends ConsumerStatefulWidget {
 
 class _DriveListingViewState extends ConsumerState<DriveListingView> {
   String? _currentFolderLabel;
+  final ScrollController _breadcrumbsScrollController = ScrollController();
+  String _lastBreadcrumbPathKey = '';
 
   @override
   void initState() {
@@ -36,6 +38,23 @@ class _DriveListingViewState extends ConsumerState<DriveListingView> {
         ref.read(driveListingNavProvider.notifier).initializeRoot(initialFolderId, rootLabel: 'Root');
       });
     }
+  }
+
+  @override
+  void dispose() {
+    _breadcrumbsScrollController.dispose();
+    super.dispose();
+  }
+
+  void _scheduleBreadcrumbsScrollToEnd() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || !_breadcrumbsScrollController.hasClients) return;
+      _breadcrumbsScrollController.animateTo(
+        _breadcrumbsScrollController.position.maxScrollExtent,
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOut,
+      );
+    });
   }
 
   @override
@@ -61,16 +80,34 @@ class _DriveListingViewState extends ConsumerState<DriveListingView> {
         child: AppBarContainerChild(
           ref.isDarkMode,
           title: "Drive files",
-          titleWidget: resourceAsync.when(
-            data: (resource) => CustomText(
-              resource?.file?.name ?? 'Drive Files',
-              fontSize: 18,
+          titleWidget: Tooltip(
+            triggerMode: TooltipTriggerMode.tap,
+            message: 'Browsing drive',
+            child: CustomText(
+              'Browsing drive',
+              fontSize: 16,
               fontWeight: FontWeight.w600,
               color: theme.onSurfaceColor,
+              overflow: TextOverflow.fade,
+              maxLines: 2,
             ),
-            loading: () => CustomText('Loading...', fontSize: 18, color: theme.onSurfaceColor),
-            error: (_, _) => CustomText('Drive Files', fontSize: 18, color: theme.onSurfaceColor),
           ),
+          // resourceAsync.when(
+          //   data: (resource) => Tooltip(
+          //     triggerMode: TooltipTriggerMode.tap,
+          //     message: resource?.file?.name ?? 'Drive Files',
+          //     child: CustomText(
+          //       resource?.file?.name ?? 'Drive Files',
+          //       fontSize: 16,
+          //       fontWeight: FontWeight.w600,
+          //       color: theme.onSurfaceColor,
+          //       overflow: TextOverflow.fade,
+          //       maxLines: 2,
+          //     ),
+          //   ),
+          //   loading: () => CustomText('Loading...', fontSize: 18, color: theme.onSurfaceColor),
+          //   error: (_, _) => CustomText('Drive Files', fontSize: 18, color: theme.onSurfaceColor),
+          // ),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -144,6 +181,12 @@ class _DriveListingViewState extends ConsumerState<DriveListingView> {
                   ),
                 ];
 
+                final breadcrumbPathKey = breadcrumbs.map((crumb) => crumb.folderId).join('/');
+                if (breadcrumbPathKey != _lastBreadcrumbPathKey) {
+                  _lastBreadcrumbPathKey = breadcrumbPathKey;
+                  _scheduleBreadcrumbsScrollToEnd();
+                }
+
                 return CustomScrollView(
                   slivers: [
                     const PinnedHeaderSliver(child: TopPadding(withHeight: kToolbarHeight + 4)),
@@ -159,6 +202,7 @@ class _DriveListingViewState extends ConsumerState<DriveListingView> {
                               border: Border.all(color: theme.onBackground.withValues(alpha: 0.1)),
                             ),
                             child: SingleChildScrollView(
+                              controller: _breadcrumbsScrollController,
                               scrollDirection: Axis.horizontal,
                               child: Row(
                                 children: [

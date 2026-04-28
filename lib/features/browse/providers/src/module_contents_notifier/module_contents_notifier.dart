@@ -17,7 +17,7 @@ final _moduleContentsPaginationNotifier = NotifierProvider.autoDispose.family(
 );
 
 final _cardViewTypeNotifier = AsyncNotifierProvider.autoDispose(
-  () => CardViewTypeNotifier(HiveDataPathKey.moduleContentsCardViewType.name, CardViewType.grid),
+  () => CardViewTypeNotifier(HiveDataPathKey.moduleContentsCardViewType.name, CardViewType.list),
 );
 
 class ModuleContentsNotifier extends Notifier<ModuleContentsState> {
@@ -45,7 +45,7 @@ class ModuleContentsNotifier extends Notifier<ModuleContentsState> {
 
     ref.emptyListenMany([contentsPagination]);
     ref.onDispose(() => log("disposed: $runtimeType"));
-    return ModuleContentsState(cardViewType: cardViewType ?? CardViewType.grid);
+    return ModuleContentsState(cardViewType: cardViewType ?? CardViewType.list);
   }
 
   void toggleCardViewType() async {

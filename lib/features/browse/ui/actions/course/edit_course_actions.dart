@@ -7,7 +7,6 @@ import 'package:slidesync/shared/global/providers/course_providers.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
-import 'package:slidesync/shared/helpers/formatter.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_alert_dialog.dart';
 
 class EditCourseActions {
@@ -79,9 +78,12 @@ class EditCourseActions {
       UiUtils.showFlushBar(context, msg: errorMsg, flushbarPosition: FlushbarPosition.TOP);
       return;
     }
-    final String courseTitle = Formatter.joinCodeToTitle(courseCode, courseName);
     final Course? currCourse = await (ref.read(modifyCourseProvider.future));
-    final Course? updatedCourse = currCourse?.copyWith(title: courseTitle, description: description);
+    final Course? updatedCourse = currCourse?.copyWith(
+      title: courseName,
+      description: description,
+      metadata: currCourse.metadata.copyWith(courseCode: courseCode),
+    );
     if (updatedCourse != null) {
       await CourseRepo.addCourse(updatedCourse);
     }

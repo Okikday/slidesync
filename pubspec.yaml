@@ -196,57 +196,9 @@ flutter:
     - .env
 
 
-  # fonts:
-  # - family: Montserrat
-  #   fonts:
-  #     - asset: assets/fonts/Montserrat-VariableFont_wght.ttf
-  #     - asset: assets/fonts/Montserrat-Italic-VariableFont_wght.ttf
-  #       style: italic
-  ### Need an upgrade to flutter 3.41 to automatically apply weights to the variable font.
-
-  #-FONTS
   fonts:
-    - family: Raleway
-      fonts:
-        - asset: assets/fonts/Raleway-Light.ttf
-          weight: 300
-        - asset: assets/fonts/Raleway-LightItalic.ttf
-          weight: 300
-          style: italic
-
-        - asset: assets/fonts/Raleway-Regular.ttf
-          weight: 400
-        - asset: assets/fonts/Raleway-Italic.ttf
-          weight: 400
-          style: italic
-
-        - asset: assets/fonts/Raleway-Medium.ttf
-          weight: 500
-        - asset: assets/fonts/Raleway-MediumItalic.ttf
-          weight: 500
-          style: italic
-
-        - asset: assets/fonts/Raleway-SemiBold.ttf
-          weight: 600
-        - asset: assets/fonts/Raleway-SemiBoldItalic.ttf
-          weight: 600
-          style: italic
-
-        - asset: assets/fonts/Raleway-Bold.ttf
-          weight: 700
-        - asset: assets/fonts/Raleway-BoldItalic.ttf
-          weight: 700
-          style: italic
-
-        - asset: assets/fonts/Raleway-ExtraBold.ttf
-          weight: 800
-        - asset: assets/fonts/Raleway-ExtraBoldItalic.ttf
-          weight: 800
-          style: italic
-
-        - asset: assets/fonts/Raleway-Black.ttf
-          weight: 900
-        - asset: assets/fonts/Raleway-BlackItalic.ttf
-          weight: 900
-          style: italic
-
+  - family: Raleway
+    fonts:
+      - asset: assets/fonts/Raleway-VariableFont_wght.ttf
+      - asset: assets/fonts/Raleway-Italic-VariableFont_wght.ttf
+        style: italic

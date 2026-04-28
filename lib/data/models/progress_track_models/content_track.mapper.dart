@@ -64,7 +64,7 @@ class ContentTrackMapper extends ClassMapperBase<ContentTrack> {
     'pages',
     _$pages,
   );
-  static DateTime _$lastRead(ContentTrack v) => v.lastRead;
+  static DateTime? _$lastRead(ContentTrack v) => v.lastRead;
   static const Field<ContentTrack, DateTime> _f$lastRead = Field(
     'lastRead',
     _$lastRead,
@@ -215,7 +215,7 @@ class _ContentTrackCopyWithImpl<$R, $Out>
     double? progress,
     Object? extraDetail = $none,
     List<String>? pages,
-    DateTime? lastRead,
+    Object? lastRead = $none,
     FilePath? thumbnail,
   }) => $apply(
     FieldCopyWithData({
@@ -228,7 +228,7 @@ class _ContentTrackCopyWithImpl<$R, $Out>
       if (progress != null) #progress: progress,
       if (extraDetail != $none) #extraDetail: extraDetail,
       if (pages != null) #pages: pages,
-      if (lastRead != null) #lastRead: lastRead,
+      if (lastRead != $none) #lastRead: lastRead,
       if (thumbnail != null) #thumbnail: thumbnail,
     }),
   );

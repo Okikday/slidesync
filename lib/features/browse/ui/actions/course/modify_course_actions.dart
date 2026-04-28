@@ -84,7 +84,7 @@ class ModifyCourseActions {
               leading: Padding(
                 padding: const EdgeInsets.only(left: 12, bottom: 16),
                 child: CustomText(
-                  hasImage ? course.courseName : "No image set",
+                  hasImage ? course.title : "No image set",
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: ref.onBackground,

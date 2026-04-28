@@ -5,6 +5,7 @@ import 'package:slidesync/features/sync/providers/transfer_state_provider.dart';
 import 'package:slidesync/features/sync/providers/upload_feed_provider.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
+import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 
 class UploadsTabView extends ConsumerWidget {
@@ -48,6 +49,8 @@ class UploadsTabView extends ConsumerWidget {
               },
             ),
           ),
+
+        const SliverToBoxAdapter(child: BottomPadding()),
       ],
     );
   }

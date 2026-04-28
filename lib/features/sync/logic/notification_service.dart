@@ -1,5 +1,8 @@
 import 'dart:developer';
+
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
+enum NotificationServiceIdType { upload, download, store }
 
 class NotificationService {
   static final NotificationService instance = NotificationService._();
@@ -10,7 +13,7 @@ class NotificationService {
 
   int _normalizeNotificationId(int raw) => raw & _maxAndroidNotificationId;
 
-  int _idFromString(String seed) => _normalizeNotificationId(seed.hashCode);
+  int _idFromType(NotificationServiceIdType type) => _normalizeNotificationId(type.name.hashCode);
 
   Future<void> initialize() async {
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -29,9 +32,8 @@ class NotificationService {
     log('NotificationService initialized');
   }
 
-  // Show upload progress
   Future<void> showUploadProgress({
-    required String id,
+    required NotificationServiceIdType idType,
     required String title,
     required int progress,
     required int maxProgress,
@@ -54,16 +56,15 @@ class NotificationService {
     );
 
     await _notifications.show(
-      _idFromString('upload:$id'),
+      _idFromType(idType),
       title,
       'Uploading... $percent%',
       NotificationDetails(android: androidDetails),
     );
   }
 
-  // Show download progress
   Future<void> showDownloadProgress({
-    required String id,
+    required NotificationServiceIdType idType,
     required String title,
     required int progress,
     required int maxProgress,
@@ -86,14 +87,44 @@ class NotificationService {
     );
 
     await _notifications.show(
-      _idFromString('download:$id'),
+      _idFromType(idType),
       title,
       'Downloading... $percent%',
       NotificationDetails(android: androidDetails),
     );
   }
 
-  // Show completion
+  Future<void> showStoreProgress({
+    required NotificationServiceIdType idType,
+    required String title,
+    required double progress,
+  }) async {
+    final safeProgress = progress.clamp(0.0, 1.0);
+    final percent = (safeProgress * 100).round();
+
+    final androidDetails = AndroidNotificationDetails(
+      'store_channel',
+      'Store',
+      channelDescription: 'Store/import progress notifications',
+      importance: Importance.low,
+      priority: Priority.low,
+      showProgress: true,
+      maxProgress: 100,
+      progress: percent,
+      ongoing: true,
+      playSound: false,
+      enableVibration: false,
+      onlyAlertOnce: true,
+    );
+
+    await _notifications.show(
+      _idFromType(idType),
+      title,
+      'Storing... $percent%',
+      NotificationDetails(android: androidDetails),
+    );
+  }
+
   Future<void> showCompletion({required String title, required String body}) async {
     const androidDetails = AndroidNotificationDetails(
       'completion_channel',
@@ -111,8 +142,11 @@ class NotificationService {
     );
   }
 
-  // Cancel notification
-  Future<void> cancel(String id) async {
-    await _notifications.cancel(_idFromString('download:$id'));
+  Future<void> cancel(NotificationServiceIdType idType) async {
+    await _notifications.cancel(_idFromType(idType));
+  }
+
+  Future<void> cancelWithType(NotificationServiceIdType idType) async {
+    await cancel(idType);
   }
 }

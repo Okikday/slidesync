@@ -44,6 +44,7 @@ class ContentViewGateActions {
 
     if (ref is WidgetRef && !ref.context.mounted) return;
     await _routeToViewer(refCon, content);
+    ContentProgressTracker().registerContentAccess(content.uid);
   }
 
   // ==================== Private Helper Methods ====================
@@ -53,6 +54,7 @@ class ContentViewGateActions {
     if (isLink) {
       final url = content.path.url;
       if (url != null) await launchUrl(Uri.parse(url));
+      ContentProgressTracker().registerContentAccess(content.uid);
     } else {
       ContentProgressTracker().registerContentAccess(content.uid);
       final local = content.path.local;

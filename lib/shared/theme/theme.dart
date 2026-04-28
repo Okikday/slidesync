@@ -93,10 +93,10 @@ ThemeData resolveThemeData(AppTheme theme) {
     colorScheme: cs,
     brightness: theme.brightness,
     fontFamily: "Raleway",
-    fontFamilyFallback: ["Raleway"],
+    // fontFamilyFallback: ["Raleway"],
     pageTransitionsTheme: PageTransitionsTheme(
       builders: {
-        TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+        TargetPlatform.android: FadeForwardsPageTransitionsBuilder(backgroundColor: theme.background),
         TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
         TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
       },

@@ -55,3 +55,6 @@ lib/firebase_options.dart
 *.exe
 installer_output/
 *.jks
+
+*.g.dart
+*.mapper.dart

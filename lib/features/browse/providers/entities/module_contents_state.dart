@@ -10,7 +10,7 @@ class ModuleContentsState {
   final List<ModuleContent> selectedContents;
   const ModuleContentsState({
     this.isLoading = false,
-    this.cardViewType = CardViewType.grid,
+    this.cardViewType = CardViewType.list,
     this.selectedContents = const [],
   });
 

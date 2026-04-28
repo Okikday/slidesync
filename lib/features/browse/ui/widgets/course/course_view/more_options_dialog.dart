@@ -79,7 +79,7 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
                 child: Padding(
                   padding: const EdgeInsets.only(top: 4),
                   child: CustomText(
-                    course.courseName,
+                    course.title,
                     decorationColor: theme.secondary,
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -140,7 +140,7 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
 
             uploadFeedNotifier.start(
               id: transferId,
-              title: 'Course: ${course.courseName}',
+              title: 'Course: ${course.title}',
               type: SyncType.course,
               courseId: course.uid,
               logMessage: 'Queued upload to public repository',
@@ -148,7 +148,7 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
             transferNotifier.upsertTransfer(
               TransferState(
                 id: transferId,
-                title: 'Uploading ${course.courseName}',
+                title: 'Uploading ${course.title}',
                 type: TransferType.course,
                 direction: TransferDirection.upload,
                 progress: 0.0,
@@ -169,7 +169,7 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
                 uploadFeedNotifier.fail(transferId, 'User not authenticated');
                 NotificationService.instance.showCompletion(
                   title: 'Upload failed',
-                  body: 'Course ${course.courseName}: user not authenticated',
+                  body: 'Course ${course.title}: user not authenticated',
                 );
                 GlobalNav.withContext(
                   (context) => UiUtils.showFlushBar(context, msg: 'User not authenticated', vibe: FlushbarVibe.error),
@@ -184,7 +184,7 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
                 uploadFeedNotifier.fail(transferId, 'No vault links available');
                 NotificationService.instance.showCompletion(
                   title: 'Upload failed',
-                  body: 'Course ${course.courseName}: no vault links available',
+                  body: 'Course ${course.title}: no vault links available',
                 );
                 GlobalNav.withContext(
                   (context) => UiUtils.showFlushBar(
@@ -225,8 +225,8 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
                         'Uploaded ${DriveProgress.formatBytes(safeTransferred)} of ${DriveProgress.formatBytes(safeTotal)}',
                   );
                   NotificationService.instance.showUploadProgress(
-                    id: transferId,
-                    title: 'Course: ${course.courseName}',
+                    idType: NotificationServiceIdType.upload,
+                    title: 'Course: ${course.title}',
                     progress: safeTransferred,
                     maxProgress: safeTotal,
                   );
@@ -243,20 +243,20 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
                     note: 'Uploaded ${data?.uploadedCount ?? 0} items • Skipped ${data?.skippedCount ?? 0}',
                     courseId: course.uid,
                   );
-                  NotificationService.instance.cancel(transferId);
+                  NotificationService.instance.cancel(NotificationServiceIdType.upload );
                   NotificationService.instance.showCompletion(
                     title: 'Upload completed',
                     body:
-                        '${course.courseName}: Uploaded ${data?.uploadedCount ?? 0}, Skipped ${data?.skippedCount ?? 0}, Failed ${data?.failedCount ?? 0}',
+                        '${course.title}: Uploaded ${data?.uploadedCount ?? 0}, Skipped ${data?.skippedCount ?? 0}, Failed ${data?.failedCount ?? 0}',
                   );
                   UiUtils.showFlushBar(context, msg: 'Course uploaded successfully!');
                 } else {
                   transferNotifier.updateStatus(id: transferId, status: TransferStatus.failed);
                   uploadFeedNotifier.fail(transferId, result.data?.error ?? 'Upload failed');
-                  NotificationService.instance.cancel(transferId);
+                  NotificationService.instance.cancel(NotificationServiceIdType.upload);
                   NotificationService.instance.showCompletion(
                     title: 'Upload failed',
-                    body: '${course.courseName}: ${result.data?.error ?? 'Upload failed'}',
+                    body: '${course.title}: ${result.data?.error ?? 'Upload failed'}',
                   );
                   UiUtils.showFlushBar(context, msg: result.data?.error ?? 'Upload failed', vibe: FlushbarVibe.error);
                 }
@@ -264,8 +264,8 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
             } catch (e) {
               transferNotifier.updateStatus(id: transferId, status: TransferStatus.failed);
               uploadFeedNotifier.fail(transferId, 'Upload failed: $e');
-              NotificationService.instance.cancel(transferId);
-              NotificationService.instance.showCompletion(title: 'Upload failed', body: '${course.courseName}: $e');
+              NotificationService.instance.cancel(NotificationServiceIdType.upload);
+              NotificationService.instance.showCompletion(title: 'Upload failed', body: '${course.title}: $e');
               GlobalNav.withContext(
                 (context) => UiUtils.showFlushBar(context, msg: 'Upload failed: $e', vibe: FlushbarVibe.error),
               );

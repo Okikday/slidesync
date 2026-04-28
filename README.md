@@ -35,3 +35,5 @@ A cross-platform Flutter app for students to organize, access, and sync their ed
 ---
 
 > This project is actively under development. Features may be incomplete, unstable, or subject to change. Contributions and feedback are welcome.
+
+// Use dart build_runner build to initialize object models when running

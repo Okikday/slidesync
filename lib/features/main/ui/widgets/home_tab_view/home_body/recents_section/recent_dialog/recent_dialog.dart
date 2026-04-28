@@ -9,6 +9,7 @@ import 'package:slidesync/features/main/ui/actions/home/recent_dialog_actions.da
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recent_dialog/recent_dialog_selection_options.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/helpers/formatter.dart';
 import 'package:slidesync/shared/helpers/icon_helper.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
@@ -80,7 +81,7 @@ class _RecentDialogState extends ConsumerState<RecentDialog> with RecentDialogAc
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Padding(
-                            padding: const EdgeInsets.only(left: 24.0, right: 12.0),
+                            padding: const EdgeInsets.only(left: 16.0, right: 12.0),
                             child: CustomText(
                               () {
                                 final title = widget.contentTrack.title;
@@ -102,7 +103,7 @@ class _RecentDialogState extends ConsumerState<RecentDialog> with RecentDialogAc
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Padding(
-                              padding: const EdgeInsets.only(left: 24, top: 8.0, right: 12.0),
+                              padding: const EdgeInsets.only(left: 16, top: 8.0, right: 12.0),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -124,6 +125,24 @@ class _RecentDialogState extends ConsumerState<RecentDialog> with RecentDialogAc
                               ),
                             ),
                           ),
+
+                        ConstantSizing.columnSpacingSmall,
+
+                        divider,
+
+                        ConstantSizing.columnSpacingSmall,
+
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: CustomText(
+                              "Last accessed ${widget.contentTrack.lastRead == null ? '' : Formatter.timeAgo(widget.contentTrack.lastRead!)}",
+                              fontSize: 11,
+                              color: theme.onBackground.withAlpha(150),
+                            ),
+                          ),
+                        ),
 
                         ConstantSizing.columnSpacingMedium,
 

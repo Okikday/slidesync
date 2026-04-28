@@ -24,7 +24,7 @@ class ContentTrack with ContentTrackMappable {
   FilePath thumbnail;
   String? extraDetail;
   List<String> pages;
-  DateTime lastRead;
+  DateTime? lastRead;
 
   ContentTrack({
     this.id = Isar.autoIncrement,
@@ -67,7 +67,7 @@ class ContentTrack with ContentTrackMappable {
     progress: progress,
     extraDetail: extraDetail,
     pages: pages,
-    lastRead: lastRead ?? DateTime.now(),
+    lastRead: lastRead,
     thumbnail: thumbnail ?? FilePath.empty(),
   );
 }

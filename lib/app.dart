@@ -25,7 +25,10 @@ class App extends ConsumerStatefulWidget {
 
 class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   StreamSubscription? _intentSub;
-  final _sharedFiles = <SharedMediaFile>[];
+  final List<List<String>> _pendingSharedFileBatches = [];
+  bool _isProcessingSharedFiles = false;
+  String? _lastSharedSignature;
+  DateTime? _lastSharedAt;
 
   @override
   bool handleStartBackGesture(PredictiveBackEvent backEvent) {
@@ -65,33 +68,19 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     if (Platform.isAndroid || Platform.isIOS) {
       Result.tryRun(() {
-        _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen((value) {
-          Result.tryRun(() {
-            _sharedFiles.clear();
-            _sharedFiles.addAll(value);
-            log(_sharedFiles.map((f) => f.toMap()).toString());
-            Future.delayed(const Duration(milliseconds: 500), () {
-              _showReceivingDialog().then((_) async {
-                ReceiveSharingIntent.instance.reset();
-              });
-            });
-          });
-          log(_sharedFiles.map((f) => f.toMap()).toString());
-        }, onError: (err) {});
+        _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen(
+          (value) => _handleIncomingSharedMedia(value, fromInitialIntent: false),
+          onError: (err, stackTrace) {
+            log('ReceiveSharingIntent stream error: $err', stackTrace: stackTrace);
+          },
+        );
 
         // Get the media sharing coming from outside the app while the app is closed.
-        ReceiveSharingIntent.instance.getInitialMedia().then((value) {
-          Result.tryRun(() {
-            _sharedFiles.clear();
-            _sharedFiles.addAll(value);
-            log(_sharedFiles.map((f) => f.toMap()).toString());
-            Future.delayed(const Duration(milliseconds: 500), () {
-              _showReceivingDialog().then((_) async {
-                ReceiveSharingIntent.instance.reset();
-              });
-            });
-          });
-        });
+        unawaited(
+          ReceiveSharingIntent.instance.getInitialMedia().then(
+            (value) => _handleIncomingSharedMedia(value, fromInitialIntent: true),
+          ),
+        );
       });
     }
 
@@ -131,24 +120,95 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     );
   }
 
-  Future<void> _showReceivingDialog() async {
-    if (_sharedFiles.isNotEmpty) {
-      _showSavingBottomSheet(_sharedFiles.map((e) => e.path).toList());
-      _sharedFiles.clear();
+  // Future<void> _showReceivingDialog() async {
+  //   if (_pendingSharedFileBatches.isNotEmpty) {
+  //     await _processPendingSharedBatches();
+  //   }
+  // }
+
+  Future<void> _handleIncomingSharedMedia(List<SharedMediaFile> sharedFiles, {required bool fromInitialIntent}) async {
+    if (!mounted || sharedFiles.isEmpty) return;
+
+    final paths = sharedFiles.map((e) => e.path.trim()).where((e) => e.isNotEmpty).toList(growable: false);
+    if (paths.isEmpty) return;
+
+    final signature = paths.join('|');
+    final now = DateTime.now();
+
+    // Some OEMs emit the same payload through both initial and stream callbacks.
+    if (_lastSharedSignature == signature &&
+        _lastSharedAt != null &&
+        now.difference(_lastSharedAt!) < const Duration(seconds: 2)) {
+      if (fromInitialIntent) {
+        unawaited(ReceiveSharingIntent.instance.reset());
+      }
+      return;
     }
+
+    _lastSharedSignature = signature;
+    _lastSharedAt = now;
+
+    _pendingSharedFileBatches.add(paths);
+    log('Incoming shared files: $paths');
+
+    if (fromInitialIntent) {
+      unawaited(ReceiveSharingIntent.instance.reset());
+    }
+
+    await _processPendingSharedBatches();
+  }
+
+  Future<void> _processPendingSharedBatches() async {
+    if (_isProcessingSharedFiles || !mounted) return;
+    _isProcessingSharedFiles = true;
+
+    try {
+      while (mounted && _pendingSharedFileBatches.isNotEmpty) {
+        final files = _pendingSharedFileBatches.removeAt(0);
+        final navReady = await _waitForNavigatorContext();
+        if (!mounted) return;
+
+        if (!navReady) {
+          _pendingSharedFileBatches.insert(0, files);
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
+            unawaited(_processPendingSharedBatches());
+          });
+          return;
+        }
+
+        await _showSavingBottomSheet(files);
+      }
+    } finally {
+      _isProcessingSharedFiles = false;
+    }
+  }
+
+  Future<bool> _waitForNavigatorContext() async {
+    if (GlobalNav.isAvailable) return true;
+
+    for (var i = 0; i < 30; i++) {
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (!mounted) return false;
+      if (GlobalNav.isAvailable) return true;
+    }
+
+    return GlobalNav.isAvailable;
   }
 
   Future<void> _showSavingBottomSheet(List<String> files) async {
     UiUtils.showFlushBar(context, msg: "Received contents!");
-    GlobalNav.withContextAsync<bool>((context) async {
+    final res = await GlobalNav.withContextAsync<bool>((context) async {
       final pushRes = await Navigator.of(
         context,
       ).push(MaterialPageRoute(builder: (context) => RedirectContentsScreen.store(files: files)));
       if (pushRes is bool) return pushRes;
       return false;
-    }).then((res) {
-      if (res == true) GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "Saved contents"));
     });
+
+    if (res == true) {
+      GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "Saved contents"));
+    }
   }
 }
 

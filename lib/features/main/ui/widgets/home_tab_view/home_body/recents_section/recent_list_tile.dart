@@ -3,16 +3,18 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/data/models/file_path/file_path.dart';
+import 'package:slidesync/core/constants/src/enums/enums.dart';
 
+import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/helpers/icon_helper.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 enum ProgressLevel { neutral, warning, danger, success }
 
 class RecentListTile extends ConsumerWidget {
-  final RecentListTileModel dataModel;
-  const RecentListTile({super.key, required this.dataModel});
+  final RecentListTileModel data;
+  const RecentListTile({super.key, required this.data});
 
   Color _resolveLevelColor(WidgetRef ref, ProgressLevel level) {
     return level == ProgressLevel.danger
@@ -25,6 +27,7 @@ class RecentListTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
+    final contentTrack = data.contentTrack;
     return DecoratedBox(
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: theme.onBackground.withAlpha(20))),
@@ -34,13 +37,13 @@ class RecentListTile extends ConsumerWidget {
         // backgroundColor: context.isDarkMode ? HSLColor.fromColor(ref.scaffoldBackgroundColor).withLightness(0.1).toColor() : HSLColor.fromColor(ref.scaffoldBackgroundColor).withLightness(0.9).toColor(),
         overlayColor: WidgetStatePropertyAll(theme.altBackgroundPrimary),
         onTap: () {
-          if (dataModel.onTapTile != null) dataModel.onTapTile!();
+          if (data.onTapTile != null) data.onTapTile!();
         },
         onLongPress: () {
-          if (dataModel.onLongTapTile != null) dataModel.onLongTapTile!();
+          if (data.onLongTapTile != null) data.onLongTapTile!();
         },
         onSecondaryTap: () {
-          if (dataModel.onLongTapTile != null) dataModel.onLongTapTile!();
+          if (data.onLongTapTile != null) data.onLongTapTile!();
         },
 
         child: Padding(
@@ -51,7 +54,7 @@ class RecentListTile extends ConsumerWidget {
                 children: [
                   Badge(
                     backgroundColor: Colors.transparent,
-                    isLabelVisible: dataModel.isStarred,
+                    isLabelVisible: data.isStarred,
                     label: CircleAvatar(
                       radius: 10.5,
                       backgroundColor: Color(0xff0e1d27),
@@ -63,7 +66,7 @@ class RecentListTile extends ConsumerWidget {
                       child: ClipOval(
                         child: CustomElevatedButton(
                           onClick: () {
-                            if (dataModel.onLongTapTile != null) dataModel.onLongTapTile!();
+                            if (data.onLongTapTile != null) data.onLongTapTile!();
                           },
                           pixelHeight: 48,
                           pixelWidth: 48,
@@ -75,8 +78,12 @@ class RecentListTile extends ConsumerWidget {
                             child: BuildImagePathWidget(
                               width: 48,
                               height: 48,
-                              fileDetails: dataModel.previewPath ?? FilePath.empty(),
-                              fallbackWidget: Icon(Iconsax.document_1, size: 26, color: ref.primary),
+                              fileDetails: contentTrack.thumbnail,
+                              fallbackWidget: Icon(
+                                IconHelper.getContentTypeIconData(contentTrack.type),
+                                size: 26,
+                                color: ref.primary,
+                              ),
                             ),
                           ),
                         ),
@@ -105,9 +112,14 @@ class RecentListTile extends ConsumerWidget {
                     bottom: 0,
                     child: IgnorePointer(
                       child: CircularProgressIndicator(
-                        value: dataModel.progress?.clamp(.0, 1.0) ?? .01,
+                        value: contentTrack.progress.clamp(.0, 1.0),
                         strokeCap: StrokeCap.round,
-                        color: _resolveLevelColor(ref, dataModel.progressLevel),
+                        color: _resolveLevelColor(
+                          ref,
+                          contentTrack.progress == 1.0
+                              ? ProgressLevel.success
+                              : (contentTrack.progress >= 0.75 ? ProgressLevel.warning : ProgressLevel.neutral),
+                        ),
                         backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.4),
                         strokeWidth: 4,
                       ),
@@ -131,7 +143,7 @@ class RecentListTile extends ConsumerWidget {
                         child: ConstrainedBox(
                           constraints: BoxConstraints(maxHeight: 30),
                           child: CustomText(
-                            dataModel.title,
+                            contentTrack.title.isEmpty ? "No title" : contentTrack.title,
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                             height: 1.0,
@@ -140,18 +152,20 @@ class RecentListTile extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      if (dataModel.subtitle.isNotEmpty)
+                      if (contentTrack.description.isNotEmpty)
                         Flexible(
                           child: CustomText(
-                            dataModel.subtitle,
+                            switch (contentTrack.type) {
+                              ModuleContentType.document =>
+                                contentTrack.pages.isEmpty ? "" : "Page ${contentTrack.pages.last}",
+                              _ => contentTrack.description.isNotEmpty ? contentTrack.description : "",
+                            },
                             fontSize: 12,
                             color: theme.supportingText.withValues(alpha: 0.8),
                             overflow: TextOverflow.fade,
                             maxLines: 2,
                           ),
                         ),
-                      if (dataModel.extraContent.isNotEmpty)
-                        Flexible(child: CustomText(dataModel.extraContent, fontSize: 13)),
                     ],
                   ),
                 ),
@@ -174,53 +188,20 @@ class RecentListTile extends ConsumerWidget {
 }
 
 class RecentListTileModel {
-  final String title;
-  final String subtitle;
-  final String extraContent;
-  final FilePath? previewPath;
-  final double? progress;
-  final ProgressLevel progressLevel;
+  final ContentTrack contentTrack;
   final bool isStarred;
   final void Function()? onTapTile;
   final void Function()? onLongTapTile;
 
-  RecentListTileModel({
-    required this.title,
-    required this.subtitle,
-    this.extraContent = "",
-    this.previewPath,
-    this.progress,
-    required this.progressLevel,
-    required this.isStarred,
-    this.onTapTile,
-    this.onLongTapTile,
-  });
+  RecentListTileModel({required this.contentTrack, required this.isStarred, this.onTapTile, this.onLongTapTile});
 
   @override
   bool operator ==(covariant RecentListTileModel other) {
     if (identical(this, other)) return true;
 
-    return other.title == title &&
-        other.subtitle == subtitle &&
-        other.extraContent == extraContent &&
-        other.previewPath == previewPath &&
-        other.progress == progress &&
-        other.progressLevel == progressLevel &&
-        other.isStarred == isStarred &&
-        other.onTapTile == onTapTile &&
-        other.onLongTapTile == onLongTapTile;
+    return other.isStarred == isStarred && other.onTapTile == onTapTile && other.onLongTapTile == onLongTapTile;
   }
 
   @override
-  int get hashCode {
-    return title.hashCode ^
-        subtitle.hashCode ^
-        extraContent.hashCode ^
-        previewPath.hashCode ^
-        progress.hashCode ^
-        progressLevel.hashCode ^
-        isStarred.hashCode ^
-        onTapTile.hashCode ^
-        onLongTapTile.hashCode;
-  }
+  int get hashCode => isStarred.hashCode ^ onTapTile.hashCode ^ onLongTapTile.hashCode;
 }

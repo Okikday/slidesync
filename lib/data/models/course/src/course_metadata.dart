@@ -10,17 +10,19 @@ part 'course_metadata.g.dart';
 @MappableClass()
 @Embedded(ignore: {'copyWith'})
 class CourseMetadata with CourseMetadataMappable {
+  String? courseCode;
   String? author;
   FilePath? thumbnail;
   String? rawColor;
 
-  CourseMetadata({this.author, this.thumbnail, this.rawColor});
+  CourseMetadata({this.courseCode, this.author, this.thumbnail, this.rawColor});
 
   static const fromJson = CourseMetadataMapper.fromJson;
   factory CourseMetadata.empty() => CourseMetadata();
 
-  static CourseMetadata create({String? author, FilePath? thumbnail, Color? color}) {
+  static CourseMetadata create({String? courseCode, String? author, FilePath? thumbnail, Color? color}) {
     return CourseMetadata(
+      courseCode: courseCode,
       author: author,
       thumbnail: thumbnail,
       rawColor: color != null ? ThemeUtils.colorToHex(color) : null,

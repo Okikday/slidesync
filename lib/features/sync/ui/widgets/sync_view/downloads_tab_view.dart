@@ -13,6 +13,7 @@ import 'package:slidesync/features/sync/providers/transfer_state_provider.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
+import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 
 class DownloadsTabView extends ConsumerWidget {
@@ -76,6 +77,8 @@ class DownloadsTabView extends ConsumerWidget {
             ),
           ),
         ),
+
+        const SliverToBoxAdapter(child: BottomPadding()),
       ],
     );
   }

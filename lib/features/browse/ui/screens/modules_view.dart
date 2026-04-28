@@ -5,7 +5,6 @@ import 'package:slidesync/core/base/mixins/is_scrolled_notifier_mixin.dart';
 import 'package:slidesync/features/browse/ui/widgets/module/modules_list/modules_list_with_search_scroll_view.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/shared/global/providers/course_providers.dart';
-import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/features/browse/ui/widgets/module_contents_view/src/add_collection_action_button.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -38,7 +37,7 @@ class _ModulesViewState extends ConsumerState<ModulesView> with IsScrolledNotifi
         extendBodyBehindAppBar: true,
         appBar: AppBarContainer(
           child: AbsorberWatch(
-            listenable: courseProvider.select((c) => c.whenData((cb) => (cb.courseName, cb.courseCode))),
+            listenable: courseProvider.select((c) => c.whenData((cb) => (cb.title, cb.metadata.courseCode))),
             builder: (context, courseSelectAsync, ref, child) {
               return courseSelectAsync.when(
                 data: (data) =>

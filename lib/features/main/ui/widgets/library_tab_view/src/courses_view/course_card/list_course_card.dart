@@ -94,8 +94,8 @@ class ListCourseCard extends ConsumerWidget {
 
             Expanded(
               child: ListCourseCardTitleColumn(
-                courseCode: course.courseCode,
-                courseName: course.courseName,
+                courseCode: course.metadata.courseCode ?? '',
+                courseName: course.title,
                 categoriesCount: course.modules.length,
                 hasImage: course.metadata.thumbnail?.containsAnyPath ?? false,
               ),
@@ -175,12 +175,16 @@ class _ListCourseCardIconState extends ConsumerState<ListCourseCardIcon> {
                     child: Center(
                       child: Builder(
                         builder: (context) {
-                          final text = widget.course.courseCode.isEmpty
-                              ? ""
-                              // widget.course.courseTitle
-                              //       .splitMapJoin(" ", onNonMatch: (str) => str.isNotEmpty ? str[0] : "")
-                              //       .toUpperCase()
-                              : widget.course.courseCode.substring(0, widget.course.courseCode.length.clamp(0, 8));
+                          final courseCode = widget.course.metadata.courseCode;
+                          final text = courseCode == null
+                              ? ''
+                              : courseCode.isEmpty
+                              ? ''
+                              : courseCode.substring(0, courseCode.length.clamp(0, 8))
+                          // widget.course.courseTitle
+                          //       .splitMapJoin(" ", onNonMatch: (str) => str.isNotEmpty ? str[0] : "")
+                          //       .toUpperCase()
+                          ;
 
                           return CustomText(
                             text,
@@ -219,7 +223,7 @@ class _ListCourseCardIconState extends ConsumerState<ListCourseCardIcon> {
                     ),
 
                     if (progress != null &&
-                        widget.course.courseCode.isEmpty &&
+                        !(widget.course.metadata.courseCode?.isNotEmpty == true) &&
                         !(widget.course.metadata.thumbnail?.containsAnyPath ?? false))
                       Positioned.fill(
                         child: Center(

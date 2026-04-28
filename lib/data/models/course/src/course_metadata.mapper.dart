@@ -23,6 +23,12 @@ class CourseMetadataMapper extends ClassMapperBase<CourseMetadata> {
   @override
   final String id = 'CourseMetadata';
 
+  static String? _$courseCode(CourseMetadata v) => v.courseCode;
+  static const Field<CourseMetadata, String> _f$courseCode = Field(
+    'courseCode',
+    _$courseCode,
+    opt: true,
+  );
   static String? _$author(CourseMetadata v) => v.author;
   static const Field<CourseMetadata, String> _f$author = Field(
     'author',
@@ -44,6 +50,7 @@ class CourseMetadataMapper extends ClassMapperBase<CourseMetadata> {
 
   @override
   final MappableFields<CourseMetadata> fields = const {
+    #courseCode: _f$courseCode,
     #author: _f$author,
     #thumbnail: _f$thumbnail,
     #rawColor: _f$rawColor,
@@ -51,6 +58,7 @@ class CourseMetadataMapper extends ClassMapperBase<CourseMetadata> {
 
   static CourseMetadata _instantiate(DecodingData data) {
     return CourseMetadata(
+      courseCode: data.dec(_f$courseCode),
       author: data.dec(_f$author),
       thumbnail: data.dec(_f$thumbnail),
       rawColor: data.dec(_f$rawColor),
@@ -120,7 +128,12 @@ extension CourseMetadataValueCopy<$R, $Out>
 abstract class CourseMetadataCopyWith<$R, $In extends CourseMetadata, $Out>
     implements ClassCopyWith<$R, $In, $Out> {
   FilePathCopyWith<$R, FilePath, FilePath>? get thumbnail;
-  $R call({String? author, FilePath? thumbnail, String? rawColor});
+  $R call({
+    String? courseCode,
+    String? author,
+    FilePath? thumbnail,
+    String? rawColor,
+  });
   CourseMetadataCopyWith<$R2, $In, $Out2> $chain<$R2, $Out2>(
     Then<$Out2, $R2> t,
   );
@@ -139,11 +152,13 @@ class _CourseMetadataCopyWithImpl<$R, $Out>
       $value.thumbnail?.copyWith.$chain((v) => call(thumbnail: v));
   @override
   $R call({
+    Object? courseCode = $none,
     Object? author = $none,
     Object? thumbnail = $none,
     Object? rawColor = $none,
   }) => $apply(
     FieldCopyWithData({
+      if (courseCode != $none) #courseCode: courseCode,
       if (author != $none) #author: author,
       if (thumbnail != $none) #thumbnail: thumbnail,
       if (rawColor != $none) #rawColor: rawColor,
@@ -151,6 +166,7 @@ class _CourseMetadataCopyWithImpl<$R, $Out>
   );
   @override
   CourseMetadata $make(CopyWithData data) => CourseMetadata(
+    courseCode: data.get(#courseCode, or: $value.courseCode),
     author: data.get(#author, or: $value.author),
     thumbnail: data.get(#thumbnail, or: $value.thumbnail),
     rawColor: data.get(#rawColor, or: $value.rawColor),

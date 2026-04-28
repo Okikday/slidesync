@@ -35,8 +35,8 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
   void initState() {
     super.initState();
     canExitProvider = NotifierProvider<BoolNotifier, bool>(BoolNotifier.new, isAutoDispose: true);
-    courseNameTextController = TextEditingController(text: defaultCourse.courseName);
-    descriptionTextController = TextEditingController();
+    courseNameTextController = TextEditingController(text: defaultCourse.title);
+    descriptionTextController = TextEditingController(text: defaultCourse.metadata.courseCode);
     courseCodeController = TextEditingController();
     isCourseCodeFieldVisible = NotifierProvider<BoolNotifier, bool>(BoolNotifier.new, isAutoDispose: true);
     if (widget.isEditingDescription) {
@@ -50,8 +50,9 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
     try {
       final readCourse = await ref.read(CourseProviders.watchCourseProvider(widget.courseId).future);
 
-      courseNameTextController.text = readCourse.courseName;
-      if (readCourse.courseCode.isNotEmpty) courseCodeController.text = readCourse.courseCode;
+      courseNameTextController.text = readCourse.title;
+      final courseCode = readCourse.metadata.courseCode;
+      if (courseCode != null && courseCode.isNotEmpty) courseCodeController.text = courseCode;
 
       if (readCourse.description.isNotEmpty) {
         descriptionTextController.text = readCourse.description;

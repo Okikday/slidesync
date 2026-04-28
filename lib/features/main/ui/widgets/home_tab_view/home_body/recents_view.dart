@@ -24,6 +24,7 @@ class RecentsView extends ConsumerWidget {
     return AppScaffold(
       title: "",
       appBar: AppBarContainer(child: AppBarContainerChild(theme.isDarkMode, title: "Recent reads")),
+      extendBodyBehindAppBar: true,
       body: asyncProgressTrackValues.when(
         data: (data) {
           if (data.isEmpty) {
@@ -33,23 +34,14 @@ class RecentsView extends ConsumerWidget {
             itemCount: data.length,
             padding: EdgeInsets.only(bottom: kBottomNavigationBarHeight + context.bottomPadding / 2),
             itemBuilder: (context, index) {
-              final content = data[index];
+              final contentTrack = data[index];
               return RecentListTile(
-                dataModel: RecentListTileModel(
-                  title: content.title.isEmpty ? "No title" : content.title,
-                  subtitle: () {
-                    final description = content.description;
-                    return description.isNotEmpty
-                        ? description.substring(0, description.length).padRight(3, '.')
-                        : "No subtitle";
-                  }(),
-                  // extraContent: DummySlides.dummySlides[index]['extraContent'] as String? ?? "",
-                  previewPath: content.thumbnail,
-                  progressLevel: ProgressLevel.neutral,
+                data: RecentListTileModel(
+                  contentTrack: contentTrack,
+
                   isStarred: false,
-                  progress: content.progress.clamp(0, 1.0),
                   onTapTile: () async {
-                    final toPushContent = await ModuleContentRepo.getByUid(content.uid);
+                    final toPushContent = await ModuleContentRepo.getByUid(contentTrack.uid);
                     if (toPushContent == null) return;
                     GlobalNav.withContext((context) => ContentViewGateActions.redirectToViewer(ref, toPushContent));
                   },

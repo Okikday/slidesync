@@ -75,8 +75,8 @@ class _HeaderContent extends ConsumerWidget {
     final _CourseSelectData courseSelectData = ref.watch(
       CourseProviders.watchCourseProvider(courseId).select(
         (s) => (
-          courseName: s.value?.courseName ?? '',
-          courseCode: s.value?.courseCode ?? '',
+          courseName: s.value?.title ?? '',
+          courseCode: s.value?.metadata.courseCode ?? '',
           thumbnailPath: s.value?.localThumbnailPath ?? '',
           description: s.value?.description ?? '',
         ),

@@ -23,6 +23,7 @@ import 'package:slidesync/core/constants/src/allowed_file_extensions.dart';
 import 'package:slidesync/features/browse/logic/src/contents/add_content/content_thumbnail_creator.dart';
 import 'package:slidesync/features/browse/logic/entities/add_content_result.dart';
 import 'package:slidesync/features/browse/logic/entities/store_content_args.dart';
+import 'package:slidesync/features/sync/logic/notification_service.dart';
 
 Module collectionFromJson(String source) => Module.fromJson(source);
 
@@ -180,10 +181,18 @@ Future<List<Map<String, dynamic>>> storeContents(
     },
     arg,
     onProgress: (msg) {
-      valueNotifier?.value = "Progress...${(msg * 100).toInt()}%";
+      Result.tryRunAsync(() async {
+        valueNotifier?.value = "Progress...${(msg * 100).toInt()}%";
+        await NotificationService.instance.showStoreProgress(
+          idType: NotificationServiceIdType.store,
+          title: 'Storing files',
+          progress: msg,
+        );
+      });
       return;
     },
   );
+  Result.tryRunAsync(() => NotificationService.instance.cancel(NotificationServiceIdType.store));
   return result;
 }
 
@@ -210,17 +219,20 @@ Future<Result> aggregateFileSizeToStorage(int addSize) async => Result.tryRunAsy
   await file.writeAsString(jsonEncode(updatedData));
 });
 
-Future<int> getTotalStorageUsed() async {
-  final file = File(p.join(AppPaths.rootFolder, "storage_usage.json"));
-  if (file.existsSync()) {
-    final content = file.readAsStringSync();
-    if (content.isNotEmpty) {
-      final data = jsonDecode(content);
-      if (data != null && data is Map<String, dynamic> && data.containsKey("totalSize")) {
-        final totalSize = data["totalSize"] as int? ?? 0;
-        return totalSize;
+Future<int> getTotalStorageUsed() {
+  return Result.fromAsync(() async {
+    final dir = await FileUtils.getAppDocumentsDirectory();
+    final file = File(p.join(dir.path, AppPaths.rootFolder, "storage_usage.json"));
+    if (file.existsSync()) {
+      final content = file.readAsStringSync();
+      if (content.isNotEmpty) {
+        final data = jsonDecode(content);
+        if (data != null && data is Map<String, dynamic> && data.containsKey("totalSize")) {
+          final totalSize = data["totalSize"] as int? ?? 0;
+          return totalSize;
+        }
       }
     }
-  }
-  return 0;
+    return 0;
+  }, fallback: 0);
 }

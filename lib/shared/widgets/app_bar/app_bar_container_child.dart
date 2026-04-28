@@ -51,6 +51,7 @@ class AppBarContainerChild extends ConsumerWidget {
                 children: [
                   Flexible(
                     child: Container(
+                      constraints: BoxConstraints(maxHeight: kToolbarHeight),
                       padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                       decoration: BoxDecoration(
                         color: theme.surface.withValues(alpha: 0.25),

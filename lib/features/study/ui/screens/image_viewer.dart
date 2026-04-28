@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:slidesync/core/constants/src/enums/enums.dart';
@@ -44,7 +45,9 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
   void initState() {
     super.initState();
     pageController = PageController();
-    collectionFuture = ModuleRepo.getByUid(widget.content.parentId).then((c) => c ?? Module.empty());
+    collectionFuture = ModuleRepo.getByUid(
+      widget.content.parentId,
+    ).then((c) => c ?? Module.empty()).catchError((e) => Module.empty());
   }
 
   @override
@@ -109,21 +112,18 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
                           return ValueListenableBuilder(
                             valueListenable: ref.watch(stateProvider.select((s) => s.isAppBarVisibleNotifier)),
                             builder: (context, isAppBarVisible, _) {
-                              return _PhotoViewPadding(
-                                isAppBarVisible: isAppBarVisible,
-                                child: PhotoView(
-                                  enablePanAlways: true,
-                                  maxScale: 10.0,
-                                  filterQuality: FilterQuality.high,
-                                  minScale: PhotoViewComputedScale.contained,
-                                  controller: ref.watch(stateProvider.select((s) => s.controller)),
-                                  imageProvider: currContent.path.containsLocalPath
-                                      ? FileImage(File(currContent.path.local ?? ''))
-                                      : NetworkImage(currContent.path.url ?? ''),
-                                  onTapUp: (context, details, controllerValue) {
-                                    ref.read(stateProvider).toggleAppBarVisible();
-                                  },
-                                ),
+                              return PhotoView(
+                                enablePanAlways: true,
+                                maxScale: 10.0,
+                                filterQuality: FilterQuality.high,
+                                minScale: PhotoViewComputedScale.contained,
+                                controller: ref.watch(stateProvider.select((s) => s.controller)),
+                                imageProvider: currContent.path.containsLocalPath
+                                    ? FileImage(File(currContent.path.local ?? ''))
+                                    : NetworkImage(currContent.path.url ?? ''),
+                                onTapUp: (context, details, controllerValue) {
+                                  ref.read(stateProvider).toggleAppBarVisible();
+                                },
                               );
                             },
                           );
@@ -152,7 +152,6 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
                             final currentItem = contents[pos];
 
                             return AppBarContainer(
-                              appBarHeight: isVisible ? null : 0,
                               child: AppBarContainerChild(
                                 theme.isDarkMode,
                                 title: currentItem.title,
@@ -186,7 +185,7 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
                                   ],
                                 ),
                               ),
-                            );
+                            ).animate(target: isVisible ? 1 : 0).slideY(begin: -1, end: 0);
                           },
                         );
                       },
@@ -202,18 +201,18 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
   }
 }
 
-class _PhotoViewPadding extends StatelessWidget {
-  final bool isAppBarVisible;
-  final Widget child;
-  const _PhotoViewPadding({required this.isAppBarVisible, required this.child});
+// class _PhotoViewPadding extends StatelessWidget {
+//   final bool isAppBarVisible;
+//   final Widget child;
+//   const _PhotoViewPadding({required this.isAppBarVisible, required this.child});
 
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedPadding(
-      duration: Durations.extralong1,
-      curve: CustomCurves.defaultIosSpring,
-      padding: EdgeInsets.only(top: isAppBarVisible ? kToolbarHeight + context.topPadding + 12 : 0),
-      child: child,
-    );
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     return AnimatedPadding(
+//       duration: Durations.extralong1,
+//       curve: CustomCurves.defaultIosSpring,
+//       padding: EdgeInsets.only(top: isAppBarVisible ? kToolbarHeight + context.topPadding + 12 : 0),
+//       child: child,
+//     );
+//   }
+// }

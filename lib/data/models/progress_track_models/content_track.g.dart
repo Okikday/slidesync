@@ -172,7 +172,7 @@ ContentTrack _contentTrackDeserialize(
     description: reader.readString(offsets[1]),
     extraDetail: reader.readStringOrNull(offsets[2]),
     id: id,
-    lastRead: reader.readDateTime(offsets[4]),
+    lastRead: reader.readDateTimeOrNull(offsets[4]),
     pages: reader.readStringList(offsets[5]) ?? [],
     progress: reader.readDouble(offsets[6]),
     thumbnail:
@@ -207,7 +207,7 @@ P _contentTrackDeserializeProp<P>(
     case 3:
       return (reader.readLong(offset)) as P;
     case 4:
-      return (reader.readDateTime(offset)) as P;
+      return (reader.readDateTimeOrNull(offset)) as P;
     case 5:
       return (reader.readStringList(offset) ?? []) as P;
     case 6:
@@ -1072,7 +1072,25 @@ extension ContentTrackQueryFilter
   }
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  lastReadEqualTo(DateTime value) {
+  lastReadIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'lastRead'),
+      );
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+  lastReadIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'lastRead'),
+      );
+    });
+  }
+
+  QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
+  lastReadEqualTo(DateTime? value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.equalTo(property: r'lastRead', value: value),
@@ -1081,7 +1099,7 @@ extension ContentTrackQueryFilter
   }
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  lastReadGreaterThan(DateTime value, {bool include = false}) {
+  lastReadGreaterThan(DateTime? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.greaterThan(
@@ -1094,7 +1112,7 @@ extension ContentTrackQueryFilter
   }
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
-  lastReadLessThan(DateTime value, {bool include = false}) {
+  lastReadLessThan(DateTime? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         FilterCondition.lessThan(
@@ -1108,8 +1126,8 @@ extension ContentTrackQueryFilter
 
   QueryBuilder<ContentTrack, ContentTrack, QAfterFilterCondition>
   lastReadBetween(
-    DateTime lower,
-    DateTime upper, {
+    DateTime? lower,
+    DateTime? upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
@@ -2197,7 +2215,7 @@ extension ContentTrackQueryProperty
     });
   }
 
-  QueryBuilder<ContentTrack, DateTime, QQueryOperations> lastReadProperty() {
+  QueryBuilder<ContentTrack, DateTime?, QQueryOperations> lastReadProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'lastRead');
     });

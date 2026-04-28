@@ -328,7 +328,7 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                 'Uploaded ${DriveProgress.formatBytes(safeTransferred)} of ${DriveProgress.formatBytes(safeTotal)}',
           );
           NotificationService.instance.showUploadProgress(
-            id: transferId,
+            idType: NotificationServiceIdType.upload,
             title: content.title,
             progress: safeTransferred,
             maxProgress: safeTotal,
@@ -347,7 +347,7 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
           collectionId: content.parentId,
           courseId: parentCollection.parentId,
         );
-        NotificationService.instance.cancel(transferId);
+        NotificationService.instance.cancel(NotificationServiceIdType.upload);
         NotificationService.instance.showCompletion(
           title: 'Upload completed',
           body:
@@ -357,7 +357,7 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
       } else {
         transferNotifier.updateStatus(id: transferId, status: TransferStatus.failed);
         uploadFeedNotifier.fail(transferId, data?.error ?? 'Upload failed');
-        NotificationService.instance.cancel(transferId);
+        NotificationService.instance.cancel(NotificationServiceIdType.upload);
         NotificationService.instance.showCompletion(
           title: 'Upload failed',
           body: '${content.title}: ${data?.error ?? 'Upload failed'}',
@@ -367,7 +367,7 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
     } catch (error) {
       transferNotifier.updateStatus(id: transferId, status: TransferStatus.failed);
       uploadFeedNotifier.fail(transferId, 'Upload failed: $error');
-      NotificationService.instance.cancel(transferId);
+      NotificationService.instance.cancel(NotificationServiceIdType.upload);
       NotificationService.instance.showCompletion(title: 'Upload failed', body: '${content.title}: $error');
       if (mounted) UiUtils.showFlushBar(context, msg: 'Upload failed: $error', vibe: FlushbarVibe.error);
     } finally {

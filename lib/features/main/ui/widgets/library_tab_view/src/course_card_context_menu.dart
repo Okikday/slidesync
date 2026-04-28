@@ -127,14 +127,18 @@ class CourseCardContextMenu extends ConsumerWidget {
                               children: [
                                 Flexible(
                                   child: CustomText(
-                                    course.courseName,
+                                    course.title,
                                     fontSize: 14,
                                     color: theme.onBackground,
                                     // overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                if (course.courseCode.isNotEmpty)
-                                  CustomText(course.courseCode, fontSize: 10, color: theme.supportingText),
+                                if (!(course.metadata.courseCode?.isEmpty == true))
+                                  CustomText(
+                                    course.metadata.courseCode ?? '',
+                                    fontSize: 10,
+                                    color: theme.supportingText,
+                                  ),
                               ],
                             ),
                           ),

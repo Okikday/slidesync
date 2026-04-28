@@ -130,14 +130,14 @@ class GridCourseCardStackedCard extends ConsumerWidget {
                                   spacing: 4.0,
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    if (course.courseCode.isNotEmpty)
+                                    if (course.metadata.courseCode?.isNotEmpty == true)
                                       CustomTextButton(
                                         backgroundColor: theme.altBackgroundSecondary,
                                         pixelHeight: 16,
                                         borderRadius: 8,
                                         contentPadding: EdgeInsets.symmetric(horizontal: 5.0),
                                         child: CustomText(
-                                          course.courseCode,
+                                          course.metadata.courseCode ?? '',
                                           fontSize: 8,
                                           fontWeight: FontWeight.bold,
                                           color: theme.secondary,
@@ -247,7 +247,7 @@ class GridCourseCardBottomStack extends ConsumerWidget {
               children: [
                 Flexible(
                   child: CustomText(
-                    course.courseName,
+                    course.title,
                     color: theme.onBackground,
                     fontWeight: FontWeight.bold,
                     textAlign: TextAlign.center,

@@ -5,6 +5,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
@@ -12,14 +13,17 @@ import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/storage_utils/clean_up_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
+import 'package:slidesync/features/auth/logic/services/user_auth/firebase_google_auth.dart';
 import 'package:slidesync/features/browse/logic/src/contents/add_content/store_contents.dart';
 import 'package:slidesync/features/settings/logic/models/settings_model.dart';
 import 'package:slidesync/features/settings/providers/settings_provider.dart';
 import 'package:slidesync/features/settings/ui/components/settings_appearance_dialog.dart';
+import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/theme/theme.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
@@ -201,6 +205,43 @@ class SettingsView extends ConsumerWidget {
                     ),
                   ),
 
+                  ConstantSizing.columnSpacingMedium,
+
+                  SettingsCard(
+                    title: "Sign out",
+                    iconData: Iconsax.logout,
+                    content: "Sign out of your account and remove all data from this device",
+                    trailing: CustomElevatedButton(
+                      label: "Sign out",
+                      backgroundColor: theme.error.withAlpha(200),
+                      textColor: theme.onError,
+                      textSize: 14,
+                      onClick: () {
+                        UiUtils.showCustomDialog(
+                          context,
+                          child: ConfirmDeletionDialog(
+                            content:
+                                "Are you sure you want to sign out? This will remove all your data from this device.",
+                            onPop: () {
+                              context.pop();
+                            },
+                            onCancel: () {
+                              context.pop();
+                            },
+                            onDelete: () async {
+                              context.pop();
+                              await FirebaseGoogleAuth().googleSignOut();
+                              await AppHiveData.instance.resetAll("CODEBASE ACKNOWLEDGE");
+                              GlobalNav.withContext((context) => context.goNamed(Routes.auth.name));
+                              GlobalNav.withContext(
+                                (context) => UiUtils.showFlushBar(context, msg: "Signed out successfully"),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
                   ConstantSizing.columnSpacingMedium,
 
                   // SettingsCard(

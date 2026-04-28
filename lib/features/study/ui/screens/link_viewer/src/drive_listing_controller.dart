@@ -603,7 +603,7 @@ class DriveListingController {
       final progressValue = hasTotal ? receivedBytes.clamp(0, totalBytes) : (progress * 100).round().clamp(0, 100);
       final maxProgress = hasTotal ? totalBytes : 100;
       NotificationService.instance.showDownloadProgress(
-        id: id,
+        idType: NotificationServiceIdType.download,
         title: title,
         progress: progressValue,
         maxProgress: maxProgress,
@@ -619,7 +619,7 @@ class DriveListingController {
 
   void _cancelDownloadNotification(String id) {
     try {
-      NotificationService.instance.cancel(id);
+      NotificationService.instance.cancel(NotificationServiceIdType.download);
     } catch (_) {}
   }
 
