@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:developer';
 import 'package:flutter_riverpod/experimental/mutation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -164,15 +163,21 @@ class ContentViewGateActions {
   }
 
   static Future<bool> _tryLaunchLink(String? url) => Result.fromAsync(() async {
+    bool couldLaunch = false;
     if (url != null) {
       final uri = Uri.parse(url);
-      final couldLaunch = await Result.fromAsync(
-        () => launchUrl(uri, mode: LaunchMode.platformDefault),
-        fallback: false,
-      );
-      if (!couldLaunch) await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+      couldLaunch = await Result.fromAsync(() => launchUrl(uri, mode: LaunchMode.platformDefault), fallback: false);
+      if (!couldLaunch) {
+        couldLaunch = await Result.fromAsync(() => launchUrl(uri, mode: LaunchMode.inAppBrowserView), fallback: false);
+      }
+      if (!couldLaunch) {
+        couldLaunch = await Result.fromAsync(
+          () => launchUrl(uri, mode: LaunchMode.externalApplication),
+          fallback: false,
+        );
+      }
     }
-    return true;
+    return couldLaunch;
   }, fallback: false);
 
   static Future<void> _handleUnknownType(ModuleContent content) async {

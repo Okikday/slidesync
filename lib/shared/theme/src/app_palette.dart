@@ -108,10 +108,8 @@ class AppPalette {
     coolGray,
     deepSlate,
     darkNavy,
-    richMidnight,
     blueSteel,
     platinum,
-    charcoal,
     iron,
     granite,
   ];

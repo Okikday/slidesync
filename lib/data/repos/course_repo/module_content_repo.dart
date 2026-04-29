@@ -119,14 +119,19 @@ class ModuleContentRepo {
       await isar.writeTxn(() async {
         await isar.moduleContents.delete(content.id);
 
-        await module.contents.save();
         await isar.modules.put(module);
 
         if (courseTrack != null && contentTrack != null) {
           await isar.contentTracks.delete(contentTrack.id);
 
-          await courseTrack.contentTracks.save();
           await isar.courseTracks.put(courseTrack.copyWith(progress: newProgress));
+        }
+      });
+
+      await isar.writeTxn(() async {
+        await module.contents.save();
+        if (courseTrack != null && contentTrack != null) {
+          await courseTrack.contentTracks.save();
         }
       });
       return true;
@@ -179,11 +184,14 @@ class ModuleContentRepo {
     await isar.writeTxn(() async {
       await isar.moduleContents.putAll(contents);
       await isar.contentTracks.putAll(contentTracks);
-      await module.contents.save();
-      await courseTrack.contentTracks.save();
 
       await isar.modules.put(module);
       await isar.courseTracks.put(courseTrack.copyWith(progress: newProgress));
+    });
+
+    await isar.writeTxn(() async {
+      await module.contents.save();
+      await courseTrack.contentTracks.save();
     });
 
     log("Successfully added multiple contents");
@@ -211,6 +219,8 @@ class ModuleContentRepo {
 
     if (await ModuleRepo.getByUid(collectionId) == null) return false;
 
+    log('[copyModuleContents] start collection=$collectionId count=${contents.length}');
+
     final Map<String, ModuleContent> inputByUid = {
       for (final content in contents)
         if (content.uid.isNotEmpty) content.uid: content,
@@ -223,11 +233,15 @@ class ModuleContentRepo {
       contentsToCopy.add(_cloneContentForCollection(sourceContent, collectionId));
     }
 
+    log('[copyModuleContents] cloned count=${contentsToCopy.length}');
+
     return addMultipleContents(collectionId, contentsToCopy);
   }
 
   static Future<bool> deleteMultipleContents(String collectionId, List<ModuleContent> contents) async {
     if (collectionId.isEmpty || contents.isEmpty) return false;
+
+    log('[deleteMultipleContents] start collection=$collectionId count=${contents.length}');
 
     final targetCollection = await ModuleRepo.getByUid(collectionId);
     if (targetCollection == null) return false;
@@ -294,11 +308,11 @@ class ModuleContentRepo {
       }
 
       await isar.writeTxn(() async {
+        log('[deleteMultipleContents] writeTxn begin deleteCount=${toDeleteUids.length}');
         await isar.moduleContents.deleteAllByUid(toDeleteUids.toList());
         await isar.contentTracks.deleteAllByUid(toDeleteUids.toList());
 
         for (final module in moduleByUid.values) {
-          await module.contents.save();
           await isar.modules.put(module);
         }
 
@@ -306,8 +320,17 @@ class ModuleContentRepo {
           final newProgress = courseTrack.contentTracks.isNotEmpty
               ? ContentTrackRepo.computeProgressForMultiple(courseTrack.contentTracks)
               : 0.0;
-          await courseTrack.contentTracks.save();
           await isar.courseTracks.put(courseTrack.copyWith(progress: newProgress));
+        }
+        log('[deleteMultipleContents] writeTxn end');
+      });
+
+      await isar.writeTxn(() async {
+        for (final module in moduleByUid.values) {
+          await module.contents.save();
+        }
+        for (final courseTrack in affectedCourseTracks.values) {
+          await courseTrack.contentTracks.save();
         }
       });
 
@@ -323,6 +346,8 @@ class ModuleContentRepo {
   static Future<bool> moveContents(List<ModuleContent> contents, String targetCollectionId) async {
     if (contents.isEmpty || targetCollectionId.isEmpty) return false;
 
+    log('[moveContents] start targetCollection=$targetCollectionId count=${contents.length}');
+
     final targetCollection = await ModuleRepo.getByUid(targetCollectionId);
     if (targetCollection == null) return false;
     final targetCourse = await _getCollectionParent(targetCollection);
@@ -330,6 +355,7 @@ class ModuleContentRepo {
 
     try {
       await targetCollection.contents.load();
+      log('[moveContents] targetCollection loaded');
 
       final targetCourseTrack = await CourseTrackRepo.getByUid(targetCourse.uid);
       if (targetCourseTrack == null) {
@@ -337,6 +363,7 @@ class ModuleContentRepo {
         return false;
       }
       await targetCourseTrack.contentTracks.load();
+      log('[moveContents] targetCourseTrack loaded count=${targetCourseTrack.contentTracks.length}');
 
       // Deduplicate requested move list by uid and resolve latest db entities.
       final Map<String, ModuleContent> inputByUid = {
@@ -400,33 +427,44 @@ class ModuleContentRepo {
 
       if (contentsToPersist.isEmpty) return false;
 
+      log('[moveContents] persisting count=${contentsToPersist.length}');
+
       await isar.writeTxn(() async {
+        log('[moveContents] writeTxn begin');
         await isar.moduleContents.putAll(contentsToPersist);
         if (tracksToPersist.isNotEmpty) {
           await isar.contentTracks.putAll(tracksToPersist);
         }
 
         for (final sourceCollection in sourceCollectionsByUid.values) {
-          await sourceCollection.contents.save();
           await isar.modules.put(sourceCollection);
         }
 
-        await targetCollection.contents.save();
         await isar.modules.put(targetCollection);
 
         for (final sourceCourseTrack in sourceCourseTracksByUid.values) {
           final newProgress = sourceCourseTrack.contentTracks.isNotEmpty
               ? ContentTrackRepo.computeProgressForMultiple(sourceCourseTrack.contentTracks)
               : 0.0;
-          await sourceCourseTrack.contentTracks.save();
           await isar.courseTracks.put(sourceCourseTrack.copyWith(progress: newProgress));
         }
 
         final targetProgress = targetCourseTrack.contentTracks.isNotEmpty
             ? ContentTrackRepo.computeProgressForMultiple(targetCourseTrack.contentTracks)
             : 0.0;
-        await targetCourseTrack.contentTracks.save();
         await isar.courseTracks.put(targetCourseTrack.copyWith(progress: targetProgress));
+        log('[moveContents] writeTxn end');
+      });
+
+      await isar.writeTxn(() async {
+        for (final sourceCollection in sourceCollectionsByUid.values) {
+          await sourceCollection.contents.save();
+        }
+        await targetCollection.contents.save();
+        for (final sourceCourseTrack in sourceCourseTracksByUid.values) {
+          await sourceCourseTrack.contentTracks.save();
+        }
+        await targetCourseTrack.contentTracks.save();
       });
 
       log("Successfully moved ${contentsToPersist.length} contents to collection $targetCollectionId");

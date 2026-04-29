@@ -62,7 +62,7 @@ final splashRoute = GoRoute(
     final isUserSignedIn = await UserDataFunctions().isUserSignedIn();
     final hasOnboarded = await AppHiveData.instance.getData(key: HiveDataPathKey.hasOnboarded.name) as bool?;
     if (hasOnboarded == null && !isUserSignedIn) return Routes.welcome.path;
-    if (isUserSignedIn) return Routes.home.path;
+    if (hasOnboarded == true || isUserSignedIn) return Routes.home.path;
     return Routes.auth.path;
   },
 );

@@ -32,28 +32,28 @@ import 'package:pdfrx/src/utils/platform.dart';
 
 part 'main_.dart';
 
-// final obs = ActiveProvidersObserver();
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  await Result.tryRunAsync(() async => await _initialize());
+  await Result.tryRunAsync(() => _initialize());
 
   runApp(const ProviderScope(child: App()));
 }
 
 Future<void> _initialize() async {
-  await dotenv.load();
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
   await Hive.initFlutter();
   await AppHiveData.instance.initialize();
-  await NotificationService.instance.initialize();
+
+  await dotenv.load();
 
   if (!kIsWeb) await IsarData.initializeDefault();
+
+  await NotificationService.instance.initialize();
+
   pdfrxFlutterInitialize();
+
+  await _firstAppLaunch();
+  await _appLaunchRoutine();
   await _initIfDesktop();
-  Result.tryRunAsync(() => Future.microtask(() => Future.wait([_firstAppLaunch(), _appLaunchRoutine()])));
-  // await _firstAppLaunch();
-  // await _appLaunchRoutine();
-  // await _initDesktop();
 }

@@ -168,9 +168,9 @@ class ModifyModuleActions {
         blurSigma: Offset(2, 2),
       );
 
-      final Result<String?> deleteOutcome = await Result.tryRunAsync(() async {
-        return ModifyCollectionUc().deleteCollection(collection);
-      });
+      final Result<String?> deleteOutcome = await Result.tryRunAsync(
+        () => ModifyCollectionUc().deleteCollection(collection),
+      );
       rootNavigatorKey.currentContext?.pop();
       if (deleteOutcome.isSuccess && deleteOutcome.data == null) {
         if (newContext.mounted) {

@@ -853,19 +853,19 @@ class DriveListingController {
         return;
       }
 
-      final bytes = await _downloadDriveBytes(resolvedFile, apiKey);
-      final tempDir = await Directory(p.join(Directory.systemTemp.path, 'slidesync_open')).create(recursive: true);
-      final targetPath = p.join(tempDir.path, _downloadFileName(resolvedFile));
-      await File(targetPath).writeAsBytes(bytes, flush: true);
+      final onlineUrl = _resolveOnlineViewerUrl(resolvedFile);
+      if (onlineUrl == null) {
+        _showDriveMessage('Could not resolve a preview URL for this file', FlushbarVibe.error);
+        return;
+      }
 
       GlobalNav.withContext((context) {
         Navigator.of(context).push(
           MaterialPageRoute(
             builder: (_) => OnlineViewer(
               args: OnlineViewerArgs(
-                title: resolvedFile.name ?? p.basenameWithoutExtension(targetPath),
-                localPath: targetPath,
-                fallbackUrl: resolvedFile.webViewLink ?? _driveLinkForFile(resolvedFile),
+                title: resolvedFile.name ?? p.basenameWithoutExtension(onlineUrl),
+                fallbackUrl: onlineUrl,
                 kind: openKind == _DriveInAppOpenKind.pdf ? OnlineViewerKind.pdf : OnlineViewerKind.image,
               ),
             ),
@@ -1000,6 +1000,26 @@ class DriveListingController {
     }
 
     return _sanitizeFileName(resolved);
+  }
+
+  String? _resolveOnlineViewerUrl(drive_service.DriveFile file) {
+    if (file.webContentLink != null && file.webContentLink!.trim().isNotEmpty) {
+      return file.webContentLink!.trim();
+    }
+
+    if (file.webViewLink != null && file.webViewLink!.trim().isNotEmpty) {
+      return file.webViewLink!.trim();
+    }
+
+    if (file.id == null) {
+      return null;
+    }
+
+    if (file.isGoogleNative) {
+      return 'https://drive.google.com/uc?export=download&id=${file.id}';
+    }
+
+    return 'https://drive.google.com/uc?export=view&id=${file.id}';
   }
 
   String _sanitizeFileName(String name) => name.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_');

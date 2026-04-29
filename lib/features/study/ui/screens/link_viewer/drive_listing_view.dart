@@ -187,103 +187,112 @@ class _DriveListingViewState extends ConsumerState<DriveListingView> {
                   _scheduleBreadcrumbsScrollToEnd();
                 }
 
-                return CustomScrollView(
-                  slivers: [
-                    const PinnedHeaderSliver(child: TopPadding(withHeight: kToolbarHeight + 4)),
-                    if (selection.count <= 0)
-                      PinnedHeaderSliver(
-                        child: Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: theme.background.lightenColor(theme.isDarkMode ? 0.08 : 0.92),
-                              borderRadius: BorderRadius.circular(100),
-                              border: Border.all(color: theme.onBackground.withValues(alpha: 0.1)),
-                            ),
-                            child: SingleChildScrollView(
-                              controller: _breadcrumbsScrollController,
-                              scrollDirection: Axis.horizontal,
-                              child: Row(
-                                children: [
-                                  for (var index = 0; index < breadcrumbs.length; index++) ...[
-                                    if (index > 0)
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                return RefreshIndicator(
+                  onRefresh: () async {
+                    // ignore: unused_result
+                    await ref.refresh(driveResourceProvider(currentFolderId).future);
+                  },
+                  child: CustomScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+                    slivers: [
+                      const PinnedHeaderSliver(child: TopPadding(withHeight: kToolbarHeight + 4)),
+                      if (selection.count <= 0)
+                        PinnedHeaderSliver(
+                          child: Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: theme.background.lightenColor(theme.isDarkMode ? 0.08 : 0.92),
+                                borderRadius: BorderRadius.circular(100),
+                                border: Border.all(color: theme.onBackground.withValues(alpha: 0.1)),
+                              ),
+                              child: SingleChildScrollView(
+                                controller: _breadcrumbsScrollController,
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  children: [
+                                    for (var index = 0; index < breadcrumbs.length; index++) ...[
+                                      if (index > 0)
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(horizontal: 2),
+                                          child: CustomText(
+                                            '>',
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w700,
+                                            color: theme.supportingText.withValues(alpha: 0.9),
+                                          ),
+                                        ),
+                                      TextButton(
+                                        style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8)),
+                                        onPressed: index == breadcrumbs.length - 1
+                                            ? null
+                                            : () {
+                                                ref.read(driveSelectionProvider.notifier).clearSelection();
+                                                ref.read(driveListingNavProvider.notifier).jumpToBreadcrumb(index);
+                                              },
                                         child: CustomText(
-                                          '>',
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w700,
-                                          color: theme.supportingText.withValues(alpha: 0.9),
+                                          breadcrumbs[index].label,
+                                          fontSize: 12,
+                                          fontWeight: index == breadcrumbs.length - 1
+                                              ? FontWeight.w800
+                                              : FontWeight.w600,
+                                          color: index == breadcrumbs.length - 1
+                                              ? theme.primaryColor
+                                              : theme.onBackground.withAlpha(200),
                                         ),
                                       ),
-                                    TextButton(
-                                      style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 8)),
-                                      onPressed: index == breadcrumbs.length - 1
-                                          ? null
-                                          : () {
-                                              ref.read(driveSelectionProvider.notifier).clearSelection();
-                                              ref.read(driveListingNavProvider.notifier).jumpToBreadcrumb(index);
-                                            },
-                                      child: CustomText(
-                                        breadcrumbs[index].label,
-                                        fontSize: 12,
-                                        fontWeight: index == breadcrumbs.length - 1 ? FontWeight.w800 : FontWeight.w600,
-                                        color: index == breadcrumbs.length - 1
-                                            ? theme.primaryColor
-                                            : theme.onBackground.withAlpha(200),
-                                      ),
-                                    ),
+                                    ],
                                   ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      if (selection.count > 0)
+                        PinnedHeaderSliver(
+                          child: Padding(
+                            padding: const EdgeInsets.fromLTRB(0, 12, 0, 8),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                              decoration: BoxDecoration(
+                                color: theme.scaffoldBackgroundColor.withValues(alpha: 0.6),
+                                borderRadius: BorderRadius.circular(20),
+                                border: Border.all(color: theme.onBackground.withValues(alpha: 0.12)),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(Icons.check_circle_outline, color: theme.primaryColor, size: 18),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: CustomText(
+                                      '${selection.count} selected',
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: theme.onBackground,
+                                    ),
+                                  ),
+                                  TextButton(
+                                    onPressed: () => ref.read(driveSelectionProvider.notifier).clearSelection(),
+                                    child: const CustomText('Clear', fontSize: 12),
+                                  ),
                                 ],
                               ),
                             ),
                           ),
                         ),
+                      DriveContent(
+                        resource: resource,
+                        selection: selection,
+                        onFolderNavigate: (folderId, folderName) => _navigateToFolder(folderId, folderName: folderName),
+                        onFileOpen: (file) {
+                          controller.showFileOpenOptions(file, onNavigateToFolder: _navigateToFolder);
+                        },
+                        onSelectToggle: (id) => ref.read(driveSelectionProvider.notifier).toggleSelect(id),
                       ),
-                    if (selection.count > 0)
-                      PinnedHeaderSliver(
-                        child: Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 12, 0, 8),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: theme.scaffoldBackgroundColor.withValues(alpha: 0.6),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: theme.onBackground.withValues(alpha: 0.12)),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(Icons.check_circle_outline, color: theme.primaryColor, size: 18),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: CustomText(
-                                    '${selection.count} selected',
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: theme.onBackground,
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () => ref.read(driveSelectionProvider.notifier).clearSelection(),
-                                  child: const CustomText('Clear', fontSize: 12),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    DriveContent(
-                      resource: resource,
-                      selection: selection,
-                      onFolderNavigate: (folderId, folderName) => _navigateToFolder(folderId, folderName: folderName),
-                      onFileOpen: (file) {
-                        controller.showFileOpenOptions(file, onNavigateToFolder: _navigateToFolder);
-                      },
-                      onSelectToggle: (id) => ref.read(driveSelectionProvider.notifier).toggleSelect(id),
-                    ),
-                    const SliverToBoxAdapter(child: BottomPadding()),
-                  ],
+                      const SliverToBoxAdapter(child: BottomPadding()),
+                    ],
+                  ),
                 );
               },
               loading: () => const DriveLoadingState(),

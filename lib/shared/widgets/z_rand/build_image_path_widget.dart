@@ -11,6 +11,32 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
+int fileImageVersion(File file) {
+  try {
+    final stat = file.statSync();
+    return Object.hash(stat.modified.millisecondsSinceEpoch, stat.size);
+  } catch (_) {
+    return file.path.hashCode;
+  }
+}
+
+class VersionedFileImage extends FileImage {
+  const VersionedFileImage(super.file, {super.scale = 1.0, required this.version});
+
+  final Object version;
+
+  @override
+  bool operator ==(Object other) {
+    return other is VersionedFileImage &&
+        other.file.path == file.path &&
+        other.scale == scale &&
+        other.version == version;
+  }
+
+  @override
+  int get hashCode => Object.hash(file.path, scale, version);
+}
+
 class BuildImagePathWidget extends ConsumerStatefulWidget {
   final FilePath fileDetails;
   final Widget fallbackWidget;
@@ -31,49 +57,7 @@ class BuildImagePathWidget extends ConsumerStatefulWidget {
 }
 
 class _BuildImagePathWidgetState extends ConsumerState<BuildImagePathWidget> {
-  // Uint8List? imageBytes;
-  // DateTime? _lastModified;
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   _loadImageBytes();
-  // }
-
-  // @override
-  // void didUpdateWidget(covariant BuildImagePathWidget oldWidget) {
-  //   super.didUpdateWidget(oldWidget);
-
-  //   final oldPath = oldWidget.fileDetails.filePath;
-  //   final newPath = widget.fileDetails.filePath;
-
-  //   if (newPath.isNotEmpty) {
-  //     final file = File(newPath);
-  //     if (file.existsSync()) {
-  //       final newModified = file.lastModifiedSync();
-  //       if (oldPath != newPath || _lastModified == null || newModified != _lastModified) {
-  //         _loadImageBytes();
-  //       }
-  //     }
-  //   }
-  // }
-
-  // void _loadImageBytes() {
-  //   final filePath = widget.fileDetails.filePath;
-  //   if (filePath.isNotEmpty && File(filePath).existsSync()) {
-  //     final file = File(filePath);
-  //     final bytes = file.readAsBytesSync();
-  //     final modified = file.lastModifiedSync();
-
-  //     if (_lastModified != modified) {
-  //       setState(() {
-  //         imageBytes = bytes;
-  //         _lastModified = modified;
-  //       });
-  //     }
-  //   }
-  // }
-
+  ///
   @override
   Widget build(BuildContext context) {
     final fileDetails = widget.fileDetails;
@@ -129,8 +113,9 @@ class ImageFromFile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Image.file(
-      File(fileDetails.local ?? ''),
+    final imageFile = File(fileDetails.local ?? '');
+    return Image(
+      image: VersionedFileImage(imageFile, version: fileImageVersion(imageFile)),
       fit: fit,
       width: width,
       height: height,

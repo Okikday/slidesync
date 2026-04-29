@@ -98,7 +98,10 @@ class FileUtils {
 
   static Future<List<bool>> deleteMultipleFiles(Iterable<File> files) async => await Future.wait(
     files.map(
-      (file) async => Result.fromAsync(() async => file.path.isEmpty ? false : await file.delete().then((v) => true)),
+      (file) async => Result.fromAsync(
+        () async => file.path.isEmpty ? false : await file.delete().then((v) => true),
+        fallback: false,
+      ),
     ),
   );
 

@@ -126,7 +126,7 @@ class ModuleContentsAppBar extends ConsumerWidget {
                   },
                 ),
 
-                if (!DeviceUtils.isDesktop())
+                if (DeviceUtils.isDesktop())
                   PopupMenuAction(
                     title: "Go back to Course Details",
                     iconData: HugeIconsStroke.arrowLeft01,

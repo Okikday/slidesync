@@ -21,6 +21,7 @@ import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
+import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 class ImageViewer extends ConsumerStatefulWidget {
   final ModuleContent content;
@@ -119,7 +120,10 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
                                 minScale: PhotoViewComputedScale.contained,
                                 controller: ref.watch(stateProvider.select((s) => s.controller)),
                                 imageProvider: currContent.path.containsLocalPath
-                                    ? FileImage(File(currContent.path.local ?? ''))
+                                    ? VersionedFileImage(
+                                        File(currContent.path.local ?? ''),
+                                        version: fileImageVersion(File(currContent.path.local ?? '')),
+                                      )
                                     : NetworkImage(currContent.path.url ?? ''),
                                 onTapUp: (context, details, controllerValue) {
                                   ref.read(stateProvider).toggleAppBarVisible();

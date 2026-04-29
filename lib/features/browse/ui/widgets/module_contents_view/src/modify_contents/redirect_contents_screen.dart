@@ -119,7 +119,7 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
   }
 
   Future<void> _handleCollectionSelection(BuildContext context, Module collection) async {
-    context.goNamed(Routes.library.name);
+    context.pop();
     switch (widget.mode) {
       case ContentSheetMode.move:
         await _handleMoveContents(context, collection);
@@ -129,6 +129,13 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
         break;
       case ContentSheetMode.store:
         await _handleStoreFiles(context, collection);
+        break;
+      default:
+        if (mounted) {
+          GlobalNav.withContext(
+            (c) => UiUtils.showFlushBar(c, msg: 'Unsupported content action', vibe: FlushbarVibe.error),
+          );
+        }
         break;
     }
   }
@@ -150,18 +157,29 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
       ),
     );
 
-    final moved = await ModuleContentRepo.moveContents(contentsToMove, collection.uid);
-    GlobalNav.popGlobal();
+    try {
+      final moved = await ModuleContentRepo.moveContents(contentsToMove, collection.uid);
+      if (!mounted) return;
 
-    if (!moved) {
-      GlobalNav.withContext(
-        (context) => UiUtils.showFlushBar(context, msg: 'Unable to move contents', vibe: FlushbarVibe.warning),
-      );
-      return;
+      if (!moved) {
+        GlobalNav.withContext(
+          (context) => UiUtils.showFlushBar(context, msg: 'Unable to move contents', vibe: FlushbarVibe.warning),
+        );
+        return;
+      }
+
+      GlobalNav.withContext((c) => c.pushReplacementNamed(Routes.moduleContentsView.name, extra: collection));
+      GlobalNav.withContext((c) => UiUtils.showFlushBar(c, msg: 'Successfully moved contents'));
+    } catch (e, st) {
+      debugPrint('move contents failed: $e\n$st');
+      if (mounted) {
+        GlobalNav.withContext(
+          (context) => UiUtils.showFlushBar(context, msg: 'Unable to move contents', vibe: FlushbarVibe.error),
+        );
+      }
+    } finally {
+      GlobalNav.popGlobal();
     }
-
-    GlobalNav.withContext((c) => c.pushReplacementNamed(Routes.moduleContentsView.name, extra: collection));
-    GlobalNav.withContext((c) => UiUtils.showFlushBar(c, msg: 'Successfully moved contents'));
   }
 
   Future<void> _handleCopyContents(BuildContext context, Module collection) async {
@@ -182,18 +200,29 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
       ),
     );
 
-    final copied = await ModuleContentRepo.copyModuleContents(collection.uid, contentsToCopy);
-    GlobalNav.popGlobal();
+    try {
+      final copied = await ModuleContentRepo.copyModuleContents(collection.uid, contentsToCopy);
+      if (!mounted) return;
 
-    if (!copied) {
-      GlobalNav.withContext(
-        (context) => UiUtils.showFlushBar(context, msg: 'Unable to copy contents', vibe: FlushbarVibe.warning),
-      );
-      return;
+      if (!copied) {
+        GlobalNav.withContext(
+          (context) => UiUtils.showFlushBar(context, msg: 'Unable to copy contents', vibe: FlushbarVibe.warning),
+        );
+        return;
+      }
+
+      GlobalNav.withContext((c) => c.pushReplacementNamed(Routes.moduleContentsView.name, extra: collection));
+      GlobalNav.withContext((c) => UiUtils.showFlushBar(c, msg: 'Successfully copied contents'));
+    } catch (e, st) {
+      debugPrint('copy contents failed: $e\n$st');
+      if (mounted) {
+        GlobalNav.withContext(
+          (context) => UiUtils.showFlushBar(context, msg: 'Unable to copy contents', vibe: FlushbarVibe.error),
+        );
+      }
+    } finally {
+      GlobalNav.popGlobal();
     }
-
-    GlobalNav.withContext((c) => c.pushReplacementNamed(Routes.moduleContentsView.name, extra: collection));
-    GlobalNav.withContext((c) => UiUtils.showFlushBar(c, msg: 'Successfully copied contents'));
   }
 
   Future<void> _handleStoreFiles(BuildContext context, Module collection) async {
@@ -210,11 +239,21 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
           UiUtils.showLoadingDialog(context, message: 'Hold on for a moment while we store your files', canPop: false),
     );
 
-    await _storeContentsToCollection(collectionId: collection.uid, filePaths: filePaths);
-    GlobalNav.popGlobal();
-
-    GlobalNav.withContext((c) => c.pushNamed(Routes.moduleContentsView.name, extra: collection));
-    GlobalNav.withContext((c) => UiUtils.showFlushBar(c, msg: 'Successfully stored files'));
+    try {
+      await _storeContentsToCollection(collectionId: collection.uid, filePaths: filePaths);
+      if (!mounted) return;
+      GlobalNav.withContext((c) => c.pushNamed(Routes.moduleContentsView.name, extra: collection));
+      GlobalNav.withContext((c) => UiUtils.showFlushBar(c, msg: 'Successfully stored files'));
+    } catch (e, st) {
+      debugPrint('store contents failed: $e\n$st');
+      if (mounted) {
+        GlobalNav.withContext(
+          (context) => UiUtils.showFlushBar(context, msg: 'Unable to store files', vibe: FlushbarVibe.error),
+        );
+      }
+    } finally {
+      GlobalNav.popGlobal();
+    }
   }
 
   Future<void> _storeContentsToCollection({required String collectionId, required List<String> filePaths}) async {

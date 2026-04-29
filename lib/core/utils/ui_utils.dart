@@ -127,7 +127,7 @@ class UiUtils {
     Color? messageColor,
     Color? backgroundColor,
     Duration duration = const Duration(milliseconds: 1500),
-    FlushbarPosition flushbarPosition = FlushbarPosition.BOTTOM,
+    FlushbarPosition flushbarPosition = FlushbarPosition.TOP,
     FlushbarVibe vibe = FlushbarVibe.none,
     EdgeInsets? margin,
     double barBlur = 4.0,

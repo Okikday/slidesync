@@ -18,6 +18,8 @@ import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart'
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
+import 'package:go_router/go_router.dart';
+import 'package:slidesync/routes/routes.dart';
 
 final _searchTypeProvider = NotifierProvider.autoDispose(IntNotifier.new);
 const strCategories = ['Courses', 'Collections', 'Materials'];
@@ -63,6 +65,8 @@ class LibraryTabViewSearchButton extends ConsumerWidget with CoursesViewActions 
         shape: CircleBorder(side: BorderSide(color: theme.onBackground.withAlpha(10))),
       ),
       suggestionsBuilder: (context, controller) async {
+        final searchType = ref.watch(_searchTypeProvider);
+
         if (controller.text.isEmpty) {
           return [
             Padding(
@@ -71,9 +75,8 @@ class LibraryTabViewSearchButton extends ConsumerWidget with CoursesViewActions 
                 child: Center(
                   child: Consumer(
                     builder: (context, ref, child) {
-                      final selectedIndex = ref.watch(_searchTypeProvider);
                       return CustomText(
-                        "Input a title to search in ${strCategories[selectedIndex]}",
+                        "Input a title to search in ${strCategories.elementAt(searchType.clamp(0, strCategories.length - 1))}",
                         color: theme.backgroundSupportingText.withAlpha(150),
                       );
                     },
@@ -83,8 +86,7 @@ class LibraryTabViewSearchButton extends ConsumerWidget with CoursesViewActions 
             ),
           ];
         }
-        final List searchResults;
-        searchResults = switch (ref.watch(_searchTypeProvider)) {
+        final List searchResults = switch (searchType) {
           0 => await (CourseRepo.filter).titleContains(controller.text, caseSensitive: false).findAll(),
           1 => await (ModuleRepo.filter).titleContains(controller.text, caseSensitive: false).findAll(),
           2 => await (ModuleContentRepo.filter).titleContains(controller.text, caseSensitive: false).findAll(),
@@ -102,7 +104,7 @@ class LibraryTabViewSearchButton extends ConsumerWidget with CoursesViewActions 
                 child: Consumer(
                   builder: (context, ref, child) {
                     final value = searchResults[i];
-                    return switch (ref.watch((_searchTypeProvider))) {
+                    return switch (searchType) {
                       0 => CourseCard(
                         value as Course,
                         CardViewType.list,
@@ -113,20 +115,12 @@ class LibraryTabViewSearchButton extends ConsumerWidget with CoursesViewActions 
                       ),
                       1 => Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: FutureBuilder(
-                          future: CourseRepo.getCourseByUid((value as Module).parentId),
-                          builder: (context, courseSnapshot) {
-                            return ModuleCard(
-                              module: (value),
-                              subtitleText: "${value.contents.length} items -> ${courseSnapshot.data?.title ?? ""}",
-                              onTap: () async {
-                                // controller.closeView("");
-                                final curr = value;
-                                final parent = await CourseRepo.getCourseByUid(curr.parentId);
-                                if (parent == null) return;
-                                onTapCourseCard(ref, course: parent);
-                              },
-                            );
+                        child: ModuleCard(
+                          module: value as Module,
+                          subtitleText: "${value.contents.length} items",
+                          onTap: () {
+                            context.pop();
+                            context.pushNamed(Routes.moduleContentsView.name, extra: value);
                           },
                         ),
                       ),

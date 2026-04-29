@@ -8,7 +8,6 @@ import 'package:go_router/go_router.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
-import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 import 'course_folder_import_manager.dart';
 import 'package:saf_util/saf_util_platform_interface.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
@@ -596,6 +595,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = ref.theme;
+    final padding = context.padding;
 
     return AppScaffold(
       title: "",
@@ -607,67 +607,61 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
           subtitle: 'Step ${_currentStep + 1} of 3',
         ),
       ),
-      body: SingleChildScrollView(
-        child: TopPadding(
-          withHeight: kToolbarHeight,
-          child: BottomPadding(
-            child: Stepper(
-              currentStep: _currentStep,
-              onStepContinue: _onStepContinue,
-              onStepCancel: _currentStep > 0 ? () => setState(() => _currentStep--) : null,
-              controlsBuilder: (context, details) {
-                return Padding(
-                  padding: const EdgeInsets.only(top: 16),
-                  child: Row(
-                    children: [
-                      if (_currentStep < 2)
-                        ElevatedButton(
-                          onPressed: details.onStepContinue,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: theme.primary,
-                            foregroundColor: theme.onPrimary,
-                            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                          ),
-                          child: const Text('Continue'),
-                        ),
-                      if (_currentStep > 0) ...[
-                        const SizedBox(width: 12),
-                        TextButton(
-                          onPressed: details.onStepCancel,
-                          child: Text('Back', style: TextStyle(color: theme.supportingText)),
-                        ),
-                      ],
-                    ],
+      body: Stepper(
+        margin: EdgeInsets.only(top: padding.top + kToolbarHeight, bottom: padding.bottom),
+        currentStep: _currentStep,
+        onStepContinue: _onStepContinue,
+        onStepCancel: _currentStep > 0 ? () => setState(() => _currentStep--) : null,
+        controlsBuilder: (context, details) {
+          return Padding(
+            padding: const EdgeInsets.only(top: 16),
+            child: Row(
+              children: [
+                if (_currentStep < 2)
+                  ElevatedButton(
+                    onPressed: details.onStepContinue,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme.primary,
+                      foregroundColor: theme.onPrimary,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
+                    child: const Text('Continue'),
                   ),
-                );
-              },
-              steps: [
-                Step(
-                  title: Text('Select Base Folder', style: TextStyle(color: theme.onSurface)),
-                  content: _buildBaseFolderStep(),
-                  isActive: _currentStep >= 0,
-                  state: _currentStep > 0 ? StepState.complete : StepState.indexed,
-                ),
-                Step(
-                  title: Text('Configure Options', style: TextStyle(color: theme.onSurface)),
-                  content: _buildOptionsStep(),
-                  isActive: _currentStep >= 1,
-                  state: _currentStep > 1
-                      ? StepState.complete
-                      : _currentStep == 1
-                      ? StepState.indexed
-                      : StepState.disabled,
-                ),
-                Step(
-                  title: Text('Review & Import', style: TextStyle(color: theme.onSurface)),
-                  content: _buildPreviewStep(),
-                  isActive: _currentStep >= 2,
-                  state: _currentStep == 2 ? StepState.indexed : StepState.disabled,
-                ),
+                if (_currentStep > 0) ...[
+                  const SizedBox(width: 12),
+                  TextButton(
+                    onPressed: details.onStepCancel,
+                    child: Text('Back', style: TextStyle(color: theme.supportingText)),
+                  ),
+                ],
               ],
             ),
+          );
+        },
+        steps: [
+          Step(
+            title: Text('Select Base Folder', style: TextStyle(color: theme.onSurface)),
+            content: _buildBaseFolderStep(),
+            isActive: _currentStep >= 0,
+            state: _currentStep > 0 ? StepState.complete : StepState.indexed,
           ),
-        ),
+          Step(
+            title: Text('Configure Options', style: TextStyle(color: theme.onSurface)),
+            content: _buildOptionsStep(),
+            isActive: _currentStep >= 1,
+            state: _currentStep > 1
+                ? StepState.complete
+                : _currentStep == 1
+                ? StepState.indexed
+                : StepState.disabled,
+          ),
+          Step(
+            title: Text('Review & Import', style: TextStyle(color: theme.onSurface)),
+            content: _buildPreviewStep(),
+            isActive: _currentStep >= 2,
+            state: _currentStep == 2 ? StepState.indexed : StepState.disabled,
+          ),
+        ],
       ),
     );
   }

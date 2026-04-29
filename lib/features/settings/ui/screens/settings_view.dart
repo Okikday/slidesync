@@ -25,6 +25,7 @@ import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/theme/theme.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/dialogs/app_alert_dialog.dart';
 import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
@@ -232,7 +233,8 @@ class SettingsView extends ConsumerWidget {
                       onClick: () {
                         UiUtils.showCustomDialog(
                           context,
-                          child: ConfirmDeletionDialog(
+                          child: AppAlertDialog(
+                            title: "Export to Device",
                             content: 'Export all courses to a chosen folder. Continue?',
                             onPop: () {
                               context.pop();
@@ -240,7 +242,7 @@ class SettingsView extends ConsumerWidget {
                             onCancel: () {
                               context.pop();
                             },
-                            onDelete: () async {
+                            onConfirm: () async {
                               context.pop();
                               UiUtils.showLoadingDialog(context, canPop: false, message: 'Exporting courses...');
                               if (DeviceUtils.isDesktop()) {

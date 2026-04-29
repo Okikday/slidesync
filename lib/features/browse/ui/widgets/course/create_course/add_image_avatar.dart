@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
 class AddImageAvatar extends ConsumerWidget {
   final NotifierProvider<ImpliedNotifierN<String>, String?> courseImagePathProvider;
@@ -70,7 +71,15 @@ class AddImageAvatar extends ConsumerWidget {
             },
             child: courseImagePath == null
                 ? Icon(Iconsax.folder_add, size: 72, color: theme.primaryColor)
-                : Image.file(File(courseImagePath), fit: BoxFit.cover, width: imgRadius, height: imgRadius)
+                : Image(
+                    image: VersionedFileImage(
+                      File(courseImagePath),
+                      version: fileImageVersion(File(courseImagePath)),
+                    ),
+                    fit: BoxFit.cover,
+                    width: imgRadius,
+                    height: imgRadius,
+                  )
                       .animate()
                       .scale(
                         begin: Offset(0.4, 0.4),
