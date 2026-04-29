@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -10,8 +8,8 @@ import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/features/browse/logic/src/courses/create_course_uc.dart';
-import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 
 class CreateCourseButton extends ConsumerWidget {
   const CreateCourseButton({
@@ -19,13 +17,15 @@ class CreateCourseButton extends ConsumerWidget {
     required this.courseNameController,
     required this.courseCodeController,
     required this.isCourseCodeFieldVisible,
-    required this.courseImagePathProvider,
+    required this.courseImagePathNotifier,
+    required this.pushToCreated,
   });
 
   final TextEditingController courseNameController;
   final TextEditingController courseCodeController;
-  final NotifierProvider<BoolNotifier, bool> isCourseCodeFieldVisible;
-  final NotifierProvider<ImpliedNotifierN, String?> courseImagePathProvider;
+  final ValueNotifier<bool> isCourseCodeFieldVisible;
+  final ValueNotifier<String?> courseImagePathNotifier;
+  final bool pushToCreated;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -40,7 +40,7 @@ class CreateCourseButton extends ConsumerWidget {
       onClick: () async {
         final String courseName = courseNameController.text.trim();
         final String courseCode = courseCodeController.text.trim();
-        final String? errorString = checkIfCanCreateCourse(courseName, courseCode, ref.watch(isCourseCodeFieldVisible));
+        final String? errorString = checkIfCanCreateCourse(courseName, courseCode, isCourseCodeFieldVisible.value);
         if (errorString != null) {
           UiUtils.showFlushBar(
             context,
@@ -53,44 +53,39 @@ class CreateCourseButton extends ConsumerWidget {
         }
         FocusScope.of(context).unfocus();
 
-        if (context.mounted) {
-          UiUtils.showLoadingDialog(
+        GlobalNav.withContext(
+          (context) => UiUtils.showLoadingDialog(
             context,
             message: "Adding Course...",
             backgroundColor: Colors.white10,
             blurSigma: Offset(2, 2),
-          );
-        }
-
-        final String? courseImagePath = ref.read(courseImagePathProvider);
+            canPop: false,
+          ),
+        );
 
         final Result<Course> createCourseOutcome = await CreateCourseUc().createCourseAction(
           courseName: courseName,
           courseCode: courseCode,
-          courseImagePath: courseImagePath,
+          courseImagePath: courseImagePathNotifier.value,
         );
 
-        if (context.mounted) UiUtils.hideDialog(context);
+        GlobalNav.withContext((context) => UiUtils.hideDialog(context));
 
         createCourseOutcome
             .doNext((value) async {
-              if (context.mounted) {
-                context.pop();
-                log("${context.mounted}");
-                if (DeviceUtils.isDesktop()) {
-                  context.pushReplacementNamed(Routes.courseDetails.name, extra: value.uid);
+              GlobalNav.withContext((context) => context.pop());
+              GlobalNav.withContextAsync((context) async {
+                if (pushToCreated) {
+                  DeviceUtils.isDesktop()
+                      ? context.pushReplacementNamed(Routes.courseDetails.name, extra: value.uid)
+                      : context.pushNamed(Routes.courseDetails.name, extra: value.uid);
                 } else {
-                  context.pushNamed(Routes.courseDetails.name, extra: value.uid);
+                  //
                 }
                 await Future.delayed(Durations.short4);
-                if (rootNavigatorKey.currentContext != null && rootNavigatorKey.currentContext!.mounted) {
-                  await UiUtils.showFlushBar(
-                    rootNavigatorKey.currentContext!,
-                    msg: "Successfully created course!",
-                    vibe: FlushbarVibe.success,
-                  );
-                }
-              }
+                // ignore: use_build_context_synchronously
+                await UiUtils.showFlushBar(context, msg: "Successfully created course!", vibe: FlushbarVibe.success);
+              });
             })
             .onError((error, [_]) async {
               await UiUtils.showFlushBar(

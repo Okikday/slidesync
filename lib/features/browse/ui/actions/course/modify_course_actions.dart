@@ -26,7 +26,7 @@ import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 class ModifyCourseActions {
   /// When the course image is clicked, it shows some options in a dialog the user can choose from.
   static void onClickCourseImage(WidgetRef ref, {required String courseId}) async {
-    final course = await CourseRepo.getCourseByUid(courseId);
+    final course = await CourseRepo.getByUid(courseId);
     if (course == null) return;
     final hasImage = await File(course.localThumbnailPath).exists();
     final context = ref.context;
@@ -118,8 +118,11 @@ class ModifyCourseActions {
           onDelete: () async {
             context.pop();
 
-            GlobalNav.withContext((context) => UiUtils.showLoadingDialog(context, message: "Deleting course..."));
+            GlobalNav.withContext(
+              (context) => UiUtils.showLoadingDialog(context, message: "Deleting course...", canPop: false),
+            );
             await _onDeleteCourse(courseId: courseId);
+            GlobalNav.withContext((context) => context.pop());
             GlobalNav.withContext((context) => context.pop());
             GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "Successfully deleted course"));
           },
@@ -257,7 +260,7 @@ class ModifyCourseActions {
 
   /// When the user clicks to delete the course, on the Dialog
   static Future<void> _onDeleteCourse({required String courseId}) async {
-    final course = await CourseRepo.getCourseByUid(courseId);
+    final course = await CourseRepo.getByUid(courseId);
     if (course == null) return;
     for (final item in course.modules) {
       await ModifyCollectionUc().deleteCollection(item);

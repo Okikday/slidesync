@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/features/main/ui/actions/main_view_actions.dart';
 import 'package:slidesync/features/main/ui/entities/main_view_entity.dart';
-import 'package:slidesync/features/main/ui/widgets/library_tab_view/library_floating_action_button.dart';
+import 'package:slidesync/features/main/ui/widgets/library_tab_view/library_tab_f_a_b.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_drawer.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -72,7 +72,7 @@ class _MainViewState extends ConsumerState<MainView> with MainViewActions {
           canPop: false,
           extendBody: true,
           drawer: const HomeDrawer(),
-          floatingActionButton: const LibraryFloatingActionButton(),
+          floatingActionButton: const LibraryTabFAB(),
           systemUiOverlayStyle: _deriveSystemUiOverlayStyle(ref, isScrolled),
           body: body!,
           footer: BackSoftEdgeBlur(

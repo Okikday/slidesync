@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -15,6 +17,7 @@ import 'package:slidesync/features/browse/ui/widgets/course/course_view/course_v
 import 'package:slidesync/features/browse/ui/widgets/module/modules_list/modules_list_with_search_scroll_view.dart';
 import 'package:slidesync/features/main/providers/src/library_notifier/src/courses_pagination_notifier.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
+import 'package:slidesync/features/main/ui/widgets/library_tab_view/create_course_f_a_b.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/course_card.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/empty_library_view.dart';
 import 'package:slidesync/routes/routes.dart';
@@ -26,31 +29,31 @@ import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 
-enum ContentSheetMode { move, copy, store }
+enum RedirectMode { move, copy, store }
 
 class RedirectContentsScreen extends ConsumerStatefulWidget {
   final List<ModuleContent>? contentsToMove;
   final List<ModuleContent>? contentsToCopy;
   final List<String>? filePaths;
-  final ContentSheetMode mode;
+  final RedirectMode mode;
 
   const RedirectContentsScreen.move({super.key, required List<ModuleContent> contents})
     : contentsToMove = contents,
       contentsToCopy = null,
       filePaths = null,
-      mode = ContentSheetMode.move;
+      mode = RedirectMode.move;
 
   const RedirectContentsScreen.copy({super.key, required List<ModuleContent> contents})
     : contentsToCopy = contents,
       contentsToMove = null,
       filePaths = null,
-      mode = ContentSheetMode.copy;
+      mode = RedirectMode.copy;
 
   const RedirectContentsScreen.store({super.key, required List<String> files})
     : filePaths = files,
       contentsToMove = null,
       contentsToCopy = null,
-      mode = ContentSheetMode.store;
+      mode = RedirectMode.store;
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _RedirectContentsScreenState();
@@ -82,7 +85,9 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
           onBackButtonClicked: () => _handleBackPressed(context),
         ),
       ),
-      floatingActionButton: isCoursePhase ? null : CourseViewFAB(courseId: _selectedCourse!.uid),
+      floatingActionButton: isCoursePhase
+          ? const CreateCourseFAB(pushToCreated: false)
+          : CourseViewFAB(courseId: _selectedCourse!.uid),
       body: AnimatedSwitcher(
         duration: Durations.medium3,
         switchInCurve: Curves.easeInOut,
@@ -94,7 +99,10 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
           key: ValueKey(_selectedCourse?.uid ?? 'courses'),
           child: isCoursePhase
               ? _CourseSelectionView(coursePagination: coursePagination, onTapCourse: _selectCourse)
-              : _ModuleSelectionView(course: _selectedCourse!, onTapModule: _handleCollectionSelection),
+              : _ModuleSelectionView(
+                  course: _selectedCourse!,
+                  onTapModule: (module) => _handleCollectionSelection(context, module: module),
+                ),
         ),
       ),
     );
@@ -118,141 +126,99 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
     });
   }
 
-  Future<void> _handleCollectionSelection(BuildContext context, Module collection) async {
-    context.pop();
-    switch (widget.mode) {
-      case ContentSheetMode.move:
-        await _handleMoveContents(context, collection);
-        break;
-      case ContentSheetMode.copy:
-        await _handleCopyContents(context, collection);
-        break;
-      case ContentSheetMode.store:
-        await _handleStoreFiles(context, collection);
-        break;
-      default:
-        if (mounted) {
-          GlobalNav.withContext(
-            (c) => UiUtils.showFlushBar(c, msg: 'Unsupported content action', vibe: FlushbarVibe.error),
-          );
-        }
-        break;
-    }
-  }
+  Future<void> _handleCollectionSelection(BuildContext context, {required Module module}) async {
+    context.pop(); // First pop of the RedirectContentsScreen
 
-  Future<void> _handleMoveContents(BuildContext context, Module collection) async {
-    final contentsToMove = widget.contentsToMove;
-    if (contentsToMove == null || contentsToMove.isEmpty) {
-      GlobalNav.withContext(
-        (context) => UiUtils.showFlushBar(context, msg: 'No contents to move', vibe: FlushbarVibe.warning),
-      );
+    final mode = widget.mode;
+    // Determine if we can proceed
+    final redirList = switch (mode) {
+      RedirectMode.copy => widget.contentsToCopy,
+      RedirectMode.move => widget.contentsToMove,
+      RedirectMode.store => widget.filePaths,
+    };
 
+    // If nothing was sent, just return
+    if (redirList == null || redirList.isEmpty) {
+      final msg = switch (mode) {
+        RedirectMode.copy => 'No contents was selected for copy',
+        RedirectMode.move => 'No contents was selected for move',
+        RedirectMode.store => 'No files was received!',
+      };
+      GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: msg, vibe: FlushbarVibe.warning));
       return;
     }
+
+    await 200.inMs.delay();
+
+    // Reaching here means contents sent wasn't empty or null
     GlobalNav.withContext(
-      (context) => UiUtils.showLoadingDialog(
+      (context) => UiUtils.showLoadingDialog(context, message: "Processing your materials", canPop: false),
+    );
+
+    // Call the respective methods to carry out the appropiate operations
+    final String? errorMsg = await switch (widget.mode) {
+      RedirectMode.move => _handleMoveContents(module, redirList as List<ModuleContent>),
+      RedirectMode.copy => _handleCopyContents(module, redirList as List<ModuleContent>),
+      RedirectMode.store => _handleStoreFiles(module, redirList as List<String>),
+    };
+    GlobalNav.popGlobal();
+    await 200.inMs.delay();
+
+    // If it returns an error message, it didn't complete successfully
+    if (errorMsg != null) {
+      GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: errorMsg, vibe: FlushbarVibe.error));
+      return;
+    }
+
+    // If not, show things that just got copied
+    final pushTo = Routes.moduleContentsView.name;
+    GlobalNav.withContext((context) => context.pushNamed(pushTo, extra: module));
+
+    await 200.inMs.delay();
+
+    GlobalNav.withContext(
+      (context) => UiUtils.showFlushBar(
         context,
-        message: 'Hold on for a moment while we move your materials',
-        canPop: false,
+        msg: switch (mode) {
+          RedirectMode.move => 'Successfully moved contents!',
+          RedirectMode.copy => 'Successfully copied contents!',
+          RedirectMode.store => 'Successfully stored files!',
+        },
+        vibe: FlushbarVibe.success,
       ),
     );
+  }
 
+  Future<String?> _handleMoveContents(Module collection, List<ModuleContent> redirList) async {
     try {
-      final moved = await ModuleContentRepo.moveContents(contentsToMove, collection.uid);
-      if (!mounted) return;
-
-      if (!moved) {
-        GlobalNav.withContext(
-          (context) => UiUtils.showFlushBar(context, msg: 'Unable to move contents', vibe: FlushbarVibe.warning),
-        );
-        return;
-      }
-
-      GlobalNav.withContext((c) => c.pushReplacementNamed(Routes.moduleContentsView.name, extra: collection));
-      GlobalNav.withContext((c) => UiUtils.showFlushBar(c, msg: 'Successfully moved contents'));
+      final moved = await ModuleContentRepo.moveContents(redirList, collection.uid);
+      if (!moved) return "Failed to move contents to another module";
+      return null;
     } catch (e, st) {
-      debugPrint('move contents failed: $e\n$st');
-      if (mounted) {
-        GlobalNav.withContext(
-          (context) => UiUtils.showFlushBar(context, msg: 'Unable to move contents', vibe: FlushbarVibe.error),
-        );
-      }
-    } finally {
-      GlobalNav.popGlobal();
+      log('move contents failed: $e\n$st');
+      return "An error occurred while moving contents to another module";
     }
   }
 
-  Future<void> _handleCopyContents(BuildContext context, Module collection) async {
-    final contentsToCopy = widget.contentsToCopy;
-    if (contentsToCopy == null || contentsToCopy.isEmpty) {
-      GlobalNav.withContext(
-        (context) => UiUtils.showFlushBar(context, msg: 'No contents to copy', vibe: FlushbarVibe.warning),
-      );
-
-      return;
-    }
-
-    GlobalNav.withContext(
-      (context) => UiUtils.showLoadingDialog(
-        context,
-        message: 'Hold on for a moment while we copy your materials',
-        canPop: false,
-      ),
-    );
-
+  Future<String?> _handleCopyContents(Module collection, List<ModuleContent> redirList) async {
     try {
-      final copied = await ModuleContentRepo.copyModuleContents(collection.uid, contentsToCopy);
-      if (!mounted) return;
+      final copied = await ModuleContentRepo.copyModuleContents(collection.uid, redirList);
+      if (!copied) return "Failed to copy contents to another module";
 
-      if (!copied) {
-        GlobalNav.withContext(
-          (context) => UiUtils.showFlushBar(context, msg: 'Unable to copy contents', vibe: FlushbarVibe.warning),
-        );
-        return;
-      }
-
-      GlobalNav.withContext((c) => c.pushReplacementNamed(Routes.moduleContentsView.name, extra: collection));
-      GlobalNav.withContext((c) => UiUtils.showFlushBar(c, msg: 'Successfully copied contents'));
+      return null;
     } catch (e, st) {
-      debugPrint('copy contents failed: $e\n$st');
-      if (mounted) {
-        GlobalNav.withContext(
-          (context) => UiUtils.showFlushBar(context, msg: 'Unable to copy contents', vibe: FlushbarVibe.error),
-        );
-      }
-    } finally {
-      GlobalNav.popGlobal();
+      log('copy contents failed: $e\n$st');
+      return "An error occured while copying contents to another module";
     }
   }
 
-  Future<void> _handleStoreFiles(BuildContext context, Module collection) async {
-    final filePaths = widget.filePaths;
-    if (filePaths == null || filePaths.isEmpty) {
-      GlobalNav.withContext(
-        (context) => UiUtils.showFlushBar(context, msg: 'No files to store', vibe: FlushbarVibe.warning),
-      );
-
-      return;
-    }
-    GlobalNav.withContext(
-      (context) =>
-          UiUtils.showLoadingDialog(context, message: 'Hold on for a moment while we store your files', canPop: false),
-    );
-
+  Future<String?> _handleStoreFiles(Module collection, List<String> redirList) async {
     try {
-      await _storeContentsToCollection(collectionId: collection.uid, filePaths: filePaths);
-      if (!mounted) return;
-      GlobalNav.withContext((c) => c.pushNamed(Routes.moduleContentsView.name, extra: collection));
-      GlobalNav.withContext((c) => UiUtils.showFlushBar(c, msg: 'Successfully stored files'));
+      await _storeContentsToCollection(collectionId: collection.uid, filePaths: redirList);
+      return null;
     } catch (e, st) {
-      debugPrint('store contents failed: $e\n$st');
-      if (mounted) {
-        GlobalNav.withContext(
-          (context) => UiUtils.showFlushBar(context, msg: 'Unable to store files', vibe: FlushbarVibe.error),
-        );
-      }
-    } finally {
-      GlobalNav.popGlobal();
+      log('store contents failed: $e\n$st');
+      return "An error occured while storing files";
     }
   }
 
@@ -304,7 +270,7 @@ class _ModuleSelectionView extends StatelessWidget {
   const _ModuleSelectionView({required this.course, required this.onTapModule});
 
   final Course course;
-  final Future<void> Function(BuildContext context, Module collection) onTapModule;
+  final Future<void> Function(Module module) onTapModule;
 
   @override
   Widget build(BuildContext context) {
@@ -313,7 +279,7 @@ class _ModuleSelectionView extends StatelessWidget {
       topPadding: kToolbarHeight + 4,
       isPinned: true,
       showMoreOptionsButton: false,
-      onTapModuleCard: (module) => onTapModule(context, module),
+      onTapModuleCard: onTapModule,
     );
   }
 }

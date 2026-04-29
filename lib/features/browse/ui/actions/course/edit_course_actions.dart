@@ -35,8 +35,8 @@ class EditCourseActions {
   }
 
   /// Logic to call when user tries to pop page. It'll ask if user wants to exit without saving
-  void onPopInvokedWithResult(BuildContext context, NotifierProvider<BoolNotifier, bool> canExitProvider) {
-    if (ref.read(canExitProvider)) return;
+  void onPopInvokedWithResult(BuildContext context, ValueNotifier<bool> canExitNotifier) {
+    if (canExitNotifier.value) return;
     UiUtils.showCustomDialog(
       context,
       transitionType: TransitionType.cupertinoDialog,
@@ -50,7 +50,7 @@ class EditCourseActions {
         onConfirm: () async {
           CustomDialog.hide(context);
 
-          ref.read(canExitProvider.notifier).update((cb) => true);
+          canExitNotifier.value = true;
           Navigator.pop(context);
         },
       ),
@@ -63,7 +63,7 @@ class EditCourseActions {
     required String courseCode,
     required String description,
     required bool isCourseCodeFieldVisible,
-    required NotifierProvider<BoolNotifier, bool> canExitProvider,
+    required ValueNotifier<bool> canExitNotifier,
     required StreamNotifierProvider<CourseStreamNotifier, Course> modifyCourseProvider,
   }) async {
     final context = ref.context;
@@ -87,8 +87,7 @@ class EditCourseActions {
     if (updatedCourse != null) {
       await CourseRepo.addCourse(updatedCourse);
     }
-
-    ref.read(canExitProvider.notifier).update((cb) => true);
+    canExitNotifier.value = true;
     if (context.mounted) Navigator.pop(context);
   }
 }

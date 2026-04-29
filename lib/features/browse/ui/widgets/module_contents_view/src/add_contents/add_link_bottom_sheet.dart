@@ -39,7 +39,8 @@ class _AddLinkBottomSheetState extends ConsumerState<AddLinkBottomSheet> {
     debounceTimer = Timer(const Duration(milliseconds: 400), () async {
       final link = linkInputController.text;
       if (link.length >= 4 && link.length <= 256) {
-        if (mounted) linkDetailsNotifier.value = await RetriveContentUc.getLinkPreviewData(link);
+        final details = await RetriveContentUc.getLinkPreviewData(link);
+        if (mounted) linkDetailsNotifier.value = details;
       }
     });
   }

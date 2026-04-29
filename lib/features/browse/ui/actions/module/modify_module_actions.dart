@@ -16,7 +16,7 @@ import 'package:slidesync/shared/helpers/global_nav.dart';
 class ModifyModuleActions {
   /// Add collection to course
   Future<String?> _addCollectionToCourse(String courseId, String title) async {
-    final Course? course = await CourseRepo.getCourseByUid(courseId);
+    final Course? course = await CourseRepo.getByUid(courseId);
     if (course == null) {
       return "Couldn't find course!";
     }

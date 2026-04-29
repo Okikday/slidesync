@@ -17,7 +17,8 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 
 class CreateCourseView extends ConsumerStatefulWidget {
-  const CreateCourseView({super.key});
+  final bool pushToCreated;
+  const CreateCourseView({super.key, this.pushToCreated = true});
 
   @override
   ConsumerState createState() => _CreateCourseViewState();
@@ -39,41 +40,35 @@ class _CreateCourseViewState extends ConsumerState<CreateCourseView> with Single
                 child: const Icon(Icons.folder),
               )
             : null,
-        body: CreateCourseOuterSection(),
+        body: CreateCourseOuterSection(pushToCreated: widget.pushToCreated),
       ),
     );
   }
 }
 
 class CreateCourseOuterSection extends ConsumerStatefulWidget {
-  const CreateCourseOuterSection({super.key});
+  final bool pushToCreated;
+
+  const CreateCourseOuterSection({super.key, required this.pushToCreated});
 
   @override
   ConsumerState<CreateCourseOuterSection> createState() => _CreateCourseOuterSectionState();
 }
 
 class _CreateCourseOuterSectionState extends ConsumerState<CreateCourseOuterSection> {
-  late final NotifierProvider<BoolNotifier, bool> isCourseCodeFieldVisible;
-  late final TextEditingController courseNameController;
-  late final TextEditingController courseCodeController;
-  late final NotifierProvider<ImpliedNotifierN<String>, String?> courseImagePathProvider;
-  late final ScrollController scrollController;
-
-  @override
-  void initState() {
-    super.initState();
-    isCourseCodeFieldVisible = NotifierProvider<BoolNotifier, bool>(BoolNotifier.new, isAutoDispose: true);
-    courseImagePathProvider = NotifierProvider(ImpliedNotifierN.new, isAutoDispose: true);
-    courseNameController = TextEditingController();
-    courseCodeController = TextEditingController();
-    scrollController = ScrollController();
-  }
+  final courseNameController = TextEditingController();
+  final courseCodeController = TextEditingController();
+  final scrollController = ScrollController();
+  final isCourseCodeFieldVisible = ValueNotifier<bool>(false);
+  final courseImagePath = ValueNotifier<String?>(null);
 
   @override
   void dispose() {
     courseNameController.dispose();
     courseCodeController.dispose();
     scrollController.dispose();
+    isCourseCodeFieldVisible.dispose();
+    courseImagePath.dispose();
     super.dispose();
   }
 
@@ -94,7 +89,7 @@ class _CreateCourseOuterSectionState extends ConsumerState<CreateCourseOuterSect
                   children: [
                     ConstantSizing.columnSpacingMedium,
 
-                    AddImageAvatar(courseImagePathProvider: courseImagePathProvider),
+                    AddImageAvatar(courseImagePathNotifier: courseImagePath),
 
                     ConstantSizing.columnSpacing(56),
 
@@ -146,7 +141,8 @@ class _CreateCourseOuterSectionState extends ConsumerState<CreateCourseOuterSect
                 courseNameController: courseNameController,
                 courseCodeController: courseCodeController,
                 isCourseCodeFieldVisible: isCourseCodeFieldVisible,
-                courseImagePathProvider: courseImagePathProvider,
+                courseImagePathNotifier: courseImagePath,
+                pushToCreated: widget.pushToCreated,
               ),
             ),
           ],

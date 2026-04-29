@@ -51,7 +51,7 @@ class ExploreDownloadHelper {
 
   Future<void> _downloadCourse(BuildContext context, WidgetRef ref, ExploreCardData data) async {
     // Check if course already exists locally
-    final existingCourse = await CourseRepo.getCourseByUid(data.id);
+    final existingCourse = await CourseRepo.getByUid(data.id);
 
     if (existingCourse != null) {
       // Show merge dialog

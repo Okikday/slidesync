@@ -24,24 +24,17 @@ class EditCourseBottomSheet extends ConsumerStatefulWidget {
 }
 
 class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
-  late final TextEditingController courseNameTextController;
-  late final TextEditingController courseCodeController;
-  late final TextEditingController descriptionTextController;
-  late final NotifierProvider<BoolNotifier, bool> canExitProvider;
-  late final FocusNode descriptionFocusNode;
-  late final NotifierProvider<BoolNotifier, bool> isCourseCodeFieldVisible;
+  final courseNameTextController = TextEditingController(text: defaultCourse.title);
+  final courseCodeController = TextEditingController();
+  final descriptionTextController = TextEditingController(text: defaultCourse.metadata.courseCode);
+  final descriptionFocusNode = FocusNode();
+  final canExitNotifier = ValueNotifier<bool>(false);
+  final isCourseCodeFieldVisible = ValueNotifier<bool>(false);
 
   @override
   void initState() {
     super.initState();
-    canExitProvider = NotifierProvider<BoolNotifier, bool>(BoolNotifier.new, isAutoDispose: true);
-    courseNameTextController = TextEditingController(text: defaultCourse.title);
-    descriptionTextController = TextEditingController(text: defaultCourse.metadata.courseCode);
-    courseCodeController = TextEditingController();
-    isCourseCodeFieldVisible = NotifierProvider<BoolNotifier, bool>(BoolNotifier.new, isAutoDispose: true);
-    if (widget.isEditingDescription) {
-      descriptionFocusNode = FocusNode();
-    }
+
     WidgetsBinding.instance.addPostFrameCallback((_) => initPostFrame());
   }
 
@@ -71,6 +64,11 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
 
   @override
   void dispose() {
+    courseNameTextController.dispose();
+    courseCodeController.dispose();
+    descriptionTextController.dispose();
+    isCourseCodeFieldVisible.dispose();
+    canExitNotifier.dispose();
     super.dispose();
   }
 
@@ -82,10 +80,16 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
       (context.viewInsets.bottom / context.deviceHeight).toStringAsFixed(2),
     ).clamp(0.0, 0.25);
 
-    return PopScope(
-      canPop: ref.watch(canExitProvider),
-      onPopInvokedWithResult: (_, _) => EditCourseActions.of(ref).onPopInvokedWithResult(context, canExitProvider),
+    return ValueListenableBuilder(
+      valueListenable: canExitNotifier,
+      builder: (context, canExit, child) {
+        return PopScope(
+          canPop: canExit,
+          onPopInvokedWithResult: (_, _) => EditCourseActions.of(ref).onPopInvokedWithResult(context, canExitNotifier),
 
+          child: child!,
+        );
+      },
       child: AnimatedSize(
         duration: Durations.extralong1,
         curve: CustomCurves.defaultIosSpring,
@@ -158,7 +162,7 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
                       courseCodeController: courseCodeController,
                       descriptionTextController: descriptionTextController,
                       isCourseCodeFieldVisible: isCourseCodeFieldVisible,
-                      canExitProvider: canExitProvider,
+                      canExitNotifier: canExitNotifier,
                     ),
                   ],
                 ),
@@ -193,14 +197,14 @@ class PositionedUpdateDetailsButton extends ConsumerWidget {
     required this.courseCodeController,
     required this.descriptionTextController,
     required this.isCourseCodeFieldVisible,
-    required this.canExitProvider,
+    required this.canExitNotifier,
   });
   final String courseId;
   final TextEditingController courseNameTextController;
   final TextEditingController courseCodeController;
   final TextEditingController descriptionTextController;
-  final NotifierProvider<BoolNotifier, bool> isCourseCodeFieldVisible;
-  final NotifierProvider<BoolNotifier, bool> canExitProvider;
+  final ValueNotifier<bool> isCourseCodeFieldVisible;
+  final ValueNotifier<bool> canExitNotifier;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -221,8 +225,8 @@ class PositionedUpdateDetailsButton extends ConsumerWidget {
               courseName: courseNameTextController.text,
               courseCode: courseCodeController.text,
               description: descriptionTextController.text,
-              isCourseCodeFieldVisible: ref.read(isCourseCodeFieldVisible),
-              canExitProvider: canExitProvider,
+              isCourseCodeFieldVisible: isCourseCodeFieldVisible.value,
+              canExitNotifier: canExitNotifier,
               modifyCourseProvider: CourseProviders.watchCourseProvider(courseId),
             );
           },

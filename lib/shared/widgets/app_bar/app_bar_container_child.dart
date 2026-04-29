@@ -52,7 +52,7 @@ class AppBarContainerChild extends ConsumerWidget {
                   Flexible(
                     child: Container(
                       constraints: BoxConstraints(maxHeight: kToolbarHeight),
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
                       decoration: BoxDecoration(
                         color: theme.surface.withValues(alpha: 0.25),
                         border: Border.fromBorderSide(BorderSide(color: theme.onBackground.withValues(alpha: 0.04))),
@@ -64,15 +64,17 @@ class AppBarContainerChild extends ConsumerWidget {
                               ? Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisAlignment: MainAxisAlignment.center,
-                                  spacing: 2.5,
+                                  // spacing: 0,
                                   children: [
-                                    CustomText(
-                                      title,
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.bold,
-                                      overflow: TextOverflow.ellipsis,
-                                      color: theme.onBackground,
-                                      maxLines: 1,
+                                    Expanded(
+                                      child: CustomText(
+                                        title,
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        overflow: TextOverflow.ellipsis,
+                                        color: theme.onBackground,
+                                        maxLines: 1,
+                                      ),
                                     ),
                                     CustomText(
                                       subtitle!,

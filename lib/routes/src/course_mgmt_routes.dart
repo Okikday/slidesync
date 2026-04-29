@@ -1,5 +1,3 @@
-import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
-import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/features/browse/ui/screens/create_course_view.dart';
 import 'package:slidesync/routes/routes.dart';
@@ -9,14 +7,10 @@ final courseMgmtRoutes = [
   GoRoute(
     name: Routes.createCourse.name,
     path: Routes.createCourse.path,
-    pageBuilder: (context, state) => PageAnimation.buildCustomTransitionPage(
-      state.pageKey,
-      type: TransitionType.rightToLeftWithFade,
-      duration: Durations.extralong1,
-      reverseDuration: Durations.medium1,
-      curve: CustomCurves.defaultIosSpring,
-      child: const CreateCourseView(),
-    ),
+    builder: (context, state) {
+      final pushToCreated = state.extra as bool? ?? true;
+      return CreateCourseView(pushToCreated: pushToCreated);
+    },
   ),
 
   // // SELECT TO MODIFY COURSE VIEW NAVIGATION

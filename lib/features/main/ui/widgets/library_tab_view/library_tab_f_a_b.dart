@@ -2,18 +2,17 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/features/main/providers/src/library_notifier/library_notifier.dart';
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/features/main/ui/widgets/library_tab_view/create_course_f_a_b.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/state/absorber.dart';
 
-class LibraryFloatingActionButton extends ConsumerWidget {
+class LibraryTabFAB extends ConsumerWidget {
   final bool isDesktop;
-  const LibraryFloatingActionButton({super.key, this.isDesktop = false});
+  const LibraryTabFAB({super.key, this.isDesktop = false});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -54,23 +53,7 @@ class LibraryFloatingActionButton extends ConsumerWidget {
 
       child: Padding(
         padding: EdgeInsets.only(bottom: isDesktop ? 24 : 80),
-        child:
-            FloatingActionButton(
-              onPressed: () => context.pushNamed(Routes.createCourse.name),
-              tooltip: "Create course",
-              shape: const CircleBorder(),
-              backgroundColor: theme.primaryColor,
-              child: ClipOval(
-                child: ColoredBox(
-                  color: ref.primary,
-                  child: SizedBox.square(dimension: 51, child: Icon(Iconsax.add_copy, color: theme.onPrimary)),
-                ),
-              ),
-            ).animate().scale(
-              alignment: Alignment.bottomRight,
-              curve: CustomCurves.bouncySpring,
-              duration: Durations.extralong3,
-            ),
+        child: CreateCourseFAB(),
       ),
     );
   }

@@ -10,7 +10,7 @@ class InputCourseTitleField extends ConsumerWidget {
     required this.isCourseCodeFieldVisible,
     this.viewScrollController,
   });
-  final NotifierProvider<BoolNotifier, bool> isCourseCodeFieldVisible;
+  final ValueNotifier<bool> isCourseCodeFieldVisible;
   final TextEditingController courseNameController;
   final ScrollController? viewScrollController;
 
@@ -43,9 +43,9 @@ class InputCourseTitleField extends ConsumerWidget {
         borderRadius: 12,
         overlayColor: theme.primaryColor.withAlpha(40),
         onClick: () async {
-          final bool isCourseCodeVisible = ref.read(isCourseCodeFieldVisible);
+          final bool isCourseCodeVisible = isCourseCodeFieldVisible.value;
           if (isCourseCodeVisible) FocusScope.of(context).unfocus();
-          ref.read(isCourseCodeFieldVisible.notifier).update((cb) => !isCourseCodeVisible);
+          isCourseCodeFieldVisible.value = !isCourseCodeVisible;
           if (FocusScope.of(context).hasFocus && viewScrollController != null) {
             viewScrollController?.animateTo(
               viewScrollController!.position.maxScrollExtent + 150,
@@ -59,10 +59,15 @@ class InputCourseTitleField extends ConsumerWidget {
           message: "Add Optional Course code",
           triggerMode: TooltipTriggerMode.longPress,
           showDuration: 4.inSeconds,
-          child: Icon(
-            ref.watch(isCourseCodeFieldVisible) ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
-            size: 30,
-            color: theme.supportingText,
+          child: ValueListenableBuilder(
+            valueListenable: isCourseCodeFieldVisible,
+            builder: (context, visible, child) {
+              return Icon(
+                visible ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                size: 30,
+                color: theme.supportingText,
+              );
+            },
           ),
         ),
       ),

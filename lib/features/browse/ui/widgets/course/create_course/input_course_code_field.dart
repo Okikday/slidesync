@@ -4,7 +4,7 @@ import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart'
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class InputCourseCodeField extends ConsumerWidget {
-  final NotifierProvider<BoolNotifier, bool> isCourseCodeFieldVisible;
+  final ValueNotifier<bool> isCourseCodeFieldVisible;
   final TextEditingController courseCodeController;
   const InputCourseCodeField({super.key, required this.courseCodeController, required this.isCourseCodeFieldVisible});
 
@@ -14,63 +14,69 @@ class InputCourseCodeField extends ConsumerWidget {
     return AnimatedSize(
       duration: Durations.extralong4,
       curve: CustomCurves.bouncySpring,
-      child: SizedBox(
-        height: ref.watch(isCourseCodeFieldVisible) ? 76 : 0,
-        child: Stack(
-          clipBehavior: Clip.hardEdge,
-          children: [
-            Align(
-              alignment: Alignment.centerRight,
-              child: CustomTextfield(
-                controller: courseCodeController,
-                backgroundColor: theme.surface.withValues(alpha: 0.8),
-                cursorColor: theme.primaryColor,
-                selectionHandleColor: theme.primaryColor,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  borderSide: BorderSide(color: theme.altBackgroundPrimary.withAlpha(150)),
+      child: ValueListenableBuilder(
+        valueListenable: isCourseCodeFieldVisible,
+        builder: (context, visible, child) {
+          return SizedBox(
+            height: visible ? 76 : 0,
+            child: Stack(
+              clipBehavior: Clip.hardEdge,
+              children: [
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: CustomTextfield(
+                    controller: courseCodeController,
+                    backgroundColor: theme.surface.withValues(alpha: 0.8),
+                    cursorColor: theme.primaryColor,
+                    selectionHandleColor: theme.primaryColor,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                      borderSide: BorderSide(color: theme.altBackgroundPrimary.withAlpha(150)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                      borderSide: BorderSide(color: theme.primaryColor),
+                    ),
+                    autoDispose: false,
+                    autofocus: true,
+                    onTapOutside: () {},
+                    constraints: BoxConstraints(maxWidth: 200),
+                    pixelHeight: 60,
+                    inputContentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 18),
+                    hint: "Optional course code",
+                    inputTextStyle: TextStyle(fontSize: 16, color: theme.onBackground),
+                  ),
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  borderSide: BorderSide(color: theme.primaryColor),
-                ),
-                autoDispose: false,
-                onTapOutside: () {},
-                constraints: BoxConstraints(maxWidth: 200),
-                pixelHeight: 60,
-                inputContentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 18),
-                hint: "Optional course code",
-                inputTextStyle: TextStyle(fontSize: 16, color: theme.onBackground),
-              ),
-            ),
 
-            Positioned(
-              left: 4,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    height: 32,
-                    width: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.withAlpha(40),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                Positioned(
+                  left: 4,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        height: 32,
+                        width: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withAlpha(40),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      Container(
+                        width: (context.deviceWidth - 48 - 200).clamp(80, context.deviceWidth),
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: Colors.grey.withAlpha(40),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ],
                   ),
-                  Container(
-                    width: (context.deviceWidth - 48 - 200).clamp(80, context.deviceWidth),
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.withAlpha(40),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }

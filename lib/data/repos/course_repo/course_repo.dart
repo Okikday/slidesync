@@ -22,16 +22,14 @@ class CourseRepo {
   static Future<int> addCourse(Course course) async {
     if (course.uid.trim().isEmpty || course.uid == "_") return -1;
 
+    final existingCourseTrack = await _isar.courseTracks.filter().uidEqualTo(course.uid).findFirst();
+
+    final newCourseTrack = existingCourseTrack == null
+        ? CourseTrack.create(courseId: course.uid, title: course.title, description: course.description)
+        : null;
+
     return await _isar.writeTxn(() async {
-      final existingCourseTrack = await _isar.courseTracks.filter().uidEqualTo(course.uid).findFirst();
-      if (existingCourseTrack == null) {
-        final newCourseTrack = CourseTrack.create(
-          courseId: course.uid,
-          title: course.title,
-          description: course.description,
-        );
-        await _isar.courseTracks.put(newCourseTrack);
-      }
+      if (newCourseTrack != null) await _isar.courseTracks.put(newCourseTrack);
       return await _isar.courses.put(course);
     });
   }
@@ -44,7 +42,7 @@ class CourseRepo {
 
   // static Future<Stream<List<Course>>> watchAllCoursesLazily() async => await _isarData.watchAllLazily();
 
-  static Future<Course?> getCourseByUid(String courseId) => _isar.courses.filter().uidEqualTo(courseId).findFirst();
+  static Future<Course?> getByUid(String courseId) => _isar.courses.filter().uidEqualTo(courseId).findFirst();
 
   static Future<Course?> get(Id id) => _isarData.get(id);
 

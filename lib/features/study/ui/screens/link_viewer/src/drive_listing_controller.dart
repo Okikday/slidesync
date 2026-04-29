@@ -766,7 +766,7 @@ class DriveListingController {
       return null;
     }
 
-    return await CourseRepo.getCourseByUid(collection.parentId);
+    return await CourseRepo.getByUid(collection.parentId);
   }
 
   Future<Module?> _resolveOrCreateImportCollection(String courseId, String title) async {

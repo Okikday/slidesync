@@ -11,7 +11,7 @@ final _collectionById = StreamNotifierProvider.autoDispose.family<CollectionNoti
 );
 final _watchCollectionsInCourse = StreamNotifierProvider.autoDispose.family(
   (String courseId) => StreamedNotifier<List<Module>>(() async* {
-    final course = await CourseRepo.getCourseByUid(courseId);
+    final course = await CourseRepo.getByUid(courseId);
     if (course == null) {
       yield* Stream.empty();
       return;

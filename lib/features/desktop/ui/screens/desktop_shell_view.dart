@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/features/main/ui/screens/home_tab_view.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_drawer.dart';
-import 'package:slidesync/features/main/ui/widgets/library_tab_view/library_floating_action_button.dart';
+import 'package:slidesync/features/main/ui/widgets/library_tab_view/library_tab_f_a_b.dart';
 import 'package:slidesync/features/main/ui/screens/library_tab_view.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
@@ -48,7 +48,7 @@ class DesktopShellView extends ConsumerWidget {
                   fit: StackFit.expand,
                   children: [
                     const LibraryTabView(),
-                    Positioned(bottom: 12, right: 12, child: const LibraryFloatingActionButton(isDesktop: true)),
+                    Positioned(bottom: 12, right: 12, child: const LibraryTabFAB(isDesktop: true)),
                   ],
                 ),
               ),

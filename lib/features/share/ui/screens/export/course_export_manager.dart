@@ -129,7 +129,7 @@ class _CourseExportShared {
 
     GlobalNav.withContext((c) => UiUtils.showLoadingDialog(c, message: 'Loading course...'));
 
-    final course = await CourseRepo.getCourseByUid(courseId);
+    final course = await CourseRepo.getByUid(courseId);
 
     GlobalNav.popGlobal();
 
