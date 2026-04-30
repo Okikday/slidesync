@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 class UserCredentialModel {
   final String userID;
   final String displayName;
@@ -66,4 +67,9 @@ class UserCredentialModel {
     'creationTime': null,
     'lastSignInTime': null,
   };
+
+  @override
+  String toString() {
+    return 'UserCredentialModel(userID: $userID, displayName: $displayName, userName: $userName, email: $email, photoURL: $photoURL, isAnonymous: $isAnonymous, isEmailVerified: $isEmailVerified, phoneNumber: $phoneNumber, creationTime: $creationTime, lastSignInTime: $lastSignInTime)';
+  }
 }

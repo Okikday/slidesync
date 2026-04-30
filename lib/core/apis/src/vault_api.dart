@@ -26,6 +26,15 @@ class _VaultApi {
 
   Future<Result<void>> deleteVault(String linkId) => Result.tryRunAsync(() => ApiPaths.vaultEntry(linkId).delete());
 
+  // /// Debug helper: return current Firebase Auth UID and email so developer
+  // /// can copy the UID and add it to /admins via the Firebase Console.
+  // Future<Result<Map<String, String?>>> currentAuthInfo() => Result.tryRunAsync(() async {
+  //   log("Getting usr");
+  //   final user = FirebaseAuth.instance.currentUser;
+  //   log("uid: ${user?.uid}, email: ${user?.email}");
+  //   return {'uid': user?.uid, 'email': user?.email};
+  // }).then((v) => Result.success(v.data ?? {}));
+
   // ── Upload log (paginated) ─────────────────────────────────────────────────
 
   Query<VaultUploadEntity> uploadsQuery(String linkId) =>
@@ -64,13 +73,12 @@ class _VaultApi {
     final uploadRef = db.collection('storageVault').doc(linkId).collection('uploads').doc(); // auto UUID
     batch.set(uploadRef, VaultUploadEntity.createMap(uploadRef.id, uploadInput));
 
-    // 2. Content-lookup hash doc (immutable, merge:false — no-op if exists)
+    // 2. Content-lookup hash doc (immutable — only create if missing)
     final hashRef = db.collection('content-lookup').doc(uploadInput.xxh3Hash);
-    batch.set(
-      hashRef,
-      {'xxh3Hash': uploadInput.xxh3Hash, 'createdAt': FieldValue.serverTimestamp()},
-      SetOptions(merge: true), // merge so existing hash doc isn't clobbered
-    );
+    final hashSnap = await hashRef.get();
+    if (!hashSnap.exists) {
+      batch.set(hashRef, {'xxh3Hash': uploadInput.xxh3Hash, 'createdAt': FieldValue.serverTimestamp()});
+    }
 
     // 3. Source entry under the hash
     final sourceRef = db

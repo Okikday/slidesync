@@ -43,12 +43,17 @@ class FirebaseGoogleAuth {
         UserCredentialModel(
           userID: user.uid,
           displayName: user.displayName ?? "Anonymous",
+          userName: user.displayName ?? "Anonymous",
           email: user.email ?? "anonymous@gmail.com",
-          phoneNumber: phoneNumber,
+          isAnonymous: user.isAnonymous,
+          isEmailVerified: user.emailVerified,
+          phoneNumber: user.phoneNumber ?? phoneNumber,
           photoURL: user.photoURL,
-          creationTime: DateTime.now(),
+          creationTime: user.metadata.creationTime ?? DateTime.now(),
+          lastSignInTime: user.metadata.lastSignInTime ?? DateTime.now(),
         ),
       );
+      log("userCredentialModel: $outcomeCreateUser");
       log("Process user $user");
 
       if (outcomeCreateUser.isSuccess) {

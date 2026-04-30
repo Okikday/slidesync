@@ -34,10 +34,11 @@ class _PublicDrive {
   ///     [Api.instance.vault.logUploadWithSource()] — clean separation.
   Stream<DriveProgress> upload({
     required File file,
-    required String institutionId,
     required String courseId,
     required String uploadedBy,
     required String operationId,
+    String? institutionId,
+    String? vaultRootFolderId,
     String? fileName,
     String? mimeType,
     bool forceRefreshAuth = false,
@@ -47,6 +48,7 @@ class _PublicDrive {
     await for (final event in uploadMultiple(
       objects: [item],
       institutionId: institutionId,
+      vaultRootFolderId: vaultRootFolderId,
       courseId: courseId,
       uploadedBy: uploadedBy,
       forceRefreshAuth: forceRefreshAuth,
@@ -60,7 +62,8 @@ class _PublicDrive {
   /// This reuses the same authenticated client and destination folder for all items.
   Stream<PublicUploadProgressEvent> uploadMultiple({
     required List<PublicUploadObject> objects,
-    required String institutionId,
+    String? institutionId,
+    String? vaultRootFolderId,
     required String courseId,
     required String uploadedBy,
     bool forceRefreshAuth = true,
@@ -80,11 +83,20 @@ class _PublicDrive {
         return;
       }
 
-      // Resolve destination folder
-      final segments = GDrivePaths.publicSegments(institutionId: institutionId, courseId: courseId);
+      // Resolve destination folder. If a vault root folder ID is provided, use
+      // it as the parent and create/resolve only the course folder under it.
       String? folderId;
-      for (final name in segments) {
-        folderId = await _PrivateDrive._findOrCreateFolder(client, name, folderId);
+      if (vaultRootFolderId != null) {
+        // Use provided Drive folder ID as root, then ensure course folder exists under it
+        folderId = vaultRootFolderId;
+        folderId = await _PrivateDrive._findOrCreateFolder(client, courseId, folderId);
+      } else if (institutionId != null) {
+        final segments = GDrivePaths.publicSegments(institutionId: institutionId, courseId: courseId);
+        for (final name in segments) {
+          folderId = await _PrivateDrive._findOrCreateFolder(client, name, folderId);
+        }
+      } else {
+        throw ArgumentError('Either institutionId or vaultRootFolderId must be provided');
       }
 
       for (final item in objects) {

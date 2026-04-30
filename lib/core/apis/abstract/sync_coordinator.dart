@@ -6,6 +6,7 @@ import 'package:slidesync/core/apis/api.dart';
 import 'package:slidesync/core/apis/entities/vault_entity.dart';
 import 'package:slidesync/core/apis/entities/source_entity.dart';
 import 'package:slidesync/core/constants/src/enums/enums.dart';
+import 'package:slidesync/core/sync/gdrive_paths.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
@@ -250,12 +251,30 @@ class SyncCoordinator {
       final byOperationId = {for (final item in candidates) item.content.uid: item};
       final processed = <String>{};
 
+      // Determine vault destination from provided vault links (prefer first)
+      String? vaultRootFolderId;
+      String? institutionIdToUse;
+      if (vaultLinks.isNotEmpty) {
+        final first = vaultLinks.first;
+        final extracted = GDrivePaths.extractId(first);
+        if (extracted != null) {
+          vaultRootFolderId = extracted;
+        } else if (first.contains('/')) {
+          institutionIdToUse = first.split('/').last;
+        } else {
+          institutionIdToUse = first;
+        }
+      } else {
+        institutionIdToUse = 'default';
+      }
+
       await for (final event in _driveManager.public.uploadMultiple(
         objects: [
           for (final item in candidates)
             PublicUploadObject(file: item.file, operationId: item.content.uid, fileName: item.content.title),
         ],
-        institutionId: 'default',
+        institutionId: institutionIdToUse,
+        vaultRootFolderId: vaultRootFolderId,
         courseId: courseId,
         uploadedBy: userId,
       )) {
@@ -287,6 +306,18 @@ class SyncCoordinator {
               failedCount++;
               failedIds.add(pending.content.uid);
               continue;
+            }
+
+            // Fetch file metadata to help diagnose visibility/account/folder issues.
+            final metaRes = await _driveManager.public.getFileWithUploader(driveFileId);
+            if (metaRes.isSuccess && metaRes.data != null) {
+              final meta = metaRes.data!;
+              SyncLogger.info(
+                'Drive metadata: webViewLink=${meta.file.webViewLink}, parents=${meta.file.parents}, owner=${meta.file.ownerEmail}, description=${meta.file.description}',
+                operation: userId,
+              );
+            } else {
+              SyncLogger.warn('Could not fetch Drive metadata: ${metaRes.message}', operation: userId);
             }
 
             final logResult = await Api.instance.vault.logUploadWithSource(
@@ -388,9 +419,27 @@ class SyncCoordinator {
 
       // Stream upload progress from GDriveManager
       String? driveFileId;
+      // Determine vault destination from provided vault links (prefer first)
+      String? _vaultRootFolderId;
+      String? _institutionIdToUse;
+      if (vaultLinks.isNotEmpty) {
+        final first = vaultLinks.first;
+        final extracted = GDrivePaths.extractId(first);
+        if (extracted != null) {
+          _vaultRootFolderId = extracted;
+        } else if (first.contains('/')) {
+          _institutionIdToUse = first.split('/').last;
+        } else {
+          _institutionIdToUse = first;
+        }
+      } else {
+        _institutionIdToUse = 'default';
+      }
+
       await for (final progress in _driveManager.public.upload(
         file: file,
-        institutionId: 'default', // Use default institution
+        institutionId: _institutionIdToUse,
+        vaultRootFolderId: _vaultRootFolderId,
         courseId: courseId, // Organize by course
         uploadedBy: userId,
         operationId: content.uid,

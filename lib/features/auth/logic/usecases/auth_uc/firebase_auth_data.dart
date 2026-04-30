@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/features/auth/logic/models/user_credential_model.dart';
 import 'package:uuid/uuid.dart';
@@ -21,35 +22,32 @@ class FirebaseAuthData {
   /// Returns a [Result] containing a [UserCredentialModel] on success,
   /// or an error message on failure.
   Future<Result<UserCredentialModel>> createUserData(UserCredentialModel userCredentialModel) async {
-    final Result userDataExists = await checkUserDataExists(userCredentialModel);
-    if (userDataExists.isSuccess) {
-      if (userDataExists.data == false) {
-        try {
-          await _collectionReference.doc(userCredentialModel.userID).set({
-            ...userCredentialModel.toMap(),
-            "uniqueID": const Uuid().v4(),
-          });
+    try {
+      // Prefer the Firebase Auth UID if available to avoid numeric or incorrect IDs.
+      final firebaseUid = FirebaseAuth.instance.currentUser?.uid;
+      final uid = firebaseUid ?? userCredentialModel.userID;
 
-          return Result.success(userCredentialModel);
-        } catch (e) {
-          return Result.error("Unable to create user data in Firebase");
-        }
-      } else if (userDataExists.data == true) {
-        try {
-          final Result<UserCredentialModel> retrieveUserData = await getUserData(userCredentialModel.userID);
-          if (retrieveUserData.isSuccess) {
-            return Result.success(retrieveUserData.data!);
-          } else {
-            return Result.error("Unable to retrieve user data: ${retrieveUserData.message}");
-          }
-        } catch (e) {
-          return Result.error("User exists but unable to retrieve user information");
-        }
-      } else {
-        return Result.error("Unable to create User Data");
+      if (uid.isEmpty) {
+        return Result.error("No valid user id available to create user data");
       }
+
+      final docRef = _collectionReference.doc(uid);
+
+      // Preserve the existing uniqueID, but refresh the rest of the profile data.
+      final snapshot = await docRef.get();
+      final existing = snapshot.data() as Map<String, dynamic>?;
+
+      final uniqueID = existing?['uniqueID'] as String? ?? const Uuid().v4();
+
+      final map = {...userCredentialModel.toMap(), 'userID': uid, 'uniqueID': uniqueID};
+
+      await docRef.set(map);
+
+      // Return the latest user data
+      return await getUserData(uid);
+    } catch (e) {
+      return Result.error("Unable to create or update user data: ${e.toString()}");
     }
-    return Result.error("Error retrieving user data");
   }
 
   /// Retrieves user data from Firestore for the given [userId].

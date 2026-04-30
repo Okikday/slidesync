@@ -11,6 +11,9 @@ class _PrivateDrive {
   _PrivateDrive._();
 
   static AuthClient? _cachedPrivateClient;
+  static const _appRootName = 'MaterialsRepo';
+  static const _rootTagKey = 'slidesyncRoot';
+  static const _rootTagValue = 'v1';
 
   static Future<AuthClient?> _privateClient({bool forceRefreshAuth = false}) async {
     if (forceRefreshAuth) {
@@ -162,22 +165,61 @@ class _PrivateDrive {
   // ── Helpers ────────────────────────────────────────────────────────────────
 
   static Future<String> _findOrCreateFolder(AuthClient client, String name, String? parentId) async {
-    final q = [
-      "name='${name.replaceAll("'", "\\'")}'",
-      "mimeType='application/vnd.google-apps.folder'",
-      'trashed=false',
-      if (parentId != null) "'$parentId' in parents",
-    ].join(' and ');
+    Future<String?> queryFolder({required bool taggedRootOnly}) async {
+      final conditions = <String>[
+        "name='${name.replaceAll("'", "\\'")}'",
+        "mimeType='application/vnd.google-apps.folder'",
+        'trashed=false',
+        if (parentId != null) "'$parentId' in parents",
+        if (taggedRootOnly) "appProperties has { key='$_rootTagKey' and value='$_rootTagValue' }",
+      ];
 
-    final url = Uri.parse(
-      'https://www.googleapis.com/drive/v3/files'
-      '?q=${Uri.encodeQueryComponent(q)}&fields=files(id)&pageSize=1',
-    );
-    final r = await client.get(url);
-    if (r.statusCode == 200) {
+      final url = Uri.parse(
+        'https://www.googleapis.com/drive/v3/files'
+        '?q=${Uri.encodeQueryComponent(conditions.join(' and '))}&fields=files(id)&pageSize=1',
+      );
+      var r = await client.get(url);
+      // If token is invalid/expired, try refreshing the admin client once and retry.
+      if (r.statusCode == 401 || r.statusCode == 403) {
+        try {
+          final refreshed = await GDriveManager.instance.auth.adminClient();
+          if (refreshed != null) {
+            client = refreshed;
+            r = await client.get(url);
+          }
+        } catch (_) {
+          // ignore and fall through to error handling below
+        }
+      }
+      if (r.statusCode != 200) return null;
       final files = (jsonDecode(r.body) as Map<String, dynamic>)['files'] as List<dynamic>;
-      if (files.isNotEmpty) {
-        return (files.first as Map<String, dynamic>)['id'] as String;
+      if (files.isEmpty) return null;
+      return (files.first as Map<String, dynamic>)['id'] as String;
+    }
+
+    // Prefer the tagged root folder so we don't accidentally create/upload into
+    // a duplicate MaterialsRepo tree with the same visible name.
+    if (parentId == null && name == _appRootName) {
+      final taggedRoot = await queryFolder(taggedRootOnly: true);
+      if (taggedRoot != null) {
+        return taggedRoot;
+      }
+
+      final fallbackRoot = await queryFolder(taggedRootOnly: false);
+      if (fallbackRoot != null) {
+        await client.patch(
+          Uri.parse('https://www.googleapis.com/drive/v3/files/$fallbackRoot?fields=id'),
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode({
+            'appProperties': {_rootTagKey: _rootTagValue},
+          }),
+        );
+        return fallbackRoot;
+      }
+    } else {
+      final folderId = await queryFolder(taggedRootOnly: false);
+      if (folderId != null) {
+        return folderId;
       }
     }
 
@@ -187,6 +229,7 @@ class _PrivateDrive {
       'name': name,
       'mimeType': 'application/vnd.google-apps.folder',
       if (parentId != null) 'parents': [parentId],
+      if (parentId == null && name == _appRootName) 'appProperties': {_rootTagKey: _rootTagValue},
     };
     final cr = await client.post(createUrl, headers: {'Content-Type': 'application/json'}, body: jsonEncode(body));
     if (cr.statusCode == 200) {
@@ -198,22 +241,8 @@ class _PrivateDrive {
   static Future<String?> _resolveFolderOnly(AuthClient client, List<String> segments) async {
     String? parentId;
     for (final name in segments) {
-      final q = [
-        "name='${name.replaceAll("'", "\\'")}'",
-        "mimeType='application/vnd.google-apps.folder'",
-        'trashed=false',
-        if (parentId != null) "'$parentId' in parents",
-      ].join(' and ');
-
-      final url = Uri.parse(
-        'https://www.googleapis.com/drive/v3/files'
-        '?q=${Uri.encodeQueryComponent(q)}&fields=files(id)&pageSize=1',
-      );
-      final r = await client.get(url);
-      if (r.statusCode != 200) return null;
-      final files = (jsonDecode(r.body) as Map<String, dynamic>)['files'] as List<dynamic>;
-      if (files.isEmpty) return null;
-      parentId = (files.first as Map<String, dynamic>)['id'] as String;
+      parentId = await _findOrCreateFolder(client, name, parentId);
+      if (parentId == null) return null;
     }
     return parentId;
   }
