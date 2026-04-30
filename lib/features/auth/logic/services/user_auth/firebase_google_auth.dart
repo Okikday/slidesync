@@ -68,6 +68,12 @@ class FirebaseGoogleAuth {
         log("$e");
         return Result.error("An unknown error occurred!");
       }
+    } on GoogleSignInException catch (e) {
+      return switch (e.code) {
+        GoogleSignInExceptionCode.canceled => Result.error("Google Sign-In was canceled by the user."),
+        GoogleSignInExceptionCode.uiUnavailable => Result.error("No Google Sign-In methods available."),
+        _ => Result.error("An error occurred during Google Sign-In"),
+      };
     } catch (e) {
       log(e.toString());
       return Result.error("An error occurred during Google Sign-In");

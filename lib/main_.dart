@@ -28,23 +28,24 @@ Future<void> _appLaunchRoutine() async {
 
 Future<void> _firstAppLaunch() async {
   final isFirstLaunch = (await AppHiveData.instance.getData(key: HiveDataPathKey.isFirstLaunch.name)) as bool?;
-  if (isFirstLaunch == null) {
-    final referenceCollection = Module.create(
-      parentId: AppCourseCollections.references.name,
-      uid: AppCourseCollections.references.name,
-      title: "References",
-      description: "This is the Default App Reference collections",
-    );
-    final bookMarkCollection = Module.create(
-      parentId: AppCourseCollections.bookmarks.name,
-      uid: AppCourseCollections.bookmarks.name,
-      title: "Bookmarks",
-      description: "This is the Default App Bookmark collections",
-    );
-    await ModuleRepo.add(referenceCollection);
-    await ModuleRepo.add(bookMarkCollection);
-    await HiveDataPathKey.isFirstLaunch.name.trySetHiveData(value: false);
-  }
+  // if (isFirstLaunch == null) {
+
+  //   final referenceCollection = Module.create(
+  //     parentId: AppCourseCollections.references.name,
+  //     uid: AppCourseCollections.references.name,
+  //     title: "References",
+  //     description: "This is the Default App Reference collections",
+  //   );
+  //   final bookMarkCollection = Module.create(
+  //     parentId: AppCourseCollections.bookmarks.name,
+  //     uid: AppCourseCollections.bookmarks.name,
+  //     title: "Bookmarks",
+  //     description: "This is the Default App Bookmark collections",
+  //   );
+  //   await ModuleRepo.add(referenceCollection);
+  //   await ModuleRepo.add(bookMarkCollection);
+  //   await HiveDataPathKey.isFirstLaunch.name.trySetHiveData(value: false);
+  // }
 }
 
 Future<void> _initIfDesktop() async {

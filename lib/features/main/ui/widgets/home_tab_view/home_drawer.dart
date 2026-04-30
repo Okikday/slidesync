@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
+import 'package:slidesync/features/auth/ui/actions/sign_in_actions.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/features/auth/logic/usecases/auth_uc/user_data_functions.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -89,7 +90,18 @@ class HomeDrawer extends ConsumerWidget {
                           children: [
                             CustomText("Unknown User", color: theme.onBackground),
                             ConstantSizing.columnSpacingSmall,
-                            CustomText("Not Signed in", color: theme.onBackground.withAlpha(100)),
+                            CustomElevatedButton(
+                              label: "Sign in",
+                              backgroundColor: theme.primary,
+                              textColor: theme.onPrimary,
+                              pixelWidth: 80,
+                              pixelHeight: 32,
+                              borderRadius: 16,
+                              onClick: () async {
+                                await SignInActions().signInWithGoogle(context);
+                                if (context.mounted) Scaffold.of(context).closeDrawer();
+                              },
+                            ),
                           ],
                         );
                       },

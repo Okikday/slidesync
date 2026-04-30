@@ -26,7 +26,7 @@ class LibraryTabBody extends ConsumerWidget {
           ],
         )
         .animate(target: tabIndex == 1 ? 1 : 0)
-        .slideY(begin: 0.1, end: 0, duration: 700.inMs, curve: CustomCurves.defaultIosSpring)
+        .slideY(begin: 0.05, end: 0, duration: 700.inMs, curve: CustomCurves.defaultIosSpring)
         .fadeIn(duration: 500.inMs, curve: CustomCurves.decelerate);
   }
 }

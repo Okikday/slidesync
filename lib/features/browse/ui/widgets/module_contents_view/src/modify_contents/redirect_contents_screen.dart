@@ -5,13 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:infinite_scroll_pagination/infinite_scroll_pagination.dart';
 import 'package:slidesync/core/constants/src/enums/enums.dart';
+import 'package:slidesync/core/utils/crypto_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course/course.dart';
+import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
-import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/features/browse/logic/src/contents/add_content/add_contents_uc.dart';
 import 'package:slidesync/features/browse/ui/widgets/course/course_view/course_view_fab.dart';
 import 'package:slidesync/features/browse/ui/widgets/module/modules_list/modules_list_with_search_scroll_view.dart';
@@ -35,21 +36,24 @@ class RedirectContentsScreen extends ConsumerStatefulWidget {
   final List<ModuleContent>? contentsToMove;
   final List<ModuleContent>? contentsToCopy;
   final List<String>? filePaths;
+  final List<String> linkUrls;
   final RedirectMode mode;
 
   const RedirectContentsScreen.move({super.key, required List<ModuleContent> contents})
     : contentsToMove = contents,
       contentsToCopy = null,
       filePaths = null,
+      linkUrls = const [],
       mode = RedirectMode.move;
 
   const RedirectContentsScreen.copy({super.key, required List<ModuleContent> contents})
     : contentsToCopy = contents,
       contentsToMove = null,
       filePaths = null,
+      linkUrls = const [],
       mode = RedirectMode.copy;
 
-  const RedirectContentsScreen.store({super.key, required List<String> files})
+  const RedirectContentsScreen.store({super.key, required List<String> files, this.linkUrls = const []})
     : filePaths = files,
       contentsToMove = null,
       contentsToCopy = null,
@@ -113,32 +117,28 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
       Result.tryRun(() => context.pop(false));
       return;
     }
-
-    setState(() {
-      _selectedCourse = null;
-    });
+    setState(() => _selectedCourse = null);
   }
 
   void _selectCourse(Course course) {
     if (!mounted) return;
-    setState(() {
-      _selectedCourse = course;
-    });
+    setState(() => _selectedCourse = course);
   }
 
   Future<void> _handleCollectionSelection(BuildContext context, {required Module module}) async {
-    context.pop(); // First pop of the RedirectContentsScreen
+    context.pop();
 
     final mode = widget.mode;
-    // Determine if we can proceed
     final redirList = switch (mode) {
       RedirectMode.copy => widget.contentsToCopy,
       RedirectMode.move => widget.contentsToMove,
       RedirectMode.store => widget.filePaths,
     };
 
-    // If nothing was sent, just return
-    if (redirList == null || redirList.isEmpty) {
+    final hasFiles = redirList != null && redirList.isNotEmpty;
+    final hasLinks = widget.linkUrls.isNotEmpty;
+
+    if (!hasFiles && !hasLinks) {
       final msg = switch (mode) {
         RedirectMode.copy => 'No contents was selected for copy',
         RedirectMode.move => 'No contents was selected for move',
@@ -150,27 +150,24 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
 
     await 200.inMs.delay();
 
-    // Reaching here means contents sent wasn't empty or null
     GlobalNav.withContext(
       (context) => UiUtils.showLoadingDialog(context, message: "Processing your materials", canPop: false),
     );
 
-    // Call the respective methods to carry out the appropiate operations
     final String? errorMsg = await switch (widget.mode) {
       RedirectMode.move => _handleMoveContents(module, redirList as List<ModuleContent>),
       RedirectMode.copy => _handleCopyContents(module, redirList as List<ModuleContent>),
-      RedirectMode.store => _handleStoreFiles(module, redirList as List<String>),
+      RedirectMode.store => _handleStoreFiles(module, redirList as List<String>? ?? []),
     };
+
     GlobalNav.popGlobal();
     await 200.inMs.delay();
 
-    // If it returns an error message, it didn't complete successfully
     if (errorMsg != null) {
       GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: errorMsg, vibe: FlushbarVibe.error));
       return;
     }
 
-    // If not, show things that just got copied
     final pushTo = Routes.moduleContentsView.name;
     GlobalNav.withContext((context) => context.pushNamed(pushTo, extra: module));
 
@@ -204,7 +201,6 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
     try {
       final copied = await ModuleContentRepo.copyModuleContents(collection.uid, redirList);
       if (!copied) return "Failed to copy contents to another module";
-
       return null;
     } catch (e, st) {
       log('copy contents failed: $e\n$st');
@@ -212,21 +208,58 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
     }
   }
 
-  Future<String?> _handleStoreFiles(Module collection, List<String> redirList) async {
+  /// Handles storing files and/or links into [collection].
+  /// Files are processed first (heavier), then links are batch-inserted.
+  Future<String?> _handleStoreFiles(Module collection, List<String> filePaths) async {
     try {
-      await _storeContentsToCollection(collectionId: collection.uid, filePaths: redirList);
+      // Files first
+      if (filePaths.isNotEmpty) {
+        await AddContentsUc.addToCollectionNoRef(collection: collection, filePaths: filePaths);
+      }
+
+      // Links — single batch write
+      if (widget.linkUrls.isNotEmpty) {
+        await _addMultipleLinks(collection, widget.linkUrls);
+      }
+
       return null;
     } catch (e, st) {
       log('store contents failed: $e\n$st');
       return "An error occured while storing files";
     }
   }
+}
 
-  Future<void> _storeContentsToCollection({required String collectionId, required List<String> filePaths}) async {
-    final collection = await ModuleRepo.getByUid(collectionId);
-    if (collection == null) return;
-    await AddContentsUc.addToCollectionNoRef(collection: collection, filePaths: filePaths);
+/// Builds [ModuleContent] records for each URL and writes them in one batch.
+/// Deduplicates within the incoming list by hash before writing.
+/// Skips URLs that already exist in the collection.
+Future<void> _addMultipleLinks(Module collection, List<String> urls) async {
+  final contents = <ModuleContent>[];
+  final seenHashes = <String>{};
+
+  for (final url in urls) {
+    final hash = CryptoUtils.calculateStringHash(url);
+    if (seenHashes.contains(hash)) continue;
+    seenHashes.add(hash);
+
+    // Skip if this exact link already lives in this collection
+    final duplicate = await ModuleContentRepo.findFirstDuplicateContentByHash(collection, hash);
+    if (duplicate != null && duplicate.path.url == url) continue;
+
+    contents.add(
+      ModuleContent.create(
+        xxh3Hash: hash,
+        parentId: collection.uid,
+        title: url,
+        type: ModuleContentType.link,
+        path: FilePath(url: url),
+        metadata: ModuleContentMetadata.create(contentOrigin: ContentOrigin.server),
+      ),
+    );
   }
+
+  if (contents.isEmpty) return;
+  await ModuleContentRepo.addMultipleContents(collection.uid, contents);
 }
 
 class _CourseSelectionView extends ConsumerWidget {

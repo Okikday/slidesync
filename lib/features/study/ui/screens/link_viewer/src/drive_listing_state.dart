@@ -135,7 +135,7 @@ final driveResourceProvider = FutureProvider.family<drive_service.DriveResource?
     return drive_service.DriveResource(type: type, file: metadata);
   } catch (error, stackTrace) {
     log('DriveListingView: failed to fetch Drive resource for $folderOrLink', error: error, stackTrace: stackTrace);
-    return null;
+    Error.throwWithStackTrace(error, stackTrace);
   }
 });
 

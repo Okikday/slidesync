@@ -35,8 +35,9 @@ class ModuleContentRepo {
 
   // static Future<Stream<List<CourseContent>>> watchAllLazily() async => await _isarData.watchAllLazily();
 
-  static Future<ModuleContent?> getByUid(String contentId) async =>
-      await _isar.moduleContents.where().uidEqualTo(contentId).findFirst();
+  static Future<ModuleContent?> getByUid(String contentId) async => await _isar.moduleContents.getByUid(contentId);
+  static Future<List<ModuleContent?>> getAllByUids(List<String> contentIds) async =>
+      await _isar.moduleContents.getAllByUid(contentIds);
 
   static Future<ModuleContent?> getByHash(String xxh3Hash) async {
     return await _isar.moduleContents.filter().xxh3HashEqualTo(xxh3Hash).findFirst();

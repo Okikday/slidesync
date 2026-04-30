@@ -5,7 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
-// import 'package:printing/printing.dart';
+import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
@@ -13,7 +13,7 @@ import 'package:slidesync/shared/helpers/global_nav.dart';
 class ShareContentUc {
   Future<void> shareText(BuildContext context, String text, {String? title, File? previewThumbnail}) async {
     await SharePlus.instance.share(
-      ShareParams(text: text, subject: title ?? "SlideSync", previewThumbnail: await _genPreview(previewThumbnail)),
+      ShareParams(text: text, subject: title ?? 'SlideSync', previewThumbnail: await _genPreview(previewThumbnail)),
     );
   }
 
@@ -39,14 +39,12 @@ class ShareContentUc {
       return;
     }
 
-    final xf = XFile(path);
-
     await SharePlus.instance.share(
       ShareParams(
-        files: [xf],
-        title: "Sharing from SlideSync",
+        files: [XFile(path)],
+        title: 'Sharing from SlideSync',
         text: title,
-        subject: title ?? "SlideSync",
+        subject: title ?? 'SlideSync',
         previewThumbnail: await _genPreview(previewThumbnail),
       ),
     );
@@ -55,57 +53,49 @@ class ShareContentUc {
   Future<void> shareFiles(
     BuildContext context,
     List<File> files, {
-    List<String?>? filenames, // optional per-file desired names (same length as files or null)
+    List<String?>? filenames,
     String? title,
     File? previewThumbnail,
+
+    /// Optional link texts to append alongside the files (e.g. "Title\nURL")
+    List<String>? linkTexts,
   }) async {
     if (files.isEmpty) return;
 
-    // normalize filenames list length (if provided)
+    // Normalize filenames length
     filenames ??= List<String?>.filled(files.length, null);
     if (filenames.length < files.length) {
-      // extend with nulls if too short
       filenames = [...filenames, ...List<String?>.filled(files.length - filenames.length, null)];
     }
 
-    final List<XFile> xfiles = <XFile>[];
-    final List<String> filePaths = [];
+    // Resolve all file paths in parallel
+    final resolvedPaths = await Future.wait([
+      for (int i = 0; i < files.length; i++) _resolvePath(files[i], filenames[i]),
+    ]);
 
-    for (int i = 0; i < files.length; i++) {
-      final file = files[i];
-      final desiredName = filenames[i];
-
-      String path;
-      if (desiredName != null && desiredName.trim().isNotEmpty) {
-        // storeFile returns path (same as your single-file version)
-        final res = await FileUtils.storeFile(file: file, base: AppDirType.temporary, newFileName: desiredName);
-        path = res;
-      } else {
-        path = file.path;
-      }
-
-      xfiles.add(XFile(path));
-      filePaths.add(path);
-    }
+    final validPaths = resolvedPaths.whereType<String>().toList();
+    if (validPaths.isEmpty) return;
 
     if (DeviceUtils.isDesktop()) {
-      await Pasteboard.writeFiles(filePaths);
-      GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "Copied file to clipboard"));
+      await Pasteboard.writeFiles(validPaths);
+      GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "Copied files to clipboard"));
       return;
     }
+
+    final xfiles = validPaths.map(XFile.new).toList();
+
+    // Append link texts to the share body if provided
+    final String? shareText = (linkTexts != null && linkTexts.isNotEmpty) ? linkTexts.join('\n\n') : title;
 
     await SharePlus.instance.share(
       ShareParams(
         files: xfiles,
-        title: "Sharing from SlideSync",
-        text: title,
-        subject: title ?? "SlideSync",
+        title: 'Sharing from SlideSync',
+        text: shareText,
+        subject: title ?? 'SlideSync',
         previewThumbnail: previewThumbnail != null ? await _genPreview(previewThumbnail) : null,
       ),
     );
-
-    // // Clear any temporary files you created
-    // await CleanUpUtils().clearCacheOrTemp();
   }
 
   Future<void> shareFileFromBytes(
@@ -117,30 +107,32 @@ class ShareContentUc {
   }) async {
     final tempDir = await getTemporaryDirectory();
     final path = '${tempDir.path}/$filename';
-    final tempFile = File(path);
-    await tempFile.writeAsBytes(bytes, flush: true);
-
-    final xf = XFile(tempFile.path);
+    await File(path).writeAsBytes(bytes, flush: true);
 
     await SharePlus.instance.share(
-      ShareParams(files: [xf], text: title, subject: title, previewThumbnail: await _genPreview(previewThumbnail)),
+      ShareParams(
+        files: [XFile(path)],
+        text: title,
+        subject: title,
+        previewThumbnail: await _genPreview(previewThumbnail),
+      ),
     );
   }
 
-  Future<XFile?> _genPreview(File? previewThumbnail) async {
-    return previewThumbnail != null && await previewThumbnail.exists() ? XFile(previewThumbnail.path) : null;
+  /// Resolves a file to its final share path (renaming to [desiredName] if needed).
+  /// Returns null if the operation fails, so the file is skipped.
+  Future<String?> _resolvePath(File file, String? desiredName) async {
+    if (desiredName != null && desiredName.trim().isNotEmpty) {
+      return Result.fromAsync(
+        () => FileUtils.storeFile(file: file, base: AppDirType.temporary, newFileName: desiredName),
+        fallback: null,
+      );
+    }
+    return file.path;
   }
 
-  // Future<void> copyFileToClipboard(List<String> filePaths) async {
-  //   final clipboard = SystemClipboard.instance;
-  //   if (clipboard == null) return;
-
-  //   final item = DataWriterItem();
-
-  //   for (final filePath in filePaths) {
-  //     item.add(Formats.fileUri(Uri.file(filePath)));
-  //   }
-
-  //   await clipboard.write([item]);
-  // }
+  Future<XFile?> _genPreview(File? previewThumbnail) async {
+    if (previewThumbnail == null) return null;
+    return await previewThumbnail.exists() ? XFile(previewThumbnail.path) : null;
+  }
 }

@@ -85,7 +85,9 @@ class _CardOuterShell extends ConsumerWidget {
   }
 
   BoxDecoration _getCardDecoration(WidgetRef theme) {
-    final shadow = select?.isSelected == true ? theme.shadow : theme.shadow.withValues(alpha: 0.8);
+    final shadow = select?.isSelected == true
+        ? theme.shadow
+        : (theme.shadow.withValues(alpha: theme.isDarkMode ? 0.8 : 0.4));
     return BoxDecoration(
       color: theme.cardColor,
       borderRadius: BorderRadius.circular(16),

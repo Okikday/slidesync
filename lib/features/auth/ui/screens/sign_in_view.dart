@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,13 +5,11 @@ import 'package:go_router/go_router.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/features/ask_ai/ui/widgets/shimmery_gradient_background.dart';
-import 'package:slidesync/features/auth/logic/services/user_auth/firebase_google_auth.dart';
+import 'package:slidesync/features/auth/ui/actions/sign_in_actions.dart';
 
 import 'package:slidesync/routes/routes.dart';
-import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/core/assets/assets.gen.dart';
-import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -93,48 +89,7 @@ class SignInView extends ConsumerWidget {
                     backgroundColor: primaryPurple,
                     textColor: theme.onPrimary,
                     onClick: () async {
-                      if (Platform.isWindows) {
-                        context.goNamed(Routes.home.name);
-                        return;
-                      }
-                      UiUtils.showCustomDialog(
-                        context,
-                        canPop: false,
-                        blurSigma: Offset(2, 2),
-                        transitionType: TransitionType.fade,
-                        child: const SigningInDialog(),
-                      );
-                      final auth = FirebaseGoogleAuth();
-                      final result = await auth.signInWithGoogle();
-                      // if (context.mounted) {
-                      //   context.pop();
-                      // }
-
-                      Future.microtask(
-                        () => AppHiveData.instance.setData(key: HiveDataPathKey.hasOnboarded.name, value: true),
-                      );
-
-                      if (result.isSuccess && context.mounted) {
-                        context.goNamed(Routes.home.name);
-                        GlobalNav.withContext(
-                          (c) =>
-                              UiUtils.showFlushBar(context, msg: "Successfully signed in!", vibe: FlushbarVibe.success),
-                        );
-                      } else {
-                        if (context.mounted) {
-                          context.pop();
-                        } else {
-                          GlobalNav.withContext((c) => c.pop());
-                        }
-                        GlobalNav.withContext(
-                          (c) => UiUtils.showFlushBar(
-                            context,
-                            msg: "An error occured while signing in!",
-                            vibe: FlushbarVibe.error,
-                          ),
-                        );
-                        log("Error signing in... ${result.message}");
-                      }
+                      await SignInActions().signInWithGoogle(context);
                     },
                   ),
                 ],

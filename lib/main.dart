@@ -53,7 +53,5 @@ Future<void> _initialize() async {
 
   pdfrxFlutterInitialize();
 
-  await _firstAppLaunch();
-  await _appLaunchRoutine();
-  await _initIfDesktop();
+  await Future.wait([_firstAppLaunch(), _appLaunchRoutine(), _initIfDesktop()]);
 }

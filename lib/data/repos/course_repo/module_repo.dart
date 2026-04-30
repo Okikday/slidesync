@@ -281,22 +281,41 @@ class ModuleRepo {
   static Future<Module?> getByTitleAndParentId({required String title, required String parentId}) async =>
       await _isar.modules.filter().titleEqualTo(title).parentIdEqualTo(parentId).findFirst();
 
-  static Future<void> addContentsToAppCollection(
-    AppCourseCollections type, {
+  static Future<bool> addContentsToAppCollection(
+    AppDefaultModules type, {
     required List<ModuleContent> contents,
   }) async {
-    if (contents.isEmpty) return;
+    if (contents.isEmpty) return false;
 
-    final collection = await getByUid(type.name);
-    if (collection == null) return;
+    final module = await getByUid(type.name);
+    Module? newModule;
+    if (module == null) {
+      newModule = Module.create(
+        uid: type.name,
+        parentId: "app_modules",
+        title: type == AppDefaultModules.bookmarks ? "Bookmarks" : "References",
+      );
+      final result = await _addCollection(newModule);
 
-    await collection.contents.load();
-    collection.contents.addAll(contents);
+      if (result == false) {
+        log("Failed to add contents to new app collection");
+        return false;
+      }
+    }
+
+    if (newModule == null) {
+      log("Failed to find or create app collection");
+      return false;
+    }
+
+    await newModule.contents.load();
+    newModule.contents.addAll(contents);
 
     await isar.writeTxn(() async {
       await isar.moduleContents.putAll(contents);
-      await isar.modules.put(collection);
-      await collection.contents.save();
+      await isar.modules.put(newModule!);
+      await newModule.contents.save();
     });
+    return true;
   }
 }

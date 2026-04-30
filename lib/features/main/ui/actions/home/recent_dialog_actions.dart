@@ -51,7 +51,7 @@ mixin RecentDialogActions {
       GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "Couldn't add content..."));
       return;
     }
-    await ModuleRepo.addContentsToAppCollection(AppCourseCollections.bookmarks, contents: [content]);
+    await ModuleRepo.addContentsToAppCollection(AppDefaultModules.bookmarks, contents: [content]);
     GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "Added content to bookmarks"));
   }
 

@@ -11,10 +11,6 @@ class CourseRepo {
 
   static QueryBuilder<Course, Course, QFilterCondition> get filter => _isar.courses.filter();
 
-  // static Future<QueryBuilder<Course, Course, QAfterFilterCondition>> _queryById(String courseId) async {
-  //   return (await _isarData.query<Course>((q) => q.idGreaterThan(0))).filter().uidEqualTo(courseId);
-  // }
-
   static Future<Course?> getCourseById(int dbId) async => _isarData.getById(dbId);
 
   static Stream<Course?> watchCourseByDbId(int dbId) => _isarData.watchById(dbId);

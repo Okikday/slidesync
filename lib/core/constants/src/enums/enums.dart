@@ -23,7 +23,7 @@ enum ModuleContentType { unknown, document, image, link, note, reference, group 
 
 enum AppClipboardContentType { empty, text, image, images, file, files, html, unsupported }
 
-enum AppCourseCollections { bookmarks, references }
+enum AppDefaultModules { bookmarks, references }
 
 @MappableEnum()
 enum ContentOrigin { none, local, server }

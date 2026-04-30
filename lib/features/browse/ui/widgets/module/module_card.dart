@@ -1,6 +1,7 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
@@ -9,6 +10,7 @@ import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/features/browse/ui/actions/module/modify_module_actions.dart';
 import 'package:slidesync/features/browse/ui/widgets/course/shared/edit_collection_title_bottom_sheet.dart';
 import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
+import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
@@ -129,8 +131,17 @@ class _ModuleCardState extends ConsumerState<ModuleCard> {
 
                     if (widget.select == null)
                       PopupMenuAction(
+                        title: "Open in course",
+                        iconData: HugeIconsSolid.openSource,
+                        onTap: () {
+                          context.pushNamed(Routes.courseDetails.name, extra: widget.module.parentId);
+                        },
+                      ),
+
+                    if (widget.select == null)
+                      PopupMenuAction(
                         title: "Move",
-                        iconData: Iconsax.tick_circle,
+                        iconData: HugeIconsSolid.scissor,
                         onTap: () async {
                           final targetCourse = await ModifyModuleActions().pickMoveTargetCourse(
                             context,
@@ -159,7 +170,7 @@ class _ModuleCardState extends ConsumerState<ModuleCard> {
 
                     PopupMenuAction(
                       title: "Share",
-                      iconData: HugeIconsSolid.share01,
+                      iconData: HugeIconsSolid.share03,
                       onTap: () async {
                         await ShareContentActions.shareCollection(context, collection.uid);
                       },

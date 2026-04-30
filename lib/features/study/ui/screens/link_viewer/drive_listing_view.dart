@@ -65,6 +65,7 @@ class _DriveListingViewState extends ConsumerState<DriveListingView> {
     final navState = ref.watch(driveListingNavProvider);
     final currentFolderId = navState.currentFolderId ?? widget.initialFolderId;
     final resourceAsync = ref.watch(driveResourceProvider(currentFolderId));
+    final resource = resourceAsync.value;
     final selection = ref.watch(driveSelectionProvider);
 
     return AppScaffold(
@@ -111,27 +112,25 @@ class _DriveListingViewState extends ConsumerState<DriveListingView> {
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (selection.count > 0)
+              if (selection.count > 0 && resource != null)
                 IconButton(
                   icon: Icon(HugeIconsSolid.downloadCircle01, color: theme.primaryColor),
                   tooltip: 'Download Selected',
-                  onPressed: resourceAsync.hasValue == true
-                      ? () {
-                          final selectedIdsSnapshot = Set<String>.from(selection.selectedIds);
-                          ref.read(driveSelectionProvider.notifier).clearSelection();
-                          controller.downloadSelectedItems(
-                            resourceAsync.value!,
-                            selectedIdsSnapshot: selectedIdsSnapshot,
-                            selectionAlreadyCleared: true,
-                          );
-                        }
-                      : null,
+                  onPressed: () {
+                    final selectedIdsSnapshot = Set<String>.from(selection.selectedIds);
+                    ref.read(driveSelectionProvider.notifier).clearSelection();
+                    controller.downloadSelectedItems(
+                      resource,
+                      selectedIdsSnapshot: selectedIdsSnapshot,
+                      selectionAlreadyCleared: true,
+                    );
+                  },
                 ),
-              if (resourceAsync.hasValue == true &&
+              if (resource != null &&
                   selection.count == 0 &&
-                  resourceAsync.value!.isFolder &&
-                  resourceAsync.value!.children != null &&
-                  resourceAsync.value!.children!.isNotEmpty)
+                  resource.isFolder &&
+                  resource.children != null &&
+                  resource.children!.isNotEmpty)
                 IconButton(
                   icon: Icon(HugeIconsSolid.fileDownload, color: theme.primaryColor),
                   tooltip: 'Import All',
@@ -144,7 +143,7 @@ class _DriveListingViewState extends ConsumerState<DriveListingView> {
                         onCancel: () => context.pop(),
                         onConfirm: () {
                           context.pop();
-                          controller.importAll(resourceAsync.value!);
+                          controller.importAll(resource);
                         },
                       ),
                     );
