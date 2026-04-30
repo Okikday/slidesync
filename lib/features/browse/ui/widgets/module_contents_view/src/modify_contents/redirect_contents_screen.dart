@@ -313,6 +313,7 @@ class _ModuleSelectionView extends StatelessWidget {
       isPinned: true,
       showMoreOptionsButton: false,
       onTapModuleCard: onTapModule,
+      readOnly: true,
     );
   }
 }

@@ -28,6 +28,7 @@ class ModulesListWithSearchScrollView extends ConsumerStatefulWidget {
     required this.showMoreOptionsButton,
     this.controller,
     this.onTapModuleCard,
+    this.readOnly = true,
   });
   final String courseId;
   final double? topPadding;
@@ -35,6 +36,7 @@ class ModulesListWithSearchScrollView extends ConsumerStatefulWidget {
   final bool showMoreOptionsButton;
   final ScrollController? controller;
   final void Function(Module module)? onTapModuleCard;
+  final bool readOnly;
   @override
   ConsumerState<ModulesListWithSearchScrollView> createState() => ModulesListWithSearchScrollViewState();
 }
@@ -61,6 +63,7 @@ class ModulesListWithSearchScrollViewState extends ConsumerState<ModulesListWith
           courseId: widget.courseId,
           textSearchNotifier: textSearchNotifier,
           onTapModuleCard: widget.onTapModuleCard,
+          readOnly: widget.readOnly,
         ),
 
         const SliverToBoxAdapter(child: BottomPadding(withHeight: ConstantSizing.spaceMedium)),
@@ -89,10 +92,12 @@ class ModulesListView extends ConsumerWidget {
     required this.courseId,
     required this.textSearchNotifier,
     required this.onTapModuleCard,
+    required this.readOnly,
   });
   final String courseId;
   final ValueNotifier<String> textSearchNotifier;
   final void Function(Module module)? onTapModuleCard;
+  final bool readOnly;
 
   List<Module> filterModules(List<Module> modules, String search) => search.trim().isEmpty
       ? modules
@@ -144,7 +149,11 @@ class ModulesListView extends ConsumerWidget {
                   ];
                   return Animate(
                     effects: isSearching ? null : animEffect,
-                    child: ModuleCard(module: filteredModules[index], onTap: () => onTap(ref, filteredModules[index])),
+                    child: ModuleCard(
+                      module: filteredModules[index],
+                      readOnly: readOnly,
+                      onTap: () => onTap(ref, filteredModules[index]),
+                    ),
                   );
                 },
               ),

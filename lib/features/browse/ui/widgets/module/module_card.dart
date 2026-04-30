@@ -22,13 +22,21 @@ typedef ModuleCardSelect = ({bool? selected, void Function() onSelected});
 class ModuleCard extends ConsumerStatefulWidget {
   final Module module;
   final void Function() onTap;
+  final bool readOnly;
 
   /// if [select] is null, there won't be an option to select
   /// if [select.selected] is true, the card will be shown as selected
   /// if [select.selected] is null, the card won't have a selection state
   final ({bool? selected, void Function() onSelected})? select;
   final String? subtitleText;
-  const ModuleCard({super.key, required this.module, required this.onTap, this.select, this.subtitleText});
+  const ModuleCard({
+    super.key,
+    required this.module,
+    required this.onTap,
+    this.readOnly = true,
+    this.select,
+    this.subtitleText,
+  });
 
   @override
   ConsumerState<ModuleCard> createState() => _ModuleCardState();
@@ -117,7 +125,7 @@ class _ModuleCardState extends ConsumerState<ModuleCard> {
               ),
 
               /// Trailing more options
-              if (widget.select == null || widget.select?.selected == null)
+              if ((widget.select == null || widget.select?.selected == null))
                 AppPopupMenuButton(
                   actions: [
                     if (widget.select != null)
@@ -129,7 +137,7 @@ class _ModuleCardState extends ConsumerState<ModuleCard> {
                         },
                       ),
 
-                    if (widget.select == null)
+                    if (widget.readOnly)
                       PopupMenuAction(
                         title: "Open in course",
                         iconData: HugeIconsSolid.openSource,
@@ -138,35 +146,35 @@ class _ModuleCardState extends ConsumerState<ModuleCard> {
                         },
                       ),
 
-                    if (widget.select == null)
-                      PopupMenuAction(
-                        title: "Move",
-                        iconData: HugeIconsSolid.scissor,
-                        onTap: () async {
-                          final targetCourse = await ModifyModuleActions().pickMoveTargetCourse(
-                            context,
-                            excludeCourseId: collection.parentId,
-                          );
-                          if (targetCourse == null) return;
+                    // if (widget.select != null || !widget.readOnly)
+                    PopupMenuAction(
+                      title: "Move",
+                      iconData: HugeIconsSolid.scissor,
+                      onTap: () async {
+                        final targetCourse = await ModifyModuleActions().pickMoveTargetCourse(
+                          context,
+                          excludeCourseId: collection.parentId,
+                        );
+                        if (targetCourse == null) return;
 
+                        GlobalNav.withContext(
+                          (c) => UiUtils.showLoadingDialog(c, message: 'Moving collection', canPop: false),
+                        );
+
+                        final movedModules = await ModuleRepo.moveModules([collection], targetCourse.uid);
+                        GlobalNav.popGlobal();
+
+                        if (movedModules.isEmpty) {
                           GlobalNav.withContext(
-                            (c) => UiUtils.showLoadingDialog(c, message: 'Moving collection', canPop: false),
+                            (c) =>
+                                UiUtils.showFlushBar(c, msg: 'Unable to move collection', vibe: FlushbarVibe.warning),
                           );
+                          return;
+                        }
 
-                          final movedModules = await ModuleRepo.moveModules([collection], targetCourse.uid);
-                          GlobalNav.popGlobal();
-
-                          if (movedModules.isEmpty) {
-                            GlobalNav.withContext(
-                              (c) =>
-                                  UiUtils.showFlushBar(c, msg: 'Unable to move collection', vibe: FlushbarVibe.warning),
-                            );
-                            return;
-                          }
-
-                          GlobalNav.withContext((c) => UiUtils.showFlushBar(c, msg: 'Successfully moved collection'));
-                        },
-                      ),
+                        GlobalNav.withContext((c) => UiUtils.showFlushBar(c, msg: 'Successfully moved collection'));
+                      },
+                    ),
 
                     PopupMenuAction(
                       title: "Share",
@@ -176,51 +184,53 @@ class _ModuleCardState extends ConsumerState<ModuleCard> {
                       },
                     ),
 
-                    PopupMenuAction(
-                      title: "Rename",
-                      iconData: HugeIconsSolid.edit01,
-                      onTap: () async {
-                        // CustomDialog.hide(context);
-                        final coll = await ModuleRepo.getByUid(collection.uid);
-                        if (coll == null) return;
-                        GlobalNav.withContext(
-                          (c) => UiUtils.showCustomDialog(
-                            context.mounted ? context : c,
-                            child: EditCollectionTitleBottomSheet(collection: coll),
-                          ),
-                        );
-                      },
-                    ),
-
-                    PopupMenuAction(
-                      title: "Remove",
-                      iconData: HugeIconsSolid.delete02,
-                      onTap: () async {
-                        if (context.mounted) {
-                          CustomDialog.show(
-                            context,
-                            canPop: true,
-                            barrierColor: Colors.black.withValues(alpha: 0.6),
-                            transitionType: TransitionType.cupertinoDialog,
-                            transitionDuration: Durations.medium2,
-                            child: ConfirmDeletionDialog(
-                              content:
-                                  "This will delete \"${collection.title}\"."
-                                  "\n\nAre you sure you want to delete this collection?",
-                              onPop: () {
-                                GlobalNav.popGlobal();
-                              },
-                              onCancel: () {
-                                GlobalNav.popGlobal();
-                              },
-                              onDelete: () async {
-                                await ModifyModuleActions().onDeleteCollection(context, collection: collection);
-                              },
+                    if (widget.select != null || !widget.readOnly)
+                      PopupMenuAction(
+                        title: "Rename",
+                        iconData: HugeIconsSolid.edit01,
+                        onTap: () async {
+                          // CustomDialog.hide(context);
+                          final coll = await ModuleRepo.getByUid(collection.uid);
+                          if (coll == null) return;
+                          GlobalNav.withContext(
+                            (c) => UiUtils.showCustomDialog(
+                              context.mounted ? context : c,
+                              child: EditCollectionTitleBottomSheet(collection: coll),
                             ),
                           );
-                        }
-                      },
-                    ),
+                        },
+                      ),
+
+                    if (widget.select != null || !widget.readOnly)
+                      PopupMenuAction(
+                        title: "Remove",
+                        iconData: HugeIconsSolid.delete02,
+                        onTap: () async {
+                          if (context.mounted) {
+                            CustomDialog.show(
+                              context,
+                              canPop: true,
+                              barrierColor: Colors.black.withValues(alpha: 0.6),
+                              transitionType: TransitionType.cupertinoDialog,
+                              transitionDuration: Durations.medium2,
+                              child: ConfirmDeletionDialog(
+                                content:
+                                    "This will delete \"${collection.title}\"."
+                                    "\n\nAre you sure you want to delete this collection?",
+                                onPop: () {
+                                  GlobalNav.popGlobal();
+                                },
+                                onCancel: () {
+                                  GlobalNav.popGlobal();
+                                },
+                                onDelete: () async {
+                                  await ModifyModuleActions().onDeleteCollection(context, collection: collection);
+                                },
+                              ),
+                            );
+                          }
+                        },
+                      ),
                   ],
                 )
               else

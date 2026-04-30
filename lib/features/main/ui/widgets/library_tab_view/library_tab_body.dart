@@ -16,13 +16,13 @@ class LibraryTabBody extends ConsumerWidget {
     final tabIndex = ref.watch(MainProvider.state.select((s) => s.tabIndex));
     return SmoothCustomScrollView(
           intensity: ScrollIntensity.slow,
-          physics: const BouncingScrollPhysics(),
+          // physics: const BouncingScrollPhysics(),
           slivers: const [
             SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
 
             CoursesView(),
 
-            SliverToBoxAdapter(child: BottomPadding(withHeight: kToolbarHeight)),
+            SliverToBoxAdapter(child: BottomPadding(withHeight: kToolbarHeight * 2)),
           ],
         )
         .animate(target: tabIndex == 1 ? 1 : 0)

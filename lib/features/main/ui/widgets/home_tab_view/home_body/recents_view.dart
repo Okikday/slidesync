@@ -32,7 +32,10 @@ class RecentsView extends ConsumerWidget {
           }
           return SmoothListView.builder(
             itemCount: data.length,
-            padding: EdgeInsets.only(bottom: kBottomNavigationBarHeight + context.bottomPadding / 2),
+            padding: EdgeInsets.only(
+              bottom: kBottomNavigationBarHeight + context.bottomPadding / 2,
+              top: context.topPadding + kToolbarHeight,
+            ),
             itemBuilder: (context, index) {
               final contentTrack = data[index];
               return RecentListTile(

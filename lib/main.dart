@@ -22,6 +22,7 @@ import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/firebase_options.dart';
 import 'package:slidesync/features/sync/logic/notification_service.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:slidesync/core/sync/gdrive_manager.dart';
 
 // import 'dev/provider_observer.dart';
 // import 'firebase_options.dart';
@@ -46,6 +47,13 @@ Future<void> _initialize() async {
   await AppHiveData.instance.initialize();
 
   await dotenv.load();
+
+  await Result.tryRunAsync(() async {
+    final driveApiKey = dotenv.env['DRIVE_API_KEY'];
+    if (driveApiKey != null && driveApiKey.isNotEmpty) {
+      GDriveManager.init(driveApiKey);
+    }
+  });
 
   if (!kIsWeb) await IsarData.initializeDefault();
 

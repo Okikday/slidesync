@@ -49,6 +49,7 @@ class _CourseViewState extends ConsumerState<CourseView> with ScrollOffsetNotifi
           topPadding: null,
           isPinned: true,
           showMoreOptionsButton: true,
+          readOnly: false,
         ),
       ),
     );

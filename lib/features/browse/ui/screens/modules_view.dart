@@ -68,6 +68,7 @@ class _ModulesViewState extends ConsumerState<ModulesView> with IsScrolledNotifi
           isPinned: false,
           showMoreOptionsButton: false,
           controller: scrollController,
+          readOnly: false,
         ),
       ),
     );

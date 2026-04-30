@@ -870,7 +870,7 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
 
                   return Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: ModuleCard(module: collection, onTap: () {}),
+                    child: ModuleCard(module: collection, readOnly: true, onTap: () {}),
                   );
                 },
               ),

@@ -142,8 +142,9 @@ class _RecommendedSectionState extends ConsumerState<RecommendedSection> {
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Center(
                 child: CustomText(
-                  "No Recommendations.\nTry reading something from library ↷",
+                  "No recents.\nTry reading or adding something to your library ↷",
                   color: theme.onBackground.withValues(alpha: 0.5),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ),
