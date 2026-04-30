@@ -152,20 +152,19 @@ class RecentListTile extends ConsumerWidget {
                           ),
                         ),
                       ),
-                      if (contentTrack.description.isNotEmpty)
-                        Flexible(
-                          child: CustomText(
-                            switch (contentTrack.type) {
-                              ModuleContentType.document =>
-                                contentTrack.pages.isEmpty ? "Start reading" : "Page ${contentTrack.pages.last}",
-                              _ => contentTrack.description.isNotEmpty ? contentTrack.description : "",
-                            },
-                            fontSize: 12,
-                            color: theme.supportingText.withValues(alpha: 0.8),
-                            overflow: TextOverflow.fade,
-                            maxLines: 2,
-                          ),
+                      Flexible(
+                        child: CustomText(
+                          switch (contentTrack.type) {
+                            ModuleContentType.document =>
+                              contentTrack.pages.isEmpty ? "Start reading" : "Page ${contentTrack.pages.last}",
+                            _ => contentTrack.description.isNotEmpty ? contentTrack.description : "",
+                          },
+                          fontSize: 12,
+                          color: theme.supportingText.withValues(alpha: 0.8),
+                          overflow: TextOverflow.fade,
+                          maxLines: 2,
                         ),
+                      ),
                     ],
                   ),
                 ),

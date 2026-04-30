@@ -386,7 +386,9 @@ Future<void> _refreshLinkIfNeeded(WidgetRef ref, ModuleContent content) async {
   await AddLinkActions.onAddLinkContent(path.url!, parentId: content.parentId, details: previewLinkDetails);
 }
 
-bool _shouldRefresh(ModuleContent content) =>
-    content.metadata?.thumbnail?.containsUrlPath != true &&
-    content.title.trim().isEmpty &&
-    content.lastModified.isBefore(DateTime.now().subtract(7.days));
+bool _shouldRefresh(ModuleContent content) {
+  log("Checking if content ${content.id} needs refreshing");
+  return content.metadata?.thumbnail?.containsUrlPath != true ||
+      content.lastModified.isBefore(DateTime.now().subtract(7.days)) ||
+      content.path.url == content.title;
+}
