@@ -18,7 +18,7 @@ class App extends ConsumerStatefulWidget {
 }
 
 class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
-  ReceiveSharingHandler? _sharingHandler;
+  
   @override
   bool handleStartBackGesture(PredictiveBackEvent backEvent) {
     return true;
@@ -56,7 +56,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     if (Platform.isAndroid || Platform.isIOS) {
-      _sharingHandler = ReceiveSharingHandler()..init();
+       ReceiveSharingHandler.instance.init();
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -68,7 +68,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _sharingHandler?.dispose();
+    ReceiveSharingHandler.instance.dispose();
     super.dispose();
   }
 
