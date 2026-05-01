@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
+import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/data/repos/course_repo/module_repo.dart';
@@ -27,10 +28,10 @@ class ShareContentActions {
       await ShareContentUc().shareText(context, url, title: content.title);
       return;
     }
-
-    if (content.type == ModuleContentType.document ||
-        content.type == ModuleContentType.image ||
-        content.type == ModuleContentType.unknown) {
+    // content.type == ModuleContentType.document ||
+    //         content.type == ModuleContentType.image ||
+    //         content.type == ModuleContentType.unknown
+    if (content.path.containsLocalPath) {
       await ShareContentActions.shareFileContent(context, content.uid);
       return;
     }

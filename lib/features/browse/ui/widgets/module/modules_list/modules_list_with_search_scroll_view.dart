@@ -66,7 +66,7 @@ class ModulesListWithSearchScrollViewState extends ConsumerState<ModulesListWith
           readOnly: widget.readOnly,
         ),
 
-        const SliverToBoxAdapter(child: BottomPadding(withHeight: ConstantSizing.spaceMedium)),
+        const SliverToBoxAdapter(child: BottomPadding(withHeight: kToolbarHeight + ConstantSizing.spaceMedium)),
       ],
     );
   }

@@ -156,7 +156,9 @@ class RecentListTile extends ConsumerWidget {
                         child: CustomText(
                           switch (contentTrack.type) {
                             ModuleContentType.document =>
-                              contentTrack.pages.isEmpty ? "Start reading" : "Page ${contentTrack.pages.last}",
+                              contentTrack.pages.isEmpty
+                                  ? "Start reading"
+                                  : "Page ${contentTrack.pages.last}${contentTrack.extraDetail != null && contentTrack.extraDetail!.isNotEmpty ? " of ${contentTrack.extraDetail}" : ""}",
                             _ => contentTrack.description.isNotEmpty ? contentTrack.description : "",
                           },
                           fontSize: 12,

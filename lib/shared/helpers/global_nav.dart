@@ -14,6 +14,8 @@ class GlobalNav {
     return null;
   }
 
+  static BuildContext? get context => rootNavigatorKey.currentState?.context ?? rootNavigatorKey.currentContext;
+
   /// Execute an async function with the root context
   /// Returns null if context is unavailable
   static Future<T?> withContextAsync<T>(Future<T> Function(BuildContext context) run) async {

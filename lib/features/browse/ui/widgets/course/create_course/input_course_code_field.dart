@@ -38,7 +38,6 @@ class InputCourseCodeField extends ConsumerWidget {
                       borderSide: BorderSide(color: theme.primaryColor),
                     ),
                     autoDispose: false,
-                    autofocus: true,
                     onTapOutside: () {},
                     constraints: BoxConstraints(maxWidth: 200),
                     pixelHeight: 60,

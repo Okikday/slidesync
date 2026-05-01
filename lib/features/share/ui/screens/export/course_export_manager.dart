@@ -117,6 +117,19 @@ Future<List<R>> _mapInBatches<T, R>(List<T> items, int maxConcurrency, Future<R>
   return results;
 }
 
+List<T> _uniqueBy<T, K>(Iterable<T> items, K Function(T item) keyOf) {
+  final seen = <K>{};
+  final uniqueItems = <T>[];
+
+  for (final item in items) {
+    if (seen.add(keyOf(item))) {
+      uniqueItems.add(item);
+    }
+  }
+
+  return uniqueItems;
+}
+
 class _CourseExportShared {
   static Future<void> showExportScreen(
     BuildContext context,
@@ -186,7 +199,7 @@ class _CourseExportShared {
       progressNotifier.value = ExportProgress(message: 'Preparing export...');
 
       await course.modules.load();
-      final collections = course.modules.toList();
+      final collections = _uniqueBy(course.modules.toList(), (collection) => collection.uid);
 
       if (collections.isEmpty) {
         throw Exception('No collections to export');
@@ -222,11 +235,12 @@ class _CourseExportShared {
           continue;
         }
 
-        totalFiles += contents.length;
+        final uniqueContents = _uniqueBy(contents, (content) => content.uid);
+        totalFiles += uniqueContents.length;
 
         final collectionContext = await createCollectionExportContext(course.title, collection.title);
 
-        final results = await _mapInBatches<ModuleContent, FileExportResult>(contents, 4, (content) async {
+        final results = await _mapInBatches<ModuleContent, FileExportResult>(uniqueContents, 4, (content) async {
           return await exportFile(content, collectionContext);
         });
 
@@ -361,36 +375,33 @@ class CourseFolderExportManager {
   }
 
   /// Export multiple courses (SAF - Android)
-  static Future<void> exportAllCourses(BuildContext context) async {
+  static Future<Result<String?>> exportAllCourses(BuildContext context) async {
     final courses = await CourseRepo.getAllCourses();
     if (courses.isEmpty) {
-      GlobalNav.withContext(
-        (context) => UiUtils.showFlushBar(context, msg: 'No courses available to export', vibe: FlushbarVibe.warning),
-      );
-      return;
+      return Result.error('No courses available to export');
     }
 
     final exportFolder = await pickExportFolder();
-    if (exportFolder == null) return;
+    if (exportFolder == null) {
+      return Result.error('Export cancelled');
+    }
 
     // compute total files across all courses
     int totalFiles = 0;
     for (final course in courses) {
       await course.modules.load();
-      for (final col in course.modules) {
+      for (final col in _uniqueBy(course.modules.toList(), (collection) => collection.uid)) {
         await col.contents.load();
-        totalFiles += col.contents.length;
+        totalFiles += _uniqueBy(col.contents.toList(), (content) => content.uid).length;
       }
     }
 
     if (totalFiles == 0) {
-      GlobalNav.withContext(
-        (context) => UiUtils.showFlushBar(context, msg: 'No files to export', vibe: FlushbarVibe.warning),
-      );
-      return;
+      return Result.error('No files to export');
     }
 
     int processedFiles = 0;
+    final failedCourses = <String>[];
 
     for (final course in courses) {
       final progressNotifier = ValueNotifier<ExportProgress>(ExportProgress(message: 'Preparing...'));
@@ -418,59 +429,48 @@ class CourseFolderExportManager {
       progressNotifier.dispose();
 
       if (!result.isSuccess) {
-        // continue but show a warning for the course
-        GlobalNav.withContext(
-          (context) => UiUtils.showFlushBar(
-            context,
-            msg: 'Export failed for ${course.title}: ${result.message}',
-            vibe: FlushbarVibe.warning,
-          ),
-        );
+        failedCourses.add(course.title);
       }
     }
 
     // final notification
     NotificationService.instance.showCompletion(title: 'Export complete', body: 'Exported $processedFiles files');
-    GlobalNav.withContext(
-      (context) => UiUtils.showFlushBar(
-        context,
-        msg: 'Export complete: exported $processedFiles files',
-        vibe: FlushbarVibe.success,
-      ),
-    );
+
+    final summary = failedCourses.isEmpty
+        ? 'Export complete: exported $processedFiles files'
+        : 'Export complete with ${failedCourses.length} failed course${failedCourses.length == 1 ? '' : 's'}: exported $processedFiles files';
+
+    return failedCourses.isEmpty ? Result.success(summary) : Result.error(summary);
   }
 
   /// Export multiple courses (Windows)
-  static Future<void> exportAllCoursesWindows(BuildContext context) async {
+  static Future<Result<String?>> exportAllCoursesWindows(BuildContext context) async {
     final courses = await CourseRepo.getAllCourses();
     if (courses.isEmpty) {
-      GlobalNav.withContext(
-        (context) => UiUtils.showFlushBar(context, msg: 'No courses available to export', vibe: FlushbarVibe.warning),
-      );
-      return;
+      return Result.error('No courses available to export');
     }
 
     final exportFolder = await CourseFolderExportManagerWindows.pickExportFolder();
-    if (exportFolder == null) return;
+    if (exportFolder == null) {
+      return Result.error('Export cancelled');
+    }
 
     // compute total files across all courses
     int totalFiles = 0;
     for (final course in courses) {
       await course.modules.load();
-      for (final col in course.modules) {
+      for (final col in _uniqueBy(course.modules.toList(), (collection) => collection.uid)) {
         await col.contents.load();
-        totalFiles += col.contents.length;
+        totalFiles += _uniqueBy(col.contents.toList(), (content) => content.uid).length;
       }
     }
 
     if (totalFiles == 0) {
-      GlobalNav.withContext(
-        (context) => UiUtils.showFlushBar(context, msg: 'No files to export', vibe: FlushbarVibe.warning),
-      );
-      return;
+      return Result.error('No files to export');
     }
 
     int processedFiles = 0;
+    final failedCourses = <String>[];
 
     for (final course in courses) {
       final progressNotifier = ValueNotifier<ExportProgress>(ExportProgress(message: 'Preparing...'));
@@ -498,24 +498,17 @@ class CourseFolderExportManager {
       progressNotifier.dispose();
 
       if (!result.isSuccess) {
-        GlobalNav.withContext(
-          (context) => UiUtils.showFlushBar(
-            context,
-            msg: 'Export failed for ${course.title}: ${result.message}',
-            vibe: FlushbarVibe.warning,
-          ),
-        );
+        failedCourses.add(course.title);
       }
     }
 
     NotificationService.instance.showCompletion(title: 'Export complete', body: 'Exported $processedFiles files');
-    GlobalNav.withContext(
-      (context) => UiUtils.showFlushBar(
-        context,
-        msg: 'Export complete: exported $processedFiles files',
-        vibe: FlushbarVibe.success,
-      ),
-    );
+
+    final summary = failedCourses.isEmpty
+        ? 'Export complete: exported $processedFiles files'
+        : 'Export complete with ${failedCourses.length} failed course${failedCourses.length == 1 ? '' : 's'}: exported $processedFiles files';
+
+    return failedCourses.isEmpty ? Result.success(summary) : Result.error(summary);
   }
 
   static Future<FileExportResult> _exportFile(

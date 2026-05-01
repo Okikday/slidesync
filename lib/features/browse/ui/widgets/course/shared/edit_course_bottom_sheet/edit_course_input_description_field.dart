@@ -59,6 +59,7 @@ class EditCourseInputDescriptionField extends ConsumerWidget {
               hintStyle: TextStyle(color: theme.supportingText.withAlpha(80)),
               maxLength: 10000,
               counterText: null,
+              autoDispose: false,
               alwaysShowSuffixIcon: true,
               suffixIcon: SizedBox(width: 24, child: const SizedBox(child: Icon(Icons.expand))),
               pixelWidth: context.deviceWidth,

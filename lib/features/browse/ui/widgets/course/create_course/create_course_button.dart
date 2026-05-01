@@ -53,6 +53,7 @@ class CreateCourseButton extends ConsumerWidget {
         }
         FocusScope.of(context).unfocus();
 
+        GlobalNav.withContext((context) => context.pop());
         GlobalNav.withContext(
           (context) => UiUtils.showLoadingDialog(
             context,
@@ -73,7 +74,6 @@ class CreateCourseButton extends ConsumerWidget {
 
         createCourseOutcome
             .doNext((value) async {
-              GlobalNav.withContext((context) => context.pop());
               GlobalNav.withContextAsync((context) async {
                 if (pushToCreated) {
                   DeviceUtils.isDesktop()

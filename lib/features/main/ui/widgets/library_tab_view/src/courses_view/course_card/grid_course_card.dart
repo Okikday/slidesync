@@ -199,7 +199,7 @@ class _GridCourseCardProgressIndicatorState extends ConsumerState<GridCourseCard
           final progress = asyncSnapshot.data?.progress;
           return LinearProgressIndicator(
             minHeight: 16,
-            value: progress?.clamp(0.05, 1.0) ?? 0.1,
+            value: progress?.clamp(0.2, 1.0) ?? 0.2,
             backgroundColor: (context.isDarkMode
                 ? theme.surface.withAlpha(100)
                 : theme.adjustBgAndPrimaryWithLerpExtra.withValues(alpha: 0.5)),

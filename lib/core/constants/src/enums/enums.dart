@@ -28,7 +28,7 @@ enum AppDefaultModules { bookmarks, references }
 @MappableEnum()
 enum ContentOrigin { none, local, server }
 
-enum CardViewType { grid, list, other }
+enum CardViewType { grid, list, organized, other }
 
 enum CoursesOrdering implements Ordering {
   nameAsc,

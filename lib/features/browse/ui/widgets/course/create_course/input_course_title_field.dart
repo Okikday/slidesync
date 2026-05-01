@@ -37,6 +37,7 @@ class InputCourseTitleField extends ConsumerWidget {
       inputTextStyle: TextStyle(fontSize: 16, color: theme.onBackground),
       onTapOutside: () {},
       autoDispose: false,
+      autofocus: true,
       suffixIcon: CustomElevatedButton(
         pixelWidth: 50,
         pixelHeight: 50,

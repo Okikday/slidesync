@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/course/course.dart';
+import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/auth/logic/usecases/auth_uc/user_data_functions.dart';
 import 'package:slidesync/features/browse/logic/src/contents/add_content/content_thumbnail_creator.dart';
@@ -15,7 +16,10 @@ class CreateCourseUc {
     final Result<Course?> createCourseOutcome = await Result.tryRunAsync<Course>(() async {
       final tempCourse = Course.create(
         title: courseName,
-        metadata: courseCode.trim().isEmpty ? null : CourseMetadata.create(courseCode: courseCode),
+        metadata: CourseMetadata.create(
+          courseCode: courseCode.trim().isNotEmpty ? courseCode.trim() : null,
+          thumbnail: FilePath(local: courseImagePath),
+        ),
       );
       log("Created course with title: ${tempCourse.title}, code: $courseCode");
 

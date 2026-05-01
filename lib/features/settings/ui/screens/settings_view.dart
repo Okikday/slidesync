@@ -246,12 +246,22 @@ class SettingsView extends ConsumerWidget {
                             onConfirm: () async {
                               context.pop();
                               UiUtils.showLoadingDialog(context, canPop: false, message: 'Exporting courses...');
+                              Result<String?> exportResult;
                               if (DeviceUtils.isDesktop()) {
-                                await CourseFolderExportManager.exportAllCoursesWindows(context);
+                                exportResult = await CourseFolderExportManager.exportAllCoursesWindows(context);
                               } else {
-                                await CourseFolderExportManager.exportAllCourses(context);
+                                exportResult = await CourseFolderExportManager.exportAllCourses(context);
                               }
                               GlobalNav.popGlobal();
+
+                              final exportMessage = exportResult.message ?? exportResult.data ?? 'Export complete';
+                              if (exportMessage != 'Export cancelled') {
+                                UiUtils.showFlushBar(
+                                  context.mounted ? context : GlobalNav.context!,
+                                  msg: exportMessage,
+                                  vibe: exportResult.isSuccess ? FlushbarVibe.success : FlushbarVibe.warning,
+                                );
+                              }
                             },
                           ),
                         );

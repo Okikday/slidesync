@@ -25,11 +25,15 @@ import 'package:slidesync/shared/helpers/icon_helper.dart';
 import 'package:slidesync/shared/widgets/state/absorber.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
+typedef _ProgressWithDetRecord = ({double? progress, String? detail});
+
 final _refreshedLinksNotifier = NotifierProvider.autoDispose.family(
   (String collectionId) => ImpliedNotifier<Set<int>>({}),
 );
 final _progressStreamNotifier = StreamNotifierProvider.autoDispose.family(
-  (int contentId) => StreamedNotifier(() => ContentTrackRepo.watchById(contentId).map((c) => c?.progress ?? 0.0)),
+  (int contentId) => StreamedNotifier<_ProgressWithDetRecord>(
+    () => ContentTrackRepo.watchById(contentId).map((c) => (progress: c?.progress, detail: c?.extraDetail)),
+  ),
 );
 typedef ContentCardSelectRecord = ({bool isSelected, void Function(ModuleContent content) onSelect});
 
@@ -172,10 +176,10 @@ class _StackedBelowState extends ConsumerState<_StackedBelow> {
           ),
         ),
 
-        AbsorberWatch(
-          listenable: progressProvider,
+        AbsorberWatch<double>(
+          listenable: progressProvider.select((s) => s.progress as double? ?? 0.0),
           builder: (context, progressAsync, ref, _) => LinearProgressIndicator(
-            value: progressAsync.value,
+            value: progressAsync,
             color: theme.primaryColor,
             backgroundColor: theme.background.lightenColor(isDarkMode ? 0.15 : 0.85).withAlpha(200),
           ),
@@ -202,7 +206,7 @@ class _CardAboveFooter extends ConsumerWidget {
   final ModuleContent content;
   final bool? isSelected;
   final bool isRefreshing;
-  final StreamNotifierProvider<StreamedNotifier<double>, double> progressProvider;
+  final StreamNotifierProvider<StreamedNotifier<_ProgressWithDetRecord>, _ProgressWithDetRecord> progressProvider;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -234,9 +238,10 @@ class _CardAboveFooter extends ConsumerWidget {
                   CustomText("Loading link...", fontSize: 10, color: theme.primary)
                 else
                   AbsorberWatch(
-                    listenable: progressProvider,
+                    listenable: progressProvider.select((s) => s as _ProgressWithDetRecord),
                     builder: (context, progressAsync, ref, _) {
-                      final progress = progressAsync.value;
+                      final progress = progressAsync.progress;
+                      final detail = progressAsync.detail;
                       return CustomText(
                         progress == null
                             ? "Loading progress..."
@@ -246,7 +251,7 @@ class _CardAboveFooter extends ConsumerWidget {
                             ? "Completed!"
                             : (progress > .95)
                             ? "Almost done!"
-                            : "${((progress.clamp(0, 100)) * 100.0).toInt()}% read",
+                            : "${((progress.clamp(0, 100)) * 100.0).toInt()}% read${content.type == ModuleContentType.document && detail != null && detail.isNotEmpty ? " of $detail pages" : ""}",
                         fontSize: 10,
                         color: progress == 1.0 ? theme.primary : theme.supportingText,
                       );
@@ -347,15 +352,24 @@ class ContentTypeBadge extends ConsumerWidget {
         builder: (context) {
           final res = ContentCardActions.resolveExtension(content);
           if (res.isEmpty) return const SizedBox();
-          return ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: ColoredBox(
-              color: theme.altBackgroundSecondary.withAlpha(200),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  child: CustomText(res, color: theme.secondary, fontSize: 11, fontWeight: FontWeight.bold),
+          return ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 100),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: ColoredBox(
+                color: theme.altBackgroundSecondary.withAlpha(200),
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    child: CustomText(
+                      res,
+                      color: theme.secondary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ),
               ),
             ),

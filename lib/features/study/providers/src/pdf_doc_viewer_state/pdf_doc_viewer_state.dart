@@ -170,6 +170,7 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
         progressTrack = await ProgressTracker.saveTrack(
           currentProgressTrack.copyWith(
             lastRead: DateTime.now(),
+            extraDetail: "${controller.pageCount}",
             pages: currentProgressTrack.pages.isEmpty ? const ["1"] : pagesToAdd.toList(),
           ),
         );
