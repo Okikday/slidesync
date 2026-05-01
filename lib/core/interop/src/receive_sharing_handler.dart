@@ -9,6 +9,7 @@ import 'package:slidesync/features/browse/ui/widgets/module_contents_view/src/mo
 import 'package:slidesync/shared/helpers/global_nav.dart';
 
 class ReceiveSharingHandler {
+  final Completer<void> _appReady = Completer();
   StreamSubscription? _intentSub;
   bool _isProcessing = false;
   String? _lastSignature;
@@ -16,6 +17,10 @@ class ReceiveSharingHandler {
 
   final List<_SharedBatch> _queue = [];
 
+  void markAppReady() {
+    if (!_appReady.isCompleted) _appReady.complete();
+  }
+  
   void init() {
     Result.tryRun(() {
       // Stream: fires during app lifetime, nav is always ready by then
@@ -87,15 +92,14 @@ class ReceiveSharingHandler {
   }
 
   Future<void> _processQueue() async {
-    if (_isProcessing) return;
-    _isProcessing = true;
-    try {
-      while (_queue.isNotEmpty) {
-        await _showRedirect(_queue.removeAt(0));
-      }
-    } finally {
-      _isProcessing = false;
-    }
+  if (_isProcessing || _queue.isEmpty) return;
+  _isProcessing = true;
+  try {
+    await _appReady.future;
+    await _showRedirect(_queue.removeAt(0));
+  } finally {
+    _isProcessing = false;
+  }
   }
 
   Future<void> _showRedirect(_SharedBatch batch) async {
