@@ -15,7 +15,7 @@ import 'package:slidesync/routes/src/auth_route.dart';
 import 'package:slidesync/routes/src/onboarding_route.dart';
 import 'package:slidesync/routes/src/test_routes.dart';
 import 'package:slidesync/splash_view.dart';
-
+import 'package:slidesync/core/interop/src/receive_sharing_handler.dart';
 import 'routes.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -63,11 +63,14 @@ final splashRoute = GoRoute(
   path: Routes.splash.path,
   builder: (context, state) => const SplashView(),
   redirect: (context, state) async {
-    // return Routes.home.path;
-    final isUserSignedIn = await UserDataFunctions().isUserSignedIn();
-    final hasOnboarded = await AppHiveData.instance.getData(key: HiveDataPathKey.hasOnboarded.name) as bool?;
-    if (hasOnboarded == null && !isUserSignedIn) return Routes.welcome.path;
-    if (hasOnboarded == true || isUserSignedIn) return Routes.home.path;
-    return Routes.auth.path;
+    String? destination;
+     if (hasOnboarded == null && !isUserSignedIn) {destination = Routes.welcome.path;}
+     else if (hasOnboarded == true || isUserSignedIn) {destination = Routes.home.path;}
+     else{ destination = Routes.auth.path;}
+
+     if (destination == Routes.home.path) {
+        ReceiveSharingHandler.instance.markAppReady();
+      }
+      return destination;
   },
 );
