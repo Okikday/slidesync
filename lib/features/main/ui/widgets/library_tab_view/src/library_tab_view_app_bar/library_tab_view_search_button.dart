@@ -97,7 +97,7 @@ class LibraryTabViewSearchButton extends ConsumerWidget with CoursesViewActions 
           SmoothListView.builder(
             shrinkWrap: true,
             itemCount: searchResults.length,
-            padding: EdgeInsets.only(top: 12, bottom: bottomPadding + bottomInsets + 12),
+            padding: EdgeInsets.only(top: 12, bottom: bottomPadding + bottomInsets + kToolbarHeight + 12),
             itemBuilder: (context, i) {
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),

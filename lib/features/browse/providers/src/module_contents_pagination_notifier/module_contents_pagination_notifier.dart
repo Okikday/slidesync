@@ -11,6 +11,7 @@ import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/repos/course_repo/module_repo.dart';
+import 'package:slidesync/features/browse/providers/entities/module_contents_pagination_entities/grouped_module_content.dart';
 import 'package:slidesync/features/browse/providers/entities/module_contents_pagination_entities/module_contents_pagination_state.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 
@@ -32,15 +33,22 @@ class ModuleContentsPaginationNotifier extends Notifier<ModuleContentsPagination
   Module? module;
   final int moduleId;
 
+  /// Standard controller — used for [CardViewType.list] and [CardViewType.grid].
   late final PagingController<int, ModuleContent> pagingController = PagingController(
     getNextPageKey: _getNextPageKey,
     fetchPage: (pageKey) => fetchPage(pageKey, limit),
   );
 
+  /// Organized controller — used for [CardViewType.organized].
+  /// Items are [Object] so both [GroupedModuleContent] and solo [ModuleContent]
+  /// can live in the same page list without unsafe casting downstream.
+  late final PagingController<int, Object> organizedPagingController = PagingController(
+    getNextPageKey: _getNextOrganizedPageKey,
+    fetchPage: (pageKey) => _fetchOrganizedPage(pageKey, limit),
+  );
+
   bool isUpdating = false;
-
   bool extraCheck = false;
-
   bool _pendingRefresh = false;
 
   ///
@@ -52,12 +60,18 @@ class ModuleContentsPaginationNotifier extends Notifier<ModuleContentsPagination
   @override
   ModuleContentsPaginationState build() {
     final contentsOrdering = ref.read(_moduleContentsOrderingProvider).value;
+
     ref.listen(
       _moduleContentsOrderingProvider,
       (prev, next) => next.whenData((newSort) => updateContentsOrdering(newSort, refresh: true)),
     );
 
-    ref.listen(_watchContentsChange(moduleId), (prev, next) async => await syncModuleContents());
+    // Fire both sync paths on every DB change; each guards itself via
+    // `pages == null || pages.isEmpty` so the idle controller is a no-op.
+    ref.listen(_watchContentsChange(moduleId), (prev, next) async {
+      await syncModuleContents();
+      await syncOrganizedContents();
+    });
 
     ref.onDispose(_dispose);
 
@@ -67,21 +81,21 @@ class ModuleContentsPaginationNotifier extends Notifier<ModuleContentsPagination
     );
   }
 
-  void _dispose() async {
+  void _dispose() {
     pagingController.dispose();
-    log("Disposed $runtimeType");
+    organizedPagingController.dispose();
+    log('Disposed $runtimeType');
   }
 
   Future<void> _initModule() async {
     await Result.tryRunAsync(() async => module = await ModuleRepo.getByDbId(moduleId));
-    log("Initialized module");
-    return;
+    log('Initialized module: ${module?.uid}');
   }
 
   ///
   ///
   /// ===================================================================================================
-  /// FUNCTIONS
+  /// PUBLIC API
   /// ===================================================================================================
 
   void updateContentsOrdering(EntityOrdering newSortOption, {bool refresh = true}) {
@@ -90,14 +104,26 @@ class ModuleContentsPaginationNotifier extends Notifier<ModuleContentsPagination
     ref.read(_moduleContentsOrderingProvider.notifier).set(newSortOption);
     state = state.copyWith(contentsOrdering: newSortOption, isLoading: false);
 
-    if (refresh) _refreshAndFetchFirstPage();
+    if (refresh) _refreshBoth();
   }
 
-  Future<List<ModuleContent>> fetchPage(int pageKey, int limit) async {
-    if (module == null) {
-      await _initModule();
-      state = state.copyWith(isLoading: false);
+  /// Called by [ModuleContentsNotifier] when [CardViewType] switches so the
+  /// correct controller gets a fresh fetch.
+  void refreshForViewType(CardViewType viewType) {
+    switch (viewType) {
+      case CardViewType.organized:
+        _refreshController(organizedPagingController);
+      case CardViewType.list || CardViewType.grid || CardViewType.other:
+        _refreshController(pagingController);
     }
+  }
+
+  /// Public — the flat extension ([ext_module_contents_pagination_notifier])
+  /// calls this directly in [_handleCountChange], matching the original contract.
+  Future<List<ModuleContent>> fetchPage(int pageKey, int limit) async {
+    await _ensureModule();
+    state = state.copyWith(isLoading: false);
+
     if (_pendingRefresh && pageKey == 1) {
       _pendingRefresh = false;
       scheduleMicrotask(
@@ -105,31 +131,48 @@ class ModuleContentsPaginationNotifier extends Notifier<ModuleContentsPagination
           ..refresh()
           ..fetchNextPage(),
       );
+      return [];
     }
 
-    final result = await _fetchModuleContents(pageKey: pageKey, limit: limit);
-
-    return result;
+    return _queryContents(pageKey: pageKey, limit: limit);
   }
 
-  Future<void> _refreshAndFetchFirstPage() async {
-    if (pagingController.value.isLoading) {
-      _pendingRefresh = true;
-      return;
+  ///
+  ///
+  /// ===================================================================================================
+  /// INTERNALS
+  /// ===================================================================================================
+
+  Future<List<Object>> _fetchOrganizedPage(int pageKey, int limit) async {
+    await _ensureModule();
+
+    if (_pendingRefresh && pageKey == 1) {
+      _pendingRefresh = false;
+      scheduleMicrotask(
+        () => organizedPagingController
+          ..refresh()
+          ..fetchNextPage(),
+      );
+      return [];
     }
-    _pendingRefresh = false;
-    pagingController.refresh();
-    pagingController.fetchNextPage();
+
+    final raw = await _queryContents(pageKey: pageKey, limit: limit);
+    return groupModuleContents(raw);
   }
 
-  Future<List<ModuleContent>> _fetchModuleContents({required int pageKey, required int limit}) async {
+  Future<void> _ensureModule() async {
+    if (module != null) return;
+    await _initModule();
+  }
+
+  Future<List<ModuleContent>> _queryContents({required int pageKey, required int limit}) async {
+    if (!ref.mounted) return [];
+
     final filter = module!.contents.filter();
     final offset = (pageKey - 1) * limit;
+    final ordering = state.contentsOrdering;
 
-    if (!ref.mounted) return [];
-    final contentsOrdering = state.contentsOrdering;
-
-    final query = switch (contentsOrdering) {
+    final query = switch (ordering) {
       EntityOrdering.nameAsc => filter.sortByTitle(),
       EntityOrdering.nameDesc => filter.sortByTitleDesc(),
       EntityOrdering.dateCreatedAsc => filter.sortByCreatedAt(),
@@ -138,10 +181,27 @@ class ModuleContentsPaginationNotifier extends Notifier<ModuleContentsPagination
       EntityOrdering.dateModifiedDesc => filter.sortByLastModifiedDesc(),
     };
 
-    return await query.offset(offset).limit(limit).findAll();
+    return query.offset(offset).limit(limit).findAll();
+  }
+
+  void _refreshBoth() {
+    _refreshController(pagingController);
+    _refreshController(organizedPagingController);
+  }
+
+  void _refreshController<T>(PagingController<int, T> controller) {
+    if (controller.value.isLoading) {
+      _pendingRefresh = true;
+      return;
+    }
+    _pendingRefresh = false;
+    controller.refresh();
+    controller.fetchNextPage();
   }
 
   int? _getNextPageKey(PagingState<int, ModuleContent> state) => state.lastPageIsEmpty ? null : state.nextIntPageKey;
+
+  int? _getNextOrganizedPageKey(PagingState<int, Object> state) => state.lastPageIsEmpty ? null : state.nextIntPageKey;
 }
 
 ///
@@ -149,13 +209,14 @@ class ModuleContentsPaginationNotifier extends Notifier<ModuleContentsPagination
 /// ===================================================================================================
 /// EXTRA PROVIDERS
 /// ===================================================================================================
+
 final _watchContentsChange = StreamNotifierProvider.autoDispose.family(
   (int arg) => StreamedNotifier<int>(() async* {
     final module = await ModuleRepo.getByDbId(arg);
     yield* module?.contents
             .filter()
             .watchLazy(fireImmediately: true)
-            .map((e) => DateTime.now().millisecondsSinceEpoch) ??
+            .map((_) => DateTime.now().millisecondsSinceEpoch) ??
         Stream.empty();
   }),
 );

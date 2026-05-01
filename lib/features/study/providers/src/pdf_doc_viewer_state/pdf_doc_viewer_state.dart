@@ -7,7 +7,7 @@ import 'package:screenshot/screenshot.dart';
 import 'package:slidesync/core/base/mixins/use_value_notifier.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
-import 'package:slidesync/features/study/logic/usecases/content_progress_tracker.dart';
+import 'package:slidesync/features/study/logic/usecases/progress_tracker.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
 
 class PdfDocViewerState with ValueNotifierFactoryMixin {
@@ -51,7 +51,7 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
     controller.addListener(_posListener);
 
     // Async initialization
-    progressTrack = await ProgressTracker.getLastTrack(contentId, defaultPages: const ["1"]);
+    progressTrack = await ProgressTracker.getLastTrack(contentId);
     {
       if (progressTrack != null) {
         initialPage = progressTrack!.pages.isNotEmpty ? (int.tryParse(progressTrack!.pages.last) ?? 1) : 1;
@@ -156,8 +156,7 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
         _pageStayStopwatch.stop();
         isUpdatingProgressTrack = true;
 
-        final currentProgressTrack =
-            progressTrack ?? await ProgressTracker.getLastTrack(contentId, defaultPages: const ["1"]);
+        final currentProgressTrack = progressTrack ?? await ProgressTracker.getLastTrack(contentId);
         if (currentProgressTrack == null) {
           isUpdatingProgressTrack = false;
           _pageStayStopwatch.start();

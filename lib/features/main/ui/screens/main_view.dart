@@ -70,6 +70,7 @@ class _MainViewState extends ConsumerState<MainView> with MainViewActions {
         return AppScaffold(
           title: "",
           canPop: false,
+          onPopInvokedWithResult: (didPop, result) => MainProvider.state.act(ref).setTabIndex(0),
           extendBody: true,
           drawer: const HomeDrawer(),
           floatingActionButton: const LibraryTabFAB(),

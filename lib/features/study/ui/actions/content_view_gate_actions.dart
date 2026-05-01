@@ -6,7 +6,7 @@ import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as p;
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/core/utils/storage_utils/clean_up_utils.dart';
-import 'package:slidesync/features/study/logic/usecases/content_progress_tracker.dart';
+import 'package:slidesync/features/study/logic/usecases/progress_tracker.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:url_launcher/url_launcher.dart';
 

@@ -8,7 +8,7 @@ import 'package:slidesync/core/base/mixins/use_value_notifier.dart';
 import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
-import 'package:slidesync/features/study/logic/usecases/content_progress_tracker.dart';
+import 'package:slidesync/features/study/logic/usecases/progress_tracker.dart';
 
 class ImageViewerState with ValueNotifierFactoryMixin {
   // static final ScreenshotController screenshotController = ScreenshotController();

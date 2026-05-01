@@ -12,8 +12,8 @@ import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/features/browse/ui/widgets/module_contents_view/preview_link_type_dialog.dart';
-import 'package:slidesync/features/browse/ui/actions/module_contents/content_card_context_menu_actions.dart';
-import 'package:slidesync/features/browse/ui/actions/module_contents/modify_contents_action.dart';
+// import 'package:slidesync/features/browse/ui/actions/module_contents/content_card_context_menu_actions.dart';
+// import 'package:slidesync/features/browse/ui/actions/module_contents/modify_contents_action.dart';
 import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
 import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
 import 'package:slidesync/routes/routes.dart';
@@ -138,22 +138,22 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
             });
           },
         ),
+      // CourseMaterialListCardActionModel(
+      //   label: "Rename",
+      //   icon: Icons.drive_file_rename_outline_rounded,
+      //   onTap: () {
+      //     ContentCardContextMenuActions.onRenameContent(context, content);
+      //   },
+      // ),
+      // CourseMaterialListCardActionModel(
+      //   label: "Delete",
+      //   icon: Icons.delete,
+      //   onTap: () async {
+      //     await ModifyContentsAction().showDeleteDialog(content.uid);
+      //   },
+      // ),
       CourseMaterialListCardActionModel(
-        label: "Rename",
-        icon: Icons.drive_file_rename_outline_rounded,
-        onTap: () {
-          ContentCardContextMenuActions.onRenameContent(context, content);
-        },
-      ),
-      CourseMaterialListCardActionModel(
-        label: "Delete",
-        icon: Icons.delete,
-        onTap: () async {
-          await ModifyContentsAction().showDeleteDialog(content.uid);
-        },
-      ),
-      CourseMaterialListCardActionModel(
-        label: DeviceUtils.isDesktop() ? "Copy file" : "Share",
+        label: DeviceUtils.isDesktop() ? "Copy content" : "Share",
         icon: Iconsax.share_copy,
         onTap: () {
           ShareContentActions.shareContent(context, content.uid);

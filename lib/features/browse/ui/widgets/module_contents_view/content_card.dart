@@ -238,7 +238,9 @@ class _CardAboveFooter extends ConsumerWidget {
                   CustomText("Loading link...", fontSize: 10, color: theme.primary)
                 else
                   AbsorberWatch(
-                    listenable: progressProvider.select((s) => s as _ProgressWithDetRecord),
+                    listenable: progressProvider.select(
+                      (s) => s.value ?? (detail: null, progress: null) as _ProgressWithDetRecord,
+                    ),
                     builder: (context, progressAsync, ref, _) {
                       final progress = progressAsync.progress;
                       final detail = progressAsync.detail;

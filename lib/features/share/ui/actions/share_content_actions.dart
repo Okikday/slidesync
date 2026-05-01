@@ -62,7 +62,9 @@ class ShareContentActions {
     await ShareContentUc().shareFile(
       context,
       File(localPath),
-      filename: origFilename ?? p.setExtension(content.title, p.extension(localPath)),
+      filename: content.title.isEmpty
+          ? origFilename
+          : p.setExtension(sanitizeFileName(content.title), p.extension(localPath)),
     );
   }
 
@@ -133,7 +135,11 @@ class ShareContentActions {
       }
 
       files.add(File(localPath));
-      fileNames.add(e.metadata?.originalFileName ?? p.setExtension(e.title, p.extension(localPath)));
+      fileNames.add(
+        e.title.isEmpty
+            ? e.metadata?.originalFileName
+            : p.setExtension(sanitizeFileName(e.title), p.extension(localPath)),
+      );
     }
 
     final bool hasFiles = files.isNotEmpty;
@@ -152,5 +158,9 @@ class ShareContentActions {
 
     // Files (+ optional appended links as text)
     await ShareContentUc().shareFiles(context, files, filenames: fileNames, linkTexts: hasLinks ? linkTexts : null);
+  }
+
+  static String sanitizeFileName(String name) {
+    return name.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_').replaceAll(RegExp(r'\s+'), ' ').trim();
   }
 }

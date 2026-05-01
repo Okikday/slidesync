@@ -74,7 +74,7 @@ class ContentCardActions {
     return switch (content.type) {
       ModuleContentType.image || ModuleContentType.document => res,
       ModuleContentType.link => "link",
-      _ => '',
+      _ => res,
     };
   }
 }
