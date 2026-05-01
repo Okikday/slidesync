@@ -28,6 +28,11 @@ class AppRouter {
     navigatorKey: rootNavigatorKey,
     debugLogDiagnostics: true,
     observers: [HeroineController()],
+    onException: (context, state, router) {
+    final location = state.uri.toString();
+    if (location.startsWith('content://') || location.startsWith('file://')) return;
+    router.go(Routes.home.path);
+  },
     routes: [
       splashRoute,
       authRoute,
