@@ -9,6 +9,9 @@ import 'package:slidesync/features/browse/ui/widgets/module_contents_view/src/mo
 import 'package:slidesync/shared/helpers/global_nav.dart';
 
 class ReceiveSharingHandler {
+  ReceiveSharingHandler._();
+  static final instance = ReceiveSharingHandler._();
+  
   final Completer<void> _appReady = Completer();
   StreamSubscription? _intentSub;
   bool _isProcessing = false;
