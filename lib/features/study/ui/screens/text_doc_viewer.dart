@@ -85,42 +85,38 @@ class _TextDocViewerState extends ConsumerState<TextDocViewer> {
           extendBodyBehindAppBar: true,
           systemUiOverlayStyle: UiUtils.getSystemUiOverlayStyle(context.scaffoldBackgroundColor, context.isDarkMode),
           body: snapshot.hasData
-              ? Positioned.fill(
-                  child: SingleChildScrollView(
-                    controller: _scrollController,
-                    padding: EdgeInsets.only(
-                      top: padding.top + kToolbarHeight + 12,
-                      bottom: padding.bottom + 16,
-                      left: 16,
-                      right: 16,
+              ? SingleChildScrollView(
+                  controller: _scrollController,
+                  padding: EdgeInsets.only(
+                    top: padding.top + kToolbarHeight + 12,
+                    bottom: padding.bottom + 16,
+                    left: 16,
+                    right: 16,
+                  ),
+                  child: SelectableText(
+                    snapshot.data ?? "No text was found",
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: ref.onBackground,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 0.2,
+                      height: 1.5,
                     ),
-                    child: SelectableText(
-                      snapshot.data!,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: ref.onBackground,
-                        fontWeight: FontWeight.w500,
-                        letterSpacing: 0.2,
-                        height: 1.5,
-                      ),
-                      onSelectionChanged: (selection, c) {},
-                    ),
+                    onSelectionChanged: (selection, c) {},
                   ),
                 )
               : snapshot.hasError
-              ? Positioned.fill(
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Text(
-                        'Error loading file: ${snapshot.error}',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
-                      ),
+              ? Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Text(
+                      'Error loading file: ${snapshot.error}',
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
                     ),
                   ),
                 )
-              : Positioned.fill(child: Center(child: CircularProgressIndicator())),
+              : Center(child: CircularProgressIndicator()),
         );
       },
     );

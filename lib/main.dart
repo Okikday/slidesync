@@ -46,7 +46,6 @@ Future<void> _initialize() async {
   await NotificationService.instance.initialize();
 
   pdfrxFlutterInitialize();
-  await _firstAppLaunch();
   await _appLaunchRoutine();
   await _initIfDesktop();
 }

@@ -242,7 +242,6 @@ class _PrivateDrive {
     String? parentId;
     for (final name in segments) {
       parentId = await _findOrCreateFolder(client, name, parentId);
-      if (parentId == null) return null;
     }
     return parentId;
   }

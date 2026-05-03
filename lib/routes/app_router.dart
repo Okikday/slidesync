@@ -29,10 +29,10 @@ class AppRouter {
     debugLogDiagnostics: true,
     observers: [HeroineController()],
     onException: (context, state, router) {
-    final location = state.uri.toString();
-    if (location.startsWith('content://') || location.startsWith('file://')) return;
-    router.go(Routes.home.path);
-  },
+      final location = state.uri.toString();
+      if (location.startsWith('content://') || location.startsWith('file://')) return;
+      router.go(Routes.home.path);
+    },
     routes: [
       splashRoute,
       authRoute,
@@ -63,14 +63,20 @@ final splashRoute = GoRoute(
   path: Routes.splash.path,
   builder: (context, state) => const SplashView(),
   redirect: (context, state) async {
+    final isUserSignedIn = await UserDataFunctions().isUserSignedIn();
+    final hasOnboarded = await AppHiveData.instance.getData(key: HiveDataPathKey.hasOnboarded.name) as bool?;
     String? destination;
-     if (hasOnboarded == null && !isUserSignedIn) {destination = Routes.welcome.path;}
-     else if (hasOnboarded == true || isUserSignedIn) {destination = Routes.home.path;}
-     else{ destination = Routes.auth.path;}
+    if (hasOnboarded == null && !isUserSignedIn) {
+      destination = Routes.welcome.path;
+    } else if (hasOnboarded == true || isUserSignedIn) {
+      destination = Routes.home.path;
+    } else {
+      destination = Routes.auth.path;
+    }
 
-     if (destination == Routes.home.path) {
-        ReceiveSharingHandler.instance.markAppReady();
-      }
-      return destination;
+    if (destination == Routes.home.path) {
+      ReceiveSharingHandler.instance.markAppReady();
+    }
+    return destination;
   },
 );
