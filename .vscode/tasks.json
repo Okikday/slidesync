@@ -1,0 +1,12 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "App release build",
+            "type": "shell",
+            "command": "${cwd}${pathSeparator}release_build_app.bat",
+            "group": "build",
+            "problemMatcher": []
+        }
+    ]
+}

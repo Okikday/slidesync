@@ -1,7 +1,7 @@
 import 'dart:developer';
 
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slidesync/core/constants/app_config.dart';
 import 'package:slidesync/features/study/logic/services/drive_browser.dart' as drive_service;
 
 class DriveListingNavState {
@@ -105,7 +105,7 @@ final driveResourceProvider = FutureProvider.family<drive_service.DriveResource?
     return null;
   }
 
-  final apiKey = dotenv.env['DRIVE_API_KEY'] ?? '';
+  final apiKey = AppConfig.driveApiKey;
   if (apiKey.isEmpty) {
     return null;
   }

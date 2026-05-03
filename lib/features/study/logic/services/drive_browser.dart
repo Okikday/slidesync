@@ -229,11 +229,6 @@ class DriveBrowser {
   // Private constructor to prevent instantiation
   DriveBrowser._();
 
-  // /// Get API key from environment or parameter
-  // static String _getApiKey([String? apiKey]) {
-  //   return apiKey ?? dotenv.env['DRIVE_API_KEY'] ?? '';
-  // }
-
   /// Create a new HTTP client for each request (isolate-friendly)
   static http.Client _createHttpClient() {
     return http.Client();

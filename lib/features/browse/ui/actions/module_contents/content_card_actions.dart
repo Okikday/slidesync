@@ -18,7 +18,7 @@ class ContentCardActions {
   //     case CourseContentType.link:
   //       final String? previewUrl = jsonDecode(content.metadataJson)['previewUrl'] as String?;
   //       if (previewUrl == null || previewUrl.isEmpty) {
-  //         final args = <String, dynamic>{'url': content.path.url, 'driveApiKey': dotenv.env['DRIVE_API_KEY']};
+  //         final args = <String, dynamic>{'url': content.path.url, 'driveApiKey': };
   //         final Map<String, String?>? previewMap = await compute(_fetchPreviewWorker, args);
   //         log("After checking internet: $previewMap");
   //         if (previewMap == null) return FileDetails();

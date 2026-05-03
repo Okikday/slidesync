@@ -4,6 +4,7 @@ import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/features/study/ui/screens/image_viewer.dart';
 import 'package:slidesync/features/study/ui/screens/link_viewer/drive_listing_view.dart';
 import 'package:slidesync/features/study/ui/screens/pdf_doc_viewer.dart';
+import 'package:slidesync/features/study/ui/screens/text_doc_viewer.dart';
 
 final contentViewerRoutes = [
   GoRoute(
@@ -35,5 +36,11 @@ final contentViewerRoutes = [
       final content = (state.extra as ModuleContent);
       return DriveListingView(initialFolderId: content.path.url, collectionId: content.parentId);
     },
+  ),
+
+  GoRoute(
+    name: Routes.textDocumentViewer.name,
+    path: Routes.textDocumentViewer.path,
+    builder: (context, state) => TextDocViewer(content: state.extra as ModuleContent),
   ),
 ];

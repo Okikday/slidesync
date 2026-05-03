@@ -2,11 +2,11 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:path/path.dart' as p;
+import 'package:slidesync/core/constants/app_config.dart';
 import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/storage/native/app_paths.dart';
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
@@ -62,7 +62,7 @@ class DriveListingController {
         return;
       }
 
-      final apiKey = dotenv.env['DRIVE_API_KEY'] ?? '';
+      final apiKey = AppConfig.driveApiKey;
       if (apiKey.isEmpty) {
         _showDriveMessage('Drive API key is missing', FlushbarVibe.error);
         return;
@@ -103,7 +103,7 @@ class DriveListingController {
         selectionNotifier.clearSelection();
       }
 
-      final apiKey = dotenv.env['DRIVE_API_KEY'] ?? '';
+      final apiKey = AppConfig.driveApiKey;
       if (apiKey.isEmpty) {
         _showDriveMessage('Drive API key is missing', FlushbarVibe.error);
         return;
@@ -829,7 +829,7 @@ class DriveListingController {
     drive_service.DriveFile? preResolvedFile,
     _DriveInAppOpenKind? preferredKind,
   }) async {
-    final apiKey = dotenv.env['DRIVE_API_KEY'] ?? '';
+    final apiKey = AppConfig.driveApiKey;
     if (apiKey.isEmpty) {
       _showDriveMessage('Drive API key is missing', FlushbarVibe.error);
       return;
@@ -954,7 +954,7 @@ class DriveListingController {
   Future<drive_service.DriveFile> _resolveFileForOpenOptions(drive_service.DriveFile file) async {
     if (!file.isShortcut) return file;
 
-    final apiKey = dotenv.env['DRIVE_API_KEY'] ?? '';
+    final apiKey = AppConfig.driveApiKey;
     if (apiKey.isEmpty) {
       return file;
     }

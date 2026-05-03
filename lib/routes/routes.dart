@@ -30,6 +30,7 @@ enum Routes {
   pdfDocumentViewer,
   imageViewer,
   driveLinkViewer,
+  textDocumentViewer,
   settings,
 
   /// Sync screens

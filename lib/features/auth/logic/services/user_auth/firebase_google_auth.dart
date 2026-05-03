@@ -3,8 +3,8 @@ import 'dart:async';
 import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:slidesync/core/constants/app_config.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/features/auth/logic/models/user_credential_model.dart';
 import 'package:slidesync/features/auth/logic/usecases/auth_uc/firebase_auth_data.dart';
@@ -20,7 +20,7 @@ class FirebaseGoogleAuth {
 
   Future<Result<UserCredentialModel>> signInWithGoogle({String? phoneNumber}) async {
     try {
-      _googleAuth.initialize(serverClientId: dotenv.env['SERVER_CLIENT_ID']);
+      _googleAuth.initialize(serverClientId: AppConfig.serverClientId);
       // Triggering the authentication flow
       final GoogleSignInAccount googleUser = await _googleAuth.authenticate(scopeHint: ['email', 'profile', 'openid']);
       // if (googleUser == null) {

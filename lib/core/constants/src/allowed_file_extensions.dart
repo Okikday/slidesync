@@ -21,6 +21,30 @@ class AllowedFileExtensions {
 
   static const List<String> allowedAudioExtensions = ['mp3', 'wav', 'aac', 'ogg', 'flac', 'm4a'];
 
+  static const allowTextExtensions = {
+    'txt',
+    'md',
+    'log',
+    'json',
+    'xml',
+    'yaml',
+    'yml',
+    'csv',
+    'html',
+    'htm',
+    'dart',
+    'java',
+    'kotlin',
+    'swift',
+    'py',
+    'js',
+    'ts',
+    'css',
+    'scss',
+    'sql',
+    'cs',
+  };
+
   /// Combined list plus additional useful extensions
   static const List<String> allowedExtensions = [
     ...allowedImageExtensions,

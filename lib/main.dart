@@ -6,7 +6,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:pdfrx/pdfrx.dart';
@@ -41,15 +40,6 @@ Future<void> _initialize() async {
 
   await Hive.initFlutter();
   await AppHiveData.instance.initialize();
-
-  await dotenv.load();
-
-  // await Result.tryRunAsync(() async {
-  //   final driveApiKey = dotenv.env['DRIVE_API_KEY'];
-  //   if (driveApiKey != null && driveApiKey.isNotEmpty) {
-  //     GDriveManager.init(driveApiKey);
-  //   }
-  // });
 
   if (!kIsWeb) await IsarData.initializeDefault();
 

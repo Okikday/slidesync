@@ -18,7 +18,6 @@ class GDriveAuth {
   static const _adminSignInScopes = [..._defaultScopes, drive.DriveApi.driveScope];
 
   // ── Public read-only API key (browsing public folders, metadata) ───────────
-  // Set this once at app startup via GDriveAuth.setApiKey(dotenv.env['DRIVE_API_KEY']!)
   static String _apiKey = '';
 
   static void setApiKey(String key) => _apiKey = key;
@@ -26,7 +25,7 @@ class GDriveAuth {
 
   Future<void> _initializeGoogleAuth() async {
     if (isInitialized) return;
-    await _googleAuth.initialize(serverClientId: dotenv.env['SERVER_CLIENT_ID']);
+    await _googleAuth.initialize(serverClientId: AppConfig.serverClientId);
     isInitialized = true;
   }
 

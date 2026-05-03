@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:open_filex/open_filex.dart';
 import 'package:path/path.dart' as p;
+import 'package:slidesync/core/constants/src/allowed_file_extensions.dart';
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/core/utils/storage_utils/clean_up_utils.dart';
 import 'package:slidesync/features/study/logic/usecases/progress_tracker.dart';
@@ -123,16 +124,17 @@ class ContentViewGateActions {
   static Future<void> _handleDocument(MutationTarget ref, ModuleContent content) async {
     final filePath = content.path.local ?? '';
     final urlPath = content.path.url ?? '';
-    final isPdf =
-        p.extension(filePath).toLowerCase().contains("pdf") || p.extension(urlPath).toLowerCase().contains("pdf");
+    final extension = p.extension(filePath).toLowerCase();
+    final urlExtension = p.extension(urlPath).toLowerCase();
+
+    final isPdf = extension.contains("pdf") || urlExtension.contains("pdf");
 
     if (isPdf) {
-      // await _stopPaginationIfNeeded(ref, content);
       _navigateTo(Routes.pdfDocumentViewer, content);
       return;
     }
 
-    // Non-PDF documents open externally
+    // Other documents open externally
     await OpenFilex.open(filePath);
     GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "Opening with external application..."));
   }
@@ -183,6 +185,12 @@ class ContentViewGateActions {
   static Future<void> _handleUnknownType(ModuleContent content) async {
     final filePath = content.path.local ?? '';
     final file = File(filePath);
+    final extension = p.extension(filePath).toLowerCase();
+    final isText = AllowedFileExtensions.allowTextExtensions.contains(extension.replaceAll('.', ''));
+    if (isText) {
+      _navigateTo(Routes.textDocumentViewer, content);
+      return;
+    }
 
     GlobalNav.withContext(
       (context) => UiUtils.showLoadingDialog(context, message: "Attempting to recognize content...", canPop: false),
