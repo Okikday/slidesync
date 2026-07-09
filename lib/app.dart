@@ -10,6 +10,8 @@ import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/theme/theme.dart';
 
+import 'main.dart';
+
 class App extends ConsumerStatefulWidget {
   const App({super.key});
 
@@ -18,7 +20,6 @@ class App extends ConsumerStatefulWidget {
 }
 
 class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
-  
   @override
   bool handleStartBackGesture(PredictiveBackEvent backEvent) {
     return true;
@@ -27,7 +28,9 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   @override
   void didChangePlatformBrightness() async {
     _enforceImmersiveMode();
-    WidgetsBinding.instance.addPostFrameCallback((_) async => notifyThemeOnBrightnessChanged(ref));
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) async => notifyThemeOnBrightnessChanged(ref),
+    );
     super.didChangePlatformBrightness();
   }
 
@@ -56,13 +59,51 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     if (Platform.isAndroid || Platform.isIOS) {
-       ReceiveSharingHandler.instance.init();
+      ReceiveSharingHandler.instance.init();
     }
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       await notifyThemeOnBrightnessChanged(ref);
     });
+
+    if (globalInitError != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // Double-check to prevent duplicate dialogs
+        if (globalInitError != null) {
+          showDialog(
+            context: context,
+            builder: (ctx) => AlertDialog(
+              backgroundColor: const Color(0xFF1E1E1E),
+              title: const Text(
+                "SlideSync Initialization Error",
+                style: TextStyle(color: Colors.white),
+              ),
+              content: SingleChildScrollView(
+                child: Text(
+                  globalInitError.toString(),
+                  style: const TextStyle(
+                    color: Colors.orangeAccent,
+                    fontFamily: 'monospace',
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(ctx).pop(),
+                  child: const Text("Dismiss"),
+                ),
+              ],
+            ),
+          );
+
+          // Nullify the variable immediately so hot-reloads
+          // or route changes don't trigger the dialog again
+          globalInitError = null;
+        }
+      });
+    }
   }
 
   @override
@@ -91,10 +132,6 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
     );
   }
 }
-
-
-
-
 
 // class DummyApp extends ConsumerWidget {
 //   const DummyApp({super.key});
