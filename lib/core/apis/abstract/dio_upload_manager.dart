@@ -2,7 +2,7 @@ import 'dart:io';
 import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:slidesync/core/apis/abstract/upload_download_base.dart';
-import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data.dart';
 import 'package:slidesync/core/utils/result.dart';
 
 /// Built-in implementation of [UploadManagerBase] using Dio for multipart uploads.
@@ -18,7 +18,13 @@ class DioUploadManager implements UploadManagerBase {
 
   final _random = Random();
   final _activeSessions = <String, _UploadSession>{};
-  late final Dio _dio = Dio(BaseOptions(connectTimeout: _timeout, receiveTimeout: _timeout, sendTimeout: _timeout));
+  late final Dio _dio = Dio(
+    BaseOptions(
+      connectTimeout: _timeout,
+      receiveTimeout: _timeout,
+      sendTimeout: _timeout,
+    ),
+  );
 
   @override
   Future<Result<UploadResult?>> uploadFile({
@@ -33,7 +39,11 @@ class DioUploadManager implements UploadManagerBase {
     // Validate file size
     if (fileSize > _maxFileSize) {
       final sizeMB = (fileSize / 1024 / 1024).toStringAsFixed(1);
-      SyncLogger.error('File exceeds 200MB limit ($sizeMB MB)', '', operation: operationId);
+      SyncLogger.error(
+        'File exceeds 200MB limit ($sizeMB MB)',
+        '',
+        operation: operationId,
+      );
       return null;
     }
 
@@ -82,66 +92,89 @@ class DioUploadManager implements UploadManagerBase {
       );
 
       if (result != null) {
-        SyncLogger.info('Upload successful on attempt $attempt', operation: operationId);
+        SyncLogger.info(
+          'Upload successful on attempt $attempt',
+          operation: operationId,
+        );
         await _clearSession(operationId);
         return result;
       }
 
       if (attempt < selectedLinks.length) {
-        SyncLogger.warn('Attempt $attempt failed, trying next link', operation: operationId);
+        SyncLogger.warn(
+          'Attempt $attempt failed, trying next link',
+          operation: operationId,
+        );
       }
     }
 
-    SyncLogger.error('Upload failed after ${selectedLinks.length} attempts', '', operation: operationId);
+    SyncLogger.error(
+      'Upload failed after ${selectedLinks.length} attempts',
+      '',
+      operation: operationId,
+    );
     return null;
   });
 
   @override
-  Future<Result<UploadResult?>> resumeUpload({required String operationId, OnUploadProgress? onProgress}) =>
+  Future<Result<UploadResult?>> resumeUpload({
+    required String operationId,
+    OnUploadProgress? onProgress,
+  }) => Result.tryRunAsync(() async {
+    final session = await _loadSession(operationId);
+    if (session == null) {
+      SyncLogger.warn('No session found to resume', operation: operationId);
+      return null;
+    }
+
+    final file = File(session.filePath);
+    if (!await file.exists()) {
+      SyncLogger.warn('Original file no longer exists', operation: operationId);
+      await _clearSession(operationId);
+      return null;
+    }
+
+    SyncLogger.info(
+      'Resuming from ${session.bytesUploaded}/${session.totalBytes} bytes',
+      operation: operationId,
+    );
+
+    return await _continueUpload(
+      file: file,
+      session: session,
+      operationId: operationId,
+      onProgress: onProgress,
+    );
+  });
+
+  @override
+  Future<Result<void>> cancelUpload(String operationId) =>
       Result.tryRunAsync(() async {
-        final session = await _loadSession(operationId);
-        if (session == null) {
-          SyncLogger.warn('No session found to resume', operation: operationId);
-          return null;
-        }
-
-        final file = File(session.filePath);
-        if (!await file.exists()) {
-          SyncLogger.warn('Original file no longer exists', operation: operationId);
-          await _clearSession(operationId);
-          return null;
-        }
-
-        SyncLogger.info('Resuming from ${session.bytesUploaded}/${session.totalBytes} bytes', operation: operationId);
-
-        return await _continueUpload(file: file, session: session, operationId: operationId, onProgress: onProgress);
+        _activeSessions.remove(operationId);
+        await _clearSession(operationId);
+        SyncLogger.info('Upload cancelled', operation: operationId);
       });
 
   @override
-  Future<Result<void>> cancelUpload(String operationId) => Result.tryRunAsync(() async {
-    _activeSessions.remove(operationId);
-    await _clearSession(operationId);
-    SyncLogger.info('Upload cancelled', operation: operationId);
-  });
+  Future<Result<Map<String, dynamic>?>> getSessionInfo(String operationId) =>
+      Result.tryRunAsync(() async {
+        final session = await _loadSession(operationId);
+        if (session == null) return null;
+
+        return {
+          'operationId': operationId,
+          'filePath': session.filePath,
+          'bytesUploaded': session.bytesUploaded,
+          'totalBytes': session.totalBytes,
+          'link': session.link,
+          'attempt': session.attempt,
+          'createdAt': session.createdAt.toIso8601String(),
+        };
+      });
 
   @override
-  Future<Result<Map<String, dynamic>?>> getSessionInfo(String operationId) => Result.tryRunAsync(() async {
-    final session = await _loadSession(operationId);
-    if (session == null) return null;
-
-    return {
-      'operationId': operationId,
-      'filePath': session.filePath,
-      'bytesUploaded': session.bytesUploaded,
-      'totalBytes': session.totalBytes,
-      'link': session.link,
-      'attempt': session.attempt,
-      'createdAt': session.createdAt.toIso8601String(),
-    };
-  });
-
-  @override
-  Future<Result<void>> clearSession(String operationId) => Result.tryRunAsync(() => _clearSession(operationId));
+  Future<Result<void>> clearSession(String operationId) =>
+      Result.tryRunAsync(() => _clearSession(operationId));
 
   // ── Private helpers ────────────────────────────────────────────────────────
 
@@ -186,7 +219,11 @@ class DioUploadManager implements UploadManagerBase {
 
     try {
       final fileStream = file.openRead();
-      final multipartFile = MultipartFile.fromStream(() => fileStream, fileSize, filename: fileName);
+      final multipartFile = MultipartFile.fromStream(
+        () => fileStream,
+        fileSize,
+        filename: fileName,
+      );
 
       final formData = FormData.fromMap({'file': multipartFile});
 
@@ -203,7 +240,10 @@ class DioUploadManager implements UploadManagerBase {
       );
 
       if (response.statusCode != 200 && response.statusCode != 201) {
-        SyncLogger.warn('Upload failed with status ${response.statusCode}', operation: operationId);
+        SyncLogger.warn(
+          'Upload failed with status ${response.statusCode}',
+          operation: operationId,
+        );
         session.bytesUploaded = 0;
         await _saveSession(operationId, session);
         return null;
@@ -225,7 +265,11 @@ class DioUploadManager implements UploadManagerBase {
       await _saveSession(operationId, session);
       return null;
     } catch (e) {
-      SyncLogger.error('Upload to link failed (unknown error)', e, operation: operationId);
+      SyncLogger.error(
+        'Upload to link failed (unknown error)',
+        e,
+        operation: operationId,
+      );
       session.bytesUploaded = 0;
       await _saveSession(operationId, session);
       return null;
@@ -250,17 +294,20 @@ class DioUploadManager implements UploadManagerBase {
     );
 
     if (result == null) {
-      SyncLogger.warn('Resume failed, will retry with new link', operation: operationId);
+      SyncLogger.warn(
+        'Resume failed, will retry with new link',
+        operation: operationId,
+      );
     }
 
     return result;
   }
 
-  Future<void> _saveSession(String id, _UploadSession session) =>
-      AppHiveData.instance.setData<String>(key: '$_sessionKeyPrefix$id', value: session.toJson());
+  Future<void> _saveSession(String id, _UploadSession session) => KVStore.me
+      .setData<String>(key: '$_sessionKeyPrefix$id', value: session.toJson());
 
   Future<_UploadSession?> _loadSession(String id) async {
-    final json = await AppHiveData.instance.getData<String>(key: '$_sessionKeyPrefix$id');
+    final json = await KVStore.me.getData<String>(key: '$_sessionKeyPrefix$id');
     if (json == null) return null;
 
     try {
@@ -271,7 +318,8 @@ class DioUploadManager implements UploadManagerBase {
     }
   }
 
-  Future<void> _clearSession(String id) => AppHiveData.instance.deleteData(key: '$_sessionKeyPrefix$id');
+  Future<void> _clearSession(String id) =>
+      KVStore.me.deleteData(key: '$_sessionKeyPrefix$id');
 }
 
 /// Internal upload session model.
@@ -294,8 +342,15 @@ class _UploadSession {
     required this.createdAt,
   });
 
-  String toJson() =>
-      [operationId, filePath, link, attempt, bytesUploaded, totalBytes, createdAt.toIso8601String()].join('|');
+  String toJson() => [
+    operationId,
+    filePath,
+    link,
+    attempt,
+    bytesUploaded,
+    totalBytes,
+    createdAt.toIso8601String(),
+  ].join('|');
 
   factory _UploadSession.fromJson(String data) {
     final parts = data.split('|');

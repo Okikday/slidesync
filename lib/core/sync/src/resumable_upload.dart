@@ -113,7 +113,9 @@ class _ResumableUpload {
           yield DriveProgress(
             bytesTransferred: bytesTransferred,
             totalBytes: totalBytes,
-            state: driveFileId != null ? DriveProgressState.done : DriveProgressState.active,
+            state: driveFileId != null
+                ? DriveProgressState.done
+                : DriveProgressState.active,
             driveFileId: driveFileId,
           );
         }
@@ -125,7 +127,10 @@ class _ResumableUpload {
       // Clean up persisted session on success
       await _clearSession(operationId);
 
-      yield DriveProgress.done(totalBytes: totalBytes, driveFileId: driveFileId);
+      yield DriveProgress.done(
+        totalBytes: totalBytes,
+        driveFileId: driveFileId,
+      );
     } catch (e, st) {
       log('ResumableUpload: failed', error: e, stackTrace: st);
       yield DriveProgress.failed(e.toString(), totalBytes: totalBytes);
@@ -146,7 +151,9 @@ class _ResumableUpload {
       'parents': [parentFolderId],
     });
 
-    final url = Uri.parse('https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable');
+    final url = Uri.parse(
+      'https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable',
+    );
 
     final response = await client.post(
       url,
@@ -159,11 +166,15 @@ class _ResumableUpload {
     );
 
     if (response.statusCode != 200) {
-      throw HttpException('Failed to initiate upload session (${response.statusCode}): ${response.body}', uri: url);
+      throw HttpException(
+        'Failed to initiate upload session (${response.statusCode}): ${response.body}',
+        uri: url,
+      );
     }
 
     final location = response.headers['location'];
-    if (location == null) throw StateError('Drive did not return a session URI');
+    if (location == null)
+      throw StateError('Drive did not return a session URI');
     return location;
   }
 
@@ -177,7 +188,10 @@ class _ResumableUpload {
   }) async {
     final response = await client.put(
       Uri.parse(sessionUri),
-      headers: {'Content-Range': 'bytes $start-$end/$totalBytes', 'Content-Type': 'application/octet-stream'},
+      headers: {
+        'Content-Range': 'bytes $start-$end/$totalBytes',
+        'Content-Type': 'application/octet-stream',
+      },
       body: chunk,
     );
 
@@ -190,14 +204,23 @@ class _ResumableUpload {
       return const _ChunkResult(isComplete: false);
     }
 
-    throw HttpException('Chunk upload failed (${response.statusCode}): ${response.body}');
+    throw HttpException(
+      'Chunk upload failed (${response.statusCode}): ${response.body}',
+    );
   }
 
   /// Query the server for how many bytes it has received for an existing session.
   /// Returns -1 if the session has expired.
-  static Future<int> _querySessionOffset(String sessionUri, AuthClient client, int totalBytes) async {
+  static Future<int> _querySessionOffset(
+    String sessionUri,
+    AuthClient client,
+    int totalBytes,
+  ) async {
     try {
-      final r = await client.put(Uri.parse(sessionUri), headers: {'Content-Range': 'bytes */$totalBytes'});
+      final r = await client.put(
+        Uri.parse(sessionUri),
+        headers: {'Content-Range': 'bytes */$totalBytes'},
+      );
       if (r.statusCode == 308) {
         final range = r.headers['range'];
         if (range == null) return 0; // no bytes received yet
@@ -218,25 +241,34 @@ class _ResumableUpload {
   // Stored in the regular (non-encrypted) Hive box — session URIs are
   // time-limited by Drive anyway, so encryption is not needed here.
 
-  static String _sessionKey(String operationId) => '${HiveDataPathKey.driveUploadSession.name}_$operationId';
+  static String _sessionKey(String operationId) =>
+      '${HiveDataKey.driveUploadSession.name}_$operationId';
 
   static Future<String?> _loadSession(String operationId) async {
-    final raw = await AppHiveData.instance.getData<String>(key: _sessionKey(operationId));
+    final raw = await KVStore.me.getData<String>(key: _sessionKey(operationId));
     if (raw == null) return null;
     try {
-      final session = ResumableSession.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+      final session = ResumableSession.fromJson(
+        jsonDecode(raw) as Map<String, dynamic>,
+      );
       return session.sessionUri;
     } catch (_) {
       return null;
     }
   }
 
-  static Future<void> _saveSession(String operationId, ResumableSession session) async {
-    await AppHiveData.instance.setData<String>(key: _sessionKey(operationId), value: jsonEncode(session.toJson()));
+  static Future<void> _saveSession(
+    String operationId,
+    ResumableSession session,
+  ) async {
+    await KVStore.me.setData<String>(
+      key: _sessionKey(operationId),
+      value: jsonEncode(session.toJson()),
+    );
   }
 
   static Future<void> _clearSession(String operationId) async {
-    await AppHiveData.instance.deleteData(key: _sessionKey(operationId));
+    await KVStore.me.deleteData(key: _sessionKey(operationId));
   }
 
   // ── Helpers ────────────────────────────────────────────────────────────────
@@ -246,11 +278,14 @@ class _ResumableUpload {
     const mimes = {
       '.pdf': 'application/pdf',
       '.doc': 'application/msword',
-      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      '.docx':
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
       '.xls': 'application/vnd.ms-excel',
-      '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      '.xlsx':
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       '.ppt': 'application/vnd.ms-powerpoint',
-      '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      '.pptx':
+          'application/vnd.openxmlformats-officedocument.presentationml.presentation',
       '.jpg': 'image/jpeg',
       '.jpeg': 'image/jpeg',
       '.png': 'image/png',

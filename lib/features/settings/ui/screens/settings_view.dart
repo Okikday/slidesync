@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
@@ -40,16 +40,24 @@ class SettingsView extends ConsumerWidget {
     final theme = ref;
 
     return AnnotatedRegion(
-      value: UiUtils.getSystemUiOverlayStyle(Colors.transparent, context.isDarkMode),
+      value: UiUtils.getSystemUiOverlayStyle(
+        Colors.transparent,
+        context.isDarkMode,
+      ),
       child: AppScaffold(
         title: "",
         extendBodyBehindAppBar: true,
-        appBar: AppBarContainer(child: AppBarContainerChild(context.isDarkMode, title: "Settings")),
+        appBar: AppBarContainer(
+          child: AppBarContainerChild(context.isDarkMode, title: "Settings"),
+        ),
         body: TopPadding(
           child: Consumer(
             builder: (context, ref, child) {
-              final settingsModelProvider = ref.watch(SettingsProvider.settingsProvider);
-              final settingsModel = settingsModelProvider.value ?? SettingsModel();
+              final settingsModelProvider = ref.watch(
+                SettingsProvider.settingsProvider,
+              );
+              final settingsModel =
+                  settingsModelProvider.value ?? SettingsModel();
 
               return SmoothListView(
                 padding: const EdgeInsets.fromLTRB(20, 60, 20, 8),
@@ -133,15 +141,21 @@ class SettingsView extends ConsumerWidget {
                     content:
                         "When enabled, materials will open using the app’s built-in viewer instead of an external app.\nDoesn't apply for unsupported files.\nProgress won't be tracked if disabled*",
                     trailing: Switch(
-                      value: settingsModel.useBuiltInViewer ?? !DeviceUtils.isDesktop(),
+                      value:
+                          settingsModel.useBuiltInViewer ??
+                          !DeviceUtils.isDesktop(),
                       onChanged: (p) async {
                         log("p: $p");
                         final newValue = (await ref.read(
-                          SettingsProvider.settingsProvider.selectAsync((s) => s.copyWith(useBuiltInViewer: p)),
+                          SettingsProvider.settingsProvider.selectAsync(
+                            (s) => s.copyWith(useBuiltInViewer: p),
+                          ),
                         ));
                         log("prev:${settingsModel.useBuiltInViewer}");
                         log("next: ${newValue.useBuiltInViewer}");
-                        ref.read(SettingsProvider.settingsProvider.notifier).set(newValue);
+                        ref
+                            .read(SettingsProvider.settingsProvider.notifier)
+                            .set(newValue);
                       },
                     ),
                   ),
@@ -152,7 +166,8 @@ class SettingsView extends ConsumerWidget {
                     SettingsCard(
                       title: "Show materials in full view always",
                       iconData: Iconsax.sun,
-                      content: "Whether to always open a collection of materials in full screen or not",
+                      content:
+                          "Whether to always open a collection of materials in full screen or not",
                       trailing: Switch(
                         value: settingsModel.showMaterialsInFullScreen,
                         onChanged: (p) async {
@@ -160,7 +175,11 @@ class SettingsView extends ConsumerWidget {
                               .read(SettingsProvider.settingsProvider.notifier)
                               .set(
                                 await SettingsProvider.settingsProvider
-                                    .selectAsync((s) => s.copyWith(showMaterialsInFullScreen: p))
+                                    .selectAsync(
+                                      (s) => s.copyWith(
+                                        showMaterialsInFullScreen: p,
+                                      ),
+                                    )
                                     .read(ref),
                               );
                         },
@@ -195,7 +214,8 @@ class SettingsView extends ConsumerWidget {
                         UiUtils.showCustomDialog(
                           context,
                           child: ConfirmDeletionDialog(
-                            content: "This will remove all recent reads from the app. Continue?",
+                            content:
+                                "This will remove all recent reads from the app. Continue?",
                             onPop: () {
                               context.pop();
                             },
@@ -204,7 +224,8 @@ class SettingsView extends ConsumerWidget {
                             },
                             onDelete: () async {
                               context.pop();
-                              final clearedCount = await ContentTrackRepo.clearAllLastRead();
+                              final clearedCount =
+                                  await ContentTrackRepo.clearAllLastRead();
                               GlobalNav.withContext(
                                 (context) => UiUtils.showFlushBar(
                                   context,
@@ -225,7 +246,8 @@ class SettingsView extends ConsumerWidget {
                   SettingsCard(
                     title: "Export all courses",
                     iconData: Iconsax.export,
-                    content: "Export all courses and their contents to a selected folder.",
+                    content:
+                        "Export all courses and their contents to a selected folder.",
                     trailing: CustomElevatedButton(
                       label: "Export",
                       backgroundColor: theme.altBackgroundPrimary,
@@ -236,7 +258,8 @@ class SettingsView extends ConsumerWidget {
                           context,
                           child: AppAlertDialog(
                             title: "Export to Device",
-                            content: 'Export all courses to a chosen folder. Continue?',
+                            content:
+                                'Export all courses to a chosen folder. Continue?',
                             onPop: () {
                               context.pop();
                             },
@@ -245,21 +268,38 @@ class SettingsView extends ConsumerWidget {
                             },
                             onConfirm: () async {
                               context.pop();
-                              UiUtils.showLoadingDialog(context, canPop: false, message: 'Exporting courses...');
+                              UiUtils.showLoadingDialog(
+                                context,
+                                canPop: false,
+                                message: 'Exporting courses...',
+                              );
                               Result<String?> exportResult;
                               if (DeviceUtils.isDesktop()) {
-                                exportResult = await CourseFolderExportManager.exportAllCoursesWindows(context);
+                                exportResult =
+                                    await CourseFolderExportManager.exportAllCoursesWindows(
+                                      context,
+                                    );
                               } else {
-                                exportResult = await CourseFolderExportManager.exportAllCourses(context);
+                                exportResult =
+                                    await CourseFolderExportManager.exportAllCourses(
+                                      context,
+                                    );
                               }
                               GlobalNav.popGlobal();
 
-                              final exportMessage = exportResult.message ?? exportResult.data ?? 'Export complete';
+                              final exportMessage =
+                                  exportResult.message ??
+                                  exportResult.data ??
+                                  'Export complete';
                               if (exportMessage != 'Export cancelled') {
                                 UiUtils.showFlushBar(
-                                  context.mounted ? context : GlobalNav.context!,
+                                  context.mounted
+                                      ? context
+                                      : GlobalNav.context!,
                                   msg: exportMessage,
-                                  vibe: exportResult.isSuccess ? FlushbarVibe.success : FlushbarVibe.warning,
+                                  vibe: exportResult.isSuccess
+                                      ? FlushbarVibe.success
+                                      : FlushbarVibe.warning,
                                 );
                               }
                             },
@@ -274,7 +314,8 @@ class SettingsView extends ConsumerWidget {
                   SettingsCard(
                     title: "Clear App's cache",
                     iconData: Icons.view_agenda,
-                    content: "This can help free up device space by clearing temporary files.",
+                    content:
+                        "This can help free up device space by clearing temporary files.",
                     trailing: CustomElevatedButton(
                       label: "Clear",
                       backgroundColor: theme.altBackgroundPrimary,
@@ -283,15 +324,20 @@ class SettingsView extends ConsumerWidget {
                       onClick: () async {
                         final token = RootIsolateToken.instance;
                         if (token != null) {
-                          await compute(CleanUpUtils.deleteEmptyCoursesDirsInIsolate, {'rootIsolateToken': token});
+                          await compute(
+                            CleanUpUtils.deleteEmptyCoursesDirsInIsolate,
+                            {'rootIsolateToken': token},
+                          );
                           await CleanUpUtils().clearCacheOrTemp();
-                          await AppHiveData.instance.setData(
-                            key: HiveDataPathKey.lastClearedCacheDate.name,
+                          await KVStore.me.setData(
+                            key: HiveDataKey.lastClearedCacheDate.name,
                             value: DateTime.now(),
                           );
                           GlobalNav.withContext(
-                            (context) =>
-                                UiUtils.showFlushBar(context, msg: "Successfully cleared up temporary files.."),
+                            (context) => UiUtils.showFlushBar(
+                              context,
+                              msg: "Successfully cleared up temporary files..",
+                            ),
                           );
                         }
                       },
@@ -301,12 +347,13 @@ class SettingsView extends ConsumerWidget {
                   ConstantSizing.columnSpacingMedium,
 
                   FutureBuilder(
-                    future: UserDataFunctions().getUserDetails(),
+                    future: UserDataFunctions.me.getUserDetails(),
                     builder: (context, asyncSnapshot) {
                       return SettingsCard(
                         title: "Sign out",
                         iconData: Iconsax.logout,
-                        content: "Sign out of your account and remove all data from this device",
+                        content:
+                            "Sign out of your account and remove all data from this device",
                         trailing: CustomElevatedButton(
                           label: "Sign out",
                           backgroundColor: theme.error.withAlpha(200),
@@ -327,10 +374,18 @@ class SettingsView extends ConsumerWidget {
                                 onDelete: () async {
                                   context.pop();
                                   await FirebaseGoogleAuth().googleSignOut();
-                                  await AppHiveData.instance.resetAll("CODEBASE ACKNOWLEDGE");
-                                  GlobalNav.withContext((context) => context.goNamed(Routes.auth.name));
+                                  await KVStore.me.resetAll(
+                                    "CODEBASE ACKNOWLEDGE",
+                                  );
                                   GlobalNav.withContext(
-                                    (context) => UiUtils.showFlushBar(context, msg: "Signed out successfully"),
+                                    (context) =>
+                                        context.goNamed(Routes.auth.name),
+                                  );
+                                  GlobalNav.withContext(
+                                    (context) => UiUtils.showFlushBar(
+                                      context,
+                                      msg: "Signed out successfully",
+                                    ),
                                   );
                                 },
                               ),
@@ -366,20 +421,28 @@ class SettingsView extends ConsumerWidget {
                   // ConstantSizing.columnSpacingMedium,
                   GestureDetector(
                     onTap: () {
-                      ref.read(SettingsProvider.state.notifier).onRevealFileManager(context);
+                      ref
+                          .read(SettingsProvider.state.notifier)
+                          .onRevealFileManager(context);
                     },
                     child: Center(
                       child: FutureBuilder(
                         future: getTotalStorageUsed(),
                         builder: (context, asyncSnapshot) {
-                          if (asyncSnapshot.hasData && asyncSnapshot.data != null) {
-                            final mb = Result.from(() => ((asyncSnapshot.data) ?? 0) / (1024 * 1024));
+                          if (asyncSnapshot.hasData &&
+                              asyncSnapshot.data != null) {
+                            final mb = Result.from(
+                              () => ((asyncSnapshot.data) ?? 0) / (1024 * 1024),
+                            );
                             return CustomText(
                               "Storage usage: ${mb.toStringAsFixed(2)} MB",
                               color: theme.supportingText,
                             );
                           }
-                          return CustomText("Storage usage details unavailable", color: theme.supportingText);
+                          return CustomText(
+                            "Storage usage details unavailable",
+                            color: theme.supportingText,
+                          );
                         },
                       ),
                     ),
@@ -404,7 +467,13 @@ class SettingsCard extends ConsumerWidget {
   final IconData iconData;
   final String? content;
   final Widget? trailing;
-  const SettingsCard({super.key, required this.title, required this.iconData, this.content, this.trailing});
+  const SettingsCard({
+    super.key,
+    required this.title,
+    required this.iconData,
+    this.content,
+    this.trailing,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -416,15 +485,24 @@ class SettingsCard extends ConsumerWidget {
         children: [
           TextSpan(
             text: title,
-            style: context.theme.tooltipTheme.textStyle?.copyWith(fontSize: 14, fontWeight: FontWeight.bold),
+            style: context.theme.tooltipTheme.textStyle?.copyWith(
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+            ),
           ),
-          TextSpan(text: "\n\n$content", style: context.theme.tooltipTheme.textStyle?.copyWith(fontSize: 13)),
+          TextSpan(
+            text: "\n\n$content",
+            style: context.theme.tooltipTheme.textStyle?.copyWith(fontSize: 13),
+          ),
         ],
       ),
       triggerMode: TooltipTriggerMode.tap,
       child: Container(
         height: 64,
-        decoration: BoxDecoration(color: theme.supportingText.withAlpha(10), borderRadius: BorderRadius.circular(24)),
+        decoration: BoxDecoration(
+          color: theme.supportingText.withAlpha(10),
+          borderRadius: BorderRadius.circular(24),
+        ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
           child: Row(
@@ -440,7 +518,11 @@ class SettingsCard extends ConsumerWidget {
                   spacing: 2,
                   children: [
                     Flexible(
-                      child: CustomText(title, color: theme.onBackground, overflow: TextOverflow.ellipsis),
+                      child: CustomText(
+                        title,
+                        color: theme.onBackground,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                     if (content != null)
                       Flexible(

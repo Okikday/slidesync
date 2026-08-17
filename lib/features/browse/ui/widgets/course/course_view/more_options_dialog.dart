@@ -33,7 +33,8 @@ class MoreOptionsDialog extends ConsumerStatefulWidget {
   const MoreOptionsDialog({super.key, required this.course});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _MoreOptionsDialogState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _MoreOptionsDialogState();
 }
 
 class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
@@ -106,7 +107,11 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
         // ),
         AppActionDialogModel(
           title: "Edit Course",
-          icon: Icon(HugeIconsSolid.edit01, size: 24, color: theme.onBackground),
+          icon: Icon(
+            HugeIconsSolid.edit01,
+            size: 24,
+            color: theme.onBackground,
+          ),
           onTap: () async {
             context.pop();
             await showModalBottomSheet(
@@ -121,7 +126,11 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
 
         AppActionDialogModel(
           title: "See all collections",
-          icon: Icon(HugeIconsSolid.magicWand01, size: 24, color: theme.onBackground),
+          icon: Icon(
+            HugeIconsSolid.magicWand01,
+            size: 24,
+            color: theme.onBackground,
+          ),
           onTap: () {
             context.pop();
             context.pushNamed(Routes.modulesView.name, extra: course.uid);
@@ -133,12 +142,18 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
           icon: Icon(Iconsax.export_1, size: 24, color: theme.onBackground),
           onTap: () async {
             context.pop();
-            final email = (await UserDataFunctions().getUserDetails()).data?.email;
-            if (email == null || !({"okikiolagbele@gmail.com", "okikday@gmail.com"}.contains(email))) {
+            final email =
+                (await UserDataFunctions.me.getUserDetails()).data?.email;
+            if (email == null ||
+                !({
+                  "okikiolagbele@gmail.com",
+                  "okikday@gmail.com",
+                }.contains(email))) {
               GlobalNav.withContext(
                 (context) => UiUtils.showFlushBar(
                   context,
-                  msg: 'You do not have permission to upload to the public repository. Contact admin.',
+                  msg:
+                      'You do not have permission to upload to the public repository. Contact admin.',
                   vibe: FlushbarVibe.error,
                 ),
               );
@@ -167,7 +182,11 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
         ),
         AppActionDialogModel(
           title: "Delete",
-          icon: Icon(Iconsax.box_remove_copy, size: 24, color: Colors.redAccent),
+          icon: Icon(
+            Iconsax.box_remove_copy,
+            size: 24,
+            color: Colors.redAccent,
+          ),
           titleColor: Colors.redAccent,
           onTap: () async {
             context.pop();
@@ -186,10 +205,14 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
   }
 }
 
-Future<void> _uploadToPublicRepository(WidgetRef ref, {required Course course}) async {
+Future<void> _uploadToPublicRepository(
+  WidgetRef ref, {
+  required Course course,
+}) async {
   if (course.uid.isEmpty) return;
 
-  final transferId = 'upload-course-${course.uid}-${DateTime.now().microsecondsSinceEpoch}';
+  final transferId =
+      'upload-course-${course.uid}-${DateTime.now().microsecondsSinceEpoch}';
   final transferNotifier = ref.read(transferStateProvider.notifier);
   final uploadFeedNotifier = ref.read(uploadFeedProvider.notifier);
 
@@ -218,32 +241,47 @@ Future<void> _uploadToPublicRepository(WidgetRef ref, {required Course course}) 
 
   try {
     // Get user ID
-    final userIdResult = await UserDataFunctions().getUserId();
+    final userIdResult = await UserDataFunctions.me.getUserId();
     if (!userIdResult.isSuccess || userIdResult.data == null) {
-      transferNotifier.updateStatus(id: transferId, status: TransferStatus.failed);
+      transferNotifier.updateStatus(
+        id: transferId,
+        status: TransferStatus.failed,
+      );
       uploadFeedNotifier.fail(transferId, 'User not authenticated');
       NotificationService.instance.showCompletion(
         title: 'Upload failed',
         body: 'Course ${course.title}: user not authenticated',
       );
       GlobalNav.withContext(
-        (context) => UiUtils.showFlushBar(context, msg: 'User not authenticated', vibe: FlushbarVibe.error),
+        (context) => UiUtils.showFlushBar(
+          context,
+          msg: 'User not authenticated',
+          vibe: FlushbarVibe.error,
+        ),
       );
       return;
     }
 
     // Fetch vault links (admin only)
     final vaultResult = await Api.instance.vault.listVaults();
-    if (!vaultResult.isSuccess || vaultResult.data == null || vaultResult.data!.isEmpty) {
-      transferNotifier.updateStatus(id: transferId, status: TransferStatus.failed);
+    if (!vaultResult.isSuccess ||
+        vaultResult.data == null ||
+        vaultResult.data!.isEmpty) {
+      transferNotifier.updateStatus(
+        id: transferId,
+        status: TransferStatus.failed,
+      );
       uploadFeedNotifier.fail(transferId, 'No vault links available');
       NotificationService.instance.showCompletion(
         title: 'Upload failed',
         body: 'Course ${course.title}: no vault links available',
       );
       GlobalNav.withContext(
-        (context) =>
-            UiUtils.showFlushBar(context, msg: 'No vault links available. Contact admin.', vibe: FlushbarVibe.error),
+        (context) => UiUtils.showFlushBar(
+          context,
+          msg: 'No vault links available. Contact admin.',
+          vibe: FlushbarVibe.error,
+        ),
       );
       return;
     }
@@ -288,11 +326,20 @@ Future<void> _uploadToPublicRepository(WidgetRef ref, {required Course course}) 
     GlobalNav.withContext((context) {
       final data = result.data;
       if (data?.success ?? false) {
-        transferNotifier.updateProgress(id: transferId, progress: 1.0, uploadedBytes: 100, totalBytes: 100);
-        transferNotifier.updateStatus(id: transferId, status: TransferStatus.completed);
+        transferNotifier.updateProgress(
+          id: transferId,
+          progress: 1.0,
+          uploadedBytes: 100,
+          totalBytes: 100,
+        );
+        transferNotifier.updateStatus(
+          id: transferId,
+          status: TransferStatus.completed,
+        );
         uploadFeedNotifier.complete(
           transferId,
-          note: 'Uploaded ${data?.uploadedCount ?? 0} items • Skipped ${data?.skippedCount ?? 0}',
+          note:
+              'Uploaded ${data?.uploadedCount ?? 0} items • Skipped ${data?.skippedCount ?? 0}',
           courseId: course.uid,
         );
         NotificationService.instance.cancel(NotificationServiceIdType.upload);
@@ -303,23 +350,43 @@ Future<void> _uploadToPublicRepository(WidgetRef ref, {required Course course}) 
         );
         UiUtils.showFlushBar(context, msg: 'Course uploaded successfully!');
       } else {
-        transferNotifier.updateStatus(id: transferId, status: TransferStatus.failed);
-        uploadFeedNotifier.fail(transferId, result.data?.error ?? 'Upload failed');
+        transferNotifier.updateStatus(
+          id: transferId,
+          status: TransferStatus.failed,
+        );
+        uploadFeedNotifier.fail(
+          transferId,
+          result.data?.error ?? 'Upload failed',
+        );
         NotificationService.instance.cancel(NotificationServiceIdType.upload);
         NotificationService.instance.showCompletion(
           title: 'Upload failed',
           body: '${course.title}: ${result.data?.error ?? 'Upload failed'}',
         );
-        UiUtils.showFlushBar(context, msg: result.data?.error ?? 'Upload failed', vibe: FlushbarVibe.error);
+        UiUtils.showFlushBar(
+          context,
+          msg: result.data?.error ?? 'Upload failed',
+          vibe: FlushbarVibe.error,
+        );
       }
     });
   } catch (e) {
-    transferNotifier.updateStatus(id: transferId, status: TransferStatus.failed);
+    transferNotifier.updateStatus(
+      id: transferId,
+      status: TransferStatus.failed,
+    );
     uploadFeedNotifier.fail(transferId, 'Upload failed: $e');
     NotificationService.instance.cancel(NotificationServiceIdType.upload);
-    NotificationService.instance.showCompletion(title: 'Upload failed', body: '${course.title}: $e');
+    NotificationService.instance.showCompletion(
+      title: 'Upload failed',
+      body: '${course.title}: $e',
+    );
     GlobalNav.withContext(
-      (context) => UiUtils.showFlushBar(context, msg: 'Upload failed: $e', vibe: FlushbarVibe.error),
+      (context) => UiUtils.showFlushBar(
+        context,
+        msg: 'Upload failed: $e',
+        vibe: FlushbarVibe.error,
+      ),
     );
   } finally {
     transferNotifier.removeTransfer(transferId);

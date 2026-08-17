@@ -2,11 +2,17 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/core/constants/src/enums/enums.dart';
 
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
+import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
+import 'package:slidesync/data/repos/course_repo/module_repo.dart';
+import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
+import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/helpers/icon_helper.dart';
 import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 
@@ -21,7 +27,9 @@ class RecentListTile extends ConsumerWidget {
         ? Colors.red
         : (level == ProgressLevel.warning
               ? Colors.orange
-              : (level == ProgressLevel.success ? Colors.green : ref.primaryColor));
+              : (level == ProgressLevel.success
+                    ? Colors.green
+                    : ref.primaryColor));
   }
 
   @override
@@ -30,7 +38,9 @@ class RecentListTile extends ConsumerWidget {
     final contentTrack = data.contentTrack;
     return DecoratedBox(
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: theme.onBackground.withAlpha(20))),
+        border: Border(
+          bottom: BorderSide(color: theme.onBackground.withAlpha(20)),
+        ),
       ),
 
       child: InkWell(
@@ -58,7 +68,11 @@ class RecentListTile extends ConsumerWidget {
                     label: CircleAvatar(
                       radius: 10.5,
                       backgroundColor: Color(0xff0e1d27),
-                      child: Icon(Iconsax.star_1, size: 16, color: theme.primaryColor),
+                      child: Icon(
+                        Iconsax.star_1,
+                        size: 16,
+                        color: theme.primaryColor,
+                      ),
                     ),
                     offset: Offset(0, -2),
                     child: Padding(
@@ -66,21 +80,28 @@ class RecentListTile extends ConsumerWidget {
                       child: ClipOval(
                         child: CustomElevatedButton(
                           onClick: () {
-                            if (data.onLongTapTile != null) data.onLongTapTile!();
+                            if (data.onLongTapTile != null)
+                              data.onLongTapTile!();
                           },
                           pixelHeight: 48,
                           pixelWidth: 48,
                           shape: CircleBorder(),
                           contentPadding: EdgeInsets.zero,
-                          backgroundColor: theme.altBackgroundPrimary.withValues(alpha: 1),
+                          backgroundColor: theme.altBackgroundPrimary
+                              .withValues(alpha: 1),
                           child: ColorFiltered(
-                            colorFilter: ColorFilter.mode(theme.background.withAlpha(40), BlendMode.color),
+                            colorFilter: ColorFilter.mode(
+                              theme.background.withAlpha(40),
+                              BlendMode.color,
+                            ),
                             child: BuildImagePathWidget(
                               width: 48,
                               height: 48,
                               fileDetails: contentTrack.thumbnail,
                               fallbackWidget: Icon(
-                                IconHelper.getContentTypeIconData(contentTrack.type),
+                                IconHelper.getContentTypeIconData(
+                                  contentTrack.type,
+                                ),
                                 size: 26,
                                 color: ref.primary,
                               ),
@@ -118,9 +139,12 @@ class RecentListTile extends ConsumerWidget {
                           ref,
                           contentTrack.progress == 1.0
                               ? ProgressLevel.success
-                              : (contentTrack.progress >= 0.75 ? ProgressLevel.warning : ProgressLevel.neutral),
+                              : (contentTrack.progress >= 0.75
+                                    ? ProgressLevel.warning
+                                    : ProgressLevel.neutral),
                         ),
-                        backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.4),
+                        backgroundColor: theme.altBackgroundSecondary
+                            .withValues(alpha: 0.4),
                         strokeWidth: 4,
                       ),
                     ),
@@ -143,7 +167,9 @@ class RecentListTile extends ConsumerWidget {
                         child: ConstrainedBox(
                           constraints: BoxConstraints(maxHeight: 30),
                           child: CustomText(
-                            contentTrack.title.isEmpty ? "No title" : contentTrack.title,
+                            contentTrack.title.isEmpty
+                                ? "No title"
+                                : contentTrack.title,
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
                             height: 1.0,
@@ -159,7 +185,10 @@ class RecentListTile extends ConsumerWidget {
                               contentTrack.pages.isEmpty
                                   ? "Start reading"
                                   : "Page ${contentTrack.pages.last}${contentTrack.extraDetail != null && contentTrack.extraDetail!.isNotEmpty ? " of ${contentTrack.extraDetail}" : ""}",
-                            _ => contentTrack.description.isNotEmpty ? contentTrack.description : "",
+                            _ =>
+                              contentTrack.description.isNotEmpty
+                                  ? contentTrack.description
+                                  : "",
                           },
                           fontSize: 12,
                           color: theme.supportingText.withValues(alpha: 0.8),
@@ -174,11 +203,30 @@ class RecentListTile extends ConsumerWidget {
 
               ConstantSizing.rowSpacingMedium,
 
-              Icon(
-                Iconsax.arrow_right_3_copy,
-                size: 24,
-                fontWeight: FontWeight.bold,
-                color: theme.supportingText.withValues(alpha: 0.6),
+              BuildButton(
+                onTap: () async {
+                  final content = await ModuleContentRepo.getByUid(
+                    contentTrack.uid,
+                  );
+                  if (content == null) return;
+                  final module = await ModuleRepo.getByUid(content.parentId);
+                  if (module == null) return;
+
+                  GlobalNav.withContext(
+                    (c) => (context.mounted ? context : c).pushNamed(
+                      Routes.moduleContentsView.name,
+                      extra: module,
+                    ),
+                  );
+                },
+                iconData: null,
+                size: Size.square(40),
+                child: Icon(
+                  Iconsax.magic_star_copy,
+                  size: 20,
+                  fontWeight: FontWeight.bold,
+                  color: theme.supportingText.withValues(alpha: 0.6),
+                ),
               ),
             ],
           ),
@@ -194,15 +242,23 @@ class RecentListTileModel {
   final void Function()? onTapTile;
   final void Function()? onLongTapTile;
 
-  RecentListTileModel({required this.contentTrack, required this.isStarred, this.onTapTile, this.onLongTapTile});
+  RecentListTileModel({
+    required this.contentTrack,
+    required this.isStarred,
+    this.onTapTile,
+    this.onLongTapTile,
+  });
 
   @override
   bool operator ==(covariant RecentListTileModel other) {
     if (identical(this, other)) return true;
 
-    return other.isStarred == isStarred && other.onTapTile == onTapTile && other.onLongTapTile == onLongTapTile;
+    return other.isStarred == isStarred &&
+        other.onTapTile == onTapTile &&
+        other.onLongTapTile == onLongTapTile;
   }
 
   @override
-  int get hashCode => isStarred.hashCode ^ onTapTile.hashCode ^ onLongTapTile.hashCode;
+  int get hashCode =>
+      isStarred.hashCode ^ onTapTile.hashCode ^ onLongTapTile.hashCode;
 }

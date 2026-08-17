@@ -10,7 +10,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'course_folder_import_manager.dart';
 import 'package:saf_util/saf_util_platform_interface.dart';
-import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
@@ -139,20 +139,32 @@ class CourseFolderImportManager {
         }
 
         if (directories.isNotEmpty) {
-          await CourseFolderImportManagerCore.runInBatches<SafDocumentFile>(directories, 5, (directory) async {
-            final subfolder = await scanFolder(directory.uri);
-            if (subfolder.isSuccess && subfolder.data != null) {
-              subfolders.add(subfolder.data!);
-            }
-          });
+          await CourseFolderImportManagerCore.runInBatches<SafDocumentFile>(
+            directories,
+            5,
+            (directory) async {
+              final subfolder = await scanFolder(directory.uri);
+              if (subfolder.isSuccess && subfolder.data != null) {
+                subfolders.add(subfolder.data!);
+              }
+            },
+          );
         }
 
         // Extract folder name from URI
-        final folderName = CourseFolderImportManagerCore.extractFolderNameFromUri(folderUri);
+        final folderName =
+            CourseFolderImportManagerCore.extractFolderNameFromUri(folderUri);
 
-        final node = FolderNode(name: folderName, uri: folderUri, subfolders: subfolders, files: files);
+        final node = FolderNode(
+          name: folderName,
+          uri: folderUri,
+          subfolders: subfolders,
+          files: files,
+        );
 
-        log('✅ Scanned $folderName: ${files.length} files, ${subfolders.length} subfolders');
+        log(
+          '✅ Scanned $folderName: ${files.length} files, ${subfolders.length} subfolders',
+        );
         return node;
       } catch (e, stackTrace) {
         log('❌ ERROR during SAF scan: $e');
@@ -163,8 +175,15 @@ class CourseFolderImportManager {
   }
 
   /// Get all files from a folder node based on filters
-  static List<SafDocumentFile> getFilteredFiles(FolderNode node, List<FileTypeFilter> filters, bool includeSubfolders) {
-    return CourseFolderImportManagerCore.getFilteredFiles<FolderNode, SafDocumentFile>(
+  static List<SafDocumentFile> getFilteredFiles(
+    FolderNode node,
+    List<FileTypeFilter> filters,
+    bool includeSubfolders,
+  ) {
+    return CourseFolderImportManagerCore.getFilteredFiles<
+      FolderNode,
+      SafDocumentFile
+    >(
       folder: node,
       filters: filters,
       includeSubfolders: includeSubfolders,
@@ -180,7 +199,10 @@ class CourseFolderImportManager {
     List<FileTypeFilter> filters,
     bool includeSubfolders,
   ) {
-    return CourseFolderImportManagerCore.calculateImportStructure<FolderNode, SafDocumentFile>(
+    return CourseFolderImportManagerCore.calculateImportStructure<
+      FolderNode,
+      SafDocumentFile
+    >(
       targetFolder: targetFolder,
       filters: filters,
       includeSubfolders: includeSubfolders,
@@ -203,7 +225,9 @@ class CourseFolderImportManager {
     log('🎯 Selected folder URI: $folderUri');
 
     // Show loading while scanning
-    GlobalNav.withContext((c) => UiUtils.showLoadingDialog(c, message: 'Scanning folder...'));
+    GlobalNav.withContext(
+      (c) => UiUtils.showLoadingDialog(c, message: 'Scanning folder...'),
+    );
 
     // Scan the folder
     final scanResult = await scanFolder(folderUri);
@@ -214,7 +238,11 @@ class CourseFolderImportManager {
     if (!scanResult.isSuccess || scanResult.data == null) {
       log('❌ Scan failed: ${scanResult.message}');
       if (context.mounted) {
-        UiUtils.showFlushBar(context, msg: 'Error scanning folder: ${scanResult.message}', vibe: FlushbarVibe.error);
+        UiUtils.showFlushBar(
+          context,
+          msg: 'Error scanning folder: ${scanResult.message}',
+          vibe: FlushbarVibe.error,
+        );
       }
       return;
     }
@@ -226,7 +254,10 @@ class CourseFolderImportManager {
       context.pop();
       GlobalNav.withContext(
         (context) => Navigator.of(context).push(
-          PageAnimation.pageRouteBuilder(_FolderImportScreen(folderNode: folderNode), type: TransitionType.rightToLeft),
+          PageAnimation.pageRouteBuilder(
+            _FolderImportScreen(folderNode: folderNode),
+            type: TransitionType.rightToLeft,
+          ),
         ),
       );
     }
@@ -239,10 +270,16 @@ class CourseFolderImportManager {
   ) async {
     return await Result.tryRunAsync(() async {
       log('🚀 Starting import process...');
-      progressNotifier.value = ImportProgress(message: 'Scanning folder structure...');
+      progressNotifier.value = ImportProgress(
+        message: 'Scanning folder structure...',
+      );
 
       // Scan the folder
-      final scanResult = await scanFolder(config.useAsBaseFolder ? config.baseFolderUri : config.selectedSubfolderUri!);
+      final scanResult = await scanFolder(
+        config.useAsBaseFolder
+            ? config.baseFolderUri
+            : config.selectedSubfolderUri!,
+      );
 
       if (!scanResult.isSuccess || scanResult.data == null) {
         throw Exception('Failed to scan folder: ${scanResult.message}');
@@ -251,7 +288,10 @@ class CourseFolderImportManager {
       final folderNode = scanResult.data!;
       log('📂 Folder scanned: ${folderNode.name}');
 
-      final enabledExtensions = CourseFolderImportManagerCore.getEnabledExtensions(config.fileFilters);
+      final enabledExtensions =
+          CourseFolderImportManagerCore.getEnabledExtensions(
+            config.fileFilters,
+          );
 
       progressNotifier.value = ImportProgress(message: 'Creating course...');
 
@@ -259,10 +299,15 @@ class CourseFolderImportManager {
       final hasSubfolders = folderNode.subfolders.isNotEmpty;
       final baseCourseName = folderNode.name;
 
-      log('📚 Creating course: $baseCourseName (has subfolders: $hasSubfolders)');
+      log(
+        '📚 Creating course: $baseCourseName (has subfolders: $hasSubfolders)',
+      );
 
       // Create the Course
-      final course = Course.create(title: baseCourseName, description: 'Imported from folder: ${folderNode.name}');
+      final course = Course.create(
+        title: baseCourseName,
+        description: 'Imported from folder: ${folderNode.name}',
+      );
 
       final courseDbId = await CourseRepo.addCourse(course);
       if (courseDbId == -1) {
@@ -316,14 +361,22 @@ class CourseFolderImportManager {
             description: 'Collection from folder: ${subfolder.name}',
           );
 
-          final addResult = await ModuleRepo.addCollectionNoDuplicateTitle(collection);
+          final addResult = await ModuleRepo.addCollectionNoDuplicateTitle(
+            collection,
+          );
           if (addResult != null) {
-            log('⚠️ Collection "${subfolder.name}" already exists or error: $addResult');
+            log(
+              '⚠️ Collection "${subfolder.name}" already exists or error: $addResult',
+            );
             continue;
           }
 
           // Get files for this collection
-          final files = getFilteredFiles(subfolder, config.fileFilters, config.includeSubfolders);
+          final files = getFilteredFiles(
+            subfolder,
+            config.fileFilters,
+            config.includeSubfolders,
+          );
 
           if (files.isNotEmpty) {
             final limitedFiles = files.take(config.maxContents).toList();
@@ -397,9 +450,15 @@ class CourseFolderImportManager {
 
         log('📁 Creating Materials collection (no subfolders)');
 
-        final collection = Module.create(parentId: course.uid, title: 'Materials', description: 'Course materials');
+        final collection = Module.create(
+          parentId: course.uid,
+          title: 'Materials',
+          description: 'Course materials',
+        );
 
-        final addResult = await ModuleRepo.addCollectionNoDuplicateTitle(collection);
+        final addResult = await ModuleRepo.addCollectionNoDuplicateTitle(
+          collection,
+        );
         if (addResult != null) {
           throw Exception(addResult);
         }
@@ -451,10 +510,19 @@ class CourseFolderImportManager {
 
     final limitedFiles = safFiles.take(kMaxContents).toList();
     final Directory tempDir = await getApplicationCacheDirectory();
-    final List<String?> copiedFilePaths = List<String?>.filled(limitedFiles.length, null);
+    final List<String?> copiedFilePaths = List<String?>.filled(
+      limitedFiles.length,
+      null,
+    );
     final List<String?> uuids = List<String?>.filled(limitedFiles.length, null);
-    final List<String?> uuidFileNames = List<String?>.filled(limitedFiles.length, null);
-    final indexedFiles = [for (int i = 0; i < limitedFiles.length; i++) (index: i, file: limitedFiles[i])];
+    final List<String?> uuidFileNames = List<String?>.filled(
+      limitedFiles.length,
+      null,
+    );
+    final indexedFiles = [
+      for (int i = 0; i < limitedFiles.length; i++)
+        (index: i, file: limitedFiles[i]),
+    ];
     int processedCount = 0;
     DateTime? lastProgressUpdate;
 
@@ -466,9 +534,9 @@ class CourseFolderImportManager {
         currentCollectionName: collectionName,
       );
 
-      await CourseFolderImportManagerCore.runInBatches<({int index, SafDocumentFile file})>(indexedFiles, 4, (
-        entry,
-      ) async {
+      await CourseFolderImportManagerCore.runInBatches<
+        ({int index, SafDocumentFile file})
+      >(indexedFiles, 4, (entry) async {
         final safFile = entry.file;
 
         try {
@@ -478,7 +546,8 @@ class CourseFolderImportManager {
           final sink = tempFile.openWrite();
 
           try {
-            final Stream<List<int>> fileStream = await _safStream.readFileStream(safFile.uri);
+            final Stream<List<int>> fileStream = await _safStream
+                .readFileStream(safFile.uri);
             await for (final chunk in fileStream) {
               sink.add(chunk);
             }
@@ -499,14 +568,17 @@ class CourseFolderImportManager {
           )) {
             lastProgressUpdate = DateTime.now();
             progressNotifier.value = ImportProgress(
-              message: 'Processing files... $processedCount/${limitedFiles.length}',
+              message:
+                  'Processing files... $processedCount/${limitedFiles.length}',
               currentCollection: currentCollection,
               totalCollections: totalCollections,
               currentCollectionName: collectionName,
             );
           }
 
-          log('✅ Copied file ${entry.index + 1}/${limitedFiles.length}: $originalFileName');
+          log(
+            '✅ Copied file ${entry.index + 1}/${limitedFiles.length}: $originalFileName',
+          );
         } catch (e) {
           processedCount++;
           log('❌ Failed to read file ${safFile.name}: $e');
@@ -523,10 +595,11 @@ class CourseFolderImportManager {
 
       // Store progress data
       await Result.tryRunAsync(() async {
-        await AppHiveData.instance.setData(
-          key: HiveDataPathKey.contentsAddingProgressList.name,
+        await KVStore.me.setData(
+          key: HiveDataKey.contentsAddingProgressList.name,
           value: <String, dynamic>{
-            for (int i = 0; i < successfulFileNames.length; i++) successfulFileNames[i]: successfulFilePaths[i],
+            for (int i = 0; i < successfulFileNames.length; i++)
+              successfulFileNames[i]: successfulFilePaths[i],
             'collectionId': collection.uid,
           },
         );
@@ -554,7 +627,9 @@ class CourseFolderImportManager {
       await storeContents(args, contentProgressNotifier);
 
       await Result.tryRunAsync(() async {
-        await AppHiveData.instance.deleteData(key: HiveDataPathKey.contentsAddingProgressList.name);
+        await KVStore.me.deleteData(
+          key: HiveDataKey.contentsAddingProgressList.name,
+        );
       });
 
       contentProgressNotifier.dispose();
@@ -573,7 +648,8 @@ class _FolderImportScreen extends ConsumerStatefulWidget {
   const _FolderImportScreen({required this.folderNode});
 
   @override
-  ConsumerState<_FolderImportScreen> createState() => _FolderImportScreenState();
+  ConsumerState<_FolderImportScreen> createState() =>
+      _FolderImportScreenState();
 }
 
 class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
@@ -608,10 +684,15 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
         ),
       ),
       body: Stepper(
-        margin: EdgeInsets.only(top: padding.top + kToolbarHeight, bottom: padding.bottom),
+        margin: EdgeInsets.only(
+          top: padding.top + kToolbarHeight,
+          bottom: padding.bottom,
+        ),
         currentStep: _currentStep,
         onStepContinue: _onStepContinue,
-        onStepCancel: _currentStep > 0 ? () => setState(() => _currentStep--) : null,
+        onStepCancel: _currentStep > 0
+            ? () => setState(() => _currentStep--)
+            : null,
         controlsBuilder: (context, details) {
           return Padding(
             padding: const EdgeInsets.only(top: 16),
@@ -623,7 +704,10 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: theme.primary,
                       foregroundColor: theme.onPrimary,
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
                     ),
                     child: const Text('Continue'),
                   ),
@@ -631,7 +715,10 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
                   const SizedBox(width: 12),
                   TextButton(
                     onPressed: details.onStepCancel,
-                    child: Text('Back', style: TextStyle(color: theme.supportingText)),
+                    child: Text(
+                      'Back',
+                      style: TextStyle(color: theme.supportingText),
+                    ),
                   ),
                 ],
               ],
@@ -640,13 +727,19 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
         },
         steps: [
           Step(
-            title: Text('Select Base Folder', style: TextStyle(color: theme.onSurface)),
+            title: Text(
+              'Select Base Folder',
+              style: TextStyle(color: theme.onSurface),
+            ),
             content: _buildBaseFolderStep(),
             isActive: _currentStep >= 0,
             state: _currentStep > 0 ? StepState.complete : StepState.indexed,
           ),
           Step(
-            title: Text('Configure Options', style: TextStyle(color: theme.onSurface)),
+            title: Text(
+              'Configure Options',
+              style: TextStyle(color: theme.onSurface),
+            ),
             content: _buildOptionsStep(),
             isActive: _currentStep >= 1,
             state: _currentStep > 1
@@ -656,7 +749,10 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
                 : StepState.disabled,
           ),
           Step(
-            title: Text('Review & Import', style: TextStyle(color: theme.onSurface)),
+            title: Text(
+              'Review & Import',
+              style: TextStyle(color: theme.onSurface),
+            ),
             content: _buildPreviewStep(),
             isActive: _currentStep >= 2,
             state: _currentStep == 2 ? StepState.indexed : StepState.disabled,
@@ -676,7 +772,10 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [theme.primary.withValues(alpha: 0.15), theme.secondary.withValues(alpha: 0.15)],
+              colors: [
+                theme.primary.withValues(alpha: 0.15),
+                theme.secondary.withValues(alpha: 0.15),
+              ],
             ),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: theme.primary.withValues(alpha: 0.3)),
@@ -689,7 +788,11 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    CustomText('Selected Folder', fontSize: 12, color: theme.supportingText),
+                    CustomText(
+                      'Selected Folder',
+                      fontSize: 12,
+                      color: theme.supportingText,
+                    ),
                     const SizedBox(height: 4),
                     CustomText(
                       widget.folderNode.name,
@@ -708,12 +811,20 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
           decoration: BoxDecoration(
             color: theme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: theme.supportingText.withValues(alpha: 0.2)),
+            border: Border.all(
+              color: theme.supportingText.withValues(alpha: 0.2),
+            ),
           ),
           child: SwitchListTile(
-            title: CustomText('Use as base folder', color: theme.onSurface, fontWeight: FontWeight.w600),
+            title: CustomText(
+              'Use as base folder',
+              color: theme.onSurface,
+              fontWeight: FontWeight.w600,
+            ),
             subtitle: CustomText(
-              useAsBaseFolder ? 'Create course from this folder' : 'Select a subfolder to use as course',
+              useAsBaseFolder
+                  ? 'Create course from this folder'
+                  : 'Select a subfolder to use as course',
               color: theme.supportingText,
               fontSize: 13,
             ),
@@ -728,19 +839,28 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
         ),
         if (!useAsBaseFolder && widget.folderNode.subfolders.isNotEmpty) ...[
           const SizedBox(height: 20),
-          CustomText('Select subfolder:', fontWeight: FontWeight.bold, color: theme.onSurface, fontSize: 16),
+          CustomText(
+            'Select subfolder:',
+            fontWeight: FontWeight.bold,
+            color: theme.onSurface,
+            fontSize: 16,
+          ),
           const SizedBox(height: 12),
           Container(
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: theme.supportingText.withValues(alpha: 0.2)),
+              border: Border.all(
+                color: theme.supportingText.withValues(alpha: 0.2),
+              ),
             ),
             child: ListView.separated(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: widget.folderNode.subfolders.length,
-              separatorBuilder: (context, index) =>
-                  Divider(height: 1, color: theme.supportingText.withValues(alpha: 0.1)),
+              separatorBuilder: (context, index) => Divider(
+                height: 1,
+                color: theme.supportingText.withValues(alpha: 0.1),
+              ),
               itemBuilder: (context, index) {
                 final folder = widget.folderNode.subfolders[index];
                 final isSelected = selectedSubfolder == folder;
@@ -749,7 +869,9 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
                   title: CustomText(
                     folder.name,
                     color: theme.onSurface,
-                    fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                    fontWeight: isSelected
+                        ? FontWeight.bold
+                        : FontWeight.normal,
                   ),
                   subtitle: CustomText(
                     '${folder.files.length} files, ${folder.subfolders.length} subfolders',
@@ -763,7 +885,10 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
                     selectedSubfolder = value;
                     log('📁 Selected subfolder: ${value?.name}');
                   }),
-                  secondary: Icon(Icons.folder_outlined, color: isSelected ? theme.primary : theme.supportingText),
+                  secondary: Icon(
+                    Icons.folder_outlined,
+                    color: isSelected ? theme.primary : theme.supportingText,
+                  ),
                 );
               },
             ),
@@ -781,7 +906,11 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
                 Icon(Icons.info_outline, color: theme.secondary, size: 20),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: CustomText('No subfolders found in this directory', color: theme.onSurface, fontSize: 13),
+                  child: CustomText(
+                    'No subfolders found in this directory',
+                    color: theme.onSurface,
+                    fontSize: 13,
+                  ),
                 ),
               ],
             ),
@@ -793,7 +922,9 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
 
   Widget _buildOptionsStep() {
     final theme = ref.theme;
-    final enabledFilters = fileFilters.where((filter) => filter.isEnabled).length;
+    final enabledFilters = fileFilters
+        .where((filter) => filter.isEnabled)
+        .length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -802,11 +933,20 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
           decoration: BoxDecoration(
             color: theme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: theme.supportingText.withValues(alpha: 0.2)),
+            border: Border.all(
+              color: theme.supportingText.withValues(alpha: 0.2),
+            ),
           ),
           child: SwitchListTile(
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            title: CustomText('Include subfolders', color: theme.onSurface, fontWeight: FontWeight.w600),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
+            title: CustomText(
+              'Include subfolders',
+              color: theme.onSurface,
+              fontWeight: FontWeight.w600,
+            ),
             subtitle: CustomText(
               'Add files from all subfolders recursively',
               color: theme.supportingText,
@@ -814,7 +954,10 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
             ),
             value: includeSubfolders,
             activeThumbColor: theme.primary,
-            secondary: Icon(includeSubfolders ? Icons.account_tree : Icons.folder, color: theme.primary),
+            secondary: Icon(
+              includeSubfolders ? Icons.account_tree : Icons.folder,
+              color: theme.primary,
+            ),
             onChanged: (value) => setState(() {
               includeSubfolders = value;
               log('🔄 Include subfolders: $value');
@@ -826,16 +969,26 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
           decoration: BoxDecoration(
             color: theme.surface,
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: theme.supportingText.withValues(alpha: 0.2)),
+            border: Border.all(
+              color: theme.supportingText.withValues(alpha: 0.2),
+            ),
           ),
           child: Theme(
             data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
             child: ExpansionTile(
               initiallyExpanded: false,
-              tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+              tilePadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 6,
+              ),
               childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               leading: Icon(Icons.filter_list, color: theme.primary, size: 20),
-              title: CustomText('File Types', fontWeight: FontWeight.bold, color: theme.onSurface, fontSize: 18),
+              title: CustomText(
+                'File Types',
+                fontWeight: FontWeight.bold,
+                color: theme.onSurface,
+                fontSize: 18,
+              ),
               subtitle: CustomText(
                 '$enabledFilters of ${fileFilters.length} enabled',
                 color: theme.supportingText,
@@ -848,11 +1001,15 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
                     for (var filter in fileFilters) {
                       filter.isEnabled = !allEnabled;
                     }
-                    log('🔄 ${allEnabled ? "Deselected" : "Selected"} all filters');
+                    log(
+                      '🔄 ${allEnabled ? "Deselected" : "Selected"} all filters',
+                    );
                   });
                 },
                 child: CustomText(
-                  fileFilters.every((f) => f.isEnabled) ? 'Deselect All' : 'Select All',
+                  fileFilters.every((f) => f.isEnabled)
+                      ? 'Deselect All'
+                      : 'Select All',
                   color: theme.primary,
                   fontSize: 13,
                 ),
@@ -864,26 +1021,42 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
                     shrinkWrap: true,
                     padding: EdgeInsets.zero,
                     itemCount: fileFilters.length,
-                    separatorBuilder: (context, index) => const Divider(height: 0),
+                    separatorBuilder: (context, index) =>
+                        const Divider(height: 0),
                     itemBuilder: (context, index) {
                       final filter = fileFilters[index];
 
                       return SwitchListTile(
-                        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 4,
+                        ),
                         dense: true,
-                        title: CustomText(filter.displayName, color: theme.onSurface, fontSize: 14),
-                        subtitle: CustomText(filter.extension, color: theme.supportingText, fontSize: 12),
+                        title: CustomText(
+                          filter.displayName,
+                          color: theme.onSurface,
+                          fontSize: 14,
+                        ),
+                        subtitle: CustomText(
+                          filter.extension,
+                          color: theme.supportingText,
+                          fontSize: 12,
+                        ),
                         shape: const RoundedRectangleBorder(),
                         value: filter.isEnabled,
                         activeThumbColor: theme.primary,
                         secondary: Icon(
                           filter.icon,
-                          color: filter.isEnabled ? theme.primary : theme.supportingText,
+                          color: filter.isEnabled
+                              ? theme.primary
+                              : theme.supportingText,
                           size: 20,
                         ),
                         onChanged: (value) => setState(() {
                           filter.isEnabled = value;
-                          log('🔄 ${filter.extension} ${value ? "enabled" : "disabled"}');
+                          log(
+                            '🔄 ${filter.extension} ${value ? "enabled" : "disabled"}',
+                          );
                         }),
                       );
                     },
@@ -899,7 +1072,9 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
 
   Widget _buildPreviewStep() {
     final theme = ref.theme;
-    final targetFolder = useAsBaseFolder ? widget.folderNode : selectedSubfolder;
+    final targetFolder = useAsBaseFolder
+        ? widget.folderNode
+        : selectedSubfolder;
 
     if (targetFolder == null) {
       return Container(
@@ -908,7 +1083,12 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
           children: [
             Icon(Icons.error_outline, color: theme.secondary, size: 48),
             const SizedBox(height: 16),
-            CustomText('Please select a folder', color: theme.onSurface, fontSize: 16, textAlign: TextAlign.center),
+            CustomText(
+              'Please select a folder',
+              color: theme.onSurface,
+              fontSize: 16,
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       );
@@ -920,7 +1100,10 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
       fileFilters,
       includeSubfolders,
     );
-    final totalFiles = importStructure.values.fold<int>(0, (sum, files) => sum + files.length);
+    final totalFiles = importStructure.values.fold<int>(
+      0,
+      (sum, files) => sum + files.length,
+    );
     final enabledFilters = fileFilters.where((f) => f.isEnabled).toList();
 
     log('📊 Preview: ${importStructure.length} collections, $totalFiles files');
@@ -933,7 +1116,10 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
           padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
             gradient: LinearGradient(
-              colors: [theme.primary.withValues(alpha: 0.1), theme.secondary.withValues(alpha: 0.1)],
+              colors: [
+                theme.primary.withValues(alpha: 0.1),
+                theme.secondary.withValues(alpha: 0.1),
+              ],
             ),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(color: theme.primary.withValues(alpha: 0.3)),
@@ -949,7 +1135,11 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        CustomText('Course Name', fontSize: 12, color: theme.supportingText),
+                        CustomText(
+                          'Course Name',
+                          fontSize: 12,
+                          color: theme.supportingText,
+                        ),
                         const SizedBox(height: 4),
                         CustomText(
                           targetFolder.name,
@@ -967,9 +1157,19 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  _buildStatChip(theme, Icons.insert_drive_file, '$totalFiles', 'Files'),
+                  _buildStatChip(
+                    theme,
+                    Icons.insert_drive_file,
+                    '$totalFiles',
+                    'Files',
+                  ),
                   const SizedBox(width: 12),
-                  _buildStatChip(theme, Icons.folder, '${importStructure.length}', 'Collections'),
+                  _buildStatChip(
+                    theme,
+                    Icons.folder,
+                    '${importStructure.length}',
+                    'Collections',
+                  ),
                 ],
               ),
             ],
@@ -978,25 +1178,39 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
         const SizedBox(height: 20),
         // File Types Summary
         if (enabledFilters.isNotEmpty) ...[
-          CustomText('Enabled File Types:', fontWeight: FontWeight.bold, color: theme.onSurface, fontSize: 16),
+          CustomText(
+            'Enabled File Types:',
+            fontWeight: FontWeight.bold,
+            color: theme.onSurface,
+            fontSize: 16,
+          ),
           const SizedBox(height: 12),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: enabledFilters.map((filter) {
               return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: theme.primary.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: theme.primary.withValues(alpha: 0.3)),
+                  border: Border.all(
+                    color: theme.primary.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(filter.icon, size: 16, color: theme.primary),
                     const SizedBox(width: 6),
-                    CustomText(filter.extension, fontSize: 12, color: theme.onSurface),
+                    CustomText(
+                      filter.extension,
+                      fontSize: 12,
+                      color: theme.onSurface,
+                    ),
                   ],
                 ),
               );
@@ -1005,13 +1219,20 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
           const SizedBox(height: 20),
         ],
         // Collections Preview
-        CustomText('Collections:', fontWeight: FontWeight.bold, color: theme.onSurface, fontSize: 16),
+        CustomText(
+          'Collections:',
+          fontWeight: FontWeight.bold,
+          color: theme.onSurface,
+          fontSize: 16,
+        ),
         const SizedBox(height: 12),
         Container(
           constraints: const BoxConstraints(maxHeight: 200),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: theme.supportingText.withValues(alpha: 0.2)),
+            border: Border.all(
+              color: theme.supportingText.withValues(alpha: 0.2),
+            ),
           ),
           child: ListView.separated(
             shrinkWrap: true,
@@ -1025,7 +1246,10 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
               final isBase = collectionName == 'Base';
 
               return ListTile(
-                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
                 dense: true,
                 shape: const RoundedRectangleBorder(),
                 leading: Icon(
@@ -1033,11 +1257,19 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
                   color: isBase ? theme.secondary : theme.primary,
                   size: 20,
                 ),
-                title: CustomText(collectionName, color: theme.onSurface, fontSize: 14),
+                title: CustomText(
+                  collectionName,
+                  color: theme.onSurface,
+                  fontSize: 14,
+                ),
                 trailing: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
-                    color: (isBase ? theme.secondary : theme.primary).withValues(alpha: 0.1),
+                    color: (isBase ? theme.secondary : theme.primary)
+                        .withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: CustomText(
@@ -1061,9 +1293,13 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: theme.primary,
               foregroundColor: theme.onPrimary,
-              disabledBackgroundColor: theme.supportingText.withValues(alpha: 0.3),
+              disabledBackgroundColor: theme.supportingText.withValues(
+                alpha: 0.3,
+              ),
               padding: const EdgeInsets.symmetric(vertical: 16),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           ),
         ),
@@ -1090,14 +1326,21 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
     );
   }
 
-  Widget _buildStatChip(AppTheme theme, IconData icon, String value, String label) {
+  Widget _buildStatChip(
+    AppTheme theme,
+    IconData icon,
+    String value,
+    String label,
+  ) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: theme.surface,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: theme.supportingText.withValues(alpha: 0.2)),
+          border: Border.all(
+            color: theme.supportingText.withValues(alpha: 0.2),
+          ),
         ),
         child: Row(
           children: [
@@ -1106,7 +1349,12 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CustomText(value, fontWeight: FontWeight.bold, fontSize: 16, color: theme.onSurface),
+                CustomText(
+                  value,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: theme.onSurface,
+                ),
                 CustomText(label, fontSize: 11, color: theme.supportingText),
               ],
             ),
@@ -1119,7 +1367,11 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
   void _onStepContinue() {
     if (_currentStep == 0) {
       if (!useAsBaseFolder && selectedSubfolder == null) {
-        UiUtils.showFlushBar(context, msg: 'Please select a subfolder', vibe: FlushbarVibe.warning);
+        UiUtils.showFlushBar(
+          context,
+          msg: 'Please select a subfolder',
+          vibe: FlushbarVibe.warning,
+        );
         return;
       }
     }
@@ -1131,13 +1383,16 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
 
   Future<void> _processImport() async {
     log('🚀 Starting import...');
-    final progressNotifier = ValueNotifier<ImportProgress>(ImportProgress(message: 'Starting import...'));
+    final progressNotifier = ValueNotifier<ImportProgress>(
+      ImportProgress(message: 'Starting import...'),
+    );
 
     // Show loading overlay
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => _ImportProgressDialog(progressNotifier: progressNotifier),
+      builder: (context) =>
+          _ImportProgressDialog(progressNotifier: progressNotifier),
     );
 
     final config = FolderImportConfig(
@@ -1148,7 +1403,10 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
       fileFilters: fileFilters,
     );
 
-    final result = await CourseFolderImportManager.processImport(config, progressNotifier);
+    final result = await CourseFolderImportManager.processImport(
+      config,
+      progressNotifier,
+    );
 
     if (mounted) {
       context.pop(); // Close progress dialog
@@ -1163,7 +1421,11 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
       progressNotifier.dispose();
     }
 
-    log(result.isSuccess ? '✅ Import completed successfully' : '❌ Import failed: ${result.message}');
+    log(
+      result.isSuccess
+          ? '✅ Import completed successfully'
+          : '❌ Import failed: ${result.message}',
+    );
   }
 }
 
@@ -1190,7 +1452,12 @@ class _ImportProgressDialog extends ConsumerWidget {
               children: [
                 Icon(Icons.cloud_upload, color: theme.primary, size: 48),
                 const SizedBox(height: 20),
-                CustomText('Importing Course', fontSize: 20, fontWeight: FontWeight.bold, color: theme.onSurface),
+                CustomText(
+                  'Importing Course',
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: theme.onSurface,
+                ),
                 const SizedBox(height: 24),
                 CircularProgressIndicator(color: theme.primary),
                 const SizedBox(height: 24),
@@ -1198,13 +1465,17 @@ class _ImportProgressDialog extends ConsumerWidget {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [theme.primary.withValues(alpha: 0.1), theme.secondary.withValues(alpha: 0.1)],
+                      colors: [
+                        theme.primary.withValues(alpha: 0.1),
+                        theme.secondary.withValues(alpha: 0.1),
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
                     children: [
-                      if (progress.currentCollection != null && progress.totalCollections != null) ...[
+                      if (progress.currentCollection != null &&
+                          progress.totalCollections != null) ...[
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -1228,7 +1499,9 @@ class _ImportProgressDialog extends ConsumerWidget {
                           ),
                         ],
                         const SizedBox(height: 12),
-                        Divider(color: theme.supportingText.withValues(alpha: 0.2)),
+                        Divider(
+                          color: theme.supportingText.withValues(alpha: 0.2),
+                        ),
                         const SizedBox(height: 12),
                       ],
                       CustomText(

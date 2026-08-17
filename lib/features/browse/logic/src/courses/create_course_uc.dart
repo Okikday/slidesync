@@ -13,7 +13,8 @@ class CreateCourseUc {
     required String courseName,
     String? courseImagePath,
   }) async {
-    final Result<Course?> createCourseOutcome = await Result.tryRunAsync<Course>(() async {
+    final Result<Course?>
+    createCourseOutcome = await Result.tryRunAsync<Course>(() async {
       final tempCourse = Course.create(
         title: courseName,
         metadata: CourseMetadata.create(
@@ -24,9 +25,12 @@ class CreateCourseUc {
       log("Created course with title: ${tempCourse.title}, code: $courseCode");
 
       if (courseImagePath != null) {
-        await ContentThumbnailCreator.createThumbnailForCourse(courseImagePath, filename: tempCourse.uid);
+        await ContentThumbnailCreator.createThumbnailForCourse(
+          courseImagePath,
+          filename: tempCourse.uid,
+        );
       }
-      final author = (await UserDataFunctions().getUserDetails()).data?.userID;
+      final author = (await UserDataFunctions.me.getUserDetails()).data?.userID;
       log("   Author ID: $author");
       final course = tempCourse.copyWith(
         metadata: (tempCourse.metadata.copyWith(author: author)),

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:path/path.dart' as p;
 import 'package:slidesync/core/constants/src/enums/enums.dart';
-import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
@@ -27,14 +27,16 @@ class AddContentsUc {
     ValueNotifier<String>? valueNotifier,
   }) async {
     final uuidFileNames = [
-      for (int i = 0; i < filePaths.length; i++) p.setExtension(uuids[i], p.extension(filePaths[i])),
+      for (int i = 0; i < filePaths.length; i++)
+        p.setExtension(uuids[i], p.extension(filePaths[i])),
     ];
 
     await Result.tryRunAsync(() async {
-      await AppHiveData.instance.setData(
-        key: HiveDataPathKey.contentsAddingProgressList.name,
+      await KVStore.me.setData(
+        key: HiveDataKey.contentsAddingProgressList.name,
         value: <String, dynamic>{
-          for (int i = 0; i < uuidFileNames.length; i++) uuidFileNames[i]: filePaths[i],
+          for (int i = 0; i < uuidFileNames.length; i++)
+            uuidFileNames[i]: filePaths[i],
           'collectionId': collection.uid,
         },
       );
@@ -51,15 +53,20 @@ class AddContentsUc {
     final result = await storeContents(args, valueNotifier);
 
     await Result.tryRunAsync(() async {
-      await AppHiveData.instance.deleteData(key: HiveDataPathKey.contentsAddingProgressList.name);
+      await KVStore.me.deleteData(
+        key: HiveDataKey.contentsAddingProgressList.name,
+      );
     });
 
     log("Done");
     final resultList = result.map((e) => AddContentResult.fromMap(e)).toList();
 
-    await AppHiveData.instance.setData<int>(
-      key: HiveDataPathKey.globalFileSizeSum.name,
-      value: resultList.fold<int>(0, (prev, next) => prev + (next.fileSize ?? 0)),
+    await KVStore.me.setData<int>(
+      key: HiveDataKey.globalFileSizeSum.name,
+      value: resultList.fold<int>(
+        0,
+        (prev, next) => prev + (next.fileSize ?? 0),
+      ),
     );
 
     return resultList;
@@ -75,13 +82,21 @@ class AddContentsUc {
   }) async {
     log("Consulting add to collections...");
     final Result<dynamic> outcome = await Result.tryRunAsync(() async {
-      if (valueNotifier != null) valueNotifier.value = "Consulting system selection";
+      if (valueNotifier != null) {
+        valueNotifier.value = "Consulting system selection";
+      }
       if (rootNavigatorKey.currentContext!.mounted) {
         GlobalNav.popGlobal();
       }
-      UiUtils.showLoadingDialog(rootNavigatorKey.currentContext!, message: "Consulting system selection");
+      UiUtils.showLoadingDialog(
+        rootNavigatorKey.currentContext!,
+        message: "Consulting system selection",
+      );
 
-      final selectedContents = await SelectContentsUc().referToAddContents(type, selectByFolder: selectByFolder);
+      final selectedContents = await SelectContentsUc().referToAddContents(
+        type,
+        selectByFolder: selectByFolder,
+      );
       valueNotifier?.value = "Scanning contents";
       if (rootNavigatorKey.currentContext!.mounted) {
         Navigator.pop(rootNavigatorKey.currentContext!);
@@ -89,13 +104,19 @@ class AddContentsUc {
       if (selectedContents == null) return "No content was selected!";
 
       final RootIsolateToken? rootIsolateToken = RootIsolateToken.instance;
-      if (rootIsolateToken == null) return "Unable to process adding content in background";
+      if (rootIsolateToken == null) {
+        return "Unable to process adding content in background";
+      }
 
       valueNotifier?.value =
           "Adding contents...\nPlease, do not close app until this is complete.\nClosing app abruptly might take up more space";
 
-      final filePaths = <String>[for (final value in selectedContents) value.path];
-      final uuids = [for (int i = 0; i < filePaths.length; i++) const Uuid().v4()];
+      final filePaths = <String>[
+        for (final value in selectedContents) value.path,
+      ];
+      final uuids = [
+        for (int i = 0; i < filePaths.length; i++) const Uuid().v4(),
+      ];
 
       // Use shared method
       return await _processAndStoreContents(
@@ -130,12 +151,16 @@ class AddContentsUc {
       if (filePaths.isEmpty) return "No content was selected!";
 
       final RootIsolateToken? rootIsolateToken = RootIsolateToken.instance;
-      if (rootIsolateToken == null) return "Unable to process adding content in background";
+      if (rootIsolateToken == null) {
+        return "Unable to process adding content in background";
+      }
 
       valueNotifier?.value =
           "Adding contents...\nPlease, do not close app until this is complete.\nClosing app abruptly might take up more space";
 
-      final uuids = [for (int i = 0; i < filePaths.length; i++) const Uuid().v4()];
+      final uuids = [
+        for (int i = 0; i < filePaths.length; i++) const Uuid().v4(),
+      ];
 
       // Use shared method
       return await _processAndStoreContents(

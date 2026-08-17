@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:photo_view/photo_view.dart';
 // import 'package:screenshot/screenshot.dart';
 import 'package:slidesync/core/base/mixins/use_value_notifier.dart';
-import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/features/study/logic/usecases/progress_tracker.dart';
@@ -42,7 +42,8 @@ class ImageViewerState with ValueNotifierFactoryMixin {
   Future<void> _initialize() async {
     await Result.tryRunAsync(() async {
       progressTrack = await ProgressTracker.getLastTrack(contentId);
-      rotationNotifier.value = (await AppHiveData.instance.getData(key: "${contentId}_rotation") as int?) ?? 0;
+      rotationNotifier.value =
+          (await KVStore.me.getData(key: "${contentId}_rotation") as int?) ?? 0;
     });
     controller.rotation = (math.pi / 2) * rotationNotifier.value;
     _viewStopwatch.start();
@@ -53,7 +54,8 @@ class ImageViewerState with ValueNotifierFactoryMixin {
     controller.dispose();
 
     // Mark as fully read if user stayed long enough
-    if (_viewStopwatch.elapsed >= readValidityDuration && progressTrack != null) {
+    if (_viewStopwatch.elapsed >= readValidityDuration &&
+        progressTrack != null) {
       Future.microtask(() async {
         progressTrack = await ProgressTracker.saveTrack(
           progressTrack!.copyWith(progress: 1.0, lastRead: DateTime.now()),
@@ -76,7 +78,9 @@ class ImageViewerState with ValueNotifierFactoryMixin {
   void toggleAppBarVisible() {
     final visible = isAppBarVisibleNotifier.value;
     isAppBarVisibleNotifier.value = !visible;
-    SystemChrome.setEnabledSystemUIMode(visible ? SystemUiMode.immersive : SystemUiMode.edgeToEdge);
+    SystemChrome.setEnabledSystemUIMode(
+      visible ? SystemUiMode.immersive : SystemUiMode.edgeToEdge,
+    );
   }
 
   Future<void> setRotation() async {
@@ -84,7 +88,7 @@ class ImageViewerState with ValueNotifierFactoryMixin {
     final newRotation = rotation >= 3 ? 0 : rotation + 1;
     rotationNotifier.value = newRotation;
     controller.rotation = (math.pi / 2) * newRotation;
-    await AppHiveData.instance.setData(key: "${contentId}_rotation", value: newRotation);
+    await KVStore.me.setData(key: "${contentId}_rotation", value: newRotation);
   }
 
   // ============================================================================

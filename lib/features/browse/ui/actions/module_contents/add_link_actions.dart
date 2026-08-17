@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/utils/crypto_utils.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
@@ -9,7 +10,7 @@ import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/features/browse/logic/src/contents/retrieve_content_uc.dart';
-import 'package:super_clipboard/super_clipboard.dart';
+// import 'package:super_clipboard/super_clipboard.dart';
 
 class AddLinkActions {
   static Future<bool> onAddLinkContent(
@@ -24,10 +25,15 @@ class AddLinkActions {
     if (module == null) return false;
 
     final xxh3Hash = CryptoUtils.calculateStringHash(link);
-    final sameHashedContent = await ModuleContentRepo.findFirstDuplicateContentByHash(module, xxh3Hash);
+    final sameHashedContent =
+        await ModuleContentRepo.findFirstDuplicateContentByHash(
+          module,
+          xxh3Hash,
+        );
 
     final ModuleContent newContent;
-    final bool isExistingSameLinkInModule = sameHashedContent != null && link == sameHashedContent.path.url;
+    final bool isExistingSameLinkInModule =
+        sameHashedContent != null && link == sameHashedContent.path.url;
     if (isExistingSameLinkInModule) {
       // They are the same
       {
@@ -38,7 +44,9 @@ class AddLinkActions {
           lastModified: DateTime.now(),
           metadata: sameHashedContent.metadata?.copyWith(
             thumbnail: FilePath(
-              url: details?.previewUrl ?? sameHashedContent.metadata?.thumbnail?.url,
+              url:
+                  details?.previewUrl ??
+                  sameHashedContent.metadata?.thumbnail?.url,
               local: sameHashedContent.metadata?.thumbnail?.local,
             ),
           ),
@@ -46,7 +54,9 @@ class AddLinkActions {
       }
     } else {
       if (link != sameHashedContent?.path.url) {
-        details ??= await RetriveContentUc.getLinkPreviewData(link); // Try again
+        details ??= await RetriveContentUc.getLinkPreviewData(
+          link,
+        ); // Try again
       }
       newContent = ModuleContent.create(
         xxh3Hash: xxh3Hash,
@@ -67,13 +77,16 @@ class AddLinkActions {
     if (isExistingSameLinkInModule) {
       await ModuleContentRepo.add(newContent);
 
-      final existingTrack = await ContentTrackRepo.getByContentId(newContent.uid);
+      final existingTrack = await ContentTrackRepo.getByContentId(
+        newContent.uid,
+      );
       if (existingTrack != null) {
         await ContentTrackRepo.add(
           existingTrack.copyWith(
             title: newContent.title,
             description: newContent.description,
-            thumbnail: newContent.metadata?.thumbnail ?? existingTrack.thumbnail,
+            thumbnail:
+                newContent.metadata?.thumbnail ?? existingTrack.thumbnail,
           ),
         );
       }
@@ -84,38 +97,26 @@ class AddLinkActions {
     return await ModuleContentRepo.addContent(newContent.parentId, newContent);
   }
 
-  static void pasteFromClipboard(TextEditingController linkInputController) async {
-    final clipboard = SystemClipboard.instance;
-    if (clipboard == null) return;
+  static void pasteFromClipboard(
+    TextEditingController linkInputController,
+  ) async {
+    // Read plain text from the built-in system clipboard
+    final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+    final clipboardText = clipboardData?.text;
 
-    final reader = await clipboard.read();
+    if (clipboardText == null || clipboardText.isEmpty) return;
 
-    // Check for URI first (links have priority)
-    if (reader.canProvide(Formats.uri)) {
-      final NamedUri? namedUri = await reader.readValue(Formats.uri);
-      if (namedUri != null && namedUri.uri.toString().isNotEmpty) {
-        linkInputController.text = namedUri.uri.toString();
-        return;
-      }
+    final text = clipboardText.trim();
+
+    // Try to extract link from text
+    final extractedLink = _extractLinkFromText(text);
+    if (extractedLink != null) {
+      linkInputController.text = extractedLink;
+      return;
     }
 
-    // Fallback to plain text and validate if it's a link
-    if (reader.canProvide(Formats.plainText)) {
-      final String? clipboardText = await reader.readValue(Formats.plainText);
-      if (clipboardText != null && clipboardText.isNotEmpty) {
-        final text = clipboardText.trim();
-
-        // Try to extract link from text
-        final extractedLink = _extractLinkFromText(text);
-        if (extractedLink != null) {
-          linkInputController.text = extractedLink;
-          return;
-        }
-
-        // If no link found but text exists, use it as fallback
-        linkInputController.text = text;
-      }
-    }
+    // If no link found but text exists, use it as fallback
+    linkInputController.text = text;
   }
 
   static String? _extractLinkFromText(String text) {
@@ -126,7 +127,11 @@ class AddLinkActions {
     }
 
     // Look for URLs within the text using regex
-    final urlRegex = RegExp(r'https?://[^\s<>"{}|\\^`\[\]]+', caseSensitive: false, multiLine: true);
+    final urlRegex = RegExp(
+      r'https?://[^\s<>"{}|\\^`\[\]]+',
+      caseSensitive: false,
+      multiLine: true,
+    );
 
     final matches = urlRegex.allMatches(text);
     if (matches.isNotEmpty) {
@@ -135,7 +140,11 @@ class AddLinkActions {
     }
 
     // Look for www. patterns and add https://
-    final wwwRegex = RegExp(r'www\.[^\s<>"{}|\\^`\[\]]+', caseSensitive: false, multiLine: true);
+    final wwwRegex = RegExp(
+      r'www\.[^\s<>"{}|\\^`\[\]]+',
+      caseSensitive: false,
+      multiLine: true,
+    );
 
     final wwwMatches = wwwRegex.allMatches(text);
     if (wwwMatches.isNotEmpty) {
@@ -146,6 +155,10 @@ class AddLinkActions {
   }
 
   static bool _isValidWebUrl(Uri uri) {
-    return uri.hasScheme && (uri.scheme == 'http' || uri.scheme == 'https' || uri.scheme == 'ftp') && uri.hasAuthority;
+    return uri.hasScheme &&
+        (uri.scheme == 'http' ||
+            uri.scheme == 'https' ||
+            uri.scheme == 'ftp') &&
+        uri.hasAuthority;
   }
 }

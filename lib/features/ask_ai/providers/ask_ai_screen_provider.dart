@@ -21,6 +21,6 @@ class AskAiScreenProvider {
   /// OTHERS
   /// ===================================================================================================
   static final userIdProvider = FutureProvider<String>((ref) async {
-    return (await UserDataFunctions().getUserDetails()).data?.userID ?? '';
+    return (await UserDataFunctions.me.getUserDetails()).data?.userID ?? '';
   });
 }

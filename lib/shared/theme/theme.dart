@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -16,10 +17,11 @@ export 'package:slidesync/shared/theme/src/app_theme.dart';
 
 final appThemeProvider = NotifierProvider(
   () => HiveImpliedNotifier<Map, UnifiedThemeModel>(
-    HiveDataPathKey.appTheme.name,
+    HiveDataKey.appTheme.name,
     defaultUnifiedThemeModels[0].copyWith(currentBrightness: Brightness.dark),
     transformer: (raw) => raw.toMap(),
-    builder: (data) => data == null ? null : UnifiedThemeModel.fromMap(Map.castFrom(data)),
+    builder: (data) =>
+        data == null ? null : UnifiedThemeModel.fromMap(Map.castFrom(data)),
   ),
 );
 
@@ -38,7 +40,10 @@ Future<void> notifyThemeOnBrightnessChanged(WidgetRef ref) async {
               .set(
                 appThemeProvider
                     .read(ref)
-                    .copyWith(currentBrightness: (context.mounted ? context : c).platformBrightness),
+                    .copyWith(
+                      currentBrightness:
+                          (context.mounted ? context : c).platformBrightness,
+                    ),
               ),
         ),
       );
@@ -52,11 +57,16 @@ ThemeData resolveThemeData(AppTheme theme) {
     try {
       googleTextTheme = GoogleFonts.getTextTheme(theme.fontFamily!);
     } catch (e) {
-      log('resolveThemeData: Unable to load Google Font "${theme.fontFamily}": $e');
+      log(
+        'resolveThemeData: Unable to load Google Font "${theme.fontFamily}": $e',
+      );
     }
   }
 
-  final baseScheme = ColorScheme.fromSeed(seedColor: theme.primary, brightness: theme.brightness);
+  final baseScheme = ColorScheme.fromSeed(
+    seedColor: theme.primary,
+    brightness: theme.brightness,
+  );
 
   final cs = baseScheme.copyWith(
     // Core colors
@@ -97,7 +107,9 @@ ThemeData resolveThemeData(AppTheme theme) {
     // fontFamilyFallback: ["Raleway"],
     pageTransitionsTheme: PageTransitionsTheme(
       builders: {
-        TargetPlatform.android: FadeForwardsPageTransitionsBuilder(backgroundColor: theme.background),
+        TargetPlatform.android: FadeForwardsPageTransitionsBuilder(
+          backgroundColor: theme.background,
+        ),
         TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
         TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
       },
@@ -120,8 +132,12 @@ ThemeData resolveThemeData(AppTheme theme) {
       elevation: 0,
       centerTitle: true,
       iconTheme: IconThemeData(color: cs.onSurface),
-      titleTextStyle: effectiveTextTheme.titleLarge?.copyWith(color: cs.onSurface),
-      toolbarTextStyle: effectiveTextTheme.bodyMedium?.copyWith(color: cs.onSurface),
+      titleTextStyle: effectiveTextTheme.titleLarge?.copyWith(
+        color: cs.onSurface,
+      ),
+      toolbarTextStyle: effectiveTextTheme.bodyMedium?.copyWith(
+        color: cs.onSurface,
+      ),
       surfaceTintColor: Colors.transparent,
     ),
 
@@ -145,7 +161,10 @@ ThemeData resolveThemeData(AppTheme theme) {
     ),
 
     textButtonTheme: TextButtonThemeData(
-      style: TextButton.styleFrom(foregroundColor: cs.primary, textStyle: effectiveTextTheme.labelLarge),
+      style: TextButton.styleFrom(
+        foregroundColor: cs.primary,
+        textStyle: effectiveTextTheme.labelLarge,
+      ),
     ),
 
     outlinedButtonTheme: OutlinedButtonThemeData(
@@ -165,7 +184,10 @@ ThemeData resolveThemeData(AppTheme theme) {
       filled: true,
       fillColor: theme.altBackgroundPrimary,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
+      ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: cs.outline.withValues(alpha: 0.12)),
@@ -174,8 +196,12 @@ ThemeData resolveThemeData(AppTheme theme) {
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(color: cs.primary, width: 2),
       ),
-      hintStyle: effectiveTextTheme.bodySmall?.copyWith(color: theme.supportingText),
-      labelStyle: effectiveTextTheme.bodyMedium?.copyWith(color: theme.supportingText),
+      hintStyle: effectiveTextTheme.bodySmall?.copyWith(
+        color: theme.supportingText,
+      ),
+      labelStyle: effectiveTextTheme.bodyMedium?.copyWith(
+        color: theme.supportingText,
+      ),
     ),
 
     cardTheme: CardThemeData(
@@ -202,7 +228,9 @@ ThemeData resolveThemeData(AppTheme theme) {
         if (states.contains(WidgetState.selected)) {
           return effectiveTextTheme.labelSmall?.copyWith(color: cs.primary);
         }
-        return effectiveTextTheme.labelSmall?.copyWith(color: theme.supportingText);
+        return effectiveTextTheme.labelSmall?.copyWith(
+          color: theme.supportingText,
+        );
       }),
       iconTheme: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
@@ -225,7 +253,10 @@ ThemeData resolveThemeData(AppTheme theme) {
       backgroundColor: theme.surface,
       surfaceTintColor: Colors.transparent,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(topRight: Radius.circular(16), bottomRight: Radius.circular(16)),
+        borderRadius: BorderRadius.only(
+          topRight: Radius.circular(16),
+          bottomRight: Radius.circular(16),
+        ),
       ),
     ),
 
@@ -233,7 +264,10 @@ ThemeData resolveThemeData(AppTheme theme) {
       backgroundColor: theme.surface,
       surfaceTintColor: Colors.transparent,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+        ),
       ),
     ),
 
@@ -241,8 +275,12 @@ ThemeData resolveThemeData(AppTheme theme) {
       backgroundColor: theme.surface,
       surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      titleTextStyle: effectiveTextTheme.headlineSmall?.copyWith(color: cs.onSurface),
-      contentTextStyle: effectiveTextTheme.bodyMedium?.copyWith(color: cs.onSurface),
+      titleTextStyle: effectiveTextTheme.headlineSmall?.copyWith(
+        color: cs.onSurface,
+      ),
+      contentTextStyle: effectiveTextTheme.bodyMedium?.copyWith(
+        color: cs.onSurface,
+      ),
     ),
 
     // Interaction colors
@@ -256,13 +294,18 @@ ThemeData resolveThemeData(AppTheme theme) {
 
     snackBarTheme: SnackBarThemeData(
       backgroundColor: theme.altBackgroundPrimary,
-      contentTextStyle: effectiveTextTheme.bodyMedium?.copyWith(color: cs.onSurface),
+      contentTextStyle: effectiveTextTheme.bodyMedium?.copyWith(
+        color: cs.onSurface,
+      ),
       actionTextColor: cs.primary,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     ),
 
     tooltipTheme: TooltipThemeData(
-      decoration: BoxDecoration(color: cs.onSurface.withValues(alpha: 0.92), borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(
+        color: cs.onSurface.withValues(alpha: 0.92),
+        borderRadius: BorderRadius.circular(8),
+      ),
       textStyle: effectiveTextTheme.bodySmall?.copyWith(color: cs.surface),
     ),
 

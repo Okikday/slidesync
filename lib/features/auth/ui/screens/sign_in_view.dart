@@ -2,7 +2,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/features/ask_ai/ui/widgets/shimmery_gradient_background.dart';
 import 'package:slidesync/features/auth/ui/actions/sign_in_actions.dart';
@@ -22,7 +22,10 @@ class SignInView extends ConsumerWidget {
     const Color primaryPurple = Color(0xFF7D19FF);
     final theme = ref;
     return AnnotatedRegion(
-      value: UiUtils.getSystemUiOverlayStyle(theme.background, context.isDarkMode),
+      value: UiUtils.getSystemUiOverlayStyle(
+        theme.background,
+        context.isDarkMode,
+      ),
       child: AppScaffold(
         title: "",
         body: Stack(
@@ -44,11 +47,18 @@ class SignInView extends ConsumerWidget {
                 child: TextButton(
                   onPressed: () {
                     Future.microtask(
-                      () => AppHiveData.instance.setData(key: HiveDataPathKey.hasOnboarded.name, value: true),
+                      () => KVStore.me.setData(
+                        key: HiveDataKey.hasOnboarded.name,
+                        value: true,
+                      ),
                     );
                     context.goNamed(Routes.home.name);
                   },
-                  child: CustomText("Skip", color: theme.onBackground, fontWeight: FontWeight.w700),
+                  child: CustomText(
+                    "Skip",
+                    color: theme.onBackground,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),
@@ -64,7 +74,10 @@ class SignInView extends ConsumerWidget {
                   Container(
                     clipBehavior: Clip.hardEdge,
                     padding: EdgeInsets.all(32),
-                    decoration: BoxDecoration(shape: BoxShape.circle, color: theme.onPrimary.withValues(alpha: 0.5)),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: theme.onPrimary.withValues(alpha: 0.5),
+                    ),
                     child: Image.asset(
                       "assets/logo/ic_foreground.png",
                       width: 64,
@@ -109,7 +122,8 @@ class SigningInDialog extends ConsumerStatefulWidget {
   ConsumerState<SigningInDialog> createState() => _SigningInDialogState();
 }
 
-class _SigningInDialogState extends ConsumerState<SigningInDialog> with SingleTickerProviderStateMixin {
+class _SigningInDialogState extends ConsumerState<SigningInDialog>
+    with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final theme = ref;

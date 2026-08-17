@@ -21,7 +21,8 @@ part 'ext_module_contents_pagination_notifier.dart';
 
 const int limit = 20;
 
-class ModuleContentsPaginationNotifier extends Notifier<ModuleContentsPaginationState> {
+class ModuleContentsPaginationNotifier
+    extends Notifier<ModuleContentsPaginationState> {
   ModuleContentsPaginationNotifier(this.moduleId);
 
   ///
@@ -34,18 +35,20 @@ class ModuleContentsPaginationNotifier extends Notifier<ModuleContentsPagination
   final int moduleId;
 
   /// Standard controller — used for [CardViewType.list] and [CardViewType.grid].
-  late final PagingController<int, ModuleContent> pagingController = PagingController(
-    getNextPageKey: _getNextPageKey,
-    fetchPage: (pageKey) => fetchPage(pageKey, limit),
-  );
+  late final PagingController<int, ModuleContent> pagingController =
+      PagingController(
+        getNextPageKey: _getNextPageKey,
+        fetchPage: (pageKey) => fetchPage(pageKey, limit),
+      );
 
   /// Organized controller — used for [CardViewType.organized].
   /// Items are [Object] so both [GroupedModuleContent] and solo [ModuleContent]
   /// can live in the same page list without unsafe casting downstream.
-  late final PagingController<int, Object> organizedPagingController = PagingController(
-    getNextPageKey: _getNextOrganizedPageKey,
-    fetchPage: (pageKey) => _fetchOrganizedPage(pageKey, limit),
-  );
+  late final PagingController<int, Object> organizedPagingController =
+      PagingController(
+        getNextPageKey: _getNextOrganizedPageKey,
+        fetchPage: (pageKey) => _fetchOrganizedPage(pageKey, limit),
+      );
 
   bool isUpdating = false;
   bool extraCheck = false;
@@ -63,7 +66,9 @@ class ModuleContentsPaginationNotifier extends Notifier<ModuleContentsPagination
 
     ref.listen(
       _moduleContentsOrderingProvider,
-      (prev, next) => next.whenData((newSort) => updateContentsOrdering(newSort, refresh: true)),
+      (prev, next) => next.whenData(
+        (newSort) => updateContentsOrdering(newSort, refresh: true),
+      ),
     );
 
     // Fire both sync paths on every DB change; each guards itself via
@@ -88,7 +93,9 @@ class ModuleContentsPaginationNotifier extends Notifier<ModuleContentsPagination
   }
 
   Future<void> _initModule() async {
-    await Result.tryRunAsync(() async => module = await ModuleRepo.getByDbId(moduleId));
+    await Result.tryRunAsync(
+      () async => module = await ModuleRepo.getByDbId(moduleId),
+    );
     log('Initialized module: ${module?.uid}');
   }
 
@@ -98,7 +105,10 @@ class ModuleContentsPaginationNotifier extends Notifier<ModuleContentsPagination
   /// PUBLIC API
   /// ===================================================================================================
 
-  void updateContentsOrdering(EntityOrdering newSortOption, {bool refresh = true}) {
+  void updateContentsOrdering(
+    EntityOrdering newSortOption, {
+    bool refresh = true,
+  }) {
     if (state.contentsOrdering == newSortOption) return;
 
     ref.read(_moduleContentsOrderingProvider.notifier).set(newSortOption);
@@ -165,7 +175,10 @@ class ModuleContentsPaginationNotifier extends Notifier<ModuleContentsPagination
     await _initModule();
   }
 
-  Future<List<ModuleContent>> _queryContents({required int pageKey, required int limit}) async {
+  Future<List<ModuleContent>> _queryContents({
+    required int pageKey,
+    required int limit,
+  }) async {
     if (!ref.mounted) return [];
 
     final filter = module!.contents.filter();
@@ -199,9 +212,11 @@ class ModuleContentsPaginationNotifier extends Notifier<ModuleContentsPagination
     controller.fetchNextPage();
   }
 
-  int? _getNextPageKey(PagingState<int, ModuleContent> state) => state.lastPageIsEmpty ? null : state.nextIntPageKey;
+  int? _getNextPageKey(PagingState<int, ModuleContent> state) =>
+      state.lastPageIsEmpty ? null : state.nextIntPageKey;
 
-  int? _getNextOrganizedPageKey(PagingState<int, Object> state) => state.lastPageIsEmpty ? null : state.nextIntPageKey;
+  int? _getNextOrganizedPageKey(PagingState<int, Object> state) =>
+      state.lastPageIsEmpty ? null : state.nextIntPageKey;
 }
 
 ///
@@ -223,10 +238,12 @@ final _watchContentsChange = StreamNotifierProvider.autoDispose.family(
 
 final _moduleContentsOrderingProvider = AsyncNotifierProvider.autoDispose(
   () => HiveAsyncImpliedNotifier<String, EntityOrdering>(
-    HiveDataPathKey.moduleContentsOrdering.name,
+    HiveDataKey.moduleContentsOrdering.name,
     EntityOrdering.dateModifiedAsc,
     transformer: (raw) => raw.name,
-    builder: (data) async =>
-        EntityOrdering.values.firstWhere((e) => e.name == data, orElse: () => EntityOrdering.dateModifiedDesc),
+    builder: (data) async => EntityOrdering.values.firstWhere(
+      (e) => e.name == data,
+      orElse: () => EntityOrdering.dateModifiedDesc,
+    ),
   ),
 );

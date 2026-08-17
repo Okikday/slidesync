@@ -47,7 +47,9 @@ class LibraryNotifier extends Notifier<LibraryState> {
     ref.emptyListenMany([scrollOffset]);
     ref.listen(
       _cardViewTypeNotifier,
-      (p, n) => n.whenData((newType) => state = state.copyWith(cardViewType: newType)),
+      (p, n) => n.whenData(
+        (newType) => state = state.copyWith(cardViewType: newType),
+      ),
       fireImmediately: true,
     );
   }
@@ -68,7 +70,10 @@ class LibraryNotifier extends Notifier<LibraryState> {
     final currOffset = scrollController.offset;
     final lastOffset = ref.read(scrollOffset);
     final tolerance = libraryAppBarMaxHeight + scrollTolerance;
-    if ((currOffset > tolerance && lastOffset > tolerance) || (currOffset - lastOffset).abs() < 0.5) return;
+    if ((currOffset > tolerance && lastOffset > tolerance) ||
+        (currOffset - lastOffset).abs() < 0.5) {
+      return;
+    }
     ref.read(scrollOffset.notifier).set(currOffset);
   }
 
@@ -81,10 +86,15 @@ class LibraryNotifier extends Notifier<LibraryState> {
   void toggleCardViewType() async {
     final value = ref.read(_cardViewTypeNotifier).value;
     if (value == null) return;
-    ref.read(_cardViewTypeNotifier.notifier).set(value == CardViewType.list ? CardViewType.grid : CardViewType.list);
+    ref
+        .read(_cardViewTypeNotifier.notifier)
+        .set(
+          value == CardViewType.list ? CardViewType.grid : CardViewType.list,
+        );
   }
 
-  void setLoading(bool isLoading) => state = state.copyWith(isLoading: isLoading);
+  void setLoading(bool isLoading) =>
+      state = state.copyWith(isLoading: isLoading);
 }
 
 ///|
@@ -92,11 +102,17 @@ class LibraryNotifier extends Notifier<LibraryState> {
 /// ===================================================================================================
 /// OTHERS
 /// ===================================================================================================
-final _scrollOffsetNotifier = NotifierProvider.autoDispose(() => DoubleNotifier());
-final _coursesPaginationNotifier = NotifierProvider<CoursesPaginationNotifier, CoursePaginationState>(
-  CoursesPaginationNotifier.new,
+final _scrollOffsetNotifier = NotifierProvider.autoDispose(
+  () => DoubleNotifier(),
 );
+final _coursesPaginationNotifier =
+    NotifierProvider<CoursesPaginationNotifier, CoursePaginationState>(
+      CoursesPaginationNotifier.new,
+    );
 
 final _cardViewTypeNotifier = AsyncNotifierProvider.autoDispose(
-  () => CardViewTypeNotifier(HiveDataPathKey.libraryCourseCardViewType.name, CardViewType.list),
+  () => CardViewTypeNotifier(
+    HiveDataKey.libraryCourseCardViewType.name,
+    CardViewType.list,
+  ),
 );

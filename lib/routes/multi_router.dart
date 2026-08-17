@@ -248,7 +248,7 @@
 //   builder: (context, state) => const SplashView(),
 //   redirect: (context, state) async {
 //     return Routes.home.path;
-//     // final isUserSignedIn = await UserDataFunctions().isUserSignedIn();
+//     // final isUserSignedIn = await UserDataFunctions.me.isUserSignedIn();
 //     // final hasOnboarded = await AppHiveData.instance.getData(key: HiveDataPathKey.hasOnboarded.name) as bool?;
 //     // if (hasOnboarded == false) return Routes.welcome.path;
 //     // if (isUserSignedIn) return Routes.home.path;

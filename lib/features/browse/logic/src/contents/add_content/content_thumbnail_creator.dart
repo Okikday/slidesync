@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:pdfrx/pdfrx.dart';
+import 'package:slidesync/app/startup.dart';
 import 'package:slidesync/core/constants/src/app_constants.dart';
 import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/storage/native/app_paths.dart';
@@ -14,7 +15,6 @@ import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 // ignore: depend_on_referenced_packages
 import 'package:image/image.dart';
-import 'package:slidesync/main.dart';
 
 // typedef PreviewImagePathRecord<Record> = ({String previewDirPath, String previewPath});
 
@@ -37,13 +37,15 @@ class ContentThumbnailCreator {
     }
   }
 
-  static Future<String?> createThumbnailForCourse(String path, {required String filename}) async =>
-      await createThumbnailForContent(
-        path,
-        filename: filename,
-        type: ModuleContentType.image,
-        dirToStoreAt: AppPaths.coursesThumbnailsFolder,
-      );
+  static Future<String?> createThumbnailForCourse(
+    String path, {
+    required String filename,
+  }) async => await createThumbnailForContent(
+    path,
+    filename: filename,
+    type: ModuleContentType.image,
+    dirToStoreAt: AppPaths.coursesThumbnailsFolder,
+  );
 
   // /// Gets the preview image path for a file
   // /// Make sure you are sending in a relative path
@@ -64,8 +66,10 @@ class ContentThumbnailCreator {
   //   }
   // }
 
-  static FilePath fileDetailsFromJson(String source) => FilePath.fromJson(source);
-  static ModuleContent courseContentFromJson(String source) => ModuleContent.fromJson(source);
+  static FilePath fileDetailsFromJson(String source) =>
+      FilePath.fromJson(source);
+  static ModuleContent courseContentFromJson(String source) =>
+      ModuleContent.fromJson(source);
 
   /// error
   // /// Adding lots of contents image preview in Background/Isolate
@@ -105,7 +109,11 @@ class ContentThumbnailCreator {
   // }
 
   /// Returns the preview path where the image file is stored at after making a compressed version of the image
-  static Future<String?> _createForTypeImage(String path, String storeAtDir, String filename) async {
+  static Future<String?> _createForTypeImage(
+    String path,
+    String storeAtDir,
+    String filename,
+  ) async {
     final Result<String?> result = await Result.tryRunAsync(() async {
       log("Creating preview for Type Image");
       final Result<File> result = await ImageUtils.compressImage(
@@ -120,7 +128,10 @@ class ContentThumbnailCreator {
           file: file,
           base: AppDirType.documents,
           folderPath: storeAtDir,
-          newFileName: p.setExtension(filename, ".${AppConstants.defaultThumbnailFormat}"),
+          newFileName: p.setExtension(
+            filename,
+            ".${AppConstants.defaultThumbnailFormat}",
+          ),
         );
 
         await file.delete();
@@ -132,7 +143,11 @@ class ContentThumbnailCreator {
     return result.data;
   }
 
-  static Future<String?> _createForTypeDocument(String path, String storeAtDir, String filename) async {
+  static Future<String?> _createForTypeDocument(
+    String path,
+    String storeAtDir,
+    String filename,
+  ) async {
     final Result<String?> result = await Result.tryRunAsync(() async {
       log("Creating preview for Type Document");
 
@@ -153,7 +168,10 @@ class ContentThumbnailCreator {
         final int targetWidth = page.width.toInt();
         final int targetHeight = page.height.toInt();
 
-        final PdfImage? pageImage = await page.render(width: targetWidth, height: targetHeight);
+        final PdfImage? pageImage = await page.render(
+          width: targetWidth,
+          height: targetHeight,
+        );
 
         if (pageImage == null) {
           log("Failed to render PDF page");
@@ -169,7 +187,9 @@ class ContentThumbnailCreator {
         final last = path.split(Platform.pathSeparator).last;
         final genFilename = "${(last.isEmpty ? null : last) ?? filename}.tmp";
 
-        final tempFile = File(p.join((await getTemporaryDirectory()).path, genFilename));
+        final tempFile = File(
+          p.join((await getTemporaryDirectory()).path, genFilename),
+        );
         await tempFile.writeAsBytes(bytes);
 
         await Result.tryRunAsync(() async => await document.dispose());
@@ -189,7 +209,10 @@ class ContentThumbnailCreator {
             file: file,
             base: AppDirType.documents,
             folderPath: storeAtDir,
-            newFileName: p.setExtension(filename, ".${AppConstants.defaultThumbnailFormat}"),
+            newFileName: p.setExtension(
+              filename,
+              ".${AppConstants.defaultThumbnailFormat}",
+            ),
           );
           await file.delete();
 

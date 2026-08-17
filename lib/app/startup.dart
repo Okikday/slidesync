@@ -1,4 +1,47 @@
-part of 'main.dart';
+import 'dart:developer';
+import 'dart:io';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:kickin_storage/kickin_storage.dart';
+import 'package:path_provider/path_provider.dart' as pp;
+import 'package:pdfrx/pdfrx.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
+import 'package:slidesync/core/storage/isar_data/isar_data.dart';
+import 'package:slidesync/core/utils/result.dart';
+import 'package:slidesync/features/sync/logic/notification_service.dart';
+import 'package:slidesync/firebase_options.dart';
+import 'package:window_manager/window_manager.dart';
+
+// ignore: implementation_imports
+import 'package:pdfrx/src/utils/platform.dart';
+
+final startup = _initialize;
+
+Future<void> _initialize() async {
+  await Future.wait([
+    Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    ).tryRunAsync(),
+
+    KHive.on
+        .initialize(initApp: true)
+        .tryRunAsync()
+        .then((_) async => await KVStore.me.initialize().tryRunAsync()),
+
+    if (!kIsWeb) IsarData.initializeDefault(),
+  ]);
+
+  await NotificationService.instance.initialize().tryRunAsync();
+
+  pdfrxFlutterInitialize().tryRunAsync();
+  await _appLaunchRoutine().tryRunAsync();
+  await _initIfDesktop().tryRunAsync();
+}
 
 /// Pdfrx check initialized
 // bool _isPdfrxInitialized = false;
@@ -6,10 +49,12 @@ part of 'main.dart';
 Future<void> _appLaunchRoutine() async {
   /// Clear App Cache every 23 hours
   final lastDateHive = DateTime.tryParse(
-    (await HiveDataPathKey.lastClearedCacheDate.name.tryGetHiveData<String>()).data ?? '',
+    (await HiveDataKey.lastClearedCacheDate.name.tryGet<String>()).data ?? '',
   );
   if (lastDateHive == null) {
-    await HiveDataPathKey.lastClearedCacheDate.name.trySetHiveData(value: DateTime.now().toIso8601String());
+    await HiveDataKey.lastClearedCacheDate.name.trySet(
+      value: DateTime.now().toIso8601String(),
+    );
     return;
   }
   final lastDate = lastDateHive;
@@ -50,7 +95,7 @@ Future<void> _appLaunchRoutine() async {
 
 Future<void> _initIfDesktop() async {
   if (defaultTargetPlatform == TargetPlatform.windows ||
-      defaultTargetPlatform == TargetPlatform.macOS ||
+      // defaultTargetPlatform == TargetPlatform.macOS ||
       defaultTargetPlatform == TargetPlatform.linux) {
     await windowManager.ensureInitialized();
 
@@ -74,7 +119,10 @@ Future<void> _initIfDesktop() async {
 
 bool _isInitialized = false;
 
-Future<void> pdfrxFlutterInitializeInIsolate({bool dismissPdfiumWasmWarnings = false}) async {
+///
+Future<void> pdfrxFlutterInitializeInIsolate({
+  bool dismissPdfiumWasmWarnings = false,
+}) async {
   if (_isInitialized) return;
 
   try {
@@ -91,7 +139,9 @@ Future<void> pdfrxFlutterInitializeInIsolate({bool dismissPdfiumWasmWarnings = f
     final asset = await rootBundle.load(name);
     return asset.buffer.asUint8List();
   };
-  Pdfrx.getCacheDirectory ??= getCacheDirectory;
+  Pdfrx.cacheDirectoryPath ??= await pp.getApplicationCacheDirectory().then(
+    (r) => r.path,
+  );
 
   // Checking pdfium.wasm availability for Web and debug builds.
   if (kDebugMode && !dismissPdfiumWasmWarnings) {
@@ -122,4 +172,32 @@ Future<void> pdfrxFlutterInitializeInIsolate({bool dismissPdfiumWasmWarnings = f
   await platformInitialize();
 
   _isInitialized = true;
+}
+
+// ================================================
+// EMERGENCY REPAIR: Clear Smart Switch ghost locks
+// ================================================
+Future<void> repairCorruptDB() async {
+  if (!kIsWeb) {
+    try {
+      final targetFiles = await pp.getApplicationDocumentsDirectory().then(
+        (dir) => [
+          File('${dir.path}/isar.lock'),
+          File('${dir.path}/default.lock'),
+        ],
+      );
+
+      await Future.wait(
+        targetFiles.map((file) async {
+          if (await file.exists()) {
+            await file.delete();
+            debugPrint("SlideSync System: Cleared stale lock: ${file.path}");
+          }
+        }),
+      );
+    } catch (e, stack) {
+      debugPrint("SlideSync System Repair Warning: $e");
+      debugPrint(stack.toString());
+    }
+  }
 }

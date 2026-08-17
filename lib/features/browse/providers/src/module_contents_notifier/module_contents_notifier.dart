@@ -17,7 +17,10 @@ final _moduleContentsPaginationNotifier = NotifierProvider.autoDispose.family(
 );
 
 final _cardViewTypeNotifier = AsyncNotifierProvider.autoDispose(
-  () => CardViewTypeNotifier(HiveDataPathKey.moduleContentsCardViewType.name, CardViewType.list),
+  () => CardViewTypeNotifier(
+    HiveDataKey.moduleContentsCardViewType.name,
+    CardViewType.list,
+  ),
 );
 
 class ModuleContentsNotifier extends Notifier<ModuleContentsState> {
@@ -27,14 +30,19 @@ class ModuleContentsNotifier extends Notifier<ModuleContentsState> {
   /// DECLARATIONS
   /// ===================================================================================================
 
-  final NotifierProvider<ModuleContentsPaginationNotifier, ModuleContentsPaginationState> contentsPagination;
+  final NotifierProvider<
+    ModuleContentsPaginationNotifier,
+    ModuleContentsPaginationState
+  >
+  contentsPagination;
 
   final selectedContents = LinkedHashSet<ModuleContent>(
     equals: (a, b) => a.id == b.id && a.uid == b.uid,
     hashCode: (item) => item.id.hashCode ^ item.uid.hashCode,
   );
 
-  ModuleContentsNotifier(int moduleId) : contentsPagination = _moduleContentsPaginationNotifier(moduleId);
+  ModuleContentsNotifier(int moduleId)
+    : contentsPagination = _moduleContentsPaginationNotifier(moduleId);
 
   ///
   ///
@@ -83,5 +91,6 @@ class ModuleContentsNotifier extends Notifier<ModuleContentsState> {
     ref.read(_cardViewTypeNotifier.notifier).set(type);
   }
 
-  void signalSelection() => state = state.copyWith(selectedContents: selectedContents.toList());
+  void signalSelection() =>
+      state = state.copyWith(selectedContents: selectedContents.toList());
 }

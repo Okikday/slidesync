@@ -14,7 +14,8 @@ import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart'
 class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
   late final PagingController<int, Course> pagingController = PagingController(
     // value: PagingState(hasNextPage: false),
-    getNextPageKey: (state) => state.lastPageIsEmpty ? null : state.nextIntPageKey,
+    getNextPageKey: (state) =>
+        state.lastPageIsEmpty ? null : state.nextIntPageKey,
     fetchPage: (pageKey) => fetchPage(pageKey, limit),
   );
 
@@ -30,7 +31,9 @@ class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
 
     ref.listen(
       _coursesOrderingProvider,
-      (prev, next) => next.whenData((ordering) => updateCoursesOrdering(ordering, refresh: true)),
+      (prev, next) => next.whenData(
+        (ordering) => updateCoursesOrdering(ordering, refresh: true),
+      ),
     );
 
     ref.onDispose(() {
@@ -38,12 +41,20 @@ class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
       log("Disposed $runtimeType!");
     });
 
-    ref.listen(_coursesUpdateStream, (prev, next) async => await _syncCourses());
+    ref.listen(
+      _coursesUpdateStream,
+      (prev, next) async => await _syncCourses(),
+    );
 
-    return CoursePaginationState(coursesOrdering: coursesOrdering ?? CoursesOrdering.dateModifiedDesc);
+    return CoursePaginationState(
+      coursesOrdering: coursesOrdering ?? CoursesOrdering.dateModifiedDesc,
+    );
   }
 
-  void updateCoursesOrdering(CoursesOrdering coursesOrdering, {bool refresh = true}) {
+  void updateCoursesOrdering(
+    CoursesOrdering coursesOrdering, {
+    bool refresh = true,
+  }) {
     if (state.coursesOrdering == coursesOrdering) return;
 
     state = state.copyWith(coursesOrdering: coursesOrdering);
@@ -116,12 +127,15 @@ class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
     final displayedCourses = pages.expand((p) => p).toList();
     final displayedMap = {for (final c in displayedCourses) c.id: c};
 
-    final freshCourses = await CourseRepo.filter.anyOf(displayedCourses, (q, c) => q.idEqualTo(c.id)).findAll();
+    final freshCourses = await CourseRepo.filter
+        .anyOf(displayedCourses, (q, c) => q.idEqualTo(c.id))
+        .findAll();
 
     final modifiedMap = <int, Course>{};
     for (final fresh in freshCourses) {
       final displayed = displayedMap[fresh.id];
-      if (displayed != null && fresh.lastModified.compareTo(displayed.lastModified) != 0) {
+      if (displayed != null &&
+          fresh.lastModified.compareTo(displayed.lastModified) != 0) {
         modifiedMap[fresh.id] = fresh;
       }
     }
@@ -137,7 +151,10 @@ class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
     );
   }
 
-  Future<void> _handleCountChange(List<List<Course>> pages, int presentCount) async {
+  Future<void> _handleCountChange(
+    List<List<Course>> pages,
+    int presentCount,
+  ) async {
     final displayedCount = pages.fold(0, (sum, page) => sum + page.length);
     final difference = presentCount - displayedCount;
 
@@ -161,23 +178,46 @@ class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
     }
 
     if (newPages.isNotEmpty) {
-      pagingController.value = pagingController.value.copyWith(pages: newPages, keys: newKeys);
+      pagingController.value = pagingController.value.copyWith(
+        pages: newPages,
+        keys: newKeys,
+      );
     }
   }
 
-  Future<List<Course>> _doFetch(int pageKey, int limit, CoursesOrdering sortOption) async {
+  Future<List<Course>> _doFetch(
+    int pageKey,
+    int limit,
+    CoursesOrdering sortOption,
+  ) async {
     final offset = (pageKey - 1) * limit;
     final query = CourseRepo.isar.courses.where();
 
     return switch (sortOption) {
-      CoursesOrdering.nameAsc => query.sortByTitle().offset(offset).limit(limit).findAll(),
-      CoursesOrdering.nameDesc => query.sortByTitleDesc().offset(offset).limit(limit).findAll(),
-      CoursesOrdering.dateCreatedAsc => query.sortByCreatedAt().offset(offset).limit(limit).findAll(),
-      CoursesOrdering.dateCreatedDesc => query.sortByCreatedAtDesc().offset(offset).limit(limit).findAll(),
-      CoursesOrdering.dateModifiedAsc => query.sortByLastModified().offset(offset).limit(limit).findAll(),
-      CoursesOrdering.dateModifiedDesc => query.sortByLastModifiedDesc().offset(offset).limit(limit).findAll(),
-      CoursesOrdering.courseCodeAsc => _fetchByCourseCode(query, offset, limit, ascending: true),
-      CoursesOrdering.courseCodeDesc => _fetchByCourseCode(query, offset, limit, ascending: false),
+      CoursesOrdering.nameAsc =>
+        query.sortByTitle().offset(offset).limit(limit).findAll(),
+      CoursesOrdering.nameDesc =>
+        query.sortByTitleDesc().offset(offset).limit(limit).findAll(),
+      CoursesOrdering.dateCreatedAsc =>
+        query.sortByCreatedAt().offset(offset).limit(limit).findAll(),
+      CoursesOrdering.dateCreatedDesc =>
+        query.sortByCreatedAtDesc().offset(offset).limit(limit).findAll(),
+      CoursesOrdering.dateModifiedAsc =>
+        query.sortByLastModified().offset(offset).limit(limit).findAll(),
+      CoursesOrdering.dateModifiedDesc =>
+        query.sortByLastModifiedDesc().offset(offset).limit(limit).findAll(),
+      CoursesOrdering.courseCodeAsc => _fetchByCourseCode(
+        query,
+        offset,
+        limit,
+        ascending: true,
+      ),
+      CoursesOrdering.courseCodeDesc => _fetchByCourseCode(
+        query,
+        offset,
+        limit,
+        ascending: false,
+      ),
     };
   }
 
@@ -199,12 +239,16 @@ class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
       if (leftMissing) return 1;
       if (rightMissing) return -1;
 
-      final comparison = leftCode.toLowerCase().compareTo(rightCode.toLowerCase());
+      final comparison = leftCode.toLowerCase().compareTo(
+        rightCode.toLowerCase(),
+      );
       if (comparison != 0) {
         return ascending ? comparison : -comparison;
       }
 
-      final titleComparison = left.title.toLowerCase().compareTo(right.title.toLowerCase());
+      final titleComparison = left.title.toLowerCase().compareTo(
+        right.title.toLowerCase(),
+      );
       return ascending ? titleComparison : -titleComparison;
     });
 
@@ -222,11 +266,13 @@ class CoursesPaginationNotifier extends Notifier<CoursePaginationState> {
 
 final _coursesOrderingProvider = AsyncNotifierProvider(
   () => HiveAsyncImpliedNotifier<String, CoursesOrdering>(
-    HiveDataPathKey.libraryCourseOrdering.name,
+    HiveDataKey.libraryCourseOrdering.name,
     CoursesOrdering.dateModifiedDesc,
     transformer: (raw) => raw.name,
-    builder: (data) async =>
-        CoursesOrdering.values.firstWhere((e) => e.name == data, orElse: () => CoursesOrdering.dateModifiedDesc),
+    builder: (data) async => CoursesOrdering.values.firstWhere(
+      (e) => e.name == data,
+      orElse: () => CoursesOrdering.dateModifiedDesc,
+    ),
   ),
 );
 

@@ -10,7 +10,8 @@ class _ResumableDownload {
 
   static const _bufferSize = 512 * 1024; // 512KB read buffer
 
-  static String _sessionKey(String operationId) => '${HiveDataPathKey.driveDownloadSession.name}_$operationId';
+  static String _sessionKey(String operationId) =>
+      '${HiveDataKey.driveDownloadSession.name}_$operationId';
 
   // ── Public API ─────────────────────────────────────────────────────────────
 
@@ -51,7 +52,8 @@ class _ResumableDownload {
       // Persist session
       await _saveSession(operationId, destPath, startByte, totalBytes);
 
-      final downloadUrl = 'https://www.googleapis.com/drive/v3/files/$fileId?alt=media';
+      final downloadUrl =
+          'https://www.googleapis.com/drive/v3/files/$fileId?alt=media';
 
       final sink = destFile.openWrite(mode: FileMode.append);
 
@@ -59,21 +61,32 @@ class _ResumableDownload {
         int bytesReceived = startByte;
 
         while (bytesReceived < totalBytes) {
-          final end = (bytesReceived + _bufferSize - 1).clamp(0, totalBytes - 1).toInt();
+          final end = (bytesReceived + _bufferSize - 1)
+              .clamp(0, totalBytes - 1)
+              .toInt();
 
-          final request = http.Request('GET', Uri.parse(downloadUrl))..headers['Range'] = 'bytes=$bytesReceived-$end';
+          final request = http.Request('GET', Uri.parse(downloadUrl))
+            ..headers['Range'] = 'bytes=$bytesReceived-$end';
 
           final streamedResponse = await client.send(request);
 
-          if (streamedResponse.statusCode != 206 && streamedResponse.statusCode != 200) {
-            throw HttpException('Download failed (${streamedResponse.statusCode})');
+          if (streamedResponse.statusCode != 206 &&
+              streamedResponse.statusCode != 200) {
+            throw HttpException(
+              'Download failed (${streamedResponse.statusCode})',
+            );
           }
 
           await for (final chunk in streamedResponse.stream) {
             sink.add(chunk);
             bytesReceived += chunk.length;
 
-            await _saveSession(operationId, destPath, bytesReceived, totalBytes);
+            await _saveSession(
+              operationId,
+              destPath,
+              bytesReceived,
+              totalBytes,
+            );
 
             yield DriveProgress(
               bytesTransferred: bytesReceived,
@@ -98,21 +111,26 @@ class _ResumableDownload {
 
   // ── Session persistence via AppHiveData ───────────────────────────────────
 
-  static Future<void> _saveSession(String id, String path, int received, int total) async {
-    await AppHiveData.instance.setData<String>(
+  static Future<void> _saveSession(
+    String id,
+    String path,
+    int received,
+    int total,
+  ) async {
+    await KVStore.me.setData<String>(
       key: _sessionKey(id),
       value: jsonEncode({'path': path, 'received': received, 'total': total}),
     );
   }
 
   static Future<void> _clearSession(String id) async {
-    await AppHiveData.instance.deleteData(key: _sessionKey(id));
+    await KVStore.me.deleteData(key: _sessionKey(id));
   }
 
   /// Check if a partial download exists for [operationId].
   /// Returns bytes already downloaded, or 0 if none.
   static Future<int> checkPartialDownload(String operationId) async {
-    final raw = await AppHiveData.instance.getData<String>(key: _sessionKey(operationId));
+    final raw = await KVStore.me.getData<String>(key: _sessionKey(operationId));
     if (raw == null) return 0;
     try {
       final m = jsonDecode(raw) as Map<String, dynamic>;
@@ -127,7 +145,9 @@ class _ResumableDownload {
   // ── Helpers ────────────────────────────────────────────────────────────────
 
   static Future<int> _fetchFileSize(String fileId, AuthClient client) async {
-    final url = Uri.parse('https://www.googleapis.com/drive/v3/files/$fileId?fields=size');
+    final url = Uri.parse(
+      'https://www.googleapis.com/drive/v3/files/$fileId?fields=size',
+    );
     final r = await client.get(url);
     if (r.statusCode == 200) {
       final body = jsonDecode(r.body) as Map<String, dynamic>;

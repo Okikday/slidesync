@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/auth/logic/services/user_auth/firebase_google_auth.dart';
@@ -29,7 +29,9 @@ class SignInActions {
     final auth = FirebaseGoogleAuth();
     final result = await auth.signInWithGoogle();
 
-    Future.microtask(() => AppHiveData.instance.setData(key: HiveDataPathKey.hasOnboarded.name, value: true));
+    Future.microtask(
+      () => KVStore.me.setData(key: HiveDataKey.hasOnboarded.name, value: true),
+    );
 
     if (result.isSuccess) {
       GlobalNav.withContext((c) => context.mounted ? context.pop() : c.pop());
@@ -37,12 +39,20 @@ class SignInActions {
         context.goNamed(Routes.home.name);
         await 300.inMs.delay();
         // ignore: use_build_context_synchronously
-        UiUtils.showFlushBar(context, msg: "Successfully signed in!", vibe: FlushbarVibe.success);
+        UiUtils.showFlushBar(
+          context,
+          msg: "Successfully signed in!",
+          vibe: FlushbarVibe.success,
+        );
       });
     } else {
       GlobalNav.withContext((c) {
         context.mounted ? context.pop() : c.pop();
-        UiUtils.showFlushBar(c, msg: result.message ?? "An error occured while signing in!", vibe: FlushbarVibe.error);
+        UiUtils.showFlushBar(
+          c,
+          msg: result.message ?? "An error occured while signing in!",
+          vibe: FlushbarVibe.error,
+        );
       });
 
       log("Error signing in... ${result.message}");

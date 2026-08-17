@@ -8,25 +8,36 @@ class NotificationService {
   static final NotificationService instance = NotificationService._();
   NotificationService._();
 
-  final FlutterLocalNotificationsPlugin _notifications = FlutterLocalNotificationsPlugin();
+  final FlutterLocalNotificationsPlugin _notifications =
+      FlutterLocalNotificationsPlugin();
   static const int _maxAndroidNotificationId = 0x7fffffff;
 
   int _normalizeNotificationId(int raw) => raw & _maxAndroidNotificationId;
 
-  int _idFromType(NotificationServiceIdType type) => _normalizeNotificationId(type.name.hashCode);
+  int _idFromType(NotificationServiceIdType type) =>
+      _normalizeNotificationId(type.name.hashCode);
 
   Future<void> initialize() async {
     const android = AndroidInitializationSettings('@mipmap/ic_launcher');
     const ios = DarwinInitializationSettings();
-    const settings = InitializationSettings(android: android, iOS: ios);
+    const macOS = DarwinInitializationSettings();
+    const settings = InitializationSettings(
+      android: android,
+      iOS: ios,
+      macOS: macOS,
+    );
 
     await _notifications.initialize(settings);
 
     await _notifications
-        .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
         ?.requestNotificationsPermission();
     await _notifications
-        .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
+        .resolvePlatformSpecificImplementation<
+          IOSFlutterLocalNotificationsPlugin
+        >()
         ?.requestPermissions(alert: true, badge: true, sound: true);
 
     log('NotificationService initialized');
@@ -125,7 +136,10 @@ class NotificationService {
     );
   }
 
-  Future<void> showCompletion({required String title, required String body}) async {
+  Future<void> showCompletion({
+    required String title,
+    required String body,
+  }) async {
     const androidDetails = AndroidNotificationDetails(
       'completion_channel',
       'Completions',

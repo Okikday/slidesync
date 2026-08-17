@@ -10,9 +10,10 @@ import 'package:slidesync/features/auth/logic/usecases/auth_uc/user_data_functio
 
 class FirebasePhoneAuth {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  final CollectionReference _collectionReference = FirebaseFirestore.instance.collection('users');
+  final CollectionReference _collectionReference = FirebaseFirestore.instance
+      .collection('users');
   final FirebaseAuthData _firebaseData = FirebaseAuthData();
-  final UserDataFunctions userData = UserDataFunctions();
+  final userData = UserDataFunctions.me;
   // This will temporarily store the verificationId returned from Firebase.
   String? _verificationId;
 
@@ -34,11 +35,14 @@ class FirebasePhoneAuth {
       // has completed. In this case, [credential] can be used to sign in.
       verificationCompleted: (PhoneAuthCredential credential) async {
         try {
-          final UserCredential userCredential = await _firebaseAuth.signInWithCredential(credential);
+          final UserCredential userCredential = await _firebaseAuth
+              .signInWithCredential(credential);
           final User? user = userCredential.user;
           if (user == null) {
             if (!completer.isCompleted) {
-              completer.complete(Result.error("Null user during auto-verification."));
+              completer.complete(
+                Result.error("Null user during auto-verification."),
+              );
             }
             return;
           }
@@ -53,7 +57,9 @@ class FirebasePhoneAuth {
           );
           if (outcomeCreateUser.isSuccess) {
             // Save the user details; you can also store the phone number here.
-            await userData.saveUserDetails(userCredentialModel: outcomeCreateUser.data);
+            await userData.saveUserDetails(
+              userCredentialModel: outcomeCreateUser.data,
+            );
             if (!completer.isCompleted) {
               completer.complete(Result.success(true));
             }
@@ -71,7 +77,9 @@ class FirebasePhoneAuth {
       // Called when verification fails.
       verificationFailed: (FirebaseAuthException e) {
         if (!completer.isCompleted) {
-          completer.complete(Result.error("Phone verification failed: ${e.message}"));
+          completer.complete(
+            Result.error("Phone verification failed: ${e.message}"),
+          );
         }
       },
       // Called when the SMS code has been sent to the provided phone number.
@@ -102,16 +110,20 @@ class FirebasePhoneAuth {
   /// and saves the user details.
   Future<Result<bool>> verifyOTP(String smsCode) async {
     if (_verificationId == null) {
-      return Result.error("Verification ID is null. Please request a new code.");
+      return Result.error(
+        "Verification ID is null. Please request a new code.",
+      );
     }
     try {
       final PhoneAuthCredential credential = PhoneAuthProvider.credential(
         verificationId: _verificationId!,
         smsCode: smsCode,
       );
-      final UserCredential userCredential = await _firebaseAuth.signInWithCredential(credential);
+      final UserCredential userCredential = await _firebaseAuth
+          .signInWithCredential(credential);
       final User? user = userCredential.user;
-      if (user == null) return Result.error("Null user after OTP verification.");
+      if (user == null)
+        return Result.error("Null user after OTP verification.");
 
       // Create user data in Firestore.
       final Result outcomeCreateUser = await _firebaseData.createUserData(

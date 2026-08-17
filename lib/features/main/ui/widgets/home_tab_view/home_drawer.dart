@@ -17,7 +17,8 @@ class HomeDrawer extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
     return PopScope(
-      onPopInvokedWithResult: (didPop, result) => Scaffold.of(context).closeDrawer(),
+      onPopInvokedWithResult: (didPop, result) =>
+          Scaffold.of(context).closeDrawer(),
       child: Drawer(
         backgroundColor: theme.background,
         child: SingleChildScrollView(
@@ -29,19 +30,28 @@ class HomeDrawer extends ConsumerWidget {
                 child: Row(
                   children: [
                     FutureBuilder(
-                      future: UserDataFunctions().getUserDetails(),
+                      future: UserDataFunctions.me.getUserDetails(),
                       builder: (context, asyncSnapshot) {
-                        if (asyncSnapshot.hasData && asyncSnapshot.data != null && asyncSnapshot.data?.data != null) {
+                        if (asyncSnapshot.hasData &&
+                            asyncSnapshot.data != null &&
+                            asyncSnapshot.data?.data != null) {
                           return DecoratedBox(
                             decoration: BoxDecoration(
                               color: theme.onSecondaryColor,
                               shape: BoxShape.circle,
-                              border: Border.all(color: theme.supportingText.withValues(alpha: 0.1), width: 2),
+                              border: Border.all(
+                                color: theme.supportingText.withValues(
+                                  alpha: 0.1,
+                                ),
+                                width: 2,
+                              ),
                             ),
                             child: CircleAvatar(
                               radius: 40,
                               backgroundColor: theme.altBackgroundPrimary,
-                              backgroundImage: CachedNetworkImageProvider(asyncSnapshot.data!.data!.photoURL!),
+                              backgroundImage: CachedNetworkImageProvider(
+                                asyncSnapshot.data!.data!.photoURL!,
+                              ),
                             ),
                           );
                         }
@@ -51,11 +61,19 @@ class HomeDrawer extends ConsumerWidget {
                           decoration: BoxDecoration(
                             color: theme.onSecondaryColor,
                             shape: BoxShape.circle,
-                            border: Border.all(color: theme.supportingText.withValues(alpha: 0.1)),
+                            border: Border.all(
+                              color: theme.supportingText.withValues(
+                                alpha: 0.1,
+                              ),
+                            ),
                           ),
                           child: Padding(
                             padding: const EdgeInsets.all(16.0),
-                            child: LoadingLogo(size: 24, animate: false, color: theme.secondary),
+                            child: LoadingLogo(
+                              size: 24,
+                              animate: false,
+                              color: theme.secondary,
+                            ),
                           ),
                         );
                       },
@@ -63,9 +81,11 @@ class HomeDrawer extends ConsumerWidget {
 
                     ConstantSizing.rowSpacingMedium,
                     FutureBuilder(
-                      future: UserDataFunctions().getUserDetails(),
+                      future: UserDataFunctions.me.getUserDetails(),
                       builder: (context, asyncSnapshot) {
-                        if (asyncSnapshot.hasData && asyncSnapshot.data != null && asyncSnapshot.data?.data != null) {
+                        if (asyncSnapshot.hasData &&
+                            asyncSnapshot.data != null &&
+                            asyncSnapshot.data?.data != null) {
                           return Column(
                             mainAxisSize: MainAxisSize.min,
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -78,7 +98,9 @@ class HomeDrawer extends ConsumerWidget {
                               ConstantSizing.columnSpacingSmall,
                               CustomText(
                                 asyncSnapshot.data!.data!.email,
-                                color: theme.supportingText.withValues(alpha: 0.6),
+                                color: theme.supportingText.withValues(
+                                  alpha: 0.6,
+                                ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ],
@@ -88,7 +110,10 @@ class HomeDrawer extends ConsumerWidget {
                           mainAxisSize: MainAxisSize.min,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            CustomText("Unknown User", color: theme.onBackground),
+                            CustomText(
+                              "Unknown User",
+                              color: theme.onBackground,
+                            ),
                             ConstantSizing.columnSpacingSmall,
                             CustomElevatedButton(
                               label: "Sign in",
@@ -99,7 +124,8 @@ class HomeDrawer extends ConsumerWidget {
                               borderRadius: 16,
                               onClick: () async {
                                 await SignInActions().signInWithGoogle(context);
-                                if (context.mounted) Scaffold.of(context).closeDrawer();
+                                if (context.mounted)
+                                  Scaffold.of(context).closeDrawer();
                               },
                             ),
                           ],
@@ -122,7 +148,10 @@ class HomeDrawer extends ConsumerWidget {
                   ListTile(
                     contentPadding: const EdgeInsets.only(left: 16, right: 16),
                     tileColor: Colors.transparent,
-                    leading: Icon(HugeIconsSolid.settings01, color: theme.supportingText.withValues(alpha: 0.5)),
+                    leading: Icon(
+                      HugeIconsSolid.settings01,
+                      color: theme.supportingText.withValues(alpha: 0.5),
+                    ),
                     title: CustomText("Settings", color: theme.onBackground),
                     onTap: () {
                       context.pushNamed(Routes.settings.name);

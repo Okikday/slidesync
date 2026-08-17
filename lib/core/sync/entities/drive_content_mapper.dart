@@ -4,9 +4,11 @@ import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/models/file_path/file_path.dart';
 
 extension DriveFileEntityCourseContentMapper on DriveFileEntity {
-  bool get isUnsupportedForCourseContent => isFolder || mimeType == 'application/vnd.google-apps.shortcut';
+  bool get isUnsupportedForCourseContent =>
+      isFolder || mimeType == 'application/vnd.google-apps.shortcut';
 
-  String get driveUrl => webViewLink ?? 'https://drive.google.com/file/d/$id/view';
+  String get driveUrl =>
+      webViewLink ?? 'https://drive.google.com/file/d/$id/view';
 
   String get contentHashKey => md5Checksum ?? id;
 
@@ -16,13 +18,20 @@ extension DriveFileEntityCourseContentMapper on DriveFileEntity {
     final mt = mimeType.toLowerCase();
 
     if (mt.contains('image')) return ModuleContentType.image;
-    if (mt.contains('pdf') || mt.contains('document') || mt.contains('word') || mt.contains('text')) {
+    if (mt.contains('pdf') ||
+        mt.contains('document') ||
+        mt.contains('word') ||
+        mt.contains('text')) {
       return ModuleContentType.document;
     }
-    if (mt.contains('presentation') || mt.contains('powerpoint') || mt.contains('slides')) {
+    if (mt.contains('presentation') ||
+        mt.contains('powerpoint') ||
+        mt.contains('slides')) {
       return ModuleContentType.document;
     }
-    if (mt.contains('spreadsheet') || mt.contains('excel') || mt.contains('sheet')) {
+    if (mt.contains('spreadsheet') ||
+        mt.contains('excel') ||
+        mt.contains('sheet')) {
       return ModuleContentType.document;
     }
     return ModuleContentType.link;
@@ -55,19 +64,24 @@ extension DriveFileEntityCourseContentMapper on DriveFileEntity {
       if (thumbnailLink != null) 'thumbnailLink': thumbnailLink,
       if (ownerDisplayName != null) 'ownerDisplayName': ownerDisplayName,
       if (ownerEmail != null) 'ownerEmail': ownerEmail,
-      if (lastModifyingUserDisplayName != null) 'lastModifyingUserDisplayName': lastModifyingUserDisplayName,
-      if (lastModifyingUserEmail != null) 'lastModifyingUserEmail': lastModifyingUserEmail,
+      if (lastModifyingUserDisplayName != null)
+        'lastModifyingUserDisplayName': lastModifyingUserDisplayName,
+      if (lastModifyingUserEmail != null)
+        'lastModifyingUserEmail': lastModifyingUserEmail,
       if (version != null) 'version': version,
-      if (hasAugmentedPermissions != null) 'hasAugmentedPermissions': hasAugmentedPermissions,
+      if (hasAugmentedPermissions != null)
+        'hasAugmentedPermissions': hasAugmentedPermissions,
       if (isAppAuthorized != null) 'isAppAuthorized': isAppAuthorized,
       'previewUrl': thumbnailLink ?? webViewLink ?? '',
       'resolved': true,
-      if (extraFields != null) ...extraFields,
+      ...?extraFields,
     };
 
     return ModuleContentMetadata.create(
       originalFileName: originalFileName ?? originalFilename ?? name,
-      thumbnail: thumbnailLink != null ? FilePath(url: thumbnailLink!) : FilePath(),
+      thumbnail: thumbnailLink != null
+          ? FilePath(url: thumbnailLink!)
+          : FilePath(),
       contentOrigin: contentOrigin,
       author: author ?? ownerDisplayName ?? ownerEmail,
       fields: fields.isEmpty ? null : fields,
@@ -86,7 +100,8 @@ extension DriveFileEntityCourseContentMapper on DriveFileEntity {
   }) {
     if (isUnsupportedForCourseContent) return null;
 
-    final resolvedTitle = title ?? this.resolvedTitle(useDisplayName: useDisplayName);
+    final resolvedTitle =
+        title ?? this.resolvedTitle(useDisplayName: useDisplayName);
     final resolvedType = type ?? inferCourseContentType();
 
     return ModuleContent.create(
@@ -95,7 +110,9 @@ extension DriveFileEntityCourseContentMapper on DriveFileEntity {
       parentId: parentId,
       title: resolvedTitle,
       path: toFileDetails(),
-      createdAt: createdAt != null ? DateTime.tryParse(createdTime ?? '') : null,
+      createdAt: createdAt != null
+          ? DateTime.tryParse(createdTime ?? '')
+          : null,
       type: resolvedType,
       fileSizeInBytes: sizeInBytes,
       description: descriptionOverride ?? description ?? '',
@@ -121,7 +138,9 @@ extension DriveFileEntityCollectionMapper on Iterable<DriveFileEntity> {
     return map(
       (file) => file.toCourseContent(
         parentId: parentId,
-        contentId: contentIdPrefix == null ? null : '${contentIdPrefix}_${file.id}',
+        contentId: contentIdPrefix == null
+            ? null
+            : '${contentIdPrefix}_${file.id}',
         type: type,
         contentOrigin: contentOrigin,
         useDisplayName: useDisplayName,

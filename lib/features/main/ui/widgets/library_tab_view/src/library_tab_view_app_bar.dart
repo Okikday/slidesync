@@ -2,7 +2,6 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mira_widgets/mira_widgets.dart';
 import 'package:slidesync/core/assets/assets.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
@@ -32,7 +31,10 @@ class LibraryTabViewAppBar extends ConsumerWidget {
       surfaceTintColor: Colors.transparent,
       backgroundColor: Colors.transparent,
       // backgroundColor: theme.background.withAlpha(200),
-      systemOverlayStyle: UiUtils.getSystemUiOverlayStyle(ref.background, ref.isDarkMode),
+      systemOverlayStyle: UiUtils.getSystemUiOverlayStyle(
+        ref.background,
+        ref.isDarkMode,
+      ),
       automaticallyImplyLeading: false,
       flexibleSpace: FlexibleSpaceBar(
         expandedTitleScale: 1.0,
@@ -40,21 +42,32 @@ class LibraryTabViewAppBar extends ConsumerWidget {
         background: _bgDecoration(ref),
         title: Stack(
           children: [
-            SoftEdgeBlur(
-              edges: [
-                EdgeBlur(
-                  type: EdgeType.topEdge,
-                  size: 60,
-                  sigma: 30,
-                  tintColor: theme.background,
-                  controlPoints: [
-                    ControlPoint(position: 0.4, type: ControlPointType.visible),
-                    ControlPoint(position: 1.0, type: ControlPointType.transparent),
+            ClipRRect(
+              child: SizedBox(
+                height: 80,
+                child: SoftEdgeBlur(
+                  edges: [
+                    EdgeBlur(
+                      type: EdgeType.topEdge,
+                      size: 60,
+                      sigma: 30,
+                      tintColor: theme.background,
+                      controlPoints: [
+                        ControlPoint(
+                          position: 0.4,
+                          type: ControlPointType.visible,
+                        ),
+                        ControlPoint(
+                          position: 1.0,
+                          type: ControlPointType.transparent,
+                        ),
+                      ],
+                    ),
                   ],
+                  child: SizedBox.expand(),
                 ),
-              ],
-              child: SizedBox.expand(),
-            ).sizedBox(h: 80).clipped,
+              ),
+            ),
 
             // Stack
             Stack(
@@ -66,34 +79,59 @@ class LibraryTabViewAppBar extends ConsumerWidget {
                 SizedBox(
                   height: kToolbarHeight,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 4,
+                    ),
                     child: AbsorberWatch(
                       listenable: MainProvider.state.select((s) => s.tabIndex),
                       builder: (context, tabIndex, ref, child) {
                         return child!
                             .animate(target: tabIndex == 1 ? 1 : 0)
-                            .scaleXY(begin: 0.9, end: 1.0, duration: 400.inMs, curve: CustomCurves.decelerate)
-                            .slideX(begin: 0.5, end: 0.0, duration: 600.inMs, curve: CustomCurves.defaultIosSpring)
-                            .fadeIn(duration: 400.inMs, curve: CustomCurves.decelerate);
+                            .scaleXY(
+                              begin: 0.9,
+                              end: 1.0,
+                              duration: 400.inMs,
+                              curve: CustomCurves.decelerate,
+                            )
+                            .slideX(
+                              begin: 0.5,
+                              end: 0.0,
+                              duration: 600.inMs,
+                              curve: CustomCurves.defaultIosSpring,
+                            )
+                            .fadeIn(
+                              duration: 400.inMs,
+                              curve: CustomCurves.decelerate,
+                            );
                       },
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           // const Expanded(child: SizedBox()),
-                          LibraryTabViewSearchButton(backgroundColor: theme.adjustBgAndSecondaryWithLerp),
+                          LibraryTabViewSearchButton(
+                            backgroundColor: theme.adjustBgAndSecondaryWithLerp,
+                          ),
                           ConstantSizing.rowSpacing(8.0),
-                          const Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              LibraryTabViewFilterButton(),
-                              LibraryTabViewLayoutButton(backgroundColor: Colors.transparent),
-                            ],
-                          ).decoratedBox(
-                            BoxDecoration(
+                          DecoratedBox(
+                            decoration: BoxDecoration(
                               color: theme.surface.withValues(alpha: 0.75),
                               borderRadius: BorderRadius.circular(40),
-                              border: Border.fromBorderSide(BorderSide(color: theme.onBackground.withAlpha(10))),
+                              border: Border.fromBorderSide(
+                                BorderSide(
+                                  color: theme.onBackground.withAlpha(10),
+                                ),
+                              ),
+                            ),
+                            child: const Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                LibraryTabViewFilterButton(),
+                                LibraryTabViewLayoutButton(
+                                  backgroundColor: Colors.transparent,
+                                ),
+                              ],
                             ),
                           ),
                         ],

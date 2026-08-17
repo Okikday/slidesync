@@ -1,7 +1,8 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:slidesync/core/apis/abstract/upload_download_base.dart';
-import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/result.dart';
 
 /// Built-in implementation of [DownloadManagerBase] using Dio with Range header support.
@@ -37,14 +38,21 @@ class DioDownloadManager implements DownloadManagerBase {
       return null;
     }
 
-    SyncLogger.info('Starting download: $remoteUrl → $destPath', operation: operationId);
+    SyncLogger.info(
+      'Starting download: $remoteUrl → $destPath',
+      operation: operationId,
+    );
 
     // Resolve total size
     int? totalBytes = knownSize;
     totalBytes ??= await _fetchFileSize(remoteUrl);
 
     if (totalBytes == null || totalBytes <= 0) {
-      SyncLogger.error('Could not determine file size from $remoteUrl', '', operation: operationId);
+      SyncLogger.error(
+        'Could not determine file size from $remoteUrl',
+        '',
+        operation: operationId,
+      );
       return null;
     }
 
@@ -57,7 +65,12 @@ class DioDownloadManager implements DownloadManagerBase {
       final existingSize = await destFile.length();
       if (existingSize >= totalBytes) {
         SyncLogger.info('Download already complete', operation: operationId);
-        return DownloadResult(success: true, localPath: destPath, bytesReceived: totalBytes, totalBytes: totalBytes);
+        return DownloadResult(
+          success: true,
+          localPath: destPath,
+          bytesReceived: totalBytes,
+          totalBytes: totalBytes,
+        );
       }
       startByte = existingSize;
     }
@@ -75,56 +88,75 @@ class DioDownloadManager implements DownloadManagerBase {
     _activeSessions[operationId] = session;
     await _saveSession(operationId, session);
 
-    return await _performDownload(session: session, operationId: operationId, onProgress: onProgress);
+    return await _performDownload(
+      session: session,
+      operationId: operationId,
+      onProgress: onProgress,
+    );
   });
 
   @override
-  Future<Result<DownloadResult?>> resumeDownload({required String operationId, OnDownloadProgress? onProgress}) =>
+  Future<Result<DownloadResult?>> resumeDownload({
+    required String operationId,
+    OnDownloadProgress? onProgress,
+  }) => Result.tryRunAsync(() async {
+    final session = await _loadSession(operationId);
+    if (session == null) {
+      SyncLogger.warn('No session found to resume', operation: operationId);
+      return null;
+    }
+
+    final destFile = File(session.destPath);
+    if (!await destFile.exists()) {
+      SyncLogger.warn(
+        'Partially downloaded file no longer exists',
+        operation: operationId,
+      );
+      await _clearSession(operationId);
+      return null;
+    }
+
+    _activeSessions[operationId] = session;
+
+    SyncLogger.info(
+      'Resuming from ${session.bytesReceived}/${session.totalBytes} bytes',
+      operation: operationId,
+    );
+
+    return await _performDownload(
+      session: session,
+      operationId: operationId,
+      onProgress: onProgress,
+    );
+  });
+
+  @override
+  Future<Result<void>> cancelDownload(String operationId) =>
       Result.tryRunAsync(() async {
-        final session = await _loadSession(operationId);
-        if (session == null) {
-          SyncLogger.warn('No session found to resume', operation: operationId);
-          return null;
-        }
-
-        final destFile = File(session.destPath);
-        if (!await destFile.exists()) {
-          SyncLogger.warn('Partially downloaded file no longer exists', operation: operationId);
-          await _clearSession(operationId);
-          return null;
-        }
-
-        _activeSessions[operationId] = session;
-
-        SyncLogger.info('Resuming from ${session.bytesReceived}/${session.totalBytes} bytes', operation: operationId);
-
-        return await _performDownload(session: session, operationId: operationId, onProgress: onProgress);
+        _activeSessions.remove(operationId);
+        await _clearSession(operationId);
+        SyncLogger.info('Download cancelled', operation: operationId);
       });
 
   @override
-  Future<Result<void>> cancelDownload(String operationId) => Result.tryRunAsync(() async {
-    _activeSessions.remove(operationId);
-    await _clearSession(operationId);
-    SyncLogger.info('Download cancelled', operation: operationId);
-  });
+  Future<Result<Map<String, dynamic>?>> getSessionInfo(String operationId) =>
+      Result.tryRunAsync(() async {
+        final session = await _loadSession(operationId);
+        if (session == null) return null;
+
+        return {
+          'operationId': operationId,
+          'remoteUrl': session.remoteUrl,
+          'destPath': session.destPath,
+          'bytesReceived': session.bytesReceived,
+          'totalBytes': session.totalBytes,
+          'createdAt': session.createdAt.toIso8601String(),
+        };
+      });
 
   @override
-  Future<Result<Map<String, dynamic>?>> getSessionInfo(String operationId) => Result.tryRunAsync(() async {
-    final session = await _loadSession(operationId);
-    if (session == null) return null;
-
-    return {
-      'operationId': operationId,
-      'remoteUrl': session.remoteUrl,
-      'destPath': session.destPath,
-      'bytesReceived': session.bytesReceived,
-      'totalBytes': session.totalBytes,
-      'createdAt': session.createdAt.toIso8601String(),
-    };
-  });
-
-  @override
-  Future<Result<void>> clearSession(String operationId) => Result.tryRunAsync(() => _clearSession(operationId));
+  Future<Result<void>> clearSession(String operationId) =>
+      Result.tryRunAsync(() => _clearSession(operationId));
 
   // ── Private helpers ────────────────────────────────────────────────────────
 
@@ -139,7 +171,10 @@ class DioDownloadManager implements DownloadManagerBase {
       }
 
       // Fallback: GET with Range header to get size
-      final rangeResponse = await _dio.get(remoteUrl, options: Options(headers: {'Range': 'bytes=0-0'}));
+      final rangeResponse = await _dio.get(
+        remoteUrl,
+        options: Options(headers: {'Range': 'bytes=0-0'}),
+      );
 
       final contentRange = rangeResponse.headers.value('content-range');
       if (contentRange != null) {
@@ -167,24 +202,37 @@ class DioDownloadManager implements DownloadManagerBase {
       final destFile = File(session.destPath);
       final sink = destFile.openWrite(mode: FileMode.append);
 
-      SyncLogger.downloadProgress(operationId, session.bytesReceived, session.totalBytes);
+      SyncLogger.downloadProgress(
+        operationId,
+        session.bytesReceived,
+        session.totalBytes,
+      );
 
       final response = await _dio.get(
         session.remoteUrl,
         options: Options(
-          headers: {'Range': 'bytes=${session.bytesReceived}-${session.totalBytes - 1}'},
+          headers: {
+            'Range': 'bytes=${session.bytesReceived}-${session.totalBytes - 1}',
+          },
           responseType: ResponseType.stream,
         ),
         onReceiveProgress: (received, total) {
           final totalReceived = session.bytesReceived + received;
           onProgress?.call(totalReceived, session.totalBytes);
-          SyncLogger.downloadProgress(operationId, totalReceived, session.totalBytes);
+          SyncLogger.downloadProgress(
+            operationId,
+            totalReceived,
+            session.totalBytes,
+          );
           session.bytesReceived = totalReceived;
         },
       );
 
       if (response.statusCode != 206 && response.statusCode != 200) {
-        SyncLogger.warn('Download failed with status ${response.statusCode}', operation: operationId);
+        SyncLogger.warn(
+          'Download failed with status ${response.statusCode}',
+          operation: operationId,
+        );
         await sink.close();
         return null;
       }
@@ -195,7 +243,10 @@ class DioDownloadManager implements DownloadManagerBase {
 
       final finalSize = await destFile.length();
       if (finalSize < session.totalBytes) {
-        SyncLogger.warn('Downloaded file incomplete: $finalSize/${session.totalBytes} bytes', operation: operationId);
+        SyncLogger.warn(
+          'Downloaded file incomplete: $finalSize/${session.totalBytes} bytes',
+          operation: operationId,
+        );
         return null;
       }
 
@@ -213,17 +264,21 @@ class DioDownloadManager implements DownloadManagerBase {
       await _saveSession(operationId, session);
       return null;
     } catch (e) {
-      SyncLogger.error('Download failed (unknown error)', e, operation: operationId);
+      SyncLogger.error(
+        'Download failed (unknown error)',
+        e,
+        operation: operationId,
+      );
       await _saveSession(operationId, session);
       return null;
     }
   }
 
-  Future<void> _saveSession(String id, _DownloadSession session) =>
-      AppHiveData.instance.setData<String>(key: '$_sessionKeyPrefix$id', value: session.toJson());
+  Future<void> _saveSession(String id, _DownloadSession session) => KVStore.me
+      .setData<String>(key: '$_sessionKeyPrefix$id', value: session.toJson());
 
   Future<_DownloadSession?> _loadSession(String id) async {
-    final json = await AppHiveData.instance.getData<String>(key: '$_sessionKeyPrefix$id');
+    final json = await '$_sessionKeyPrefix$id'.getHiveData<String>();
     if (json == null) return null;
 
     try {
@@ -234,7 +289,8 @@ class DioDownloadManager implements DownloadManagerBase {
     }
   }
 
-  Future<void> _clearSession(String id) => AppHiveData.instance.deleteData(key: '$_sessionKeyPrefix$id');
+  Future<void> _clearSession(String id) =>
+      KVStore.me.deleteData(key: '$_sessionKeyPrefix$id');
 }
 
 /// Internal download session model.
@@ -255,8 +311,14 @@ class _DownloadSession {
     required this.createdAt,
   });
 
-  String toJson() =>
-      [operationId, remoteUrl, destPath, bytesReceived, totalBytes, createdAt.toIso8601String()].join('|');
+  String toJson() => [
+    operationId,
+    remoteUrl,
+    destPath,
+    bytesReceived,
+    totalBytes,
+    createdAt.toIso8601String(),
+  ].join('|');
 
   factory _DownloadSession.fromJson(String data) {
     final parts = data.split('|');

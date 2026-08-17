@@ -1,4 +1,4 @@
-enum Routes {
+enum Routes<In, Out> {
   /// Splash Screen
   splash,
 

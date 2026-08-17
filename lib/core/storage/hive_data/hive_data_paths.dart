@@ -1,7 +1,7 @@
-import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data.dart';
 import 'package:slidesync/core/utils/result.dart';
 
-enum HiveDataPathKey {
+enum HiveDataKey {
   /// Miscellaneous
   isBuiltInViewer,
   globalFileSizeSum,
@@ -63,33 +63,39 @@ enum HiveDataPathKey {
 
 extension HiveDataPathKeyStringExtension on String {
   /// Sets the Hive data for the current path key
-  Future<void> setHiveData<T>({required T value}) async => await AppHiveData.instance.setData(key: this, value: value);
+  Future<void> setHiveData<T>({required T value}) async =>
+      await KVStore.me.setData(key: this, value: value);
 
   /// Gets the Hive data for the current path key
-  Future<T?> getHiveData<T>() async => await AppHiveData.instance.getData(key: this);
+  Future<T?> getHiveData<T>() async => await KVStore.me.getData(key: this);
 
   /// Deletes the Hive data for the current path key
-  Future<void> deleteHiveData() async => await AppHiveData.instance.deleteData(key: this);
+  Future<void> deleteHiveData() async => await KVStore.me.deleteData(key: this);
 
   /// Try to get the Hive data for the current path key, returns a [Result] with the data or an error
-  Future<Result<T?>> tryGetHiveData<T>() async => await Result.tryRunAsync<T>(() async {
+  Future<Result<T?>> tryGet<T>() async => await Result.tryRunAsync<T>(() async {
     return await getHiveData<T>();
   });
 
   /// Try to set the Hive data for the current path key, returns a [Result] with the success status or an error
-  Future<Result<void>> trySetHiveData<T>({required T value}) async => await Result.tryRunAsync<void>(() async {
-    await setHiveData<T>(value: value);
-  });
+  Future<Result<void>> trySet<T>({required T value}) async =>
+      await Result.tryRunAsync<void>(() async {
+        await setHiveData<T>(value: value);
+      });
 
   /// Try to delete the Hive data for the current path key, returns a [Result] with the success status or an error
-  Future<Result<void>> tryDeleteHiveData() async => await Result.tryRunAsync<void>(() async {
-    await deleteHiveData();
-  });
+  Future<Result<void>> tryDeleteHiveData() async =>
+      await Result.tryRunAsync<void>(() async {
+        await deleteHiveData();
+      });
 }
 
-extension HiveDataPathKeyExtension on HiveDataPathKey {
+extension HiveDataPathKeyExtension on HiveDataKey {
   Future<Result<void>> setHiveData<T>({required T value}) =>
-      Result.tryRunAsync<void>(() => AppHiveData.instance.setData<T>(key: name, value: value));
+      Result.tryRunAsync<void>(
+        () => KVStore.me.setData(key: name, value: value),
+      );
 
-  Future<Result<T?>> getHiveData<T>() => Result.tryRunAsync<T?>(() => AppHiveData.instance.getData<T>(key: name));
+  Future<Result<T?>> getHiveData<T>() =>
+      Result.tryRunAsync<T?>(() => KVStore.me.getData(key: name));
 }

@@ -33,13 +33,19 @@ import 'package:slidesync/shared/widgets/z_rand/build_image_path_widget.dart';
 class ContentCardContextMenu extends ConsumerStatefulWidget {
   final Module collection;
   final ModuleContent content;
-  const ContentCardContextMenu({super.key, required this.collection, required this.content});
+  const ContentCardContextMenu({
+    super.key,
+    required this.collection,
+    required this.content,
+  });
 
   @override
-  ConsumerState<ContentCardContextMenu> createState() => _ContentCardContextMenuState();
+  ConsumerState<ContentCardContextMenu> createState() =>
+      _ContentCardContextMenuState();
 }
 
-class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu> {
+class _ContentCardContextMenuState
+    extends ConsumerState<ContentCardContextMenu> {
   @override
   Widget build(BuildContext context) {
     final theme = ref;
@@ -70,7 +76,10 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                     color: theme.background.withValues(alpha: 0.9),
                     borderRadius: BorderRadius.circular(30.0),
                     border: Border.fromBorderSide(
-                      BorderSide(color: theme.supportingText.withAlpha(40), strokeAlign: BorderSide.strokeAlignOutside),
+                      BorderSide(
+                        color: theme.supportingText.withAlpha(40),
+                        strokeAlign: BorderSide.strokeAlignOutside,
+                      ),
                     ),
                   ),
                   padding: EdgeInsets.only(top: 16.0, bottom: 8.0),
@@ -93,7 +102,9 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                                 child: BuildImagePathWidget(
                                   fileDetails: widget.content.thumbnailDetails,
                                   fallbackWidget: Icon(
-                                    IconHelper.getContentTypeIconData(widget.content.type),
+                                    IconHelper.getContentTypeIconData(
+                                      widget.content.type,
+                                    ),
                                     size: 20,
                                   ),
                                 ),
@@ -117,7 +128,8 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              if (widget.content.type == ModuleContentType.link) ...[
+                              if (widget.content.type ==
+                                  ModuleContentType.link) ...[
                                 _buildLeadingMenuOption(
                                   "View",
                                   iconData: HugeIconsStroke.view,
@@ -125,7 +137,9 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                                     Navigator.pop(context);
                                     UiUtils.showCustomDialog(
                                       context,
-                                      child: PreviewLinkTypeDialog(content: widget.content),
+                                      child: PreviewLinkTypeDialog(
+                                        content: widget.content,
+                                      ),
                                     );
                                   },
                                 ),
@@ -136,8 +150,13 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                                     Navigator.pop(context);
                                     final url = widget.content.path.url;
                                     if (url != null) {
-                                      Clipboard.setData(ClipboardData(text: url));
-                                      UiUtils.showFlushBar(context, msg: "Link copied to clipboard");
+                                      Clipboard.setData(
+                                        ClipboardData(text: url),
+                                      );
+                                      UiUtils.showFlushBar(
+                                        context,
+                                        msg: "Link copied to clipboard",
+                                      );
                                     }
                                   },
                                 ),
@@ -147,7 +166,11 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                                   iconData: HugeIconsStroke.playCircle,
                                   onTap: () {
                                     Navigator.pop(context);
-                                    ContentViewGateActions.redirectToViewer(ref, widget.content, openOutsideApp: false);
+                                    ContentViewGateActions.redirectToViewer(
+                                      ref,
+                                      widget.content,
+                                      openOutsideApp: false,
+                                    );
                                   },
                                 ),
 
@@ -156,7 +179,11 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                                   iconData: HugeIconsStroke.sendToMobile,
                                   onTap: () {
                                     Navigator.pop(context);
-                                    ContentViewGateActions.redirectToViewer(ref, widget.content, openOutsideApp: true);
+                                    ContentViewGateActions.redirectToViewer(
+                                      ref,
+                                      widget.content,
+                                      openOutsideApp: true,
+                                    );
                                   },
                                 ),
                               ],
@@ -167,7 +194,10 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                                 iconData: HugeIconsStroke.share01,
                                 onTap: () {
                                   Navigator.pop(context);
-                                  ShareContentActions.shareContent(context, widget.content.uid);
+                                  ShareContentActions.shareContent(
+                                    context,
+                                    widget.content.uid,
+                                  );
                                 },
                               ),
                             ],
@@ -181,7 +211,10 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                             children: [
                               BuildPlainActionButton(
                                 title: "Select",
-                                icon: Icon(HugeIconsStroke.checkmarkCircle01, color: theme.onSurface),
+                                icon: Icon(
+                                  HugeIconsStroke.checkmarkCircle01,
+                                  color: theme.onSurface,
+                                ),
                                 onTap: () {
                                   ModuleContentsProvider.state(
                                     widget.collection.id,
@@ -193,21 +226,37 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                               divider,
                               BuildPlainActionButton(
                                 title: "Rename",
-                                icon: Icon(HugeIconsStroke.cursorEdit01, color: theme.onSurface),
+                                icon: Icon(
+                                  HugeIconsStroke.cursorEdit01,
+                                  color: theme.onSurface,
+                                ),
                                 onTap: () {
                                   Navigator.pop(context);
-                                  ContentCardContextMenuActions.onRenameContent(context, widget.content);
+                                  ContentCardContextMenuActions.onRenameContent(
+                                    context,
+                                    widget.content,
+                                  );
                                 },
                               ),
                               divider,
                               BuildPlainActionButton(
                                 title: "Upload",
-                                icon: Icon(HugeIconsStroke.upload03, color: theme.onSurface),
+                                icon: Icon(
+                                  HugeIconsStroke.upload03,
+                                  color: theme.onSurface,
+                                ),
                                 onTap: () async {
                                   Navigator.pop(context);
-                                  final email = (await UserDataFunctions().getUserDetails()).data?.email;
+                                  final email =
+                                      (await UserDataFunctions.me
+                                              .getUserDetails())
+                                          .data
+                                          ?.email;
                                   if (email == null ||
-                                      !({"okikiolagbele@gmail.com", "okikday@gmail.com"}.contains(email))) {
+                                      !({
+                                        "okikiolagbele@gmail.com",
+                                        "okikday@gmail.com",
+                                      }.contains(email))) {
                                     GlobalNav.withContext(
                                       (context) => UiUtils.showFlushBar(
                                         context,
@@ -224,11 +273,19 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
                               divider,
                               BuildPlainActionButton(
                                 title: "Delete",
-                                textStyle: TextStyle(fontSize: 14, color: Colors.red),
-                                icon: Icon(HugeIconsSolid.delete02, color: Colors.red.withAlpha(200)),
+                                textStyle: TextStyle(
+                                  fontSize: 14,
+                                  color: Colors.red,
+                                ),
+                                icon: Icon(
+                                  HugeIconsSolid.delete02,
+                                  color: Colors.red.withAlpha(200),
+                                ),
                                 onTap: () async {
                                   Navigator.pop(context);
-                                  await ModifyContentsAction().showDeleteDialog(widget.content.uid);
+                                  await ModifyContentsAction().showDeleteDialog(
+                                    widget.content.uid,
+                                  );
                                 },
                               ),
                             ],
@@ -248,7 +305,8 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
 
   Future<void> _uploadContentToPublicRepository() async {
     final content = widget.content;
-    final transferId = 'upload-content-${content.uid}-${DateTime.now().microsecondsSinceEpoch}';
+    final transferId =
+        'upload-content-${content.uid}-${DateTime.now().microsecondsSinceEpoch}';
     final transferNotifier = ref.read(transferStateProvider.notifier);
     final uploadFeedNotifier = ref.read(uploadFeedProvider.notifier);
 
@@ -276,40 +334,65 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
     );
 
     try {
-      final userIdResult = await UserDataFunctions().getUserId();
+      final userIdResult = await UserDataFunctions.me.getUserId();
       if (!userIdResult.isSuccess || userIdResult.data == null) {
-        transferNotifier.updateStatus(id: transferId, status: TransferStatus.failed);
+        transferNotifier.updateStatus(
+          id: transferId,
+          status: TransferStatus.failed,
+        );
         uploadFeedNotifier.fail(transferId, 'User not authenticated');
         NotificationService.instance.showCompletion(
           title: 'Upload failed',
           body: '${content.title}: not authenticated',
         );
-        if (mounted) UiUtils.showFlushBar(context, msg: 'User not authenticated', vibe: FlushbarVibe.error);
+        if (mounted)
+          UiUtils.showFlushBar(
+            context,
+            msg: 'User not authenticated',
+            vibe: FlushbarVibe.error,
+          );
         return;
       }
 
       final parentCollection = await ModuleRepo.getByUid(content.parentId);
       if (parentCollection == null) {
-        transferNotifier.updateStatus(id: transferId, status: TransferStatus.failed);
+        transferNotifier.updateStatus(
+          id: transferId,
+          status: TransferStatus.failed,
+        );
         uploadFeedNotifier.fail(transferId, 'Parent collection not found');
         NotificationService.instance.showCompletion(
           title: 'Upload failed',
           body: '${content.title}: parent collection missing',
         );
-        if (mounted) UiUtils.showFlushBar(context, msg: 'Parent collection not found', vibe: FlushbarVibe.error);
+        if (mounted)
+          UiUtils.showFlushBar(
+            context,
+            msg: 'Parent collection not found',
+            vibe: FlushbarVibe.error,
+          );
         return;
       }
 
       final vaultResult = await Api.instance.vault.listVaults();
-      if (!vaultResult.isSuccess || vaultResult.data == null || vaultResult.data!.isEmpty) {
-        transferNotifier.updateStatus(id: transferId, status: TransferStatus.failed);
+      if (!vaultResult.isSuccess ||
+          vaultResult.data == null ||
+          vaultResult.data!.isEmpty) {
+        transferNotifier.updateStatus(
+          id: transferId,
+          status: TransferStatus.failed,
+        );
         uploadFeedNotifier.fail(transferId, 'No vault links available');
         NotificationService.instance.showCompletion(
           title: 'Upload failed',
           body: '${content.title}: no vault links available',
         );
         if (mounted) {
-          UiUtils.showFlushBar(context, msg: 'No vault links available. Contact admin.', vibe: FlushbarVibe.error);
+          UiUtils.showFlushBar(
+            context,
+            msg: 'No vault links available. Contact admin.',
+            vibe: FlushbarVibe.error,
+          );
         }
         return;
       }
@@ -352,11 +435,20 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
 
       final data = result.data;
       if (data?.success ?? false) {
-        transferNotifier.updateProgress(id: transferId, progress: 1.0, uploadedBytes: 100, totalBytes: 100);
-        transferNotifier.updateStatus(id: transferId, status: TransferStatus.completed);
+        transferNotifier.updateProgress(
+          id: transferId,
+          progress: 1.0,
+          uploadedBytes: 100,
+          totalBytes: 100,
+        );
+        transferNotifier.updateStatus(
+          id: transferId,
+          status: TransferStatus.completed,
+        );
         uploadFeedNotifier.complete(
           transferId,
-          note: 'Uploaded ${data?.uploadedCount ?? 0} • Skipped ${data?.skippedCount ?? 0}',
+          note:
+              'Uploaded ${data?.uploadedCount ?? 0} • Skipped ${data?.skippedCount ?? 0}',
           contentId: content.uid,
           collectionId: content.parentId,
           courseId: parentCollection.parentId,
@@ -367,29 +459,57 @@ class _ContentCardContextMenuState extends ConsumerState<ContentCardContextMenu>
           body:
               '${content.title}: Uploaded ${data?.uploadedCount ?? 0}, Skipped ${data?.skippedCount ?? 0}, Failed ${data?.failedCount ?? 0}',
         );
-        if (mounted) UiUtils.showFlushBar(context, msg: 'Upload completed', vibe: FlushbarVibe.success);
+        if (mounted)
+          UiUtils.showFlushBar(
+            context,
+            msg: 'Upload completed',
+            vibe: FlushbarVibe.success,
+          );
       } else {
-        transferNotifier.updateStatus(id: transferId, status: TransferStatus.failed);
+        transferNotifier.updateStatus(
+          id: transferId,
+          status: TransferStatus.failed,
+        );
         uploadFeedNotifier.fail(transferId, data?.error ?? 'Upload failed');
         NotificationService.instance.cancel(NotificationServiceIdType.upload);
         NotificationService.instance.showCompletion(
           title: 'Upload failed',
           body: '${content.title}: ${data?.error ?? 'Upload failed'}',
         );
-        if (mounted) UiUtils.showFlushBar(context, msg: data?.error ?? 'Upload failed', vibe: FlushbarVibe.error);
+        if (mounted)
+          UiUtils.showFlushBar(
+            context,
+            msg: data?.error ?? 'Upload failed',
+            vibe: FlushbarVibe.error,
+          );
       }
     } catch (error) {
-      transferNotifier.updateStatus(id: transferId, status: TransferStatus.failed);
+      transferNotifier.updateStatus(
+        id: transferId,
+        status: TransferStatus.failed,
+      );
       uploadFeedNotifier.fail(transferId, 'Upload failed: $error');
       NotificationService.instance.cancel(NotificationServiceIdType.upload);
-      NotificationService.instance.showCompletion(title: 'Upload failed', body: '${content.title}: $error');
-      if (mounted) UiUtils.showFlushBar(context, msg: 'Upload failed: $error', vibe: FlushbarVibe.error);
+      NotificationService.instance.showCompletion(
+        title: 'Upload failed',
+        body: '${content.title}: $error',
+      );
+      if (mounted)
+        UiUtils.showFlushBar(
+          context,
+          msg: 'Upload failed: $error',
+          vibe: FlushbarVibe.error,
+        );
     } finally {
       transferNotifier.removeTransfer(transferId);
     }
   }
 
-  Widget _buildLeadingMenuOption(String title, {required IconData iconData, required void Function() onTap}) {
+  Widget _buildLeadingMenuOption(
+    String title, {
+    required IconData iconData,
+    required void Function() onTap,
+  }) {
     final theme = ref;
     return Expanded(
       child: CustomElevatedButton(

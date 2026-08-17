@@ -3,7 +3,7 @@ import 'dart:collection';
 import 'dart:developer';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/storage/hive_data/app_hive_data.dart';
+import 'package:slidesync/core/storage/hive_data/hive_data.dart';
 import 'package:slidesync/core/utils/result.dart';
 
 export 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -186,13 +186,21 @@ class HiveAsyncImpliedNotifier<In, Out> extends AsyncNotifier<Out> {
   final Queue<Completer<void>> _updateQueue = Queue<Completer<void>>();
   bool _isProcessingQueue = false;
 
-  HiveAsyncImpliedNotifier(this._hiveKey, this._defaultValue, {this.isUpdateNotifying, this.builder, this.transformer});
+  HiveAsyncImpliedNotifier(
+    this._hiveKey,
+    this._defaultValue, {
+    this.isUpdateNotifying,
+    this.builder,
+    this.transformer,
+  });
 
   @override
   Future<Out> build() async {
     return (await Result.tryRunAsync(() async {
-          final data = await AppHiveData.instance.getData<In>(key: _hiveKey);
-          return builder != null ? (await builder!(data) ?? data as Out?) : data as Out? ?? _defaultValue;
+          final data = await KVStore.me.getData<In>(key: _hiveKey);
+          return builder != null
+              ? (await builder!(data) ?? data as Out?)
+              : data as Out? ?? _defaultValue;
         })).onError((e, [st]) => log("Try using resolveData params")).data ??
         _defaultValue;
   }
@@ -200,7 +208,7 @@ class HiveAsyncImpliedNotifier<In, Out> extends AsyncNotifier<Out> {
   Future<void> set(Out value) async {
     state = AsyncData(value);
     final transform = transformer == null ? value : transformer!(value);
-    await AppHiveData.instance
+    await KVStore.me
         .setData(key: _hiveKey, value: transform)
         .onError((e, st) => log("Try using transformer params: $e"));
   }
@@ -238,7 +246,7 @@ class HiveAsyncImpliedNotifier<In, Out> extends AsyncNotifier<Out> {
         // Get current state value
         final currentValue = state.value;
         if (currentValue != null) {
-          await AppHiveData.instance.setData(key: _hiveKey, value: currentValue);
+          await KVStore.me.setData(key: _hiveKey, value: currentValue);
         }
         completer.complete();
       } catch (e) {
@@ -264,7 +272,12 @@ class HiveImpliedNotifier<In, Out> extends Notifier<Out> {
   final Queue<_HiveWriteTask<Out>> _updateQueue = Queue<_HiveWriteTask<Out>>();
   bool _isProcessingQueue = false;
 
-  HiveImpliedNotifier(this._hiveKey, this._defaultKey, {this.builder, this.transformer});
+  HiveImpliedNotifier(
+    this._hiveKey,
+    this._defaultKey, {
+    this.builder,
+    this.transformer,
+  });
 
   @override
   Out build() {
@@ -274,8 +287,10 @@ class HiveImpliedNotifier<In, Out> extends Notifier<Out> {
 
   Future<void> _hydrateFromHive() async {
     final result = await Result.tryRunAsync(() async {
-      final data = await AppHiveData.instance.getData<In>(key: _hiveKey);
-      return builder != null ? (await builder!(data) ?? data as Out?) : data as Out?;
+      final data = await KVStore.me.getData<In>(key: _hiveKey);
+      return builder != null
+          ? (await builder!(data) ?? data as Out?)
+          : data as Out?;
     });
 
     result.onError((e, [st]) => log("Try using builder params: $e"));
@@ -291,7 +306,7 @@ class HiveImpliedNotifier<In, Out> extends Notifier<Out> {
     if (!persist) return;
 
     final payload = transformer == null ? value : await transformer!(value);
-    await AppHiveData.instance
+    await KVStore.me
         .setData(key: _hiveKey, value: payload)
         .onError((e, st) => log("Try using transformer params: $e"));
   }
@@ -322,8 +337,10 @@ class HiveImpliedNotifier<In, Out> extends Notifier<Out> {
     while (_updateQueue.isNotEmpty) {
       final task = _updateQueue.removeFirst();
       try {
-        final payload = transformer == null ? task.value : await transformer!(task.value);
-        await AppHiveData.instance.setData(key: _hiveKey, value: payload);
+        final payload = transformer == null
+            ? task.value
+            : await transformer!(task.value);
+        await KVStore.me.setData(key: _hiveKey, value: payload);
         task.completer.complete();
       } catch (e) {
         task.completer.completeError(e);
@@ -353,19 +370,26 @@ class HiveAsyncImpliedNotifierN<In, Out> extends AsyncNotifier<Out?> {
   final FutureOr<Out?> Function(dynamic data)? resolveData;
   bool? _isModifying;
 
-  final Queue<_HiveWriteTask<Out?>> _updateQueue = Queue<_HiveWriteTask<Out?>>();
+  final Queue<_HiveWriteTask<Out?>> _updateQueue =
+      Queue<_HiveWriteTask<Out?>>();
   bool _isProcessingQueue = false;
 
   /// [null] => it's building or refreshing, [true] => Provider value is currently being modified
   bool? get isModifying => _isModifying;
 
-  HiveAsyncImpliedNotifierN(this._hiveKey, {this.defaultKey, this.builder, this.transformer, this.resolveData});
+  HiveAsyncImpliedNotifierN(
+    this._hiveKey, {
+    this.defaultKey,
+    this.builder,
+    this.transformer,
+    this.resolveData,
+  });
 
   @override
   Future<Out?> build() async {
     final data =
         (await Result.tryRunAsync(() async {
-              final stored = await AppHiveData.instance.getData<In>(key: _hiveKey);
+              final stored = await KVStore.me.getData<In>(key: _hiveKey);
               if (builder != null) {
                 return await builder!(stored);
               }
@@ -387,7 +411,7 @@ class HiveAsyncImpliedNotifierN<In, Out> extends AsyncNotifier<Out?> {
     _isModifying = true;
     state = AsyncData(value);
     final payload = transformer == null ? value : await transformer!(value);
-    await AppHiveData.instance
+    await KVStore.me
         .setData(key: _hiveKey, value: payload)
         .onError((e, st) => log("Try using transformer params: $e"));
     _isModifying = false;
@@ -420,8 +444,10 @@ class HiveAsyncImpliedNotifierN<In, Out> extends AsyncNotifier<Out?> {
       final task = _updateQueue.removeFirst();
 
       try {
-        final payload = transformer == null ? task.value : await transformer!(task.value);
-        await AppHiveData.instance.setData(key: _hiveKey, value: payload);
+        final payload = transformer == null
+            ? task.value
+            : await transformer!(task.value);
+        await KVStore.me.setData(key: _hiveKey, value: payload);
         task.completer.complete();
       } catch (e) {
         task.completer.completeError(e);
@@ -444,7 +470,11 @@ class AsyncImpliedNotifier<T> extends AsyncNotifier<T> {
   final Queue<Completer<void>> _updateQueue = Queue<Completer<void>>();
   bool _isProcessingQueue = false;
 
-  AsyncImpliedNotifier(this._defaultValue, {this.isUpdateNotifying, this.initializer});
+  AsyncImpliedNotifier(
+    this._defaultValue, {
+    this.isUpdateNotifying,
+    this.initializer,
+  });
 
   @override
   Future<T> build() async {

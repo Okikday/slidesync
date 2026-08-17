@@ -12,17 +12,22 @@ import 'package:slidesync/features/auth/logic/usecases/auth_uc/user_data_functio
 
 class FirebaseGoogleAuth {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  final CollectionReference _collectionReference = FirebaseFirestore.instance.collection('users');
+  final CollectionReference _collectionReference = FirebaseFirestore.instance
+      .collection('users');
   final GoogleSignIn _googleAuth = GoogleSignIn.instance;
   final FirebaseAuthData _firebaseData = FirebaseAuthData();
   UserCredential? _userCredential;
-  final UserDataFunctions userData = UserDataFunctions();
+  final userData = UserDataFunctions.me;
 
-  Future<Result<UserCredentialModel>> signInWithGoogle({String? phoneNumber}) async {
+  Future<Result<UserCredentialModel>> signInWithGoogle({
+    String? phoneNumber,
+  }) async {
     try {
       _googleAuth.initialize(serverClientId: AppConfig.serverClientId);
       // Triggering the authentication flow
-      final GoogleSignInAccount googleUser = await _googleAuth.authenticate(scopeHint: ['email', 'profile', 'openid']);
+      final GoogleSignInAccount googleUser = await _googleAuth.authenticate(
+        scopeHint: ['email', 'profile', 'openid'],
+      );
       // if (googleUser == null) {
       //   return Result.error("Google Sign-In was canceled by the user.");
       // }
@@ -31,10 +36,13 @@ class FirebaseGoogleAuth {
       final GoogleSignInAuthentication googleAuth = googleUser.authentication;
 
       // Create a new credential
-      final OAuthCredential credential = GoogleAuthProvider.credential(idToken: googleAuth.idToken);
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        idToken: googleAuth.idToken,
+      );
 
       // Sign in to Firebase with the Google credential
-      final UserCredential userCredential = await _firebaseAuth.signInWithCredential(credential);
+      final UserCredential userCredential = await _firebaseAuth
+          .signInWithCredential(credential);
       final User? user = userCredential.user;
       if (user == null) return Result.error("Unknown user!");
       log("Gotten user $user");
@@ -57,14 +65,19 @@ class FirebaseGoogleAuth {
       log("Process user $user");
 
       if (outcomeCreateUser.isSuccess) {
-        await userData.saveUserDetails(googleIDToken: googleAuth.idToken, userCredentialModel: outcomeCreateUser.data);
+        await userData.saveUserDetails(
+          googleIDToken: googleAuth.idToken,
+          userCredentialModel: outcomeCreateUser.data,
+        );
         return Result.success(outcomeCreateUser.data);
       } else {
         return Result.error("Unable to create User Data");
       }
     } on FirebaseAuthException catch (e) {
       if (e.code == 'account-exists-with-different-credential') {
-        return Result.error("Account already exists with a different credential!");
+        return Result.error(
+          "Account already exists with a different credential!",
+        );
       } else if (e.code == 'invalid-credential') {
         return Result.error("Invalid credentials!");
       } else if (e.code == "wrong-password") {
@@ -75,8 +88,12 @@ class FirebaseGoogleAuth {
       }
     } on GoogleSignInException catch (e) {
       return switch (e.code) {
-        GoogleSignInExceptionCode.canceled => Result.error("Google Sign-In was canceled by the user."),
-        GoogleSignInExceptionCode.uiUnavailable => Result.error("No Google Sign-In methods available."),
+        GoogleSignInExceptionCode.canceled => Result.error(
+          "Google Sign-In was canceled by the user.",
+        ),
+        GoogleSignInExceptionCode.uiUnavailable => Result.error(
+          "No Google Sign-In methods available.",
+        ),
         _ => Result.error("An error occurred during Google Sign-In"),
       };
     } catch (e) {
@@ -87,9 +104,12 @@ class FirebaseGoogleAuth {
 
   Future<Result<bool>> googleSignOut([void Function()? beforeSignOut]) async {
     try {
-      final Result<UserCredentialModel?> getUserDetails = await userData.getUserDetails();
+      final Result<UserCredentialModel?> getUserDetails = await userData
+          .getUserDetails();
       if (getUserDetails.data == null || getUserDetails.isSuccess == false) {
-        return Result.error("Error getting details from storage. Try clearing cache");
+        return Result.error(
+          "Error getting details from storage. Try clearing cache",
+        );
       }
 
       await userData.clearUserDetails();

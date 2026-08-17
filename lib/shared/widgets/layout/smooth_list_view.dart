@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 
 /// Defines when smooth scrolling should be applied
@@ -117,7 +118,9 @@ class SmoothListView extends StatelessWidget {
         addAutomaticKeepAlives: addAutomaticKeepAlives,
         addRepaintBoundaries: addRepaintBoundaries,
         addSemanticIndexes: addSemanticIndexes,
-        cacheExtent: cacheExtent,
+        scrollCacheExtent: cacheExtent == null
+            ? null
+            : ScrollCacheExtent.pixels(cacheExtent!),
         clipBehavior: clipBehavior,
         controller: controller,
         dragStartBehavior: dragStartBehavior,
@@ -181,7 +184,8 @@ class SmoothListView extends StatelessWidget {
     DragStartBehavior dragStartBehavior = DragStartBehavior.start,
     ChildIndexGetter? findItemIndexCallback,
     double? itemExtent,
-    ScrollViewKeyboardDismissBehavior keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
+    ScrollViewKeyboardDismissBehavior keyboardDismissBehavior =
+        ScrollViewKeyboardDismissBehavior.manual,
     EdgeInsetsGeometry? padding,
     ScrollPhysics? physics,
     bool? primary,
@@ -202,7 +206,9 @@ class SmoothListView extends StatelessWidget {
         addAutomaticKeepAlives: addAutomaticKeepAlives,
         addRepaintBoundaries: addRepaintBoundaries,
         addSemanticIndexes: addSemanticIndexes,
-        cacheExtent: cacheExtent,
+        scrollCacheExtent: cacheExtent == null
+            ? null
+            : ScrollCacheExtent.pixels(cacheExtent),
         clipBehavior: clipBehavior,
         controller: controller,
         dragStartBehavior: dragStartBehavior,
@@ -268,7 +274,8 @@ class SmoothListView extends StatelessWidget {
     DragStartBehavior dragStartBehavior = DragStartBehavior.start,
     ChildIndexGetter? findItemIndexCallback,
     double? itemExtent,
-    ScrollViewKeyboardDismissBehavior keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
+    ScrollViewKeyboardDismissBehavior keyboardDismissBehavior =
+        ScrollViewKeyboardDismissBehavior.manual,
     EdgeInsetsGeometry? padding,
     ScrollPhysics? physics,
     bool? primary,
@@ -290,7 +297,9 @@ class SmoothListView extends StatelessWidget {
         addAutomaticKeepAlives: addAutomaticKeepAlives,
         addRepaintBoundaries: addRepaintBoundaries,
         addSemanticIndexes: addSemanticIndexes,
-        cacheExtent: cacheExtent,
+        scrollCacheExtent: cacheExtent == null
+            ? null
+            : ScrollCacheExtent.pixels(cacheExtent),
         clipBehavior: clipBehavior,
         controller: controller,
         dragStartBehavior: dragStartBehavior,
@@ -348,7 +357,8 @@ class SmoothListView extends StatelessWidget {
     ScrollController? controller,
     DragStartBehavior dragStartBehavior = DragStartBehavior.start,
     double? itemExtent,
-    ScrollViewKeyboardDismissBehavior keyboardDismissBehavior = ScrollViewKeyboardDismissBehavior.manual,
+    ScrollViewKeyboardDismissBehavior keyboardDismissBehavior =
+        ScrollViewKeyboardDismissBehavior.manual,
     EdgeInsetsGeometry? padding,
     ScrollPhysics? physics,
     bool? primary,
@@ -365,7 +375,9 @@ class SmoothListView extends StatelessWidget {
       return ListView.custom(
         key: key,
         childrenDelegate: childrenDelegate,
-        cacheExtent: cacheExtent,
+        scrollCacheExtent: cacheExtent == null
+            ? null
+            : ScrollCacheExtent.pixels(cacheExtent),
         clipBehavior: clipBehavior,
         controller: controller,
         dragStartBehavior: dragStartBehavior,
@@ -476,7 +488,8 @@ class _SmoothListViewWrapper extends StatefulWidget {
   State<_SmoothListViewWrapper> createState() => _SmoothListViewWrapperState();
 }
 
-class _SmoothListViewWrapperState extends State<_SmoothListViewWrapper> with SingleTickerProviderStateMixin {
+class _SmoothListViewWrapperState extends State<_SmoothListViewWrapper>
+    with SingleTickerProviderStateMixin {
   late SmoothScrollController _smoothController;
   late ScrollController _scrollController;
 
@@ -518,7 +531,9 @@ class _SmoothListViewWrapperState extends State<_SmoothListViewWrapper> with Sin
 
   @override
   Widget build(BuildContext context) {
-    final physics = widget.customPhysics ?? SmoothScrollPhysics.fromIntensity(widget.intensity, widget.physics);
+    final physics =
+        widget.customPhysics ??
+        SmoothScrollPhysics.fromIntensity(widget.intensity, widget.physics);
 
     return Listener(
       onPointerSignal: _smoothController.handlePointerSignal,
@@ -526,7 +541,9 @@ class _SmoothListViewWrapperState extends State<_SmoothListViewWrapper> with Sin
         addAutomaticKeepAlives: widget.addAutomaticKeepAlives,
         addRepaintBoundaries: widget.addRepaintBoundaries,
         addSemanticIndexes: widget.addSemanticIndexes,
-        cacheExtent: widget.cacheExtent,
+        scrollCacheExtent: widget.cacheExtent == null
+            ? null
+            : ScrollCacheExtent.pixels(widget.cacheExtent!),
         clipBehavior: widget.clipBehavior,
         controller: _scrollController,
         dragStartBehavior: widget.dragStartBehavior,
@@ -605,7 +622,8 @@ class _SmoothListViewBuilder extends StatefulWidget {
   State<_SmoothListViewBuilder> createState() => _SmoothListViewBuilderState();
 }
 
-class _SmoothListViewBuilderState extends State<_SmoothListViewBuilder> with SingleTickerProviderStateMixin {
+class _SmoothListViewBuilderState extends State<_SmoothListViewBuilder>
+    with SingleTickerProviderStateMixin {
   late SmoothScrollController _smoothController;
   late ScrollController _scrollController;
 
@@ -647,7 +665,9 @@ class _SmoothListViewBuilderState extends State<_SmoothListViewBuilder> with Sin
 
   @override
   Widget build(BuildContext context) {
-    final physics = widget.customPhysics ?? SmoothScrollPhysics.fromIntensity(widget.intensity, widget.physics);
+    final physics =
+        widget.customPhysics ??
+        SmoothScrollPhysics.fromIntensity(widget.intensity, widget.physics);
 
     return Listener(
       onPointerSignal: _smoothController.handlePointerSignal,
@@ -657,7 +677,9 @@ class _SmoothListViewBuilderState extends State<_SmoothListViewBuilder> with Sin
         addAutomaticKeepAlives: widget.addAutomaticKeepAlives,
         addRepaintBoundaries: widget.addRepaintBoundaries,
         addSemanticIndexes: widget.addSemanticIndexes,
-        cacheExtent: widget.cacheExtent,
+        scrollCacheExtent: widget.cacheExtent == null
+            ? null
+            : ScrollCacheExtent.pixels(widget.cacheExtent!),
         clipBehavior: widget.clipBehavior,
         controller: _scrollController,
         dragStartBehavior: widget.dragStartBehavior,
@@ -735,10 +757,12 @@ class _SmoothListViewSeparated extends StatefulWidget {
   });
 
   @override
-  State<_SmoothListViewSeparated> createState() => _SmoothListViewSeparatedState();
+  State<_SmoothListViewSeparated> createState() =>
+      _SmoothListViewSeparatedState();
 }
 
-class _SmoothListViewSeparatedState extends State<_SmoothListViewSeparated> with SingleTickerProviderStateMixin {
+class _SmoothListViewSeparatedState extends State<_SmoothListViewSeparated>
+    with SingleTickerProviderStateMixin {
   late SmoothScrollController _smoothController;
   late ScrollController _scrollController;
 
@@ -780,7 +804,9 @@ class _SmoothListViewSeparatedState extends State<_SmoothListViewSeparated> with
 
   @override
   Widget build(BuildContext context) {
-    final physics = widget.customPhysics ?? SmoothScrollPhysics.fromIntensity(widget.intensity, widget.physics);
+    final physics =
+        widget.customPhysics ??
+        SmoothScrollPhysics.fromIntensity(widget.intensity, widget.physics);
 
     return Listener(
       onPointerSignal: _smoothController.handlePointerSignal,
@@ -791,7 +817,9 @@ class _SmoothListViewSeparatedState extends State<_SmoothListViewSeparated> with
         addAutomaticKeepAlives: widget.addAutomaticKeepAlives,
         addRepaintBoundaries: widget.addRepaintBoundaries,
         addSemanticIndexes: widget.addSemanticIndexes,
-        cacheExtent: widget.cacheExtent,
+        scrollCacheExtent: widget.cacheExtent == null
+            ? null
+            : ScrollCacheExtent.pixels(widget.cacheExtent!),
         clipBehavior: widget.clipBehavior,
         controller: _scrollController,
         dragStartBehavior: widget.dragStartBehavior,
@@ -857,7 +885,8 @@ class _SmoothListViewCustom extends StatefulWidget {
   State<_SmoothListViewCustom> createState() => _SmoothListViewCustomState();
 }
 
-class _SmoothListViewCustomState extends State<_SmoothListViewCustom> with SingleTickerProviderStateMixin {
+class _SmoothListViewCustomState extends State<_SmoothListViewCustom>
+    with SingleTickerProviderStateMixin {
   late SmoothScrollController _smoothController;
   late ScrollController _scrollController;
 
@@ -899,13 +928,17 @@ class _SmoothListViewCustomState extends State<_SmoothListViewCustom> with Singl
 
   @override
   Widget build(BuildContext context) {
-    final physics = widget.customPhysics ?? SmoothScrollPhysics.fromIntensity(widget.intensity, widget.physics);
+    final physics =
+        widget.customPhysics ??
+        SmoothScrollPhysics.fromIntensity(widget.intensity, widget.physics);
 
     return Listener(
       onPointerSignal: _smoothController.handlePointerSignal,
       child: ListView.custom(
         childrenDelegate: widget.childrenDelegate,
-        cacheExtent: widget.cacheExtent,
+        scrollCacheExtent: widget.cacheExtent == null
+            ? null
+            : ScrollCacheExtent.pixels(widget.cacheExtent!),
         clipBehavior: widget.clipBehavior,
         controller: _scrollController,
         dragStartBehavior: widget.dragStartBehavior,
@@ -1015,7 +1048,9 @@ class SmoothCustomScrollView extends StatelessWidget {
         shrinkWrap: shrinkWrap,
         center: center,
         anchor: anchor,
-        cacheExtent: cacheExtent,
+        scrollCacheExtent: cacheExtent == null
+            ? null
+            : ScrollCacheExtent.pixels(cacheExtent!),
         slivers: slivers,
         semanticChildCount: semanticChildCount,
         dragStartBehavior: dragStartBehavior,
@@ -1103,10 +1138,12 @@ class _SmoothCustomScrollViewWrapper extends StatefulWidget {
   });
 
   @override
-  State<_SmoothCustomScrollViewWrapper> createState() => _SmoothCustomScrollViewWrapperState();
+  State<_SmoothCustomScrollViewWrapper> createState() =>
+      _SmoothCustomScrollViewWrapperState();
 }
 
-class _SmoothCustomScrollViewWrapperState extends State<_SmoothCustomScrollViewWrapper>
+class _SmoothCustomScrollViewWrapperState
+    extends State<_SmoothCustomScrollViewWrapper>
     with SingleTickerProviderStateMixin {
   late SmoothScrollController _smoothController;
   late ScrollController _scrollController;
@@ -1149,7 +1186,9 @@ class _SmoothCustomScrollViewWrapperState extends State<_SmoothCustomScrollViewW
 
   @override
   Widget build(BuildContext context) {
-    final physics = widget.customPhysics ?? SmoothScrollPhysics.fromIntensity(widget.intensity, widget.physics);
+    final physics =
+        widget.customPhysics ??
+        SmoothScrollPhysics.fromIntensity(widget.intensity, widget.physics);
 
     return Listener(
       onPointerSignal: _smoothController.handlePointerSignal,
@@ -1163,7 +1202,9 @@ class _SmoothCustomScrollViewWrapperState extends State<_SmoothCustomScrollViewW
         shrinkWrap: widget.shrinkWrap,
         center: widget.center,
         anchor: widget.anchor,
-        cacheExtent: widget.cacheExtent,
+        scrollCacheExtent: widget.cacheExtent == null
+            ? null
+            : ScrollCacheExtent.pixels(widget.cacheExtent!),
         slivers: widget.slivers,
         semanticChildCount: widget.semanticChildCount,
         dragStartBehavior: widget.dragStartBehavior,
@@ -1212,12 +1253,16 @@ class SmoothScrollController {
        _customPhysics = customPhysics,
        _reverse = reverse {
     _updateConfig();
-    _currentPosition = scrollController.hasClients ? scrollController.offset : scrollController.initialScrollOffset;
+    _currentPosition = scrollController.hasClients
+        ? scrollController.offset
+        : scrollController.initialScrollOffset;
     _targetPosition = _currentPosition;
   }
 
   void _updateConfig() {
-    _config = _customPhysics?.config ?? ScrollIntensityConfig.fromIntensity(_intensity);
+    _config =
+        _customPhysics?.config ??
+        ScrollIntensityConfig.fromIntensity(_intensity);
   }
 
   void updateConfig({
@@ -1288,7 +1333,9 @@ class SmoothScrollController {
     }
 
     final now = DateTime.now();
-    final timeSinceLastEvent = _lastEventTime != null ? now.difference(_lastEventTime!).inMilliseconds : 0;
+    final timeSinceLastEvent = _lastEventTime != null
+        ? now.difference(_lastEventTime!).inMilliseconds
+        : 0;
 
     // Check if user has stopped scrolling (no events for 80ms)
     if (timeSinceLastEvent > 80 && _velocity.abs() > 50.0) {
@@ -1322,7 +1369,8 @@ class SmoothScrollController {
     final baseLerpFactor = distance < 100 ? 0.3 : 0.2;
     final curveT = _config.activeCurve.transform(baseLerpFactor);
 
-    _currentPosition = _currentPosition + (_targetPosition - _currentPosition) * curveT;
+    _currentPosition =
+        _currentPosition + (_targetPosition - _currentPosition) * curveT;
 
     // Apply position (using jumpTo for immediate response)
     scrollController.jumpTo(_currentPosition);
@@ -1355,8 +1403,14 @@ class SmoothScrollPhysics extends ScrollPhysics {
   const SmoothScrollPhysics({required this.config, super.parent});
 
   /// Creates physics from a scroll intensity preset
-  factory SmoothScrollPhysics.fromIntensity(ScrollIntensity intensity, ScrollPhysics? parent) {
-    return SmoothScrollPhysics(config: ScrollIntensityConfig.fromIntensity(intensity), parent: parent);
+  factory SmoothScrollPhysics.fromIntensity(
+    ScrollIntensity intensity,
+    ScrollPhysics? parent,
+  ) {
+    return SmoothScrollPhysics(
+      config: ScrollIntensityConfig.fromIntensity(intensity),
+      parent: parent,
+    );
   }
 
   /// Creates custom physics for power users
@@ -1384,7 +1438,10 @@ class SmoothScrollPhysics extends ScrollPhysics {
   }
 
   @override
-  Simulation? createBallisticSimulation(ScrollMetrics position, double velocity) {
+  Simulation? createBallisticSimulation(
+    ScrollMetrics position,
+    double velocity,
+  ) {
     final tolerance = toleranceFor(position);
     // If velocity is too small, don't create momentum
     if (velocity.abs() < tolerance.velocity) {
@@ -1392,7 +1449,12 @@ class SmoothScrollPhysics extends ScrollPhysics {
     }
 
     // Use friction simulation for natural deceleration
-    return FrictionSimulation(config.friction, position.pixels, velocity, tolerance: tolerance);
+    return FrictionSimulation(
+      config.friction,
+      position.pixels,
+      velocity,
+      tolerance: tolerance,
+    );
   }
 
   @override
@@ -1418,7 +1480,11 @@ class SmoothScrollPhysics extends ScrollPhysics {
   }
 
   @override
-  SpringDescription get spring => SpringDescription.withDampingRatio(mass: 0.5, stiffness: 100.0, ratio: 1.1);
+  SpringDescription get spring => SpringDescription.withDampingRatio(
+    mass: 0.5,
+    stiffness: 100.0,
+    ratio: 1.1,
+  );
 }
 
 // ============================================================================

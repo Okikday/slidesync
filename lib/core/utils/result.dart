@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 
 enum ResultStatus { loading, success, error }
@@ -8,7 +9,12 @@ class Result<T> {
   final String? message;
   final StackTrace? stackTrace;
 
-  const Result._({required this.status, this.data, this.message, this.stackTrace});
+  const Result._({
+    required this.status,
+    this.data,
+    this.message,
+    this.stackTrace,
+  });
 
   // const Result.loading() : this._(status: ResultStatus.loading);
 
@@ -19,7 +25,11 @@ class Result<T> {
 
   factory Result.error(String message, [StackTrace? st, bool logError = true]) {
     if (logError) log("error: $message", error: message, stackTrace: st);
-    return Result._(status: ResultStatus.error, message: message, stackTrace: st);
+    return Result._(
+      status: ResultStatus.error,
+      message: message,
+      stackTrace: st,
+    );
   }
 
   bool get isLoading => status == ResultStatus.loading;
@@ -39,12 +49,21 @@ class Result<T> {
   }
 
   /// Runs [operation] and wraps the result in a [Result.success] or [Result.error] if it throws.
-  static Future<Result<T?>> tryRunAsync<T>(Future<T?> Function() operation, {bool logError = true}) async {
+  static Future<Result<T?>> tryRunAsync<T>(
+    Future<T?> Function() operation, {
+    bool logError = true,
+  }) async {
     try {
       final value = await operation();
       return Result.success(value);
     } catch (e, st) {
-      if (logError) log("Result tryRunAsync error: ${e.toString()}", error: e, stackTrace: st);
+      if (logError) {
+        log(
+          "Result tryRunAsync error: ${e.toString()}",
+          error: e,
+          stackTrace: st,
+        );
+      }
       return Result.error(e.toString(), st, logError);
     }
   }
@@ -71,7 +90,9 @@ class Result<T> {
   }
 
   /// Runs [futureProducer] only if this is a success; otherwise propagates loading/error.
-  Future<Result<U>> doNextAsync<U>(Future<Result<U>> Function(T data) futureProducer) async {
+  Future<Result<U>> doNextAsync<U>(
+    Future<Result<U>> Function(T data) futureProducer,
+  ) async {
     if (isSuccess) {
       return await futureProducer(data as T);
     } else {
@@ -84,16 +105,27 @@ class Result<T> {
 
   static T? fromNullable<T>(T? Function() operation, {bool logError = true}) =>
       Result.tryRun(operation, logError: logError).data;
-  static Future<T?> fromAsyncNullable<T>(Future<T?> Function() operation, {bool logError = true}) =>
-      Result.tryRunAsync(operation, logError: logError).then((v) => v.data);
+  static Future<T?> fromAsyncNullable<T>(
+    Future<T?> Function() operation, {
+    bool logError = true,
+  }) => Result.tryRunAsync(operation, logError: logError).then((v) => v.data);
 
   /// Crashes if the result and fallback is null
-  static T from<T>(T Function() operation, {T? fallback, bool logError = false}) =>
-      (fromNullable(operation, logError: logError) ?? fallback)!;
+  static T from<T>(
+    T Function() operation, {
+    T? fallback,
+    bool logError = false,
+  }) => (fromNullable(operation, logError: logError) ?? fallback)!;
 
   /// Crashes if the result and fallback is null
-  static Future<T> fromAsync<T>(Future<T> Function() operation, {T? fallback, bool logError = false}) =>
-      fromAsyncNullable(operation, logError: logError).then((v) => (v ?? fallback)!);
+  static Future<T> fromAsync<T>(
+    Future<T> Function() operation, {
+    T? fallback,
+    bool logError = false,
+  }) => fromAsyncNullable(
+    operation,
+    logError: logError,
+  ).then((v) => (v ?? fallback)!);
 
   Result<T> onError(void Function(String message, [StackTrace? st]) handler) {
     if (isError) {
@@ -102,3 +134,28 @@ class Result<T> {
     return this;
   }
 }
+
+extension ResultExtensionOnFuture<T> on Future<T> {
+  /// Returns the data if this is a success; otherwise returns [fallback].
+  Future<Result<T>> tryRunAsync({bool log = true}) async {
+    try {
+      return Result.success(await this);
+    } catch (e, st) {
+      return Result.error(e.toString(), st, log);
+    }
+  }
+}
+
+extension ResultExtensions<T> on T Function() {
+  Result<T> tryRun({bool log = true}) {
+    try {
+      return Result.success(this());
+    } catch (e, st) {
+      return Result.error(e.toString(), st, log);
+    }
+  }
+}
+
+// extension ResultExtensionOnFutureResult<T> on Future<Result<T>> {
+
+// }
