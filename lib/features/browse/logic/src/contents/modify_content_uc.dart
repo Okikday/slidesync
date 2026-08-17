@@ -27,7 +27,7 @@ class ModifyContentUc {
     }
     if (!dupHashExists) {
       await Result.tryRunAsync(() async {
-        final prevFileSum = await KVStore.me.getData<int?>(
+        final prevFileSum = KVStore.me.getData<int?>(
           key: HiveDataKey.globalFileSizeSum.name,
         );
         if (prevFileSum == null) return;

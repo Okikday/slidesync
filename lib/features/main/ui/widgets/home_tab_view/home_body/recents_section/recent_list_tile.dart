@@ -80,8 +80,9 @@ class RecentListTile extends ConsumerWidget {
                       child: ClipOval(
                         child: CustomElevatedButton(
                           onClick: () {
-                            if (data.onLongTapTile != null)
+                            if (data.onLongTapTile != null) {
                               data.onLongTapTile!();
+                            }
                           },
                           pixelHeight: 48,
                           pixelWidth: 48,

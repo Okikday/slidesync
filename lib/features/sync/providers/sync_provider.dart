@@ -12,9 +12,7 @@ class _DownloadingQueueNotifier extends AsyncNotifier<Map<String, String>> {
 
   @override
   Future<Map<String, String>> build() async {
-    final stored = await KVStore.me.getData<Map<dynamic, dynamic>>(
-      key: _hiveKey,
-    );
+    final stored = KVStore.me.getData<Map<dynamic, dynamic>>(key: _hiveKey);
     if (stored == null) return <String, String>{};
     return Map<String, String>.from(stored);
   }
@@ -56,9 +54,7 @@ class _UploadingQueueNotifier extends AsyncNotifier<Map<String, String>> {
 
   @override
   Future<Map<String, String>> build() async {
-    final stored = await KVStore.me.getData<Map<dynamic, dynamic>>(
-      key: _hiveKey,
-    );
+    final stored = KVStore.me.getData<Map<dynamic, dynamic>>(key: _hiveKey);
     if (stored == null) return <String, String>{};
     return Map<String, String>.from(stored);
   }

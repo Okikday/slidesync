@@ -130,7 +130,7 @@ class _ResumableDownload {
   /// Check if a partial download exists for [operationId].
   /// Returns bytes already downloaded, or 0 if none.
   static Future<int> checkPartialDownload(String operationId) async {
-    final raw = await KVStore.me.getData<String>(key: _sessionKey(operationId));
+    final raw = KVStore.me.getData<String>(key: _sessionKey(operationId));
     if (raw == null) return 0;
     try {
       final m = jsonDecode(raw) as Map<String, dynamic>;

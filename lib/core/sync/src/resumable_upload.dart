@@ -173,8 +173,9 @@ class _ResumableUpload {
     }
 
     final location = response.headers['location'];
-    if (location == null)
+    if (location == null) {
       throw StateError('Drive did not return a session URI');
+    }
     return location;
   }
 
@@ -245,7 +246,7 @@ class _ResumableUpload {
       '${HiveDataKey.driveUploadSession.name}_$operationId';
 
   static Future<String?> _loadSession(String operationId) async {
-    final raw = await KVStore.me.getData<String>(key: _sessionKey(operationId));
+    final raw = KVStore.me.getData<String>(key: _sessionKey(operationId));
     if (raw == null) return null;
     try {
       final session = ResumableSession.fromJson(

@@ -65,7 +65,7 @@ final splashRoute = GoRoute(
   path: Routes.splash.path,
   builder: (context, state) => const SplashView(),
   redirect: (context, state) async {
-    final isUserSignedIn = await UserDataFunctions.me.isUserSignedIn();
+    final isUserSignedIn = UserDataFunctions.me.isUserSignedIn();
     final hasOnboarded =
         await KVStore.me.getData(key: HiveDataKey.hasOnboarded.name) as bool?;
     String? destination;

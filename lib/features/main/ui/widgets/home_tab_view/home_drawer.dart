@@ -124,8 +124,9 @@ class HomeDrawer extends ConsumerWidget {
                               borderRadius: 16,
                               onClick: () async {
                                 await SignInActions().signInWithGoogle(context);
-                                if (context.mounted)
+                                if (context.mounted) {
                                   Scaffold.of(context).closeDrawer();
+                                }
                               },
                             ),
                           ],

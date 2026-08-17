@@ -67,7 +67,7 @@ extension HiveDataPathKeyStringExtension on String {
       await KVStore.me.setData(key: this, value: value);
 
   /// Gets the Hive data for the current path key
-  Future<T?> getHiveData<T>() async => await KVStore.me.getData(key: this);
+  Future<T?> getHiveData<T>() async => KVStore.me.getData(key: this);
 
   /// Deletes the Hive data for the current path key
   Future<void> deleteHiveData() async => await KVStore.me.deleteData(key: this);

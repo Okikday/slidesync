@@ -197,7 +197,7 @@ class HiveAsyncImpliedNotifier<In, Out> extends AsyncNotifier<Out> {
   @override
   Future<Out> build() async {
     return (await Result.tryRunAsync(() async {
-          final data = await KVStore.me.getData<In>(key: _hiveKey);
+          final data = KVStore.me.getData<In>(key: _hiveKey);
           return builder != null
               ? (await builder!(data) ?? data as Out?)
               : data as Out? ?? _defaultValue;
@@ -287,7 +287,7 @@ class HiveImpliedNotifier<In, Out> extends Notifier<Out> {
 
   Future<void> _hydrateFromHive() async {
     final result = await Result.tryRunAsync(() async {
-      final data = await KVStore.me.getData<In>(key: _hiveKey);
+      final data = KVStore.me.getData<In>(key: _hiveKey);
       return builder != null
           ? (await builder!(data) ?? data as Out?)
           : data as Out?;
@@ -389,7 +389,7 @@ class HiveAsyncImpliedNotifierN<In, Out> extends AsyncNotifier<Out?> {
   Future<Out?> build() async {
     final data =
         (await Result.tryRunAsync(() async {
-              final stored = await KVStore.me.getData<In>(key: _hiveKey);
+              final stored = KVStore.me.getData<In>(key: _hiveKey);
               if (builder != null) {
                 return await builder!(stored);
               }

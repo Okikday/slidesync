@@ -14,7 +14,7 @@ class CourseSortNotifier extends AsyncNotifier<EntityOrdering> {
   FutureOr<EntityOrdering> build() async {
     final options = EntityOrdering.values;
     final option =
-        options[(await KVStore.me.getData<int>(
+        options[(KVStore.me.getData<int>(
               key: path,
             ))?.clamp(0, options.length - 1) ??
             _defaultKey.index];

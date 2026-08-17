@@ -122,8 +122,9 @@ class FirebasePhoneAuth {
       final UserCredential userCredential = await _firebaseAuth
           .signInWithCredential(credential);
       final User? user = userCredential.user;
-      if (user == null)
+      if (user == null) {
         return Result.error("Null user after OTP verification.");
+      }
 
       // Create user data in Firestore.
       final Result outcomeCreateUser = await _firebaseData.createUserData(

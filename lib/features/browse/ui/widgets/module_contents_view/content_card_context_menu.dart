@@ -345,12 +345,13 @@ class _ContentCardContextMenuState
           title: 'Upload failed',
           body: '${content.title}: not authenticated',
         );
-        if (mounted)
+        if (mounted) {
           UiUtils.showFlushBar(
             context,
             msg: 'User not authenticated',
             vibe: FlushbarVibe.error,
           );
+        }
         return;
       }
 
@@ -365,12 +366,13 @@ class _ContentCardContextMenuState
           title: 'Upload failed',
           body: '${content.title}: parent collection missing',
         );
-        if (mounted)
+        if (mounted) {
           UiUtils.showFlushBar(
             context,
             msg: 'Parent collection not found',
             vibe: FlushbarVibe.error,
           );
+        }
         return;
       }
 
@@ -459,12 +461,13 @@ class _ContentCardContextMenuState
           body:
               '${content.title}: Uploaded ${data?.uploadedCount ?? 0}, Skipped ${data?.skippedCount ?? 0}, Failed ${data?.failedCount ?? 0}',
         );
-        if (mounted)
+        if (mounted) {
           UiUtils.showFlushBar(
             context,
             msg: 'Upload completed',
             vibe: FlushbarVibe.success,
           );
+        }
       } else {
         transferNotifier.updateStatus(
           id: transferId,
@@ -476,12 +479,13 @@ class _ContentCardContextMenuState
           title: 'Upload failed',
           body: '${content.title}: ${data?.error ?? 'Upload failed'}',
         );
-        if (mounted)
+        if (mounted) {
           UiUtils.showFlushBar(
             context,
             msg: data?.error ?? 'Upload failed',
             vibe: FlushbarVibe.error,
           );
+        }
       }
     } catch (error) {
       transferNotifier.updateStatus(
@@ -494,12 +498,13 @@ class _ContentCardContextMenuState
         title: 'Upload failed',
         body: '${content.title}: $error',
       );
-      if (mounted)
+      if (mounted) {
         UiUtils.showFlushBar(
           context,
           msg: 'Upload failed: $error',
           vibe: FlushbarVibe.error,
         );
+      }
     } finally {
       transferNotifier.removeTransfer(transferId);
     }
