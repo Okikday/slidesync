@@ -68,7 +68,7 @@ class _PdfDocSearchAppBarState extends ConsumerState<PdfDocSearchAppBar> {
                         controller: pdsa.searchController,
                         focusNode: focusNode,
                         hint: "Search in document...",
-                        textInputAction: pdsa.textSearcher == null ? TextInputAction.search : TextInputAction.next,
+                        textInputAction: pdsa.searchResult == null ? TextInputAction.search : TextInputAction.next,
                         onTapOutside: () {},
                         onSubmitted: ref.read(pdsaP).performSearch,
                         onchanged: (text) {

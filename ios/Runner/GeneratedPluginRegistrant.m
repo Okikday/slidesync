@@ -102,10 +102,10 @@
 @import pasteboard;
 #endif
 
-#if __has_include(<pdfium_flutter/PDFiumFlutterPlugin.h>)
-#import <pdfium_flutter/PDFiumFlutterPlugin.h>
+#if __has_include(<pdfx/PdfxPlugin.h>)
+#import <pdfx/PdfxPlugin.h>
 #else
-@import pdfium_flutter;
+@import pdfx;
 #endif
 
 #if __has_include(<receive_sharing_intent/ReceiveSharingIntentPlugin.h>)
@@ -163,7 +163,7 @@
   [NativeFilePreviewPlugin registerWithRegistrar:[registry registrarForPlugin:@"NativeFilePreviewPlugin"]];
   [OpenFilePlugin registerWithRegistrar:[registry registrarForPlugin:@"OpenFilePlugin"]];
   [PasteboardPlugin registerWithRegistrar:[registry registrarForPlugin:@"PasteboardPlugin"]];
-  [PDFiumFlutterPlugin registerWithRegistrar:[registry registrarForPlugin:@"PDFiumFlutterPlugin"]];
+  [PdfxPlugin registerWithRegistrar:[registry registrarForPlugin:@"PdfxPlugin"]];
   [ReceiveSharingIntentPlugin registerWithRegistrar:[registry registrarForPlugin:@"ReceiveSharingIntentPlugin"]];
   [FPPSharePlusPlugin registerWithRegistrar:[registry registrarForPlugin:@"FPPSharePlusPlugin"]];
   [SharedPreferencesPlugin registerWithRegistrar:[registry registrarForPlugin:@"SharedPreferencesPlugin"]];

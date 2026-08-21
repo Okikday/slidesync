@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pdfrx/pdfrx.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class PdfScrollbarOverlay extends ConsumerStatefulWidget {
   final PdfViewerController controller;
@@ -17,7 +17,7 @@ class PdfScrollbarOverlay extends ConsumerStatefulWidget {
 class _PdfScrollbarOverlayState extends ConsumerState<PdfScrollbarOverlay> {
   bool _isVisible = false;
   Timer? _hideTimer;
-  double? _lastScrollPosition;
+  Offset? _lastScrollOffset;
 
   @override
   void initState() {
@@ -34,13 +34,11 @@ class _PdfScrollbarOverlayState extends ConsumerState<PdfScrollbarOverlay> {
   }
 
   void _onScroll() {
-    final currentPosition = double.parse(
-      widget.controller.value.row1[3].abs().clamp(0.0, double.infinity).toStringAsFixed(2),
-    );
+    final currentOffset = widget.controller.scrollOffset;
 
     // Check if actually scrolling (position changed)
-    if (currentPosition != _lastScrollPosition) {
-      _lastScrollPosition = currentPosition;
+    if (currentOffset != _lastScrollOffset) {
+      _lastScrollOffset = currentOffset;
 
       // Show overlay
       if (!_isVisible) {
@@ -115,7 +113,7 @@ class _PdfScrollbarOverlayState extends ConsumerState<PdfScrollbarOverlay> {
   }
 }
 
-/// Custom scroll thumb for [PdfViewer] with top padding support.
+/// Custom scroll thumb for [SfPdfViewer] with top padding support.
 class CustomPdfScrollThumb extends StatefulWidget {
   const CustomPdfScrollThumb({
     required this.controller,
@@ -144,88 +142,29 @@ class CustomPdfScrollThumb extends StatefulWidget {
 }
 
 class _CustomPdfScrollThumbState extends State<CustomPdfScrollThumb> {
-  double _panStartOffset = 0;
-
   @override
   Widget build(BuildContext context) {
-    if (!widget.controller.isReady) {
+    final pageCount = widget.controller.pageCount;
+    final pageNumber = widget.controller.pageNumber;
+
+    if (pageCount == 0) {
       return const SizedBox();
     }
-    return widget.isVertical ? _buildVertical(context) : _buildHorizontal(context);
+
+    return widget.isVertical
+        ? _buildVertical(context, pageNumber, pageCount)
+        : _buildHorizontal(context, pageNumber, pageCount);
   }
 
-  /// Calculate the correct page number based on visible viewport
-  int _getCorrectPageNumber() {
-    if (!widget.controller.isReady) return 1;
-
-    final pages = widget.controller.pages;
-    final pageCount = widget.controller.pageCount;
-    if (pages.isEmpty || pageCount == 0) return 1;
-
-    final visibleRect = widget.controller.visibleRect;
-    final documentSize = widget.controller.documentSize;
-
-    // Calculate cumulative page positions
-    double cumulativeHeight = 0;
-    // final boundaryMargin = widget.controller.params.boundaryMargin;
-    final pageSpacing = widget.controller.params.margin;
-
-    for (int i = 0; i < pages.length; i++) {
-      final page = pages[i];
-      // if (page == null) continue;
-
-      final pageHeight = page.height;
-      final pageTop = cumulativeHeight;
-      final pageBottom = cumulativeHeight + pageHeight;
-
-      // Check if visible rect intersects with this page
-      if (visibleRect.bottom > pageTop && visibleRect.top < pageBottom) {
-        // Calculate how much of this page is visible
-        final visibleTop = visibleRect.top > pageTop ? visibleRect.top : pageTop;
-        final visibleBottom = visibleRect.bottom < pageBottom ? visibleRect.bottom : pageBottom;
-        final visibleHeight = visibleBottom - visibleTop;
-
-        // If more than 50% of viewport shows this page, or if it's the most visible
-        if (visibleHeight > visibleRect.height * 0.3) {
-          return page.pageNumber;
-        }
-      }
-
-      cumulativeHeight += pageHeight + pageSpacing;
-    }
-
-    // Fallback: use viewport center position
-    final viewportCenterY = visibleRect.center.dy;
-    final avgPageHeight = documentSize.height / pageCount;
-    final estimatedPage = (viewportCenterY / avgPageHeight).floor() + 1;
-
-    return estimatedPage.clamp(1, pageCount);
-  }
-
-  Widget _buildVertical(BuildContext context) {
+  Widget _buildVertical(BuildContext context, int pageNumber, int pageCount) {
     final thumbSize = widget.thumbSize ?? const Size(25, 40);
-    final view = widget.controller.visibleRect;
-    final all = widget.controller.documentSize;
-    final boundaryMargin = widget.controller.params.boundaryMargin;
 
-    final effectiveDocHeight = boundaryMargin == null || boundaryMargin.vertical.isInfinite
-        ? all.height
-        : all.height + boundaryMargin.vertical;
-
-    if (effectiveDocHeight <= view.height) return const SizedBox();
-
-    final scrollRange = effectiveDocHeight - view.height;
-    final minScrollY = boundaryMargin == null || boundaryMargin.vertical.isInfinite ? 0.0 : -boundaryMargin.top;
-
-    final y = (-widget.controller.value.y - minScrollY) / scrollRange;
-
-    // Adjust available height for thumb movement (accounting for both paddings)
+    // Calculate thumb position based on current page / total pages
+    final progress = pageCount > 1 ? (pageNumber - 1) / (pageCount - 1) : 0.0;
     final availableHeight =
-        view.height * widget.controller.currentZoom - thumbSize.height - widget.topPadding - widget.bottomPadding;
-    final top = y * availableHeight + widget.topPadding;
-
-    // Calculate correct page number based on visible area center
-    final pageNumber = _getCorrectPageNumber();
+        MediaQuery.of(context).size.height - thumbSize.height - widget.topPadding - widget.bottomPadding;
+    final top =
+        (progress * availableHeight + widget.topPadding).clamp(widget.topPadding, widget.topPadding + availableHeight);
 
     return Positioned(
       left: widget.orientation == ScrollbarOrientation.left ? widget.margin : null,
@@ -251,37 +190,24 @@ class _CustomPdfScrollThumbState extends State<CustomPdfScrollThumb> {
               ),
               child: Center(child: Text(pageNumber.toString())),
             ),
-        onPanStart: (details) {
-          _panStartOffset = top - details.localPosition.dy;
-        },
         onPanUpdate: (details) {
-          final adjustedY = (_panStartOffset + details.localPosition.dy - widget.topPadding) / availableHeight;
-          final m = widget.controller.value.clone();
-          m.y = -(adjustedY * scrollRange + minScrollY);
-          widget.controller.value = m;
+          // Navigate pages via drag
+          final newProgress = ((top + details.delta.dy - widget.topPadding) / availableHeight).clamp(0.0, 1.0);
+          final targetPage = ((newProgress * (pageCount - 1)) + 1).round().clamp(1, pageCount);
+          if (targetPage != pageNumber) {
+            widget.controller.jumpToPage(targetPage);
+          }
         },
       ),
     );
   }
 
-  Widget _buildHorizontal(BuildContext context) {
+  Widget _buildHorizontal(BuildContext context, int pageNumber, int pageCount) {
     final thumbSize = widget.thumbSize ?? const Size(40, 25);
-    final view = widget.controller.visibleRect;
-    final all = widget.controller.documentSize;
-    final boundaryMargin = widget.controller.params.boundaryMargin;
 
-    final effectiveDocWidth = boundaryMargin == null || boundaryMargin.horizontal.isInfinite
-        ? all.width
-        : all.width + boundaryMargin.horizontal;
-
-    if (effectiveDocWidth <= view.width) return const SizedBox();
-
-    final scrollRange = effectiveDocWidth - view.width;
-    final minScrollX = boundaryMargin == null || boundaryMargin.horizontal.isInfinite ? 0.0 : -boundaryMargin.left;
-
-    final x = (-widget.controller.value.x - minScrollX) / scrollRange;
-    final vw = view.width * widget.controller.currentZoom - thumbSize.width;
-    final left = x * vw;
+    final progress = pageCount > 1 ? (pageNumber - 1) / (pageCount - 1) : 0.0;
+    final availableWidth = MediaQuery.of(context).size.width - thumbSize.width;
+    final left = (progress * availableWidth).clamp(0.0, availableWidth);
 
     return Positioned(
       top: widget.orientation == ScrollbarOrientation.top ? widget.margin : null,
@@ -291,7 +217,7 @@ class _CustomPdfScrollThumbState extends State<CustomPdfScrollThumb> {
       height: thumbSize.height,
       child: GestureDetector(
         child:
-            widget.thumbBuilder?.call(context, thumbSize, widget.controller.pageNumber, widget.controller) ??
+            widget.thumbBuilder?.call(context, thumbSize, pageNumber, widget.controller) ??
             Container(
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -305,16 +231,14 @@ class _CustomPdfScrollThumbState extends State<CustomPdfScrollThumb> {
                   ),
                 ],
               ),
-              child: Center(child: Text(widget.controller.pageNumber.toString())),
+              child: Center(child: Text(pageNumber.toString())),
             ),
-        onPanStart: (details) {
-          _panStartOffset = left - details.localPosition.dx;
-        },
         onPanUpdate: (details) {
-          final x = (_panStartOffset + details.localPosition.dx) / vw;
-          final m = widget.controller.value.clone();
-          m.x = -(x * scrollRange + minScrollX);
-          widget.controller.value = m;
+          final newProgress = ((left + details.delta.dx) / availableWidth).clamp(0.0, 1.0);
+          final targetPage = ((newProgress * (pageCount - 1)) + 1).round().clamp(1, pageCount);
+          if (targetPage != pageNumber) {
+            widget.controller.jumpToPage(targetPage);
+          }
         },
       ),
     );

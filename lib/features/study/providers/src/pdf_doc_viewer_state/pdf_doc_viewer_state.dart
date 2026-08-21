@@ -2,7 +2,7 @@ import 'dart:collection';
 import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
-import 'package:pdfrx/pdfrx.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:screenshot/screenshot.dart';
 import 'package:slidesync/core/base/mixins/use_value_notifier.dart';
 import 'package:slidesync/core/utils/result.dart';
@@ -91,7 +91,7 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
 
   void _posListener() {
     // log("currentPageNumber: ${controller.pageNumber}");
-    final newValue = double.parse(controller.value.row1[3].abs().clamp(0.0, double.infinity).toStringAsFixed(2));
+    final newValue = double.parse(controller.scrollOffset.dy.abs().clamp(0.0, double.infinity).toStringAsFixed(2));
 
     ref.read(scrollOffsetProvider.notifier).update((cb) => newValue);
   }
@@ -192,8 +192,8 @@ class PdfDocViewerState with ValueNotifierFactoryMixin {
   }
 
   bool _isPdfCtrllerSettled() {
-    if (!controller.isReady) return false;
-    if (controller.pageNumber == null) return false;
+    if (controller.pageCount == 0) return false;
+    if (controller.pageNumber == 0) return false;
     return true;
   }
 }

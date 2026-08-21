@@ -1,12 +1,12 @@
 import 'dart:developer';
 
-import 'package:flutter/foundation.dart';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:pdfrx/pdfrx.dart';
 import 'package:slidesync/core/base/mixins/use_value_notifier.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_alert_dialog.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class PdfDocSearchState with ValueNotifierFactoryMixin {
   final String contentId;
@@ -14,7 +14,17 @@ class PdfDocSearchState with ValueNotifierFactoryMixin {
   final FocusNode focusNode;
   final TextEditingController searchController;
 
-  PdfTextSearcher? textSearcher;
+  PdfTextSearchResult? _searchResult;
+
+  /// Exposes the current search result (null when no search is active).
+  PdfTextSearchResult? get searchResult => _searchResult;
+
+  // Convenience getters for backward-compatible access from UI widgets
+  bool get hasSearchResult => _searchResult?.hasResult == true;
+  bool get isSearching => _searchResult != null && !(_searchResult!.isSearchCompleted);
+  int get currentMatchIndex => _searchResult?.currentInstanceIndex ?? 0;
+  int get totalMatchCount => _searchResult?.totalInstanceCount ?? 0;
+
   late final ValueNotifier<bool> isSearchingNotifier;
   late final ValueNotifier<bool> isSearchInProgressNotifier;
   late final ValueNotifier<int> searchTickNotifier;
@@ -31,10 +41,7 @@ class PdfDocSearchState with ValueNotifierFactoryMixin {
     focusNode.dispose();
     searchController.dispose();
     disposeNotifiers();
-    if (textSearcher != null) {
-      textSearcher!.removeListener(_onSearcherChanged);
-      textSearcher!.dispose();
-    }
+    _clearSearchResult();
     log("Disposed pdf search actions");
   }
 
@@ -55,27 +62,20 @@ class PdfDocSearchState with ValueNotifierFactoryMixin {
     final text = searchText.trim();
     if (text.isEmpty) return;
 
-    if (searchText == textSearcher?.pattern.toString()) {
-      Future.microtask(() async {
-        await navigateToInstance(true);
-      });
-      return;
-    }
+    // Clear previous search
+    _clearSearchResult();
 
-    final old = textSearcher;
-    if (old != null) {
-      old.removeListener(_onSearcherChanged);
-      old.dispose();
-    }
+    final result = pdfViewerController.searchText(
+      text,
+    );
 
-    final searcher = PdfTextSearcher(pdfViewerController);
-    searcher.addListener(_onSearcherChanged);
-    searcher.startTextSearch(text, caseInsensitive: true, goToFirstMatch: true, searchImmediately: kIsWeb);
+    _searchResult = result;
+    isSearchInProgressNotifier.value = !result.isSearchCompleted;
 
-    textSearcher = searcher;
-    isSearchInProgressNotifier.value = searcher.isSearching;
+    // Listen for search progress updates
+    result.addListener(_onSearchResultChanged);
 
-    if (kIsWeb && !searcher.isSearching && !searcher.hasMatches) {
+    if (result.isSearchCompleted && !result.hasResult) {
       _showNoResultsMessage();
     }
 
@@ -84,32 +84,26 @@ class PdfDocSearchState with ValueNotifierFactoryMixin {
 
   void clearSearch() {
     searchController.clear();
-
-    if (textSearcher != null) {
-      textSearcher!.removeListener(_onSearcherChanged);
-      textSearcher!.dispose();
-    }
-
-    textSearcher = null;
+    _clearSearchResult();
     isSearchInProgressNotifier.value = false;
     _incrementTick();
   }
 
   Future<void> navigateToInstance(bool isNext) async {
-    if (textSearcher == null || !textSearcher!.hasMatches) return;
+    final result = _searchResult;
+    if (result == null || !result.hasResult) return;
 
-    final currentIndex = textSearcher!.currentIndex ?? 0;
-    final total = textSearcher!.matches.length;
+    final isAtEnd = result.currentInstanceIndex == result.totalInstanceCount;
 
-    if (isNext && currentIndex == total - 1 && !textSearcher!.isSearching) {
+    if (isNext && isAtEnd && result.isSearchCompleted) {
       _showSearchFromBeginningDialog();
       return;
     }
 
     if (isNext) {
-      await textSearcher!.goToNextMatch();
+      result.nextInstance();
     } else {
-      await textSearcher!.goToPrevMatch();
+      result.previousInstance();
     }
 
     _incrementTick();
@@ -119,12 +113,21 @@ class PdfDocSearchState with ValueNotifierFactoryMixin {
   // PRIVATE METHODS
   // ============================================================================
 
-  void _onSearcherChanged() {
-    if (textSearcher == null) return;
+  void _clearSearchResult() {
+    if (_searchResult != null) {
+      _searchResult!.removeListener(_onSearchResultChanged);
+      _searchResult!.clear();
+      _searchResult = null;
+    }
+  }
 
-    isSearchInProgressNotifier.value = textSearcher!.isSearching;
+  void _onSearchResultChanged() {
+    final result = _searchResult;
+    if (result == null) return;
 
-    if (!textSearcher!.isSearching && !textSearcher!.hasMatches) {
+    isSearchInProgressNotifier.value = !result.isSearchCompleted;
+
+    if (result.isSearchCompleted && !result.hasResult) {
       _showNoResultsMessage();
     }
 
@@ -159,8 +162,9 @@ class PdfDocSearchState with ValueNotifierFactoryMixin {
           },
           onConfirm: () async {
             Navigator.of(context).pop();
-            if (textSearcher == null) return;
-            await textSearcher!.goToMatchOfIndex(0);
+            final result = _searchResult;
+            if (result == null) return;
+            result.nextInstance();
             _incrementTick();
           },
         ),

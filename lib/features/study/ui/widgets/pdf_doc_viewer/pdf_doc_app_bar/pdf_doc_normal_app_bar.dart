@@ -52,7 +52,7 @@ class PdfDocNormalAppBar extends ConsumerWidget {
                               iconData: HugeIconsSolid.playCircle,
                               onTap: () async {
                                 final p = ref.read(PdfDocViewerProvider.state(contentId));
-                                p.controller.goToPage(pageNumber: p.initialPage ?? 1);
+                                p.controller.jumpToPage(p.initialPage ?? 1);
                               },
                             ),
                             PopupMenuAction(

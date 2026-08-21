@@ -1,18 +1,17 @@
 import 'dart:developer';
-import 'dart:math' as math;
+import 'dart:io' as io;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:pdfrx/pdfrx.dart';
 import 'package:screenshot/screenshot.dart';
-import 'package:slidesync/core/utils/ui_utils.dart';
+
 import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/study/providers/pdf_doc_viewer_provider.dart';
 import 'package:slidesync/features/study/providers/src/pdf_doc_viewer_state/pdf_doc_viewer_state.dart';
 import 'package:slidesync/features/study/ui/widgets/pdf_doc_viewer/pdf_overlay_widgets/pdf_scrollbar_overlay.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 
 class PdfViewerWidget extends ConsumerStatefulWidget {
   const PdfViewerWidget({super.key, required this.content});
@@ -30,10 +29,11 @@ class _PdfViewerWidgetState extends ConsumerState<PdfViewerWidget> {
   DateTime? _lastTapTime;
 
   void _handleSingleTap(WidgetRef ref, Offset position) {
-    final controller = PdfDocViewerProvider.state(widget.content.uid).select((s) => s.controller).read(ref);
-    if (controller.textSelectionDelegate.hasSelectedText) {
-      controller.textSelectionDelegate.clearTextSelection();
-    }
+    final controller = PdfDocViewerProvider.state(
+      widget.content.uid,
+    ).select((s) => s.controller).read(ref);
+    // Clear any text selection on tap
+    controller.clearSelection();
     _handleTap(ref);
   }
 
@@ -41,21 +41,24 @@ class _PdfViewerWidgetState extends ConsumerState<PdfViewerWidget> {
     final docViewP = PdfDocViewerProvider.state(widget.content.uid);
     final controller = ref.read(docViewP.select((s) => s.controller));
 
-    if (controller.currentZoom > controller.minScale) {
-      controller.setZoom(controller.centerPosition, controller.minScale);
+    // Toggle zoom between 1x and 2x on double tap
+    if (controller.zoomLevel > 1.0) {
+      controller.zoomLevel = 1.0;
     } else {
-      controller.setZoom(controller.centerPosition, 2.0);
+      controller.zoomLevel = 2.0;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref;
     log("Rebuild pdfviewer widget!!!");
+
     return ColorFiltered(
       colorFilter: ColorFilter.mode(
         Colors.white,
-        ref.watch(PdfDocViewerProvider.ispdfViewerInDarkMode).value ?? false ? BlendMode.difference : BlendMode.dst,
+        ref.watch(PdfDocViewerProvider.ispdfViewerInDarkMode).value ?? false
+            ? BlendMode.difference
+            : BlendMode.dst,
       ),
       child: Screenshot(
         controller: PdfDocViewerState.screenshotController,
@@ -63,7 +66,12 @@ class _PdfViewerWidgetState extends ConsumerState<PdfViewerWidget> {
           builder: (context, ref, child) {
             final docViewP = PdfDocViewerProvider.state(widget.content.uid);
             final pdva = ref.watch(
-              docViewP.select((p) => (initialPage: p.initialPage, pdfViewerController: p.controller)),
+              docViewP.select(
+                (p) => (
+                  initialPage: p.initialPage,
+                  pdfViewerController: p.controller,
+                ),
+              ),
             );
             return Listener(
               behavior: HitTestBehavior.translucent,
@@ -75,7 +83,8 @@ class _PdfViewerWidgetState extends ConsumerState<PdfViewerWidget> {
               onPointerMove: (event) {
                 // Track if pointer moved significantly (scrolling)
                 if (_tapDownPosition != null) {
-                  final distance = (event.localPosition - _tapDownPosition!).distance;
+                  final distance =
+                      (event.localPosition - _tapDownPosition!).distance;
                   if (distance > 10) {
                     // 10 pixel threshold
                     _pointerHasMoved = true;
@@ -93,7 +102,9 @@ class _PdfViewerWidgetState extends ConsumerState<PdfViewerWidget> {
                 }
 
                 // Check for double tap
-                if (_lastTapTime != null && now.difference(_lastTapTime!) < Duration(milliseconds: 300)) {
+                if (_lastTapTime != null &&
+                    now.difference(_lastTapTime!) <
+                        Duration(milliseconds: 300)) {
                   _handleDoubleTap(ref);
                   _lastTapTime = null;
                   _pointerHasMoved = false;
@@ -115,97 +126,17 @@ class _PdfViewerWidgetState extends ConsumerState<PdfViewerWidget> {
                 builder: (context) {
                   final localPath = widget.content.path.local;
                   return localPath != null && localPath.isNotEmpty
-                      ? PdfViewer.file(
-                          localPath,
+                      ? SfPdfViewer.file(
+                          io.File(localPath),
                           initialPageNumber: pdva.initialPage ?? 1,
-                          params: PdfViewerParams(
-                            panAxis: PanAxis.aligned,
-                            scrollPhysics: BouncingScrollPhysics(),
-                            layoutPages: (pages, params) {
-                              final width = pages.fold(0.0, (w, p) => math.max(w, p.width)) + params.margin * 2;
-
-                              final pageLayout = <Rect>[];
-                              double y = params.margin + (130);
-                              for (int i = 0; i < pages.length; i++) {
-                                final page = pages[i];
-                                final rect = Rect.fromLTWH((width - page.width) / 2, y, page.width, page.height);
-                                pageLayout.add(rect);
-                                y += page.height + params.margin;
-                              }
-
-                              return PdfPageLayout(pageLayouts: pageLayout, documentSize: Size(width, y));
-                            },
-                            backgroundColor: theme.background,
-                            activeMatchTextColor: theme.primary.withValues(alpha: 0.5),
-                            linkHandlerParams: PdfLinkHandlerParams(
-                              onLinkTap: (link) async {
-                                // log("Link tapped: ${link.url ?? link.dest}");
-                                if (link.url != null) {
-                                  UiUtils.showFlushBar(context, msg: "Opening link...");
-                                  await launchUrl(link.url!, mode: LaunchMode.platformDefault);
-                                }
-                              },
-                              linkColor: Colors.blue.withValues(alpha: 0.04),
-                            ),
-                            viewerOverlayBuilder: (context, size, handleLinkTap) => [
-                              // ValueListenableBuilder(
-                              //   valueListenable: pdva.isAppBarVisibleNotifier,
-                              //   builder: (context, value, child) {
-                              //     if (!value) return const SizedBox();
-
-                              //   },
-                              PdfScrollThumbOverlay(pdva: pdva),
-                            ],
-                            // onGeneralTap: (context, controller, details) {
-                            //   log("normal tap");
-                            //   if (details.type == PdfViewerGeneralTapType.doubleTap) {
-                            //     if (controller.currentZoom > controller.minScale) {
-                            //       controller.setZoom(controller.centerPosition, controller.minScale);
-                            //     } else {
-                            //       controller.setZoom(controller.centerPosition, 2.0);
-                            //     }
-
-                            //     return false;
-                            //   }
-                            //   // if (controller.textSelectionDelegate.hasSelectedText &&
-                            //   //     details.type == PdfViewerGeneralTapType.tap) {
-                            //   //   return false;
-                            //   // }
-                            //   if (details.type != PdfViewerGeneralTapType.tap) return false;
-                            //   if (controller.textSelectionDelegate.hasSelectedText) {
-                            //     controller.textSelectionDelegate.clearTextSelection();
-                            //   }
-                            //   return _handleTap(ref);
-                            // },
-                            pagePaintCallbacks: [
-                              (canvas, pageRect, page) {
-                                final searchViewP = PdfDocViewerProvider.searchState(widget.content.uid);
-                                // forward to the active searcher, if any
-                                ref
-                                    .read(searchViewP.select((s) => s.textSearcher))
-                                    ?.pageTextMatchPaintCallback(canvas, pageRect, page);
-                              },
-                              // other page paint callbacks...
-                            ],
-                            textSelectionParams: PdfTextSelectionParams(
-                              buildSelectionHandle: (context, anchor, state) {
-                                final isStart = anchor.type == PdfTextSelectionAnchorType.a;
-                                return Transform.translate(
-                                  offset: Offset(isStart ? 0 : 0, isStart ? 36 : 0),
-                                  child: MaterialTextSelectionControls().buildHandle(
-                                    context,
-                                    isStart ? TextSelectionHandleType.left : TextSelectionHandleType.right,
-                                    anchor.rect.height,
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
                           controller: pdva.pdfViewerController,
+                          pageSpacing: 0,
+                          canShowPageLoadingIndicator: false,
                         )
-                      : PdfViewer.uri(
-                          Uri.parse(widget.content.path.url ?? ''),
+                      : SfPdfViewer.network(
+                          widget.content.path.url ?? '',
                           initialPageNumber: pdva.initialPage ?? 1,
+                          controller: pdva.pdfViewerController,
                         );
                 },
               ),
@@ -220,14 +151,21 @@ class _PdfViewerWidgetState extends ConsumerState<PdfViewerWidget> {
     final docViewP = PdfDocViewerProvider.state(widget.content.uid);
     final searchViewP = PdfDocViewerProvider.searchState(widget.content.uid);
 
-    final bool isSearching = ref.read(searchViewP.select((s) => s.isSearchingNotifier)).value;
+    final bool isSearching = ref
+        .read(searchViewP.select((s) => s.isSearchingNotifier))
+        .value;
     if (isSearching) return false;
-    final bool isAppBarVisible = ref.read(docViewP.select((s) => s.isAppBarVisibleNotifier)).value;
+    final bool isAppBarVisible = ref
+        .read(docViewP.select((s) => s.isAppBarVisibleNotifier))
+        .value;
     if (isAppBarVisible) {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
     } else {
       ref.read(docViewP).updateScrollOffset(0);
-      final bool isFocusMode = MainProvider.state.act(ref).isFocusMode.read(ref);
+      final bool isFocusMode = MainProvider.state
+          .act(ref)
+          .isFocusMode
+          .read(ref);
 
       if (isFocusMode) {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
@@ -235,7 +173,6 @@ class _PdfViewerWidgetState extends ConsumerState<PdfViewerWidget> {
         SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       }
     }
-    // log("isAppBarVisible: $isAppBarVisible");
     ref.read(docViewP).setAppBarVisible(!isAppBarVisible);
 
     return true;
@@ -255,7 +192,10 @@ class PdfScrollThumbOverlay extends StatelessWidget {
       thumbSize: Size(160, 52),
       topPadding: topPadding + kToolbarHeight + 8,
       thumbBuilder: (context, thumbSize, pageNumber, controller) {
-        return PdfScrollbarOverlay(controller: controller, pageProgress: "${pageNumber ?? 0}/${controller.pageCount}");
+        return PdfScrollbarOverlay(
+          controller: controller,
+          pageProgress: "${pageNumber ?? 0}/${controller.pageCount}",
+        );
       },
     );
   }

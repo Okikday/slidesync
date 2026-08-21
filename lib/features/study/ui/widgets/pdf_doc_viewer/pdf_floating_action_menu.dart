@@ -22,7 +22,7 @@ class PdfFloatingActionMenu extends ConsumerWidget {
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (ref.watch(PdfDocViewerProvider.searchState(contentId).select((s) => s.textSearcher)) != null)
+                if (ref.watch(PdfDocViewerProvider.searchState(contentId).select((s) => s.searchResult)) != null)
                   DecoratedBox(
                     decoration: BoxDecoration(color: theme.background, borderRadius: BorderRadius.circular(20)),
                     child: Padding(
@@ -36,7 +36,7 @@ class PdfFloatingActionMenu extends ConsumerWidget {
                   ),
                   builder: (context, isAppBarVisible, child) {
                     final value =
-                        ref.watch(PdfDocViewerProvider.searchState(contentId).select((s) => s.textSearcher)) != null;
+                        ref.watch(PdfDocViewerProvider.searchState(contentId).select((s) => s.searchResult)) != null;
                     if (!isAppBarVisible || value) return const SizedBox();
                     return PdfToolsMenu(isVisible: true, contentId: contentId);
                   },

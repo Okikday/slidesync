@@ -14,12 +14,12 @@ class NavigationControls extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    final s = ref.watch(PdfDocViewerProvider.searchState(contentId).select((s) => s.textSearcher));
-    final hasMatches = s?.hasMatches == true;
-    final inProgress = s?.isSearching == true;
+    final s = ref.watch(PdfDocViewerProvider.searchState(contentId).select((s) => s.searchResult));
+    final hasMatches = s?.hasResult == true;
+    final inProgress = s != null && !s.isSearchCompleted;
 
     final resultText = hasMatches
-        ? "${(s!.currentIndex ?? 0) + 1} of ${s.matches.length}${inProgress ? '..' : ''}"
+        ? "${s!.currentInstanceIndex} of ${s.totalInstanceCount}${inProgress ? '..' : ''}"
         : "0 of 0";
 
     final canNavigate = hasMatches;

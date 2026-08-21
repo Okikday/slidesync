@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:pdfrx/pdfrx.dart';
+import 'package:syncfusion_flutter_pdfviewer/pdfviewer.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
@@ -53,7 +53,7 @@ class _OnlinePdfBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return PdfViewer.uri(Uri.parse(args.fallbackUrl));
+    return SfPdfViewer.network(args.fallbackUrl);
   }
 }
 

@@ -1,9 +1,9 @@
 import 'dart:developer';
 
+
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
-import 'package:pdfrx/pdfrx.dart';
-import 'package:slidesync/app/startup.dart';
+import 'package:pdfx/pdfx.dart';
 import 'package:slidesync/core/constants/src/app_constants.dart';
 import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/storage/native/app_paths.dart';
@@ -13,8 +13,6 @@ import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:slidesync/core/utils/image_utils.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
-// ignore: depend_on_referenced_packages
-import 'package:image/image.dart';
 
 // typedef PreviewImagePathRecord<Record> = ({String previewDirPath, String previewPath});
 
@@ -151,39 +149,37 @@ class ContentThumbnailCreator {
     final Result<String?> result = await Result.tryRunAsync(() async {
       log("Creating preview for Type Document");
 
-      // pdfrxFlutterInitialize();
-      await pdfrxFlutterInitializeInIsolate();
-
       final PdfDocument document = await PdfDocument.openFile(path);
       try {
-        if (document.pages.isEmpty) {
+        if (document.pagesCount == 0) {
           log("PDF has no pages");
-          await document.dispose();
+          await document.close();
           return null;
         }
 
-        // first page (pages list is zero-indexed)
-        final PdfPage page = document.pages[0];
+        // Render the first page (pages start from 1 in pdfx)
+        final PdfPage page = await document.getPage(1);
 
         final int targetWidth = page.width.toInt();
         final int targetHeight = page.height.toInt();
 
-        final PdfImage? pageImage = await page.render(
-          width: targetWidth,
-          height: targetHeight,
+        final PdfPageImage? pageImage = await page.render(
+          width: targetWidth.toDouble(),
+          height: targetHeight.toDouble(),
+          format: PdfPageImageFormat.jpeg,
         );
+
+        await page.close();
 
         if (pageImage == null) {
           log("Failed to render PDF page");
-          await document.dispose();
+          await document.close();
           return null;
         }
 
-        final imageObj = pageImage.createImageNF();
+        // pdfx gives us bytes directly — no need for a separate image encoder
+        final List<int> bytes = pageImage.bytes;
 
-        final List<int> bytes = encodeJpg(imageObj);
-
-        pageImage.dispose();
         final last = path.split(Platform.pathSeparator).last;
         final genFilename = "${(last.isEmpty ? null : last) ?? filename}.tmp";
 
@@ -192,7 +188,7 @@ class ContentThumbnailCreator {
         );
         await tempFile.writeAsBytes(bytes);
 
-        await Result.tryRunAsync(() async => await document.dispose());
+        await Result.tryRunAsync(() async => await document.close());
 
         // Compress the rendered PDF image
         final Result<File> compressionResult = await ImageUtils.compressImage(
@@ -224,7 +220,7 @@ class ContentThumbnailCreator {
         }
       } catch (e, st) {
         try {
-          await document.dispose();
+          await document.close();
         } catch (_) {}
         log('Error rendering PDF preview: $e\n$st');
         rethrow;
@@ -242,7 +238,7 @@ class ContentThumbnailCreator {
   //     final previewPath = _genRelativePreviewPath(filePath: content.path.local);
   //     if (previewPath == null || previewPath.isEmpty) continue;
   //     if (!(await File(previewPath).exists())) {
-  //       nonExistingPreviewCourseContents.add(content);
+  //       nonExistingPreviewCourseContents.push(content);
   //     }
   //   }
   //   return nonExistingPreviewCourseContents;
