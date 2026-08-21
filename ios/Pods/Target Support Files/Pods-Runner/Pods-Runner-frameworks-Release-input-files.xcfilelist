@@ -1,0 +1,5 @@
+${PODS_ROOT}/Target Support Files/Pods-Runner/Pods-Runner-frameworks.sh
+${BUILT_PRODUCTS_DIR}/flutter_local_notifications/flutter_local_notifications.framework
+${BUILT_PRODUCTS_DIR}/isar_community_flutter_libs/isar_community_flutter_libs.framework
+${BUILT_PRODUCTS_DIR}/open_filex/open_filex.framework
+${BUILT_PRODUCTS_DIR}/pasteboard/pasteboard.framework

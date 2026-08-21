@@ -1,0 +1,11 @@
+CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = NO
+FRAMEWORK_SEARCH_PATHS = $(inherited) "${PODS_CONFIGURATION_BUILD_DIR}/flutter_local_notifications" "${PODS_CONFIGURATION_BUILD_DIR}/isar_community_flutter_libs" "${PODS_CONFIGURATION_BUILD_DIR}/open_filex" "${PODS_CONFIGURATION_BUILD_DIR}/pasteboard" "${PODS_ROOT}/../.symlinks/plugins/isar_community_flutter_libs/ios"
+GCC_PREPROCESSOR_DEFINITIONS = $(inherited) COCOAPODS=1
+HEADER_SEARCH_PATHS = $(inherited) "${PODS_CONFIGURATION_BUILD_DIR}/flutter_local_notifications/flutter_local_notifications.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/isar_community_flutter_libs/isar_community_flutter_libs.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/open_filex/open_filex.framework/Headers" "${PODS_CONFIGURATION_BUILD_DIR}/pasteboard/pasteboard.framework/Headers" "${PODS_XCFRAMEWORKS_BUILD_DIR}/isar_community_flutter_libs/Headers"
+OTHER_LDFLAGS = $(inherited) -framework "flutter_local_notifications" -framework "isar_community_flutter_libs" -framework "open_filex" -framework "pasteboard"
+PODS_BUILD_DIR = ${BUILD_DIR}
+PODS_CONFIGURATION_BUILD_DIR = ${PODS_BUILD_DIR}/$(CONFIGURATION)$(EFFECTIVE_PLATFORM_NAME)
+PODS_PODFILE_DIR_PATH = ${SRCROOT}/.
+PODS_ROOT = ${SRCROOT}/Pods
+PODS_XCFRAMEWORKS_BUILD_DIR = $(PODS_CONFIGURATION_BUILD_DIR)/XCFrameworkIntermediates
+USE_RECURSIVE_SCRIPT_INPUTS_IN_SCRIPT_PHASES = YES
