@@ -66,7 +66,8 @@ class ExportProgress {
       progress: progress ?? this.progress,
       currentCollection: currentCollection ?? this.currentCollection,
       totalCollections: totalCollections ?? this.totalCollections,
-      currentCollectionName: currentCollectionName ?? this.currentCollectionName,
+      currentCollectionName:
+          currentCollectionName ?? this.currentCollectionName,
       successCount: successCount ?? this.successCount,
       failCount: failCount ?? this.failCount,
     );
@@ -79,17 +80,28 @@ class FileExportResult {
   final bool success;
   final String? error;
 
-  FileExportResult({required this.originalName, required this.success, this.error});
+  FileExportResult({
+    required this.originalName,
+    required this.success,
+    this.error,
+  });
 }
 
 class _CollectionExportContext {
   final String courseFolderName;
   final String collectionFolderName;
 
-  _CollectionExportContext({required this.courseFolderName, required this.collectionFolderName});
+  _CollectionExportContext({
+    required this.courseFolderName,
+    required this.collectionFolderName,
+  });
 }
 
-Future<List<R>> _mapInBatches<T, R>(List<T> items, int maxConcurrency, Future<R> Function(T item) task) async {
+Future<List<R>> _mapInBatches<T, R>(
+  List<T> items,
+  int maxConcurrency,
+  Future<R> Function(T item) task,
+) async {
   if (items.isEmpty) {
     return const [];
   }
@@ -98,7 +110,9 @@ Future<List<R>> _mapInBatches<T, R>(List<T> items, int maxConcurrency, Future<R>
   final results = <R>[];
 
   for (int index = 0; index < items.length; index += effectiveConcurrency) {
-    final endIndex = index + effectiveConcurrency > items.length ? items.length : index + effectiveConcurrency;
+    final endIndex = index + effectiveConcurrency > items.length
+        ? items.length
+        : index + effectiveConcurrency;
     final batch = items.sublist(index, endIndex);
 
     final batchResults = await Future.wait(
@@ -140,7 +154,9 @@ class _CourseExportShared {
   }) async {
     log('🎯 Opening export screen for course: $courseId');
 
-    GlobalNav.withContext((c) => UiUtils.showLoadingDialog(c, message: 'Loading course...'));
+    GlobalNav.withContext(
+      (c) => UiUtils.showLoadingDialog(c, message: 'Loading course...'),
+    );
 
     final course = await CourseRepo.getByUid(courseId);
 
@@ -150,7 +166,11 @@ class _CourseExportShared {
       log('❌ Course not found: $courseId');
       if (context.mounted) {
         GlobalNav.withContext(
-          (context) => UiUtils.showFlushBar(context, msg: 'Error: Course not found', vibe: FlushbarVibe.error),
+          (context) => UiUtils.showFlushBar(
+            context,
+            msg: 'Error: Course not found',
+            vibe: FlushbarVibe.error,
+          ),
         );
       }
       return;
@@ -162,14 +182,19 @@ class _CourseExportShared {
       log('⚠️ Course has no collections');
       if (context.mounted) {
         GlobalNav.withContext(
-          (context) =>
-              UiUtils.showFlushBar(context, msg: 'This course has no content to export', vibe: FlushbarVibe.warning),
+          (context) => UiUtils.showFlushBar(
+            context,
+            msg: 'This course has no content to export',
+            vibe: FlushbarVibe.warning,
+          ),
         );
       }
       return;
     }
 
-    log('✅ Course loaded with ${course.modules.length} collections. Opening export screen...');
+    log(
+      '✅ Course loaded with ${course.modules.length} collections. Opening export screen...',
+    );
 
     if (context.mounted) {
       await Navigator.of(context).push(
@@ -189,9 +214,16 @@ class _CourseExportShared {
   static Future<Result<String?>> exportCourse(
     Course course,
     ValueNotifier<ExportProgress> progressNotifier, {
-    required Future<_CollectionExportContext> Function(String courseTitle, String collectionTitle)
+    required Future<_CollectionExportContext> Function(
+      String courseTitle,
+      String collectionTitle,
+    )
     createCollectionExportContext,
-    required Future<FileExportResult> Function(ModuleContent content, _CollectionExportContext context) exportFile,
+    required Future<FileExportResult> Function(
+      ModuleContent content,
+      _CollectionExportContext context,
+    )
+    exportFile,
   }) async {
     return await Result.tryRunAsync(() async {
       log('🚀 Starting export process for course: ${course.title}');
@@ -199,7 +231,10 @@ class _CourseExportShared {
       progressNotifier.value = ExportProgress(message: 'Preparing export...');
 
       await course.modules.load();
-      final collections = _uniqueBy(course.modules.toList(), (collection) => collection.uid);
+      final collections = _uniqueBy(
+        course.modules.toList(),
+        (collection) => collection.uid,
+      );
 
       if (collections.isEmpty) {
         throw Exception('No collections to export');
@@ -225,7 +260,9 @@ class _CourseExportShared {
           failCount: failCount,
         );
 
-        log('📂 Processing collection ${i + 1}/${collections.length}: ${collection.title}');
+        log(
+          '📂 Processing collection ${i + 1}/${collections.length}: ${collection.title}',
+        );
 
         await collection.contents.load();
         final contents = collection.contents.toList();
@@ -238,11 +275,18 @@ class _CourseExportShared {
         final uniqueContents = _uniqueBy(contents, (content) => content.uid);
         totalFiles += uniqueContents.length;
 
-        final collectionContext = await createCollectionExportContext(course.title, collection.title);
+        final collectionContext = await createCollectionExportContext(
+          course.title,
+          collection.title,
+        );
 
-        final results = await _mapInBatches<ModuleContent, FileExportResult>(uniqueContents, 4, (content) async {
-          return await exportFile(content, collectionContext);
-        });
+        final results = await _mapInBatches<ModuleContent, FileExportResult>(
+          uniqueContents,
+          4,
+          (content) async {
+            return await exportFile(content, collectionContext);
+          },
+        );
 
         for (final result in results) {
           processedFiles++;
@@ -259,7 +303,8 @@ class _CourseExportShared {
               processedFiles >= totalFiles ||
               processedFiles % 10 == 0 ||
               lastProgressUpdate == null ||
-              DateTime.now().difference(lastProgressUpdate) >= const Duration(milliseconds: 300);
+              DateTime.now().difference(lastProgressUpdate) >=
+                  const Duration(milliseconds: 300);
 
           if (shouldUpdate) {
             lastProgressUpdate = DateTime.now();
@@ -293,11 +338,17 @@ class _CourseExportShared {
   }
 
   static String sanitizeFolderName(String name) {
-    return name.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_').replaceAll(RegExp(r'\s+'), ' ').trim();
+    return name
+        .replaceAll(RegExp(r'[<>:"/\\|?*]'), '_')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
   }
 
   static String sanitizeFileName(String name) {
-    return name.replaceAll(RegExp(r'[<>:"/\\|?*]'), '_').replaceAll(RegExp(r'\s+'), ' ').trim();
+    return name
+        .replaceAll(RegExp(r'[<>:"/\\|?*]'), '_')
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .trim();
   }
 
   static String resolveOriginalFileName(ModuleContent content) {
@@ -339,7 +390,10 @@ class CourseFolderExportManager {
   }
 
   /// Show the export screen for a course
-  static Future<void> showExportScreen(BuildContext context, String courseId) async {
+  static Future<void> showExportScreen(
+    BuildContext context,
+    String courseId,
+  ) async {
     await _CourseExportShared.showExportScreen(
       context,
       courseId,
@@ -360,7 +414,9 @@ class CourseFolderExportManager {
       createCollectionExportContext: (courseTitle, collectionTitle) async {
         return _CollectionExportContext(
           courseFolderName: _CourseExportShared.sanitizeFolderName(courseTitle),
-          collectionFolderName: _CourseExportShared.sanitizeFolderName(collectionTitle),
+          collectionFolderName: _CourseExportShared.sanitizeFolderName(
+            collectionTitle,
+          ),
         );
       },
       exportFile: (content, exportContext) {
@@ -390,9 +446,15 @@ class CourseFolderExportManager {
     int totalFiles = 0;
     for (final course in courses) {
       await course.modules.load();
-      for (final col in _uniqueBy(course.modules.toList(), (collection) => collection.uid)) {
+      for (final col in _uniqueBy(
+        course.modules.toList(),
+        (collection) => collection.uid,
+      )) {
         await col.contents.load();
-        totalFiles += _uniqueBy(col.contents.toList(), (content) => content.uid).length;
+        totalFiles += _uniqueBy(
+          col.contents.toList(),
+          (content) => content.uid,
+        ).length;
       }
     }
 
@@ -404,7 +466,9 @@ class CourseFolderExportManager {
     final failedCourses = <String>[];
 
     for (final course in courses) {
-      final progressNotifier = ValueNotifier<ExportProgress>(ExportProgress(message: 'Preparing...'));
+      final progressNotifier = ValueNotifier<ExportProgress>(
+        ExportProgress(message: 'Preparing...'),
+      );
 
       int lastCount = 0;
       progressNotifier.addListener(() {
@@ -424,7 +488,11 @@ class CourseFolderExportManager {
         }
       });
 
-      final result = await CourseFolderExportManager.exportCourse(course, exportFolder, progressNotifier);
+      final result = await CourseFolderExportManager.exportCourse(
+        course,
+        exportFolder,
+        progressNotifier,
+      );
 
       progressNotifier.dispose();
 
@@ -434,23 +502,31 @@ class CourseFolderExportManager {
     }
 
     // final notification
-    NotificationService.instance.showCompletion(title: 'Export complete', body: 'Exported $processedFiles files');
+    NotificationService.instance.showCompletion(
+      title: 'Export complete',
+      body: 'Exported $processedFiles files',
+    );
 
     final summary = failedCourses.isEmpty
         ? 'Export complete: exported $processedFiles files'
         : 'Export complete with ${failedCourses.length} failed course${failedCourses.length == 1 ? '' : 's'}: exported $processedFiles files';
 
-    return failedCourses.isEmpty ? Result.success(summary) : Result.error(summary);
+    return failedCourses.isEmpty
+        ? Result.success(summary)
+        : Result.error(summary);
   }
 
   /// Export multiple courses (Windows)
-  static Future<Result<String?>> exportAllCoursesWindows(BuildContext context) async {
+  static Future<Result<String?>> exportAllCoursesWindows(
+    BuildContext context,
+  ) async {
     final courses = await CourseRepo.getAllCourses();
     if (courses.isEmpty) {
       return Result.error('No courses available to export');
     }
 
-    final exportFolder = await CourseFolderExportManagerWindows.pickExportFolder();
+    final exportFolder =
+        await CourseFolderExportManagerWindows.pickExportFolder();
     if (exportFolder == null) {
       return Result.error('Export cancelled');
     }
@@ -459,9 +535,15 @@ class CourseFolderExportManager {
     int totalFiles = 0;
     for (final course in courses) {
       await course.modules.load();
-      for (final col in _uniqueBy(course.modules.toList(), (collection) => collection.uid)) {
+      for (final col in _uniqueBy(
+        course.modules.toList(),
+        (collection) => collection.uid,
+      )) {
         await col.contents.load();
-        totalFiles += _uniqueBy(col.contents.toList(), (content) => content.uid).length;
+        totalFiles += _uniqueBy(
+          col.contents.toList(),
+          (content) => content.uid,
+        ).length;
       }
     }
 
@@ -473,7 +555,9 @@ class CourseFolderExportManager {
     final failedCourses = <String>[];
 
     for (final course in courses) {
-      final progressNotifier = ValueNotifier<ExportProgress>(ExportProgress(message: 'Preparing...'));
+      final progressNotifier = ValueNotifier<ExportProgress>(
+        ExportProgress(message: 'Preparing...'),
+      );
 
       int lastCount = 0;
       progressNotifier.addListener(() {
@@ -493,7 +577,11 @@ class CourseFolderExportManager {
         }
       });
 
-      final result = await CourseFolderExportManagerWindows.exportCourse(course, exportFolder, progressNotifier);
+      final result = await CourseFolderExportManagerWindows.exportCourse(
+        course,
+        exportFolder,
+        progressNotifier,
+      );
 
       progressNotifier.dispose();
 
@@ -502,13 +590,18 @@ class CourseFolderExportManager {
       }
     }
 
-    NotificationService.instance.showCompletion(title: 'Export complete', body: 'Exported $processedFiles files');
+    NotificationService.instance.showCompletion(
+      title: 'Export complete',
+      body: 'Exported $processedFiles files',
+    );
 
     final summary = failedCourses.isEmpty
         ? 'Export complete: exported $processedFiles files'
         : 'Export complete with ${failedCourses.length} failed course${failedCourses.length == 1 ? '' : 's'}: exported $processedFiles files';
 
-    return failedCourses.isEmpty ? Result.success(summary) : Result.error(summary);
+    return failedCourses.isEmpty
+        ? Result.success(summary)
+        : Result.error(summary);
   }
 
   static Future<FileExportResult> _exportFile(
@@ -518,23 +611,37 @@ class CourseFolderExportManager {
     String collectionFolderName,
   ) async {
     try {
-      final originalFilename = _CourseExportShared.resolveOriginalFileName(content);
+      final originalFilename = _CourseExportShared.resolveOriginalFileName(
+        content,
+      );
       final storedFilePath = content.path.local;
       if (storedFilePath == null || storedFilePath.isEmpty) {
-        return FileExportResult(originalName: originalFilename, success: false, error: 'No file path found');
+        return FileExportResult(
+          originalName: originalFilename,
+          success: false,
+          error: 'No file path found',
+        );
       }
 
       final file = File(storedFilePath);
 
       if (!await file.exists()) {
-        return FileExportResult(originalName: originalFilename, success: false, error: 'File does not exist');
+        return FileExportResult(
+          originalName: originalFilename,
+          success: false,
+          error: 'File does not exist',
+        );
       }
 
       // Get/create course folder
-      final courseFolderDoc = await _safUtil.mkdirp(baseUri, [courseFolderName]);
+      final courseFolderDoc = await _safUtil.mkdirp(baseUri, [
+        courseFolderName,
+      ]);
 
       // Get/create collection folder inside course folder
-      final collectionFolderDoc = await _safUtil.mkdirp(courseFolderDoc.uri, [collectionFolderName]);
+      final collectionFolderDoc = await _safUtil.mkdirp(courseFolderDoc.uri, [
+        collectionFolderName,
+      ]);
 
       // Stream file without loading into memory
       final streamInfo = await _safStream.startWriteStream(
@@ -548,7 +655,10 @@ class CourseFolderExportManager {
         // Read and write in chunks
         final fileStream = file.openRead();
         await for (final chunk in fileStream) {
-          await _safStream.writeChunk(streamInfo.session, Uint8List.fromList(chunk));
+          await _safStream.writeChunk(
+            streamInfo.session,
+            Uint8List.fromList(chunk),
+          );
         }
       } finally {
         await _safStream.endWriteStream(streamInfo.session);
@@ -557,7 +667,11 @@ class CourseFolderExportManager {
       return FileExportResult(originalName: originalFilename, success: true);
     } catch (e, stackTrace) {
       log('❌ Error exporting file: $e\n$stackTrace');
-      return FileExportResult(originalName: content.title, success: false, error: e.toString());
+      return FileExportResult(
+        originalName: content.title,
+        success: false,
+        error: e.toString(),
+      );
     }
   }
 
@@ -620,7 +734,9 @@ class CourseFolderExportManagerWindows {
   /// Pick a folder for export using file_picker
   static Future<String?> pickExportFolder() async {
     try {
-      final String? selectedPath = await FilePicker.platform.getDirectoryPath(dialogTitle: 'Select Export Folder');
+      final String? selectedPath = await FilePicker.getDirectoryPath(
+        dialogTitle: 'Select Export Folder',
+      );
 
       if (selectedPath != null) {
         log('📂 Selected export folder path: $selectedPath');
@@ -635,7 +751,10 @@ class CourseFolderExportManagerWindows {
   }
 
   /// Show the export screen for a course
-  static Future<void> showExportScreen(BuildContext context, String courseId) async {
+  static Future<void> showExportScreen(
+    BuildContext context,
+    String courseId,
+  ) async {
     await _CourseExportShared.showExportScreen(
       context,
       courseId,
@@ -654,11 +773,18 @@ class CourseFolderExportManagerWindows {
       course,
       progressNotifier,
       createCollectionExportContext: (courseTitle, collectionTitle) async {
-        final courseFolderName = _CourseExportShared.sanitizeFolderName(courseTitle);
-        final collectionFolderName = _CourseExportShared.sanitizeFolderName(collectionTitle);
+        final courseFolderName = _CourseExportShared.sanitizeFolderName(
+          courseTitle,
+        );
+        final collectionFolderName = _CourseExportShared.sanitizeFolderName(
+          collectionTitle,
+        );
 
         final courseFolderPath = p.join(exportFolderPath, courseFolderName);
-        final collectionFolderPath = p.join(courseFolderPath, collectionFolderName);
+        final collectionFolderPath = p.join(
+          courseFolderPath,
+          collectionFolderName,
+        );
 
         final courseFolder = Directory(courseFolderPath);
         if (!await courseFolder.exists()) {
@@ -672,7 +798,10 @@ class CourseFolderExportManagerWindows {
           log('📁 Created collection folder: $collectionFolderPath');
         }
 
-        return _CollectionExportContext(courseFolderName: courseFolderName, collectionFolderName: collectionFolderName);
+        return _CollectionExportContext(
+          courseFolderName: courseFolderName,
+          collectionFolderName: collectionFolderName,
+        );
       },
       exportFile: (content, exportContext) {
         final destinationFolderPath = p.join(
@@ -685,19 +814,32 @@ class CourseFolderExportManagerWindows {
     );
   }
 
-  static Future<FileExportResult> _exportFile(ModuleContent content, String destinationFolderPath) async {
+  static Future<FileExportResult> _exportFile(
+    ModuleContent content,
+    String destinationFolderPath,
+  ) async {
     try {
-      final originalFilename = _CourseExportShared.resolveOriginalFileName(content);
+      final originalFilename = _CourseExportShared.resolveOriginalFileName(
+        content,
+      );
 
       final localPath = content.path.local;
       if (localPath == null || localPath.isEmpty) {
-        return FileExportResult(originalName: originalFilename, success: false, error: 'No file path found');
+        return FileExportResult(
+          originalName: originalFilename,
+          success: false,
+          error: 'No file path found',
+        );
       }
 
       final sourceFile = File(localPath);
 
       if (!await sourceFile.exists()) {
-        return FileExportResult(originalName: originalFilename, success: false, error: 'File does not exist');
+        return FileExportResult(
+          originalName: originalFilename,
+          success: false,
+          error: 'File does not exist',
+        );
       }
 
       final destinationPath = p.join(destinationFolderPath, originalFilename);
@@ -717,7 +859,11 @@ class CourseFolderExportManagerWindows {
       return FileExportResult(originalName: originalFilename, success: true);
     } catch (e, stackTrace) {
       log('❌ Error exporting file: $e\n$stackTrace');
-      return FileExportResult(originalName: content.title, success: false, error: e.toString());
+      return FileExportResult(
+        originalName: content.title,
+        success: false,
+        error: e.toString(),
+      );
     }
   }
 }
@@ -777,14 +923,24 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
       backgroundColor: theme.background,
       extendBodyBehindAppBar: widget.extendBodyBehindAppBar,
       appBar: AppBarContainer(
-        child: AppBarContainerChild(isDarkMode, title: "Export Course", subtitle: widget.course.title),
+        child: AppBarContainerChild(
+          isDarkMode,
+          title: "Export Course",
+          subtitle: widget.course.title,
+        ),
       ),
       body: Stack(
         fit: StackFit.expand,
         children: [
           SmoothCustomScrollView(
             slivers: [
-              SliverToBoxAdapter(child: TopPadding(withHeight: widget.extendBodyBehindAppBar ? kToolbarHeight : 0)),
+              SliverToBoxAdapter(
+                child: TopPadding(
+                  withHeight: widget.extendBodyBehindAppBar
+                      ? kToolbarHeight
+                      : 0,
+                ),
+              ),
               // Summary Card
               SliverToBoxAdapter(
                 child: Container(
@@ -792,10 +948,15 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
                   margin: EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [theme.primary.withValues(alpha: 0.1), theme.secondary.withValues(alpha: 0.1)],
+                      colors: [
+                        theme.primary.withValues(alpha: 0.1),
+                        theme.secondary.withValues(alpha: 0.1),
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: theme.primary.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: theme.primary.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -826,13 +987,25 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
                         ],
                       ),
                       const SizedBox(height: 16),
-                      Divider(color: theme.supportingText.withValues(alpha: 0.2)),
+                      Divider(
+                        color: theme.supportingText.withValues(alpha: 0.2),
+                      ),
                       const SizedBox(height: 16),
                       Row(
                         children: [
-                          _buildStatChip(theme, Icons.folder, '${widget.course.modules.length}', 'Collections'),
+                          _buildStatChip(
+                            theme,
+                            Icons.folder,
+                            '${widget.course.modules.length}',
+                            'Collections',
+                          ),
                           const SizedBox(width: 12),
-                          _buildStatChip(theme, Icons.insert_drive_file, '$totalFiles', 'Files'),
+                          _buildStatChip(
+                            theme,
+                            Icons.insert_drive_file,
+                            '$totalFiles',
+                            'Files',
+                          ),
                         ],
                       ),
                     ],
@@ -856,14 +1029,19 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
               const SliverToBoxAdapter(child: SizedBox(height: 12)),
               SliverList.separated(
                 itemCount: widget.course.modules.length,
-                separatorBuilder: (context, index) => const SizedBox(height: 12),
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 12),
                 itemBuilder: (context, index) {
                   final collection = widget.course.modules.elementAt(index);
                   // final fileCount = collectionFileCounts[collection.title] ?? 0;
 
                   return Padding(
                     padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: ModuleCard(module: collection, readOnly: true, onTap: () {}),
+                    child: ModuleCard(
+                      module: collection,
+                      readOnly: true,
+                      onTap: () {},
+                    ),
                   );
                 },
               ),
@@ -877,11 +1055,17 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
                   decoration: BoxDecoration(
                     color: theme.secondary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: theme.secondary.withValues(alpha: 0.3)),
+                    border: Border.all(
+                      color: theme.secondary.withValues(alpha: 0.3),
+                    ),
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.info_outline, color: theme.secondary, size: 20),
+                      Icon(
+                        Icons.info_outline,
+                        color: theme.secondary,
+                        size: 20,
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: CustomText(
@@ -902,7 +1086,11 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
                     padding: const EdgeInsets.only(top: 12, bottom: 12),
                     child: Row(
                       children: [
-                        Icon(Icons.warning_amber, color: theme.secondary, size: 16),
+                        Icon(
+                          Icons.warning_amber,
+                          color: theme.secondary,
+                          size: 16,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: CustomText(
@@ -933,9 +1121,13 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: theme.primary,
                   foregroundColor: theme.onPrimary,
-                  disabledBackgroundColor: theme.supportingText.withValues(alpha: 0.3),
+                  disabledBackgroundColor: theme.supportingText.withValues(
+                    alpha: 0.3,
+                  ),
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ),
@@ -945,14 +1137,21 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
     );
   }
 
-  Widget _buildStatChip(AppTheme theme, IconData icon, String value, String label) {
+  Widget _buildStatChip(
+    AppTheme theme,
+    IconData icon,
+    String value,
+    String label,
+  ) {
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: theme.surface,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: theme.supportingText.withValues(alpha: 0.2)),
+          border: Border.all(
+            color: theme.supportingText.withValues(alpha: 0.2),
+          ),
         ),
         child: Row(
           children: [
@@ -961,7 +1160,12 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CustomText(value, fontWeight: FontWeight.bold, fontSize: 16, color: theme.onSurface),
+                CustomText(
+                  value,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  color: theme.onSurface,
+                ),
                 CustomText(label, fontSize: 11, color: theme.supportingText),
               ],
             ),
@@ -981,17 +1185,24 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
       return;
     }
 
-    final progressNotifier = ValueNotifier<ExportProgress>(ExportProgress(message: 'Starting export...'));
+    final progressNotifier = ValueNotifier<ExportProgress>(
+      ExportProgress(message: 'Starting export...'),
+    );
 
     // Show progress dialog
     if (!mounted) return;
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => _ExportProgressDialog(progressNotifier: progressNotifier),
+      builder: (context) =>
+          _ExportProgressDialog(progressNotifier: progressNotifier),
     );
 
-    final result = await widget.exportCourse(widget.course, exportFolderPath, progressNotifier);
+    final result = await widget.exportCourse(
+      widget.course,
+      exportFolderPath,
+      progressNotifier,
+    );
 
     if (mounted) {
       context.pop(); // Close progress dialog
@@ -1006,7 +1217,11 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
       progressNotifier.dispose();
     }
 
-    log(result.isSuccess ? '✅ Export completed successfully' : '❌ Export failed: ${result.message}');
+    log(
+      result.isSuccess
+          ? '✅ Export completed successfully'
+          : '❌ Export failed: ${result.message}',
+    );
   }
 }
 
@@ -1033,7 +1248,12 @@ class _ExportProgressDialog extends ConsumerWidget {
               children: [
                 Icon(Icons.download, color: theme.primary, size: 48),
                 const SizedBox(height: 20),
-                CustomText('Exporting Course', fontSize: 20, fontWeight: FontWeight.bold, color: theme.onSurface),
+                CustomText(
+                  'Exporting Course',
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: theme.onSurface,
+                ),
                 const SizedBox(height: 24),
                 CircularProgressIndicator(color: theme.primary),
                 const SizedBox(height: 24),
@@ -1041,13 +1261,17 @@ class _ExportProgressDialog extends ConsumerWidget {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [theme.primary.withValues(alpha: 0.1), theme.secondary.withValues(alpha: 0.1)],
+                      colors: [
+                        theme.primary.withValues(alpha: 0.1),
+                        theme.secondary.withValues(alpha: 0.1),
+                      ],
                     ),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Column(
                     children: [
-                      if (progress.currentCollection != null && progress.totalCollections != null) ...[
+                      if (progress.currentCollection != null &&
+                          progress.totalCollections != null) ...[
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -1071,7 +1295,9 @@ class _ExportProgressDialog extends ConsumerWidget {
                           ),
                         ],
                         const SizedBox(height: 12),
-                        Divider(color: theme.supportingText.withValues(alpha: 0.2)),
+                        Divider(
+                          color: theme.supportingText.withValues(alpha: 0.2),
+                        ),
                         const SizedBox(height: 12),
                       ],
                       CustomText(
@@ -1080,19 +1306,33 @@ class _ExportProgressDialog extends ConsumerWidget {
                         fontSize: 14,
                         textAlign: TextAlign.center,
                       ),
-                      if (progress.successCount != null && progress.successCount! > 0) ...[
+                      if (progress.successCount != null &&
+                          progress.successCount! > 0) ...[
                         const SizedBox(height: 12),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.check_circle, color: Colors.green, size: 16),
+                            Icon(
+                              Icons.check_circle,
+                              color: Colors.green,
+                              size: 16,
+                            ),
                             const SizedBox(width: 4),
-                            CustomText('${progress.successCount} succeeded', fontSize: 12, color: theme.supportingText),
-                            if (progress.failCount != null && progress.failCount! > 0) ...[
+                            CustomText(
+                              '${progress.successCount} succeeded',
+                              fontSize: 12,
+                              color: theme.supportingText,
+                            ),
+                            if (progress.failCount != null &&
+                                progress.failCount! > 0) ...[
                               const SizedBox(width: 12),
                               Icon(Icons.error, color: Colors.red, size: 16),
                               const SizedBox(width: 4),
-                              CustomText('${progress.failCount} failed', fontSize: 12, color: theme.supportingText),
+                              CustomText(
+                                '${progress.failCount} failed',
+                                fontSize: 12,
+                                color: theme.supportingText,
+                              ),
                             ],
                           ],
                         ),

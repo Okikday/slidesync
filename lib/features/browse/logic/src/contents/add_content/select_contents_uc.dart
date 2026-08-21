@@ -9,7 +9,10 @@ import 'package:slidesync/core/constants/src/enums/enums.dart';
 /// Use this class to pick various content types and copy them into the app's cache directory.
 class SelectContentsUc {
   /// Picks files based on the [type] and returns a list of cached [File]s.
-  Future<List<File>?> referToAddContents(ModuleContentType type, {bool selectByFolder = false}) async {
+  Future<List<File>?> referToAddContents(
+    ModuleContentType type, {
+    bool selectByFolder = false,
+  }) async {
     if (selectByFolder) {
       return await _selectFolder();
     }
@@ -36,7 +39,7 @@ class SelectContentsUc {
 }
 
 Future<List<File>?> _selectFolder() async {
-  final result = await FilePicker.platform.getDirectoryPath();
+  final result = await FilePicker.getDirectoryPath();
   if (result == null) return null;
   log('Selected directory: $result');
 
@@ -72,19 +75,18 @@ Future<List<File>?> _selectFolder() async {
 
 /// Helper to copy picked files into cache and return them.
 Future<List<File>?> _selectFiles() async {
-  final result = await FilePicker.platform.pickFiles(allowMultiple: true);
-  if (result == null) return null;
-  return _copyToCache(result.paths.whereType<String>());
+  final result = await FilePicker.pickFiles();
+  if (result.isEmpty) return null;
+  return _copyToCache(result.map((e) => e.path).whereType<String>());
 }
 
 Future<List<File>?> _selectDocuments() async {
-  final result = await FilePicker.platform.pickFiles(
+  final result = await FilePicker.pickFiles(
     type: FileType.custom,
-    allowMultiple: true,
     allowedExtensions: ['pdf', 'docx', 'xlsx'],
   );
-  if (result == null) return null;
-  return _copyToCache(result.paths.whereType<String>());
+  if (result.isEmpty) return null;
+  return _copyToCache(result.map((e) => e.path).whereType<String>());
 }
 
 Future<List<File>?> _selectImages() async {

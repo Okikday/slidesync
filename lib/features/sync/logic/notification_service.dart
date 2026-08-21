@@ -27,7 +27,7 @@ class NotificationService {
       macOS: macOS,
     );
 
-    await _notifications.initialize(settings);
+    await _notifications.initialize(settings: settings);
 
     await _notifications
         .resolvePlatformSpecificImplementation<
@@ -67,10 +67,10 @@ class NotificationService {
     );
 
     await _notifications.show(
-      _idFromType(idType),
-      title,
-      'Uploading... $percent%',
-      NotificationDetails(android: androidDetails),
+      id: _idFromType(idType),
+      title: title,
+      body: 'Uploading... $percent%',
+      notificationDetails: NotificationDetails(android: androidDetails),
     );
   }
 
@@ -98,10 +98,10 @@ class NotificationService {
     );
 
     await _notifications.show(
-      _idFromType(idType),
-      title,
-      'Downloading... $percent%',
-      NotificationDetails(android: androidDetails),
+      id: _idFromType(idType),
+      title: title,
+      body: 'Downloading... $percent%',
+      notificationDetails: NotificationDetails(android: androidDetails),
     );
   }
 
@@ -129,10 +129,10 @@ class NotificationService {
     );
 
     await _notifications.show(
-      _idFromType(idType),
-      title,
-      'Storing... $percent%',
-      NotificationDetails(android: androidDetails),
+      id: _idFromType(idType),
+      title: title,
+      body: 'Storing... $percent%',
+      notificationDetails: NotificationDetails(android: androidDetails),
     );
   }
 
@@ -149,15 +149,15 @@ class NotificationService {
     );
 
     await _notifications.show(
-      _normalizeNotificationId(DateTime.now().microsecondsSinceEpoch),
-      title,
-      body,
-      const NotificationDetails(android: androidDetails),
+      id: _normalizeNotificationId(DateTime.now().microsecondsSinceEpoch),
+      title: title,
+      body: body,
+      notificationDetails: const NotificationDetails(android: androidDetails),
     );
   }
 
   Future<void> cancel(NotificationServiceIdType idType) async {
-    await _notifications.cancel(_idFromType(idType));
+    await _notifications.cancel(id: _idFromType(idType));
   }
 
   Future<void> cancelWithType(NotificationServiceIdType idType) async {

@@ -95,18 +95,28 @@ class FileMatcher {
 
     // Step 2: Run heavy operations in isolate
     try {
-      final result = await SmartIsolate.run<_IsolateTask, _IsolateProgress, Map<String, String>>(
-        _isolateEntryPoint,
-        _IsolateTask(directoryPath: selectedDirectory, hashToSize: hashToSize),
-        onProgress: (progress) {
-          // Log progress from isolate
-          if (progress.message != null) {
-            log("${progress.message}");
-          }
-        },
-      );
+      final result =
+          await SmartIsolate.run<
+            _IsolateTask,
+            _IsolateProgress,
+            Map<String, String>
+          >(
+            _isolateEntryPoint,
+            _IsolateTask(
+              directoryPath: selectedDirectory,
+              hashToSize: hashToSize,
+            ),
+            onProgress: (progress) {
+              // Log progress from isolate
+              if (progress.message != null) {
+                log("${progress.message}");
+              }
+            },
+          );
 
-      log('Search complete: ${result.length}/${hashToSize.length} files matched');
+      log(
+        'Search complete: ${result.length}/${hashToSize.length} files matched',
+      );
       return result;
     } catch (e, stackTrace) {
       log('Error during file search: $e');
@@ -142,7 +152,9 @@ class FileMatcher {
   /// The selected directory path as a [String], or null if cancelled.
   static Future<String?> _selectDirectory() async {
     try {
-      final String? path = await FilePicker.platform.getDirectoryPath(dialogTitle: 'Select folder to search for files');
+      final String? path = await FilePicker.getDirectoryPath(
+        dialogTitle: 'Select folder to search for files',
+      );
       return path;
     } catch (e) {
       log('Error selecting directory: $e');
@@ -182,9 +194,15 @@ class FileMatcher {
     int totalCandidates = 0;
     sizeToFilePaths.forEach((size, paths) {
       totalCandidates += paths.length;
-      emitProgress(_IsolateProgress(message: 'Found ${paths.length} file(s) with size $size bytes'));
+      emitProgress(
+        _IsolateProgress(
+          message: 'Found ${paths.length} file(s) with size $size bytes',
+        ),
+      );
     });
-    emitProgress(_IsolateProgress(message: 'Total candidate files: $totalCandidates'));
+    emitProgress(
+      _IsolateProgress(message: 'Total candidate files: $totalCandidates'),
+    );
 
     // For each hash, find the first file that matches
     final Map<String, String> hashToFilePath = {};
@@ -197,32 +215,53 @@ class FileMatcher {
       final List<String>? candidateFiles = sizeToFilePaths[fileSize];
 
       if (candidateFiles == null || candidateFiles.isEmpty) {
-        emitProgress(_IsolateProgress(message: 'No files found with size $fileSize for hash $targetHash'));
+        emitProgress(
+          _IsolateProgress(
+            message: 'No files found with size $fileSize for hash $targetHash',
+          ),
+        );
         continue;
       }
 
-      emitProgress(_IsolateProgress(message: 'Checking ${candidateFiles.length} candidate(s) for hash $targetHash'));
+      emitProgress(
+        _IsolateProgress(
+          message:
+              'Checking ${candidateFiles.length} candidate(s) for hash $targetHash',
+        ),
+      );
 
       // Calculate hash for each candidate until we find a match
       bool foundMatch = false;
       for (final filePath in candidateFiles) {
         try {
-          final String calculatedHash = await CryptoUtils.calculateFileHashXXH3(filePath);
+          final String calculatedHash = await CryptoUtils.calculateFileHashXXH3(
+            filePath,
+          );
 
           if (calculatedHash == targetHash) {
             hashToFilePath[targetHash] = filePath;
-            emitProgress(_IsolateProgress(message: '✓ Match found for $targetHash: $filePath'));
+            emitProgress(
+              _IsolateProgress(
+                message: '✓ Match found for $targetHash: $filePath',
+              ),
+            );
             foundMatch = true;
             break; // Stop checking other files for this hash
           }
         } catch (e) {
           // Log error but continue with other candidates
-          emitProgress(_IsolateProgress(message: 'Error calculating hash for $filePath: $e'));
+          emitProgress(
+            _IsolateProgress(
+              message: 'Error calculating hash for $filePath: $e',
+            ),
+          );
         }
       }
 
       if (!foundMatch) {
-        emitProgress(_IsolateProgress(message: '✗ No match found for hash $targetHash'));
+        emitProgress(
+          _IsolateProgress(message: '✗ No match found for hash $targetHash'),
+        );
       }
     }
 
@@ -258,7 +297,10 @@ class FileMatcher {
       final directory = Directory(directoryPath);
 
       // Recursively scan directory
-      await for (final entity in directory.list(recursive: true, followLinks: false)) {
+      await for (final entity in directory.list(
+        recursive: true,
+        followLinks: false,
+      )) {
         // Only process files, skip directories and links
         if (entity is File) {
           try {
@@ -270,12 +312,20 @@ class FileMatcher {
             }
           } catch (e) {
             // Log error but continue scanning other files
-            emitProgress(_IsolateProgress(message: 'Error reading file ${entity.path}: $e'));
+            emitProgress(
+              _IsolateProgress(
+                message: 'Error reading file ${entity.path}: $e',
+              ),
+            );
           }
         }
       }
     } catch (e) {
-      emitProgress(_IsolateProgress(message: 'Error scanning directory $directoryPath: $e'));
+      emitProgress(
+        _IsolateProgress(
+          message: 'Error scanning directory $directoryPath: $e',
+        ),
+      );
     }
 
     return sizeToFilePaths;

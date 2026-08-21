@@ -90,7 +90,7 @@ class CourseFolderImportManagerWindows {
   /// Pick a folder using file_picker
   static Future<String?> pickFolder() async {
     try {
-      final String? selectedPath = await FilePicker.platform.getDirectoryPath(
+      final String? selectedPath = await FilePicker.getDirectoryPath(
         dialogTitle: 'Select Course Folder',
       );
 
