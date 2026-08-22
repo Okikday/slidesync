@@ -1,24 +1,23 @@
 import java.util.Properties
 import java.io.FileInputStream
+
 plugins {
     id("com.android.application")
-    id("kotlin-android")
-   id("com.google.gms.google-services")
+    id("org.jetbrains.kotlin.android")
+    id("com.google.gms.google-services")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
-    
 }
 
 val keystorePropertiesFile = rootProject.file("key.properties")
 val keystoreProperties = Properties()
-if(keystorePropertiesFile.exists()){
+if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
 
 android {
     namespace = "com.bubble.slidesync"
     compileSdk = 36
-    //    ndkVersion = flutter.ndkVersion
     ndkVersion = "28.2.13676358"
 
     compileOptions {
@@ -27,25 +26,16 @@ android {
         isCoreLibraryDesugaringEnabled = true 
     }
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
-
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.bubble.slidesync"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-
         multiDexEnabled = true
-
     }
 
-        signingConfigs {
+    signingConfigs {
         if (keystorePropertiesFile.exists()) {
             create("release") {
                 storeFile = file(keystoreProperties["storeFile"] as String)
@@ -78,11 +68,17 @@ android {
     }
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
+}
+
 flutter {
     source = "../.."
 }
 
-dependencies{
+dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.2.0"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-ai")
