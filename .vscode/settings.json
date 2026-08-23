@@ -1,5 +1,8 @@
 {
     "java.configuration.updateBuildConfiguration": "interactive",
     "workbench.editor.dragToOpenWindow": false,
-    "cmake.sourceDirectory": "C:/Users/Okikiola/MyFlutterProjects/slidesync/windows"
+    "cmake.sourceDirectory": "C:/Users/Okikiola/MyFlutterProjects/slidesync/windows",
+    "dart.analyzerVmAdditionalArgs": [
+        "--max-old-space-size=1536"
+    ]
 }

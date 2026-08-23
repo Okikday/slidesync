@@ -127,15 +127,9 @@ class $AssetsLogoGen {
   ];
 }
 
-class Assets {
-  const Assets._();
-
-  static const String aEnv = '.env';
+abstract final class Assets {
   static const $AssetsAnimsGen anims = $AssetsAnimsGen();
   static const $AssetsIconsGen icons = $AssetsIconsGen();
   static const $AssetsImagesGen images = $AssetsImagesGen();
   static const $AssetsLogoGen logo = $AssetsLogoGen();
-
-  /// List of all assets
-  static List<String> get values => [aEnv];
 }

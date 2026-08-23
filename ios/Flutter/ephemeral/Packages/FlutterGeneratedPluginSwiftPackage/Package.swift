@@ -9,7 +9,7 @@ import PackageDescription
 let package = Package(
     name: "FlutterGeneratedPluginSwiftPackage",
     platforms: [
-        .iOS("13.0")
+        .iOS("15.0")
     ],
     products: [
         .library(name: "FlutterGeneratedPluginSwiftPackage", type: .static, targets: ["FlutterGeneratedPluginSwiftPackage"])
@@ -34,7 +34,7 @@ let package = Package(
         .package(name: "share_plus", path: "../.packages/share_plus-13.3.0"),
         .package(name: "shared_preferences_foundation", path: "../.packages/shared_preferences_foundation-2.5.6"),
         .package(name: "sqflite_darwin", path: "../.packages/sqflite_darwin-2.4.3+1"),
-        .package(name: "syncfusion_flutter_pdfviewer", path: "../.packages/syncfusion_flutter_pdfviewer-33.2.15"),
+        .package(name: "syncfusion_flutter_pdfviewer", path: "../.packages/syncfusion_flutter_pdfviewer-34.2.4"),
         .package(name: "url_launcher_ios", path: "../.packages/url_launcher_ios-6.4.1"),
         .package(name: "FlutterFramework", path: "../.packages/FlutterFramework")
     ],
