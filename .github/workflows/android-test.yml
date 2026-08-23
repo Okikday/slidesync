@@ -60,6 +60,9 @@ jobs:
           echo "=== google-services.json (first 5 lines) ===" && head -5 android/app/google-services.json
           echo "=== firebase_options.dart (first 5 lines) ===" && head -5 lib/firebase_options.dart
 
+      - name: Build runner
+        run: dart run build_runner build
+        
       - name: Get dependencies
         run: flutter pub get
 
