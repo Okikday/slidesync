@@ -11,7 +11,7 @@ import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/features/sync/logic/notification_service.dart';
-import 'package:slidesync/app/src/firebase_options.dart';
+import 'package:slidesync/firebase_options.dart';
 import 'package:window_manager/window_manager.dart';
 
 // ignore: implementation_imports

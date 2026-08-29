@@ -307,7 +307,7 @@ class DioUploadManager implements UploadManagerBase {
       .setData<String>(key: '$_sessionKeyPrefix$id', value: session.toJson());
 
   Future<_UploadSession?> _loadSession(String id) async {
-    final json = await KVStore.me.getData<String>(key: '$_sessionKeyPrefix$id');
+    final json = KVStore.me.getData<String>(key: '$_sessionKeyPrefix$id');
     if (json == null) return null;
 
     try {

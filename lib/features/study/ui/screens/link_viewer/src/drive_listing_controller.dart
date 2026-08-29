@@ -45,10 +45,9 @@ class DriveListingController {
   DriveListingController({
     required this.ref,
     required this.collectionId,
-    void Function()? onOperationStart,
-    void Function()? onOperationEnd,
-  }) : _onOperationStart = onOperationStart,
-       _onOperationEnd = onOperationEnd;
+    this._onOperationStart,
+    this._onOperationEnd,
+  });
 
   void dispose() {
     // Reserved for explicit cleanup if this controller owns resources in the future.

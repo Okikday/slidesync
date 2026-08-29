@@ -40,6 +40,7 @@ class SignInActions {
         await 300.inMs.delay();
         // ignore: use_build_context_synchronously
         UiUtils.showFlushBar(
+          // ignore: use_build_context_synchronously
           context,
           msg: "Successfully signed in!",
           vibe: FlushbarVibe.success,
