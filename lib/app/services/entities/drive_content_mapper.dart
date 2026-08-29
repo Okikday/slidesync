@@ -1,5 +1,5 @@
 import 'package:slidesync/core/constants/src/enums/enums.dart';
-import 'package:slidesync/core/sync/entities/drive_file_entity.dart';
+import 'package:slidesync/app/services/entities/drive_file_entity.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/models/file_path/file_path.dart';
 

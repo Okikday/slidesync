@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/features/main/providers/main_provider.dart';
+import 'package:slidesync/features/main/pod/library/library_pod.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/icon_helper.dart';
@@ -12,7 +12,7 @@ class LibraryTabViewLayoutButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final stateValue = MainProvider.library
+    final stateValue = LibraryPod.me
         .select((s) => (cardViewType: s.cardViewType, isLoading: s.isLoading))
         .watch(ref);
 
@@ -24,7 +24,7 @@ class LibraryTabViewLayoutButton extends ConsumerWidget {
     }
 
     return BuildButton(
-      onTap: () => MainProvider.library.act(ref).toggleCardViewType(),
+      onTap: () => LibraryPod.me.act(ref).toggleCardViewType(),
       backgroundColor: backgroundColor,
       iconData: IconHelper.getCardViewTypeIconData(stateValue.cardViewType),
     );

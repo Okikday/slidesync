@@ -5,11 +5,10 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/features/main/providers/main_provider.dart';
+import 'package:slidesync/features/main/pod/library/library_pod.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/animations/animated_sizing.dart';
-import 'package:slidesync/shared/widgets/state/absorber.dart';
 
 class LibraryTabViewHeaderText extends ConsumerWidget {
   const LibraryTabViewHeaderText({super.key, this.title = "Your Library"});
@@ -20,26 +19,33 @@ class LibraryTabViewHeaderText extends ConsumerWidget {
     final theme = ref;
     final bgColor = theme.surface;
     final onBackground = theme.onBackground;
-    final textStyle = TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: onBackground);
+    final textStyle = TextStyle(
+      fontSize: 26,
+      fontWeight: FontWeight.bold,
+      color: onBackground,
+    );
     final allowedHeight = libraryAppBarMaxHeight - libraryAppBarMinHeight;
     final topPadding = context.topPadding;
     final height = math.max(0.0, allowedHeight - topPadding);
-
-    final scrollOffsetListenable = MainProvider.library.link(ref).scrollOffset;
 
     return Padding(
       padding: EdgeInsets.only(top: topPadding, left: 20),
       child: Center(
         child: SizedBox(
           height: height,
-          child: AbsorberWatch(
-            listenable: scrollOffsetListenable,
-            builder: (context, offset, ref, child) {
-              final percentScroll = (math.min(offset, allowedHeight) / allowedHeight);
+          child: Consumer(
+            builder: (context, ref, child) {
+              final offset = LibraryPod.scrollOffset.watch(ref);
+              final percentScroll =
+                  (math.min(offset, allowedHeight) / allowedHeight);
               final completeScroll = percentScroll == 1.0;
 
               // Interpolate between center and centerLeft.
-              final alignment = Alignment.lerp(Alignment.center, Alignment.centerLeft, percentScroll)!;
+              final alignment = Alignment.lerp(
+                Alignment.center,
+                Alignment.centerLeft,
+                percentScroll,
+              )!;
               return Align(
                 alignment: alignment,
                 child: AnimatedContainer(
@@ -47,20 +53,34 @@ class LibraryTabViewHeaderText extends ConsumerWidget {
                   curve: Curves.decelerate,
                   constraints: const BoxConstraints(maxHeight: 48),
                   clipBehavior: Clip.hardEdge,
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
-                    color: bgColor.withValues(alpha: lerpDouble(0.0, 0.75, percentScroll)),
+                    color: bgColor.withValues(
+                      alpha: lerpDouble(0.0, 0.75, percentScroll),
+                    ),
                     border: Border.fromBorderSide(
-                      BorderSide(color: onBackground.withValues(alpha: lerpDouble(0.0, 0.04, percentScroll))),
+                      BorderSide(
+                        color: onBackground.withValues(
+                          alpha: lerpDouble(0.0, 0.04, percentScroll),
+                        ),
+                      ),
                     ),
                     borderRadius: BorderRadius.circular(100),
                   ),
                   child: AnimatedSizing.fast(
-                    child: CustomText(
-                      completeScroll ? "Library" : title,
-                      textAlign: TextAlign.center,
-                      style: textStyle.copyWith(fontSize: lerpDouble(26, 20, percentScroll)),
-                    ).animate(key: ValueKey(completeScroll)).blurXY(begin: 1.0, end: 0),
+                    child:
+                        CustomText(
+                              completeScroll ? "Library" : title,
+                              textAlign: TextAlign.center,
+                              style: textStyle.copyWith(
+                                fontSize: lerpDouble(26, 20, percentScroll),
+                              ),
+                            )
+                            .animate(key: ValueKey(completeScroll))
+                            .blurXY(begin: 1.0, end: 0),
                   ),
                 ),
               );

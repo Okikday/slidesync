@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
+import 'package:slidesync/features/main/pod/home/home_pod.dart';
+import 'package:slidesync/features/main/pod/main_pod.dart';
 import 'package:slidesync/features/main/ui/actions/home/home_tab_actions.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_app_bar.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body.dart';
-import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 const double isScrolledLvl = 40.0;
@@ -17,7 +18,8 @@ class HomeTabView extends ConsumerStatefulWidget {
   ConsumerState createState() => _HomeTabViewState();
 }
 
-class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAliveClientMixin, HomeTabActions {
+class _HomeTabViewState extends ConsumerState<HomeTabView>
+    with AutomaticKeepAliveClientMixin, HomeTabActions {
   late final ScrollController scrollController;
 
   @override
@@ -26,7 +28,7 @@ class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAli
     scrollController = ScrollController()..addListener(scrollListener);
   }
 
-  void scrollListener() => MainProvider.home.expand(ref, (r, v) {
+  void scrollListener() => HomePod.me.expand(ref, (r, v) {
     final isScrolled = r.read(v.select((s) => s.isScrolled));
     scrollController.offset > isScrolledLvl && !isScrolled
         ? r.read(v.notifier).setIsScrolled(true)
@@ -44,17 +46,24 @@ class _HomeTabViewState extends ConsumerState<HomeTabView> with AutomaticKeepAli
   }
 
   void focusModeListener(bool? prev, bool next) =>
-      SystemChrome.setEnabledSystemUIMode(next ? SystemUiMode.immersive : SystemUiMode.edgeToEdge);
+      SystemChrome.setEnabledSystemUIMode(
+        next ? SystemUiMode.immersive : SystemUiMode.edgeToEdge,
+      );
 
   @override
   Widget build(BuildContext context) {
     super.build(context);
     // Listen to events on isFocusModeProvider
-    ref.listen<bool>(MainProvider.state.link(ref).isFocusMode, focusModeListener);
-    // final tabIndex = MainProvider.state.select((s) => s.tabIndex).watch(ref);
+    ref.listen(
+      MainPod.me.link(ref).isFocusMode,
+      (a, b) => focusModeListener(a?.value, b.value!),
+    );
+    // final tabIndex = MainPod.me.select((s) => s.tabIndex).watch(ref);
     return NestedScrollView(
       controller: scrollController,
-      physics: DeviceUtils.isDesktop() ? const NeverScrollableScrollPhysics() : null,
+      physics: DeviceUtils.isDesktop()
+          ? const NeverScrollableScrollPhysics()
+          : null,
       headerSliverBuilder: (context, isInnerBoxScrolled) {
         return [
           HomeAppBar(

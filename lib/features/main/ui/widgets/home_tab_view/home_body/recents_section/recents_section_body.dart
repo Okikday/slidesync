@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
-import 'package:slidesync/core/assets/assets.gen.dart';
+import 'package:slidesync/app/assets/assets.gen.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/features/main/providers/main_provider.dart';
+import 'package:slidesync/features/main/pod/home/home_pod.dart';
+import 'package:slidesync/features/main/pod/main_pod.dart';
 import 'package:slidesync/features/main/ui/actions/home/recent_dialog_actions.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recent_dialog/recent_dialog.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -19,9 +20,9 @@ class RecentsSectionBody extends ConsumerWidget with RecentDialogActions {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    final tabIndex = MainProvider.state.select((s) => s.tabIndex).watch(ref);
+    final tabIndex = MainPod.me.select((s) => s.tabIndex).watch(ref);
 
-    final asyncProgressTrackValues = MainProvider.home.link(ref).recentContentsTrack(10).watch(ref);
+    final asyncProgressTrackValues = HomePod.recentContentTracks(10).watch(ref);
 
     return asyncProgressTrackValues.when(
       data: (data) {
@@ -72,7 +73,10 @@ class RecentsSectionBody extends ConsumerWidget with RecentDialogActions {
               spacing: 12,
               children: [
                 Icon(Icons.error_rounded, size: 64, color: theme.primary),
-                CustomText("Oops, we couldn't load up your recent reads", color: theme.onBackground),
+                CustomText(
+                  "Oops, we couldn't load up your recent reads",
+                  color: theme.onBackground,
+                ),
               ],
             ),
           ),
@@ -96,7 +100,11 @@ class LoadingRecentsSection extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         spacing: 12,
         children: [
-          LoadingLogo(color: ref.primary, rotate: false, size: context.deviceWidth * 0.4),
+          LoadingLogo(
+            color: ref.primary,
+            rotate: false,
+            size: context.deviceWidth * 0.4,
+          ),
           CustomText(
             "Looking around for your recents...Where could they be?",
             color: ref.onBackground,
@@ -128,12 +136,20 @@ class _RecommendedSectionState extends ConsumerState<RecommendedSection> {
         children: [
           Padding(
             padding: const EdgeInsets.only(left: 16, right: 16),
-            child: CustomText("Recommended", fontWeight: FontWeight.bold, fontSize: 16, color: theme.onBackground),
+            child: CustomText(
+              "Recommended",
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: theme.onBackground,
+            ),
           ),
           Center(
             child: SizedBox.square(
               dimension: 100,
-              child: LottieBuilder.asset(Assets.anims.roundedPlayingFace, reverse: true),
+              child: LottieBuilder.asset(
+                Assets.anims.roundedPlayingFace,
+                reverse: true,
+              ),
             ),
           ),
 

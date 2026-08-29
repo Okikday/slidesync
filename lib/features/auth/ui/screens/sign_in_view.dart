@@ -9,7 +9,7 @@ import 'package:slidesync/features/auth/ui/actions/sign_in_actions.dart';
 
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/core/assets/assets.gen.dart';
+import 'package:slidesync/app/assets/assets.gen.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';

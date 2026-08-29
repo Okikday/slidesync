@@ -5,7 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
-import 'package:slidesync/features/main/providers/main_provider.dart';
+import 'package:slidesync/features/main/pod/home/home_pod.dart';
+import 'package:slidesync/features/main/pod/main_pod.dart';
 import 'package:slidesync/features/main/ui/actions/home/home_tab_actions.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/home_dashboard.dart';
 // import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/more_section.dart';
@@ -24,7 +25,9 @@ class HomeBody extends ConsumerStatefulWidget {
 }
 
 class _HomeBodyState extends ConsumerState<HomeBody> with HomeTabActions {
-  final hasAnyCourseFuture = CourseRepo.filter.uidIsNotEmpty().count().then((count) => count > 0);
+  final hasAnyCourseFuture = CourseRepo.filter.uidIsNotEmpty().count().then(
+    (count) => count > 0,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -35,28 +38,36 @@ class _HomeBodyState extends ConsumerState<HomeBody> with HomeTabActions {
         const SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
 
         SliverToBoxAdapter(
-          child: AbsorberWatch(
-            listenable: MainProvider.home
-                .link(ref)
-                .recentContentsTrack(1)
-                .select((s) => s.whenData((v) => v.isEmpty ? null : v.last)),
+          child: Consumer(
+            builder: (context, ref, child) {
+              final recentContentTrack = HomePod.recentContentTracks(1)
+                  .select((s) => s.whenData((v) => v.isEmpty ? null : v.last))
+                  .watch(ref);
 
-            builder: (context, recentContentTrack, ref, child) {
               return recentContentTrack.when(
                 data: (data) {
                   if (data != null) {
                     return AbsorberWatch(
-                      listenable: MainProvider.state.select((s) => s.tabIndex),
+                      listenable: MainPod.me.select((s) => s.tabIndex),
                       builder: (context, tabIndex, ref, child) {
                         return child!
                             .animate(target: tabIndex == 0 ? 1 : 0)
-                            .scaleXY(begin: 0.95, end: 1.0, duration: 400.inMs, curve: CustomCurves.decelerate)
-                            .fadeIn(duration: 400.inMs, curve: CustomCurves.decelerate);
+                            .scaleXY(
+                              begin: 0.95,
+                              end: 1.0,
+                              duration: 400.inMs,
+                              curve: CustomCurves.decelerate,
+                            )
+                            .fadeIn(
+                              duration: 400.inMs,
+                              curve: CustomCurves.decelerate,
+                            );
                       },
                       child: HomeDashboard(
                         data: data,
                         isFirst: true,
-                        onReadingBtnTapped: () => onReadingButtonTapped(ref, data: data),
+                        onReadingBtnTapped: () =>
+                            onReadingButtonTapped(ref, data: data),
                       ),
                     );
                   }
@@ -69,7 +80,11 @@ class _HomeBodyState extends ConsumerState<HomeBody> with HomeTabActions {
             child: FutureBuilder(
               future: hasAnyCourseFuture,
               builder: (context, hasAnyCourseSnap) =>
-                  HomeDashboard.defaultConfig(context, hasAnyCourseSnap.data, onEmptyReadingButtonTapped),
+                  HomeDashboard.defaultConfig(
+                    context,
+                    hasAnyCourseSnap.data,
+                    onEmptyReadingButtonTapped,
+                  ),
             ),
           ),
         ),

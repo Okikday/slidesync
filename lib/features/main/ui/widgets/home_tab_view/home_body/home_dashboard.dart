@@ -4,7 +4,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/core/assets/assets.dart';
+import 'package:slidesync/app/assets/assets.dart';
 import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/routes/routes.dart';
@@ -47,7 +47,10 @@ class HomeDashboard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: theme.adjustBgAndPrimaryWithLerp,
         borderRadius: BorderRadius.circular(25),
-        border: Border.all(width: 2, color: theme.adjustBgAndPrimaryWithLerpExtra),
+        border: Border.all(
+          width: 2,
+          color: theme.adjustBgAndPrimaryWithLerpExtra,
+        ),
         image: DecorationImage(
           image:
               // previewPath != null && previewPath is String
@@ -159,7 +162,8 @@ class HomeDashboard extends ConsumerWidget {
                           value: ((progressValue.clamp(0, 100))).toDouble(),
                           strokeCap: StrokeCap.round,
                           color: theme.primaryColor,
-                          backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.5),
+                          backgroundColor: theme.altBackgroundSecondary
+                              .withValues(alpha: 0.5),
                         ),
                       ),
                     ),

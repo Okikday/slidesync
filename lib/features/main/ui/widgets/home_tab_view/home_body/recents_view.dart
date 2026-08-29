@@ -2,7 +2,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
-import 'package:slidesync/features/main/providers/main_provider.dart';
+import 'package:slidesync/features/main/pod/home/home_pod.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recent_list_tile.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recents_section_body.dart';
 import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
@@ -19,16 +19,22 @@ class RecentsView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
-    final asyncProgressTrackValues = MainProvider.home.link(ref).recentContentsTrack(100).watch(ref);
+    final asyncProgressTrackValues = HomePod.recentContentTracks(
+      100,
+    ).watch(ref);
 
     return AppScaffold(
       title: "",
-      appBar: AppBarContainer(child: AppBarContainerChild(theme.isDarkMode, title: "Recent reads")),
+      appBar: AppBarContainer(
+        child: AppBarContainerChild(theme.isDarkMode, title: "Recent reads"),
+      ),
       extendBodyBehindAppBar: true,
       body: asyncProgressTrackValues.when(
         data: (data) {
           if (data.isEmpty) {
-            return Center(child: CustomText("No recent reads", color: ref.onBackground));
+            return Center(
+              child: CustomText("No recent reads", color: ref.onBackground),
+            );
           }
           return SmoothListView.builder(
             itemCount: data.length,
@@ -44,9 +50,16 @@ class RecentsView extends ConsumerWidget {
 
                   isStarred: false,
                   onTapTile: () async {
-                    final toPushContent = await ModuleContentRepo.getByUid(contentTrack.uid);
+                    final toPushContent = await ModuleContentRepo.getByUid(
+                      contentTrack.uid,
+                    );
                     if (toPushContent == null) return;
-                    GlobalNav.withContext((context) => ContentViewGateActions.redirectToViewer(ref, toPushContent));
+                    GlobalNav.withContext(
+                      (context) => ContentViewGateActions.redirectToViewer(
+                        ref,
+                        toPushContent,
+                      ),
+                    );
                   },
                   onLongTapTile: () {},
                 ),
@@ -62,7 +75,10 @@ class RecentsView extends ConsumerWidget {
               spacing: 12,
               children: [
                 Icon(Icons.error_rounded, size: 64, color: theme.primary),
-                CustomText("Oops, we couldn't load up your recent reads", color: theme.onBackground),
+                CustomText(
+                  "Oops, we couldn't load up your recent reads",
+                  color: theme.onBackground,
+                ),
               ],
             ),
           );

@@ -23,11 +23,15 @@ class UiUtils {
     Brightness? systemNavigatorBarIconBrightness,
   }) {
     return SystemUiOverlayStyle(
-      systemNavigationBarColor: systemNavigatorBarColor ?? scaffoldBackgroundColor,
+      systemNavigationBarColor:
+          systemNavigatorBarColor ?? scaffoldBackgroundColor,
       statusBarColor: statusBarColor ?? scaffoldBackgroundColor,
-      statusBarIconBrightness: statusBarIconBrightness ?? (isDarkMode ? Brightness.light : Brightness.dark),
+      statusBarIconBrightness:
+          statusBarIconBrightness ??
+          (isDarkMode ? Brightness.light : Brightness.dark),
       systemNavigationBarIconBrightness:
-          systemNavigatorBarIconBrightness ?? (isDarkMode ? Brightness.light : Brightness.dark),
+          systemNavigatorBarIconBrightness ??
+          (isDarkMode ? Brightness.light : Brightness.dark),
     );
   }
 
@@ -41,6 +45,7 @@ class UiUtils {
     Offset? blurSigma,
     void Function()? onClickOutside,
   }) async {
+    if (!context.mounted) return null;
     final theme = context.theme;
     final normalColor = theme.colorScheme.onSurface;
     final bgColor = theme.scaffoldBackgroundColor.withValues(alpha: 0.8);
@@ -55,7 +60,10 @@ class UiUtils {
                 leading: Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: LoadingLogo(size: 50, color: theme.colorScheme.secondary),
+                    child: LoadingLogo(
+                      size: 50,
+                      color: theme.colorScheme.secondary,
+                    ),
                   ),
                 ),
                 child: Column(
@@ -67,7 +75,10 @@ class UiUtils {
                       children: [
                         Expanded(
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 8,
+                              horizontal: 12,
+                            ),
                             child: CustomText(message, color: normalColor),
                           ),
                         ),
@@ -107,6 +118,7 @@ class UiUtils {
     Color? barrierColor,
     Offset? blurSigma,
   }) async {
+    if (!context.mounted) return;
     await CustomDialog.show(
       context,
       canPop: canPop,
@@ -132,7 +144,8 @@ class UiUtils {
     EdgeInsets? margin,
     double barBlur = 4.0,
   }) async {
-    final List<Color> colors = _resolveFlushbarVibe(context, vibe);
+    if (!context.mounted) return null;
+    final colors = _resolveFlushbarVibe(context, vibe);
 
     await Flushbar(
       message: msg,
@@ -149,9 +162,13 @@ class UiUtils {
 
       margin:
           margin ??
-          (flushbarPosition == FlushbarPosition.TOP
-              ? EdgeInsets.only(left: 24, right: 24, bottom: context.bottomPadding + 12)
-              : EdgeInsets.only(left: 24, right: 24, top: context.topPadding + 8.0)),
+          EdgeInsets.only(
+            left: 24,
+            right: 24,
+            bottom: flushbarPosition == FlushbarPosition.TOP
+                ? context.bottomPadding + 12
+                : context.topPadding + 8.0,
+          ),
       barBlur: barBlur,
     ).show(context);
   }

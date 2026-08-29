@@ -349,7 +349,7 @@ import 'package:slidesync/core/apis/abstract/http_upload_manager.dart';
 import 'package:slidesync/core/apis/abstract/http_download_manager.dart';
 
 // Coordinator
-import 'package:slidesync/core/apis/abstract/sync_coordinator.dart';
+import 'package:slidesync/app/apis/abstract/sync_coordinator.dart';
 
 // Logging
 import 'package:slidesync/core/apis/abstract/upload_download_base.dart'; // SyncLogger

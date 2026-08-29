@@ -3,20 +3,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
-import 'package:slidesync/core/assets/assets.dart';
+import 'package:slidesync/app/assets/assets.dart';
 
 class LoadingLogo extends ConsumerStatefulWidget {
   final double? size;
   final bool rotate;
   final Color? color;
   final bool animate;
-  const LoadingLogo({super.key, this.size = 40, this.rotate = true, this.color, this.animate = true});
+  const LoadingLogo({
+    super.key,
+    this.size = 40,
+    this.rotate = true,
+    this.color,
+    this.animate = true,
+  });
 
   @override
   ConsumerState<ConsumerStatefulWidget> createState() => _LoadingLogoState();
 }
 
-class _LoadingLogoState extends ConsumerState<LoadingLogo> with SingleTickerProviderStateMixin {
+class _LoadingLogoState extends ConsumerState<LoadingLogo>
+    with SingleTickerProviderStateMixin {
   late final AnimationController controller;
   late final Animation<double> anim;
   late final Animation<double> scaleAnim;
@@ -53,7 +60,11 @@ class _LoadingLogoState extends ConsumerState<LoadingLogo> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
-    final lottieChild = LottieBuilder.asset(Assets.anims.experimentalLoadingJson, reverse: true, controller: anim);
+    final lottieChild = LottieBuilder.asset(
+      Assets.anims.experimentalLoadingJson,
+      reverse: true,
+      controller: anim,
+    );
     final child = SizedBox.square(
       dimension: widget.size,
       child: FadeTransition(
@@ -62,14 +73,20 @@ class _LoadingLogoState extends ConsumerState<LoadingLogo> with SingleTickerProv
           scale: scaleAnim,
           child: widget.color == null
               ? lottieChild
-              : ImageFiltered(imageFilter: ColorFilter.mode(widget.color!, BlendMode.srcIn), child: lottieChild),
+              : ImageFiltered(
+                  imageFilter: ColorFilter.mode(widget.color!, BlendMode.srcIn),
+                  child: lottieChild,
+                ),
         ),
       ),
     );
     if (widget.rotate && widget.animate) {
       return child
           .animate(onPlay: (controller) => controller.repeat())
-          .rotate(duration: Duration(milliseconds: 1800), curve: CustomCurves.bouncySpring);
+          .rotate(
+            duration: Duration(milliseconds: 1800),
+            curve: CustomCurves.bouncySpring,
+          );
     }
     return child;
   }

@@ -2,14 +2,18 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lottie/lottie.dart';
-import 'package:slidesync/core/assets/assets.gen.dart';
+import 'package:slidesync/app/assets/assets.gen.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class NoCollectionView extends ConsumerWidget {
   final void Function()? onClickAddCollection;
   final bool showAddButton;
-  const NoCollectionView({super.key, this.onClickAddCollection, this.showAddButton = false});
+  const NoCollectionView({
+    super.key,
+    this.onClickAddCollection,
+    this.showAddButton = false,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -22,10 +26,18 @@ class NoCollectionView extends ConsumerWidget {
             ConstantSizing.columnSpacing(40),
             SizedBox.square(
               dimension: context.deviceWidth * 0.5,
-              child: LottieBuilder.asset(Assets.anims.roundedPlayingFace, reverse: true),
+              child: LottieBuilder.asset(
+                Assets.anims.roundedPlayingFace,
+                reverse: true,
+              ),
             ),
 
-            Center(child: CustomText("Oops, can't find any collections", color: Colors.blueGrey)),
+            Center(
+              child: CustomText(
+                "Oops, can't find any collections",
+                color: Colors.blueGrey,
+              ),
+            ),
 
             if (showAddButton) ...[
               ConstantSizing.columnSpacingHuge,

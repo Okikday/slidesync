@@ -6,7 +6,7 @@ import 'package:skeletonizer/skeletonizer.dart';
 import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/data/models/course/course.dart';
-import 'package:slidesync/features/main/providers/main_provider.dart';
+import 'package:slidesync/features/main/pod/library/library_pod.dart';
 import 'package:slidesync/features/main/ui/actions/library/courses_view_actions.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/course_card/list_course_card.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/empty_library_view.dart';
@@ -14,7 +14,6 @@ import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_
 import 'package:slidesync/shared/global/providers/course_providers.dart';
 
 import 'package:slidesync/shared/widgets/progress_indicator/loading_view.dart';
-import 'package:slidesync/shared/widgets/state/absorber.dart';
 
 import 'courses_view/course_card/grid_course_card.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -26,20 +25,29 @@ class CoursesView extends ConsumerStatefulWidget {
   ConsumerState<CoursesView> createState() => _CoursesViewState();
 }
 
-class _CoursesViewState extends ConsumerState<CoursesView> with CoursesViewActions {
+class _CoursesViewState extends ConsumerState<CoursesView>
+    with CoursesViewActions {
   @override
   Widget build(BuildContext context) {
-    final cp = MainProvider.library.link(ref).coursesPagination.link(ref);
+    final cp = LibraryPod.coursesPaginator.link(ref);
 
     return SliverPadding(
       padding: EdgeInsetsGeometry.symmetric(horizontal: 16),
       sliver: PagingListener(
         controller: cp.pagingController,
         builder: (context, state, fetchNextPage) {
-          return AbsorberWatch(
-            listenable: MainProvider.library.select((s) => (cardType: s.cardViewType, loading: s.isLoading)),
-            builder: (context, libState, ref, _) {
-              if (state.isLoading) return SliverToBoxAdapter(child: LoadingListCourseCardSkeletonizer(count: 2));
+          return Consumer(
+            builder: (context, ref, child) {
+              final libState = LibraryPod.me
+                  .select(
+                    (s) => (cardType: s.cardViewType, loading: s.isLoading),
+                  )
+                  .watch(ref);
+              if (state.isLoading) {
+                return SliverToBoxAdapter(
+                  child: LoadingListCourseCardSkeletonizer(count: 2),
+                );
+              }
               if (libState.cardType == CardViewType.grid) {
                 return PagedSliverGrid<int, Course>(
                   state: state,
@@ -52,11 +60,16 @@ class _CoursesViewState extends ConsumerState<CoursesView> with CoursesViewActio
                   ),
 
                   builderDelegate: PagedChildBuilderDelegate(
-                    noItemsFoundIndicatorBuilder: (context) => EmptyLibraryView(asSliver: false),
-                    newPageProgressIndicatorBuilder: (context) => Center(child: LoadingView(msg: "")),
-                    firstPageProgressIndicatorBuilder: (context) => LoadingGridCourseCardSkeletonizer(count: 2),
-                    firstPageErrorIndicatorBuilder: (context) =>
-                        RotatedBox(quarterTurns: 2, child: Icon(Iconsax.info_circle)),
+                    noItemsFoundIndicatorBuilder: (context) =>
+                        EmptyLibraryView(asSliver: false),
+                    newPageProgressIndicatorBuilder: (context) =>
+                        Center(child: LoadingView(msg: "")),
+                    firstPageProgressIndicatorBuilder: (context) =>
+                        LoadingGridCourseCardSkeletonizer(count: 2),
+                    firstPageErrorIndicatorBuilder: (context) => RotatedBox(
+                      quarterTurns: 2,
+                      child: Icon(Iconsax.info_circle),
+                    ),
                     itemBuilder: (context, item, index) => CourseCard(
                       item,
                       libState.cardType,
@@ -72,11 +85,16 @@ class _CoursesViewState extends ConsumerState<CoursesView> with CoursesViewActio
                 itemExtent: 120,
                 fetchNextPage: fetchNextPage,
                 builderDelegate: PagedChildBuilderDelegate(
-                  noItemsFoundIndicatorBuilder: (context) => EmptyLibraryView(asSliver: false),
-                  newPageProgressIndicatorBuilder: (context) => LoadingListCourseCardSkeletonizer(count: 1),
-                  firstPageProgressIndicatorBuilder: (context) => LoadingListCourseCardSkeletonizer(count: 2),
-                  firstPageErrorIndicatorBuilder: (context) =>
-                      RotatedBox(quarterTurns: 2, child: Icon(Iconsax.info_circle)),
+                  noItemsFoundIndicatorBuilder: (context) =>
+                      EmptyLibraryView(asSliver: false),
+                  newPageProgressIndicatorBuilder: (context) =>
+                      LoadingListCourseCardSkeletonizer(count: 1),
+                  firstPageProgressIndicatorBuilder: (context) =>
+                      LoadingListCourseCardSkeletonizer(count: 2),
+                  firstPageErrorIndicatorBuilder: (context) => RotatedBox(
+                    quarterTurns: 2,
+                    child: Icon(Iconsax.info_circle),
+                  ),
                   itemBuilder: (context, item, index) => CourseCard(
                     item,
                     libState.cardType,
@@ -93,7 +111,8 @@ class _CoursesViewState extends ConsumerState<CoursesView> with CoursesViewActio
     );
   }
 
-  void onTapDown(WidgetRef ref, Offset det) => MainProvider.library.act(ref).cardTapPositionDetails = det;
+  void onTapDown(WidgetRef ref, Offset det) =>
+      LibraryPod.me.act(ref).cardTapPositionDetails = det;
 }
 
 class LoadingGridCourseCardSkeletonizer extends StatelessWidget {

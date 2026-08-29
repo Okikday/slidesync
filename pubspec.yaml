@@ -4,7 +4,8 @@ publish_to: 'none'
 version: 0.1.0
 
 environment:
-  sdk: ^3.9.2
+  sdk: ^3.12.1
+  flutter: ">=3.41.0"
 
 dependencies:
   flutter:
@@ -112,6 +113,8 @@ dependencies:
   syncfusion_flutter_core: any
   syncfusion_flutter_pdfviewer: any
   pdfx: ^2.9.0
+  equatable: ^2.1.0
+  kickin_utilities: ^0.0.1
 
 flutter_native_splash:
   android: true

@@ -1,7 +1,7 @@
 import 'package:slidesync/core/storage/hive_data/hive_data.dart';
 import 'package:slidesync/core/utils/result.dart';
 
-enum HiveDataKey {
+enum HiveDataKey<T> {
   /// Miscellaneous
   isBuiltInViewer,
   globalFileSizeSum,
@@ -46,6 +46,7 @@ enum HiveDataKey {
   // These are automatically cleaned up when the operation completes.
   driveUploadSession,
   driveDownloadSession,
+  isFocusMode<bool>(),
 }
 
 // class HiveDataPaths {

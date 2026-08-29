@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:slidesync/core/constants/src/enums/enums.dart';
-import 'package:slidesync/features/main/providers/main_provider.dart';
+import 'package:slidesync/features/main/pod/library/library_pod.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 
@@ -18,7 +18,8 @@ class LibraryTabViewFilterButton extends ConsumerWidget {
         ? n.substring(0, n.length - 4)
         : n;
     final t = core.replaceAllMapped(RegExp(r'([A-Z])'), (m) => ' ${m[1]}');
-    final title = (t.isEmpty ? n : t)[0].toUpperCase() + (t.isEmpty ? n : t).substring(1);
+    final title =
+        (t.isEmpty ? n : t)[0].toUpperCase() + (t.isEmpty ? n : t).substring(1);
     return (title: title, asc: asc);
   }
 
@@ -48,7 +49,9 @@ class LibraryTabViewFilterButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref;
 
-    final currSortOption = MainProvider.library.link(ref).coursesPagination.select((s) => s.coursesOrdering).watch(ref);
+    final currSortOption = LibraryPod.coursesPaginator
+        .select((s) => s.coursesOrdering)
+        .watch(ref);
     final currSortData = parseCourseSortOption(currSortOption);
     final currPlain = currSortOption.toPlain();
     final plainList = plainListFromCourseSortOptions();
@@ -58,7 +61,9 @@ class LibraryTabViewFilterButton extends ConsumerWidget {
       icon: isSortOptionNone ? HugeIconsSolid.filter : HugeIconsStroke.filter,
       iconColor: theme.onPrimary,
       iconSize: 20,
-      buttonStyle: ButtonStyle(backgroundColor: WidgetStatePropertyAll(theme.primary)),
+      buttonStyle: ButtonStyle(
+        backgroundColor: WidgetStatePropertyAll(theme.primary),
+      ),
       actions: [
         for (final item in plainList)
           PopupMenuAction(
@@ -75,8 +80,12 @@ class LibraryTabViewFilterButton extends ConsumerWidget {
                   )
                 : null,
             onTap: () async {
-              final newOpt = item == currPlain ? _fromPlain(item, !currSortData.asc) : _fromPlain(item, true);
-              MainProvider.library.act(ref).coursesPagination.act(ref).updateCoursesOrdering(newOpt, refresh: true);
+              final newOpt = item == currPlain
+                  ? _fromPlain(item, !currSortData.asc)
+                  : _fromPlain(item, true);
+              LibraryPod.coursesPaginator
+                  .act(ref)
+                  .updateCoursesOrdering(newOpt, refresh: true);
             },
           ),
       ],

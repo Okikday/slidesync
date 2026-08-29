@@ -2,7 +2,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/core/assets/assets.dart';
+import 'package:slidesync/app/assets/assets.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_search_view/library_search_view.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
@@ -25,7 +25,10 @@ class MoreSection extends ConsumerWidget {
             onTap: () async {
               Navigator.push(
                 context,
-                PageAnimation.pageRouteBuilder(const LibrarySearchView(), type: TransitionType.topLevel),
+                PageAnimation.pageRouteBuilder(
+                  const LibrarySearchView(),
+                  type: TransitionType.topLevel,
+                ),
               );
               // final collection = await CourseCollectionRepo.getById(AppCourseCollections.bookmarks.name);
               // if (collection == null) {
@@ -59,7 +62,12 @@ class MoreSectionOption extends ConsumerWidget {
   final String title;
   final IconData iconData;
   final void Function()? onTap;
-  const MoreSectionOption({super.key, required this.title, required this.iconData, this.onTap});
+  const MoreSectionOption({
+    super.key,
+    required this.title,
+    required this.iconData,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -71,7 +79,9 @@ class MoreSectionOption extends ConsumerWidget {
         decoration: BoxDecoration(
           color: theme.surface,
           borderRadius: BorderRadius.circular(36),
-          border: Border.fromBorderSide(BorderSide(color: theme.backgroundSupportingText.withAlpha(10))),
+          border: Border.fromBorderSide(
+            BorderSide(color: theme.backgroundSupportingText.withAlpha(10)),
+          ),
           image: DecorationImage(
             image: Assets.images.zigZagWavy.asImageProvider,
             fit: BoxFit.cover,
@@ -91,7 +101,12 @@ class MoreSectionOption extends ConsumerWidget {
                 backgroundColor: theme.background,
                 child: Icon(iconData, color: theme.supportingText),
               ),
-              CustomText(title, color: theme.supportingText, fontSize: 13, fontWeight: FontWeight.bold),
+              CustomText(
+                title,
+                color: theme.supportingText,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+              ),
             ],
           ),
         ),

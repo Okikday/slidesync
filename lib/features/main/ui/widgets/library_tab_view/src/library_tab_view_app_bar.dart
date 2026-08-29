@@ -2,10 +2,10 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/assets/assets.dart';
+import 'package:slidesync/app/assets/assets.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
-import 'package:slidesync/features/main/providers/main_provider.dart';
+import 'package:slidesync/features/main/pod/main_pod.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/library_tab_view_filter_button.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/library_tab_view_header_text.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/library_tab_view_layout_button.dart';
@@ -84,7 +84,7 @@ class LibraryTabViewAppBar extends ConsumerWidget {
                       vertical: 4,
                     ),
                     child: AbsorberWatch(
-                      listenable: MainProvider.state.select((s) => s.tabIndex),
+                      listenable: MainPod.me.select((s) => s.tabIndex),
                       builder: (context, tabIndex, ref, child) {
                         return child!
                             .animate(target: tabIndex == 1 ? 1 : 0)

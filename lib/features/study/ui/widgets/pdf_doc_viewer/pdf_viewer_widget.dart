@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:screenshot/screenshot.dart';
 
 import 'package:slidesync/data/models/module_content/module_content.dart';
-import 'package:slidesync/features/main/providers/main_provider.dart';
+import 'package:slidesync/features/main/pod/main_pod.dart';
 import 'package:slidesync/features/study/providers/pdf_doc_viewer_provider.dart';
 import 'package:slidesync/features/study/providers/src/pdf_doc_viewer_state/pdf_doc_viewer_state.dart';
 import 'package:slidesync/features/study/ui/widgets/pdf_doc_viewer/pdf_overlay_widgets/pdf_scrollbar_overlay.dart';
@@ -158,20 +158,17 @@ class _PdfViewerWidgetState extends ConsumerState<PdfViewerWidget> {
     final bool isAppBarVisible = ref
         .read(docViewP.select((s) => s.isAppBarVisibleNotifier))
         .value;
+
     if (isAppBarVisible) {
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
+      SystemChrome.setEnabledSystemUIMode(.immersive);
     } else {
       ref.read(docViewP).updateScrollOffset(0);
-      final bool isFocusMode = MainProvider.state
-          .act(ref)
-          .isFocusMode
-          .read(ref);
+      final isFocusMode =
+          MainPod.me.act(ref).isFocusMode.read(ref).value ?? true;
 
-      if (isFocusMode) {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-      } else {
-        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-      }
+      SystemChrome.setEnabledSystemUIMode(
+        isFocusMode ? .immersive : .edgeToEdge,
+      );
     }
     ref.read(docViewP).setAppBarVisible(!isAppBarVisible);
 

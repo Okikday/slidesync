@@ -1,12 +1,12 @@
 import 'dart:io';
 import 'package:isar_community/isar.dart';
-import 'package:slidesync/core/apis/abstract/upload_download_base.dart';
-import 'package:slidesync/core/sync/gdrive_manager.dart';
-import 'package:slidesync/core/apis/api.dart';
-import 'package:slidesync/core/apis/entities/vault_entity.dart';
-import 'package:slidesync/core/apis/entities/source_entity.dart';
+import 'package:slidesync/app/network/abstract/upload_download_base.dart';
+import 'package:slidesync/app/services/gdrive_manager.dart';
+import 'package:slidesync/app/network/api.dart';
+import 'package:slidesync/app/network/entities/vault_entity.dart';
+import 'package:slidesync/app/network/entities/source_entity.dart';
 import 'package:slidesync/core/constants/src/enums/enums.dart';
-import 'package:slidesync/core/sync/gdrive_paths.dart';
+import 'package:slidesync/app/services/gdrive_paths.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
@@ -70,10 +70,15 @@ class SyncCoordinator {
 
     try {
       // Fetch collections for this course (parentId = courseId)
-      final collections = await ModuleRepo.filter.parentIdEqualTo(courseId).findAll();
+      final collections = await ModuleRepo.filter
+          .parentIdEqualTo(courseId)
+          .findAll();
 
       if (collections.isEmpty) {
-        SyncLogger.warn('Course is empty (no collections), skipping upload', operation: userId);
+        SyncLogger.warn(
+          'Course is empty (no collections), skipping upload',
+          operation: userId,
+        );
         return const SyncResult(
           totalContents: 0,
           uploadedCount: 0,
@@ -104,7 +109,11 @@ class SyncCoordinator {
           totalFailed += result.failedCount;
           failedIds.addAll(result.failedContentIds);
         } catch (e) {
-          SyncLogger.error('Collection ${collection.uid} sync failed', e, operation: userId);
+          SyncLogger.error(
+            'Collection ${collection.uid} sync failed',
+            e,
+            operation: userId,
+          );
           totalFailed += 1;
           failedIds.add(collection.uid);
         }
@@ -191,7 +200,9 @@ class SyncCoordinator {
     SyncLogger.info('Syncing collection: $collectionId', operation: userId);
 
     // Fetch contents
-    final contents = await ModuleContentRepo.filter.parentIdEqualTo(collectionId).findAll();
+    final contents = await ModuleContentRepo.filter
+        .parentIdEqualTo(collectionId)
+        .findAll();
 
     if (contents.isEmpty) {
       SyncLogger.info('Collection is empty, skipping', operation: userId);
@@ -215,7 +226,8 @@ class SyncCoordinator {
       try {
         final metadata = content.metadata;
 
-        if (content.type != ModuleContentType.link && metadata?.contentOrigin != ContentOrigin.local) {
+        if (content.type != ModuleContentType.link &&
+            metadata?.contentOrigin != ContentOrigin.local) {
           SyncLogger.info(
             'Content ${content.uid} is not local or link (type=${content.type}, origin=${metadata?.contentOrigin}), skipping upload',
             operation: userId,
@@ -226,12 +238,17 @@ class SyncCoordinator {
 
         final existing = await Api.instance.content.get(content.xxh3Hash);
         if (existing.isSuccess && existing.data != null) {
-          SyncLogger.info('Content ${content.uid} already in Firebase, skipping', operation: userId);
+          SyncLogger.info(
+            'Content ${content.uid} already in Firebase, skipping',
+            operation: userId,
+          );
           skippedCount++;
           continue;
         }
         final localPath = content.path.local;
-        final file = localPath == null ? null : File(localPath.replaceFirst(RegExp(r'^(file|link):'), ''));
+        final file = localPath == null
+            ? null
+            : File(localPath.replaceFirst(RegExp(r'^(file|link):'), ''));
         if (file == null || !await file.exists()) {
           SyncLogger.warn('File not found: ${file?.path}', operation: userId);
           failedCount++;
@@ -241,14 +258,20 @@ class SyncCoordinator {
 
         candidates.add(_PendingPublicUpload(content: content, file: file));
       } catch (e) {
-        SyncLogger.error('Content ${content.uid} preparation failed', e, operation: userId);
+        SyncLogger.error(
+          'Content ${content.uid} preparation failed',
+          e,
+          operation: userId,
+        );
         failedCount++;
         failedIds.add(content.uid);
       }
     }
 
     if (candidates.isNotEmpty) {
-      final byOperationId = {for (final item in candidates) item.content.uid: item};
+      final byOperationId = {
+        for (final item in candidates) item.content.uid: item,
+      };
       final processed = <String>{};
 
       // Determine vault destination from provided vault links (prefer first)
@@ -271,7 +294,11 @@ class SyncCoordinator {
       await for (final event in _driveManager.public.uploadMultiple(
         objects: [
           for (final item in candidates)
-            PublicUploadObject(file: item.file, operationId: item.content.uid, fileName: item.content.title),
+            PublicUploadObject(
+              file: item.file,
+              operationId: item.content.uid,
+              fileName: item.content.title,
+            ),
         ],
         institutionId: institutionIdToUse,
         vaultRootFolderId: vaultRootFolderId,
@@ -296,11 +323,15 @@ class SyncCoordinator {
           }
 
           try {
-            final verify = await _driveManager.public.verifyUploadedFileExists(driveFileId, forceRefreshAuth: true);
+            final verify = await _driveManager.public.verifyUploadedFileExists(
+              driveFileId,
+              forceRefreshAuth: true,
+            );
             if (!verify.isSuccess || verify.data != true) {
               SyncLogger.error(
                 'Drive file verification failed after upload',
-                verify.message ?? 'Could not confirm file $driveFileId on Drive',
+                verify.message ??
+                    'Could not confirm file $driveFileId on Drive',
                 operation: userId,
               );
               failedCount++;
@@ -309,7 +340,9 @@ class SyncCoordinator {
             }
 
             // Fetch file metadata to help diagnose visibility/account/folder issues.
-            final metaRes = await _driveManager.public.getFileWithUploader(driveFileId);
+            final metaRes = await _driveManager.public.getFileWithUploader(
+              driveFileId,
+            );
             if (metaRes.isSuccess && metaRes.data != null) {
               final meta = metaRes.data!;
               SyncLogger.info(
@@ -317,7 +350,10 @@ class SyncCoordinator {
                 operation: userId,
               );
             } else {
-              SyncLogger.warn('Could not fetch Drive metadata: ${metaRes.message}', operation: userId);
+              SyncLogger.warn(
+                'Could not fetch Drive metadata: ${metaRes.message}',
+                operation: userId,
+              );
             }
 
             final logResult = await Api.instance.vault.logUploadWithSource(
@@ -353,9 +389,14 @@ class SyncCoordinator {
             failedCount++;
             failedIds.add(pending.content.uid);
           }
-        } else if (progress.isFailed && !processed.contains(event.operationId)) {
+        } else if (progress.isFailed &&
+            !processed.contains(event.operationId)) {
           processed.add(event.operationId);
-          SyncLogger.error('File upload failed', progress.error ?? 'Unknown error', operation: userId);
+          SyncLogger.error(
+            'File upload failed',
+            progress.error ?? 'Unknown error',
+            operation: userId,
+          );
           failedCount++;
           failedIds.add(pending.content.uid);
         }
@@ -389,7 +430,8 @@ class SyncCoordinator {
 
     // Skip if not uploadable: only upload local files or links
     // Links (type=link) should be uploaded regardless of origin
-    if (content.type != ModuleContentType.link && metadata?.contentOrigin != ContentOrigin.local) {
+    if (content.type != ModuleContentType.link &&
+        metadata?.contentOrigin != ContentOrigin.local) {
       SyncLogger.info(
         'Content ${content.uid} is not local or link (type=${content.type}, origin=${metadata?.contentOrigin}), skipping upload',
         operation: userId,
@@ -401,13 +443,18 @@ class SyncCoordinator {
     final existing = await Api.instance.content.get(content.xxh3Hash);
 
     if (existing.isSuccess && existing.data != null) {
-      SyncLogger.info('Content ${content.uid} already in Firebase, skipping', operation: userId);
+      SyncLogger.info(
+        'Content ${content.uid} already in Firebase, skipping',
+        operation: userId,
+      );
       return null;
     }
 
     // Validate file - parse content.path as FileDetails (it's stored as JSON)
     final localPath = content.path.local;
-    final file = localPath == null ? null : File(localPath.replaceFirst(RegExp(r'^(file|link):'), ''));
+    final file = localPath == null
+        ? null
+        : File(localPath.replaceFirst(RegExp(r'^(file|link):'), ''));
     if (file == null || !await file.exists()) {
       SyncLogger.warn('File not found: ${file?.path}', operation: userId);
       return false;
@@ -453,11 +500,17 @@ class SyncCoordinator {
         // Log progress
         if (progress.isDone) {
           driveFileId = progress.driveFileId;
-          SyncLogger.info('Upload complete: ${progress.formattedProgress} → $driveFileId', operation: userId);
+          SyncLogger.info(
+            'Upload complete: ${progress.formattedProgress} → $driveFileId',
+            operation: userId,
+          );
         } else if (progress.isFailed) {
           throw Exception(progress.error ?? 'Upload failed');
         } else if (progress.progressPercent % 10 == 0) {
-          SyncLogger.info('Upload progress: ${progress.formattedProgress}', operation: userId);
+          SyncLogger.info(
+            'Upload progress: ${progress.formattedProgress}',
+            operation: userId,
+          );
         }
       }
 
@@ -465,7 +518,10 @@ class SyncCoordinator {
         throw Exception('Upload completed but no file ID returned');
       }
 
-      final verify = await _driveManager.public.verifyUploadedFileExists(driveFileId, forceRefreshAuth: true);
+      final verify = await _driveManager.public.verifyUploadedFileExists(
+        driveFileId,
+        forceRefreshAuth: true,
+      );
       if (!verify.isSuccess || verify.data != true) {
         throw Exception('Drive file verification failed for $driveFileId');
       }

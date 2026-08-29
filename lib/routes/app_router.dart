@@ -14,7 +14,7 @@ import 'package:slidesync/routes/src/sync_route.dart';
 import 'package:slidesync/routes/src/auth_route.dart';
 import 'package:slidesync/routes/src/onboarding_route.dart';
 import 'package:slidesync/routes/src/test_routes.dart';
-import 'package:slidesync/app/ui/splash_view.dart';
+import 'package:slidesync/app/src/ui/splash_view.dart';
 import 'package:slidesync/core/interop/src/receive_sharing_handler.dart';
 import 'routes.dart';
 

@@ -1,10 +1,8 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:kickin_storage/kickin_storage.dart';
 import 'package:path_provider/path_provider.dart' as pp;
 
@@ -13,7 +11,7 @@ import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/storage/isar_data/isar_data.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/features/sync/logic/notification_service.dart';
-import 'package:slidesync/firebase_options.dart';
+import 'package:slidesync/app/src/firebase_options.dart';
 import 'package:window_manager/window_manager.dart';
 
 // ignore: implementation_imports
@@ -116,7 +114,7 @@ Future<void> _initIfDesktop() async {
   }
 }
 
-bool _isInitialized = false;
+// bool _isInitialized = false;
 
 // ///
 // Future<void> pdfrxFlutterInitializeInIsolate({

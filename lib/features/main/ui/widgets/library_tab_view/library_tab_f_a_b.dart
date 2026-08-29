@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
-import 'package:slidesync/features/main/providers/src/library_notifier/library_notifier.dart';
+import 'package:slidesync/features/main/pod/main_pod.dart';
+import 'package:slidesync/features/main/pod/library/library_pod.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/create_course_f_a_b.dart';
-import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/state/absorber.dart';
@@ -16,7 +16,7 @@ class LibraryTabFAB extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tabIndex = MainProvider.state.select((s) => s.tabIndex).watch(ref);
+    final tabIndex = MainPod.me.select((s) => s.tabIndex).watch(ref);
     // final isAtHome = tabIndex == 0;
     final isAtLibrary = tabIndex == 1;
     // final isAtElsewhere = !isAtHome && !isAtLibrary;
@@ -24,7 +24,9 @@ class LibraryTabFAB extends ConsumerWidget {
     final theme = ref;
     final tolerance = libraryAppBarMaxHeight + scrollTolerance;
 
-    final isScrolledListenable = MainProvider.library.link(ref).scrollOffset.select((s) => s > tolerance);
+    final isScrolledListenable = LibraryPod.scrollOffset.select(
+      (s) => s > tolerance,
+    );
 
     return AbsorberWatch(
       listenable: isScrolledListenable,
@@ -39,10 +41,11 @@ class LibraryTabFAB extends ConsumerWidget {
               shape: const CircleBorder(),
               backgroundColor: ref.primary,
               onClick: () {
-                MainProvider.library
-                    .act(ref)
-                    .scrollController
-                    .animateTo(0, duration: Durations.extralong1, curve: CustomCurves.defaultIosSpring);
+                PrimaryScrollController.of(context).animateTo(
+                  0,
+                  duration: Durations.extralong1,
+                  curve: CustomCurves.defaultIosSpring,
+                );
               },
               child: Icon(Iconsax.arrow_up, color: theme.onPrimary),
             ).animate().scaleXY(begin: 1.2).fadeIn(),

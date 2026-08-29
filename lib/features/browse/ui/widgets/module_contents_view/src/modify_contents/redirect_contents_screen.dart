@@ -16,8 +16,8 @@ import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/features/browse/logic/src/contents/add_content/add_contents_uc.dart';
 import 'package:slidesync/features/browse/ui/widgets/course/course_view/course_view_fab.dart';
 import 'package:slidesync/features/browse/ui/widgets/module/modules_list/modules_list_with_search_scroll_view.dart';
-import 'package:slidesync/features/main/providers/src/library_notifier/src/courses_pagination_notifier.dart';
-import 'package:slidesync/features/main/providers/main_provider.dart';
+import 'package:slidesync/features/main/pod/library/courses_pagination/courses_pagination_pod.dart';
+import 'package:slidesync/features/main/pod/library/library_pod.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/create_course_f_a_b.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/course_card.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/empty_library_view.dart';
@@ -39,36 +39,46 @@ class RedirectContentsScreen extends ConsumerStatefulWidget {
   final List<String> linkUrls;
   final RedirectMode mode;
 
-  const RedirectContentsScreen.move({super.key, required List<ModuleContent> contents})
-    : contentsToMove = contents,
-      contentsToCopy = null,
-      filePaths = null,
-      linkUrls = const [],
-      mode = RedirectMode.move;
+  const RedirectContentsScreen.move({
+    super.key,
+    required List<ModuleContent> contents,
+  }) : contentsToMove = contents,
+       contentsToCopy = null,
+       filePaths = null,
+       linkUrls = const [],
+       mode = RedirectMode.move;
 
-  const RedirectContentsScreen.copy({super.key, required List<ModuleContent> contents})
-    : contentsToCopy = contents,
-      contentsToMove = null,
-      filePaths = null,
-      linkUrls = const [],
-      mode = RedirectMode.copy;
+  const RedirectContentsScreen.copy({
+    super.key,
+    required List<ModuleContent> contents,
+  }) : contentsToCopy = contents,
+       contentsToMove = null,
+       filePaths = null,
+       linkUrls = const [],
+       mode = RedirectMode.copy;
 
-  const RedirectContentsScreen.store({super.key, required List<String> files, this.linkUrls = const []})
-    : filePaths = files,
-      contentsToMove = null,
-      contentsToCopy = null,
-      mode = RedirectMode.store;
+  const RedirectContentsScreen.store({
+    super.key,
+    required List<String> files,
+    this.linkUrls = const [],
+  }) : filePaths = files,
+       contentsToMove = null,
+       contentsToCopy = null,
+       mode = RedirectMode.store;
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _RedirectContentsScreenState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _RedirectContentsScreenState();
 }
 
-class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen> {
+class _RedirectContentsScreenState
+    extends ConsumerState<RedirectContentsScreen> {
   Course? _selectedCourse;
 
   @override
   Widget build(BuildContext context) {
-    final CoursesPaginationNotifier coursePagination = MainProvider.library.link(ref).coursesPagination.link(ref);
+    final CoursesPaginationPod coursePagination = LibraryPod.coursesPaginator
+        .link(ref);
     final isCoursePhase = _selectedCourse == null;
     final title = isCoursePhase ? 'Select a course' : 'Select a collection';
 
@@ -96,16 +106,23 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
         duration: Durations.medium3,
         switchInCurve: Curves.easeInOut,
         switchOutCurve: Curves.easeInOut,
-        transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
-        layoutBuilder: (currentChild, previousChildren) =>
-            Stack(fit: StackFit.expand, children: <Widget>[...previousChildren, ?currentChild]),
+        transitionBuilder: (child, animation) =>
+            FadeTransition(opacity: animation, child: child),
+        layoutBuilder: (currentChild, previousChildren) => Stack(
+          fit: StackFit.expand,
+          children: <Widget>[...previousChildren, ?currentChild],
+        ),
         child: KeyedSubtree(
           key: ValueKey(_selectedCourse?.uid ?? 'courses'),
           child: isCoursePhase
-              ? _CourseSelectionView(coursePagination: coursePagination, onTapCourse: _selectCourse)
+              ? _CourseSelectionView(
+                  coursePagination: coursePagination,
+                  onTapCourse: _selectCourse,
+                )
               : _ModuleSelectionView(
                   course: _selectedCourse!,
-                  onTapModule: (module) => _handleCollectionSelection(context, module: module),
+                  onTapModule: (module) =>
+                      _handleCollectionSelection(context, module: module),
                 ),
         ),
       ),
@@ -125,7 +142,10 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
     setState(() => _selectedCourse = course);
   }
 
-  Future<void> _handleCollectionSelection(BuildContext context, {required Module module}) async {
+  Future<void> _handleCollectionSelection(
+    BuildContext context, {
+    required Module module,
+  }) async {
     context.pop();
 
     final mode = widget.mode;
@@ -144,32 +164,56 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
         RedirectMode.move => 'No contents was selected for move',
         RedirectMode.store => 'No files was received!',
       };
-      GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: msg, vibe: FlushbarVibe.warning));
+      GlobalNav.withContext(
+        (context) =>
+            UiUtils.showFlushBar(context, msg: msg, vibe: FlushbarVibe.warning),
+      );
       return;
     }
 
     await 200.inMs.delay();
 
     GlobalNav.withContext(
-      (context) => UiUtils.showLoadingDialog(context, message: "Processing your materials", canPop: false),
+      (context) => UiUtils.showLoadingDialog(
+        context,
+        message: "Processing your materials",
+        canPop: false,
+      ),
     );
 
     final String? errorMsg = await switch (widget.mode) {
-      RedirectMode.move => _handleMoveContents(module, redirList as List<ModuleContent>),
-      RedirectMode.copy => _handleCopyContents(module, redirList as List<ModuleContent>),
-      RedirectMode.store => _handleStoreFiles(module, redirList as List<String>? ?? []),
+      RedirectMode.move => _handleMoveContents(
+        module,
+        redirList as List<ModuleContent>,
+      ),
+      RedirectMode.copy => _handleCopyContents(
+        module,
+        redirList as List<ModuleContent>,
+      ),
+      RedirectMode.store => _handleStoreFiles(
+        module,
+        redirList as List<String>? ?? [],
+      ),
     };
 
     GlobalNav.popGlobal();
     await 200.inMs.delay();
 
     if (errorMsg != null) {
-      GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: errorMsg, vibe: FlushbarVibe.error));
+      GlobalNav.withContext(
+        (context) => UiUtils.showFlushBar(
+          context,
+          msg: errorMsg,
+          vibe: FlushbarVibe.error,
+        ),
+      );
       return;
     }
 
     final pushTo = Routes.moduleContentsView.name;
-    GlobalNav.withContext((context) => context.pushNamed(pushTo, extra: module));
+    GlobalNav.withContext(
+      (context) => context.pushNamed(pushTo, extra: module),
+    );
 
     await 200.inMs.delay();
 
@@ -186,9 +230,15 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
     );
   }
 
-  Future<String?> _handleMoveContents(Module collection, List<ModuleContent> redirList) async {
+  Future<String?> _handleMoveContents(
+    Module collection,
+    List<ModuleContent> redirList,
+  ) async {
     try {
-      final moved = await ModuleContentRepo.moveContents(redirList, collection.uid);
+      final moved = await ModuleContentRepo.moveContents(
+        redirList,
+        collection.uid,
+      );
       if (!moved) return "Failed to move contents to another module";
       return null;
     } catch (e, st) {
@@ -197,9 +247,15 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
     }
   }
 
-  Future<String?> _handleCopyContents(Module collection, List<ModuleContent> redirList) async {
+  Future<String?> _handleCopyContents(
+    Module collection,
+    List<ModuleContent> redirList,
+  ) async {
     try {
-      final copied = await ModuleContentRepo.copyModuleContents(collection.uid, redirList);
+      final copied = await ModuleContentRepo.copyModuleContents(
+        collection.uid,
+        redirList,
+      );
       if (!copied) return "Failed to copy contents to another module";
       return null;
     } catch (e, st) {
@@ -210,11 +266,17 @@ class _RedirectContentsScreenState extends ConsumerState<RedirectContentsScreen>
 
   /// Handles storing files and/or links into [collection].
   /// Files are processed first (heavier), then links are batch-inserted.
-  Future<String?> _handleStoreFiles(Module collection, List<String> filePaths) async {
+  Future<String?> _handleStoreFiles(
+    Module collection,
+    List<String> filePaths,
+  ) async {
     try {
       // Files first
       if (filePaths.isNotEmpty) {
-        await AddContentsUc.addToCollectionNoRef(collection: collection, filePaths: filePaths);
+        await AddContentsUc.addToCollectionNoRef(
+          collection: collection,
+          filePaths: filePaths,
+        );
       }
 
       // Links — single batch write
@@ -243,7 +305,10 @@ Future<void> _addMultipleLinks(Module collection, List<String> urls) async {
     seenHashes.add(hash);
 
     // Skip if this exact link already lives in this collection
-    final duplicate = await ModuleContentRepo.findFirstDuplicateContentByHash(collection, hash);
+    final duplicate = await ModuleContentRepo.findFirstDuplicateContentByHash(
+      collection,
+      hash,
+    );
     if (duplicate != null && duplicate.path.url == url) continue;
 
     contents.add(
@@ -253,7 +318,9 @@ Future<void> _addMultipleLinks(Module collection, List<String> urls) async {
         title: url,
         type: ModuleContentType.link,
         path: FilePath(url: url),
-        metadata: ModuleContentMetadata.create(contentOrigin: ContentOrigin.server),
+        metadata: ModuleContentMetadata.create(
+          contentOrigin: ContentOrigin.server,
+        ),
       ),
     );
   }
@@ -263,16 +330,21 @@ Future<void> _addMultipleLinks(Module collection, List<String> urls) async {
 }
 
 class _CourseSelectionView extends ConsumerWidget {
-  const _CourseSelectionView({required this.coursePagination, required this.onTapCourse});
+  const _CourseSelectionView({
+    required this.coursePagination,
+    required this.onTapCourse,
+  });
 
-  final CoursesPaginationNotifier coursePagination;
+  final CoursesPaginationPod coursePagination;
   final void Function(Course course) onTapCourse;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return SmoothCustomScrollView(
       slivers: [
-        const SliverToBoxAdapter(child: TopPadding(withHeight: kToolbarHeight + 4)),
+        const SliverToBoxAdapter(
+          child: TopPadding(withHeight: kToolbarHeight + 4),
+        ),
         SliverPadding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           sliver: PagingListener(
@@ -283,11 +355,17 @@ class _CourseSelectionView extends ConsumerWidget {
                 itemExtent: 120,
                 fetchNextPage: fetchNextPage,
                 builderDelegate: PagedChildBuilderDelegate(
-                  noItemsFoundIndicatorBuilder: (context) => EmptyLibraryView(asSliver: false),
-                  firstPageProgressIndicatorBuilder: (context) => const Center(child: LoadingLogo()),
-                  newPageProgressIndicatorBuilder: (context) => const Center(child: LoadingLogo()),
-                  itemBuilder: (context, item, index) =>
-                      CourseCard(item, CardViewType.list, onTap: () => onTapCourse(item)),
+                  noItemsFoundIndicatorBuilder: (context) =>
+                      EmptyLibraryView(asSliver: false),
+                  firstPageProgressIndicatorBuilder: (context) =>
+                      const Center(child: LoadingLogo()),
+                  newPageProgressIndicatorBuilder: (context) =>
+                      const Center(child: LoadingLogo()),
+                  itemBuilder: (context, item, index) => CourseCard(
+                    item,
+                    CardViewType.list,
+                    onTap: () => onTapCourse(item),
+                  ),
                 ),
               );
             },

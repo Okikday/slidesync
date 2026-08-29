@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:slidesync/core/apis/abstract/upload_download_base.dart';
+import 'package:slidesync/app/network/abstract/upload_download_base.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data.dart';
 import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/result.dart';

@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/assets/assets.gen.dart';
+import 'package:slidesync/app/assets/assets.gen.dart';
 import 'package:slidesync/features/auth/ui/screens/onboarding_1.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -51,7 +51,9 @@ class WelcomeView extends ConsumerWidget {
               bottom: 0,
               child: CircleAvatar(
                 radius: 140,
-                backgroundColor: theme.background.lightenColor(theme.isDarkMode ? 0.1 : 0.9),
+                backgroundColor: theme.background.lightenColor(
+                  theme.isDarkMode ? 0.1 : 0.9,
+                ),
               ),
             ),
 
@@ -83,7 +85,13 @@ class WelcomeView extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     spacing: 8,
                     children: [
-                      ClipOval(child: Image.asset("assets/logo/logo.png", width: 60, height: 60)),
+                      ClipOval(
+                        child: Image.asset(
+                          "assets/logo/logo.png",
+                          width: 60,
+                          height: 60,
+                        ),
+                      ),
                       CustomRichText(
                         children: [
                           CustomTextSpanData(
@@ -118,7 +126,11 @@ class WelcomeView extends ConsumerWidget {
               right: 16,
               child: Column(
                 children: [
-                  CustomText("Begin your journey", fontWeight: FontWeight.bold, color: Color(0xFF008080)),
+                  CustomText(
+                    "Begin your journey",
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF008080),
+                  ),
                   ConstantSizing.columnSpacing(48),
                   ScaleClickWrapper(
                     borderRadius: 24,

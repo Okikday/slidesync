@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/assets/assets.gen.dart';
+import 'package:slidesync/app/assets/assets.gen.dart';
 import 'package:slidesync/features/auth/ui/screens/sign_in_view.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
@@ -15,7 +15,9 @@ class Onboarding1 extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final shapeRadius = context.deviceWidth < context.deviceHeight ? context.deviceWidth : context.deviceHeight;
+    final shapeRadius = context.deviceWidth < context.deviceHeight
+        ? context.deviceWidth
+        : context.deviceHeight;
     const Color primaryPurple = Color(0xFF7D19FF);
     final theme = ref;
     return AppScaffold(
@@ -25,7 +27,11 @@ class Onboarding1 extends ConsumerWidget {
         fit: StackFit.expand,
         alignment: Alignment.center,
         children: [
-          Positioned(top: 0, bottom: shapeRadius - kToolbarHeight, child: Image.asset(Assets.images.onboarding1)),
+          Positioned(
+            top: 0,
+            bottom: shapeRadius - kToolbarHeight,
+            child: Image.asset(Assets.images.onboarding1),
+          ),
           Positioned(
             top: kToolbarHeight,
             child: Container(
@@ -35,12 +41,19 @@ class Onboarding1 extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(24),
                 color: primaryPurple.withAlpha(20),
                 border: Border.fromBorderSide(
-                  BorderSide(color: primaryPurple, strokeAlign: BorderSide.strokeAlignOutside),
+                  BorderSide(
+                    color: primaryPurple,
+                    strokeAlign: BorderSide.strokeAlignOutside,
+                  ),
                 ),
               ),
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
-                child: CustomText("Step 1", color: primaryPurple, fontWeight: FontWeight.bold),
+                child: CustomText(
+                  "Step 1",
+                  color: primaryPurple,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ),
@@ -51,7 +64,9 @@ class Onboarding1 extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: Colors.transparent,
                 shape: BoxShape.circle,
-                border: Border.fromBorderSide(BorderSide(color: theme.primaryColor.withAlpha(10), width: 1)),
+                border: Border.fromBorderSide(
+                  BorderSide(color: theme.primaryColor.withAlpha(10), width: 1),
+                ),
               ),
               child: ClipOval(
                 child: ColoredBox(
@@ -118,7 +133,13 @@ class Onboarding1 extends ConsumerWidget {
               onTapUp: (det) async {
                 await Future.delayed(Durations.short2);
                 if (context.mounted) {
-                  Navigator.push(context, PageAnimation.pageRouteBuilder(SignInView(), type: TransitionType.fade));
+                  Navigator.push(
+                    context,
+                    PageAnimation.pageRouteBuilder(
+                      SignInView(),
+                      type: TransitionType.fade,
+                    ),
+                  );
                   // UiUtils.showFlushBar(context, msg: "Skipped Onboardings", vibe: FlushbarVibe.warning);
                 }
               },
@@ -127,7 +148,11 @@ class Onboarding1 extends ConsumerWidget {
                 contentPadding: EdgeInsets.symmetric(horizontal: 24),
                 borderRadius: 60,
                 pixelHeight: 56,
-                child: AppText("Continue", color: Colors.white, fontWeight: FontWeight.w500),
+                child: AppText(
+                  "Continue",
+                  color: Colors.white,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ),

@@ -2,10 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
+import 'package:slidesync/features/main/pod/home/home_pod.dart';
+import 'package:slidesync/features/main/pod/main_pod.dart';
 import 'package:slidesync/features/main/ui/actions/main_view_actions.dart';
 import 'package:slidesync/features/main/ui/entities/main_view_entity.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/library_tab_f_a_b.dart';
-import 'package:slidesync/features/main/providers/main_provider.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_drawer.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/decorations/back_soft_edge_blur.dart';
@@ -31,7 +32,9 @@ class _MainViewState extends ConsumerState<MainView> with MainViewActions {
   void initState() {
     super.initState();
     pageController = PageController(initialPage: widget.tabIndex);
-    WidgetsBinding.instance.addPostFrameCallback((_) => MainProvider.state.act(ref).setTabIndex(widget.tabIndex));
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => MainPod.me.act(ref).setTabIndex(widget.tabIndex),
+    );
   }
 
   @override
@@ -50,12 +53,15 @@ class _MainViewState extends ConsumerState<MainView> with MainViewActions {
 
     if (_horizontalDragDistance <= -50) {
       final len = mainViewTabOptions.keys.length;
-      final nextIndex = (MainProvider.state.read(ref).tabIndex + 1).clamp(0, len - 1);
-      MainProvider.state.act(ref).setTabIndex(nextIndex);
+      final nextIndex = (MainPod.me.read(ref).tabIndex + 1).clamp(0, len - 1);
+      MainPod.me.act(ref).setTabIndex(nextIndex);
     } else if (_horizontalDragDistance >= 50) {
       final len = mainViewTabOptions.keys.length;
-      final previousIndex = (MainProvider.state.read(ref).tabIndex - 1).clamp(0, len - 1);
-      MainProvider.state.act(ref).setTabIndex(previousIndex);
+      final previousIndex = (MainPod.me.read(ref).tabIndex - 1).clamp(
+        0,
+        len - 1,
+      );
+      MainPod.me.act(ref).setTabIndex(previousIndex);
     }
 
     _horizontalDragDistance = 0;
@@ -64,13 +70,15 @@ class _MainViewState extends ConsumerState<MainView> with MainViewActions {
   @override
   Widget build(BuildContext context) {
     final tabs = mainViewTabOptions.keys.toList();
-    return AbsorberWatch(
-      listenable: MainProvider.home.select((s) => s.isScrolled),
-      builder: (_, isScrolled, ref, body) {
+    return Consumer(
+      builder: (context, ref, body) {
+        final isScrolled = HomePod.me.select((s) => s.isScrolled).watch(ref);
+
         return AppScaffold(
           title: "",
           canPop: false,
-          onPopInvokedWithResult: (didPop, result) => MainProvider.state.act(ref).setTabIndex(0),
+          onPopInvokedWithResult: (didPop, result) =>
+              MainPod.me.act(ref).setTabIndex(0),
           extendBody: true,
           drawer: const HomeDrawer(),
           floatingActionButton: const LibraryTabFAB(),
@@ -80,7 +88,11 @@ class _MainViewState extends ConsumerState<MainView> with MainViewActions {
             edgeType: EdgeType.bottomEdge,
             height: 84 + context.bottomPadding,
             child: BottomNavBar(
-              onTap: (index) => onTapBottomNavBarItem(ref, index: index, pageController: pageController),
+              onTap: (index) => onTapBottomNavBarItem(
+                ref,
+                index: index,
+                pageController: pageController,
+              ),
             ),
           ),
         );
@@ -88,7 +100,7 @@ class _MainViewState extends ConsumerState<MainView> with MainViewActions {
       // child: PageView(
       //   controller: pageController,
       //   physics: const NeverScrollableScrollPhysics(),
-      //   onPageChanged: (index) => MainProvider.state.act(ref).setTabIndex(index),
+      //   onPageChanged: (index) => MainPod.me.act(ref).setTabIndex(index),
       //   children: tabs,
       // ),
       child: GestureDetector(
@@ -96,7 +108,7 @@ class _MainViewState extends ConsumerState<MainView> with MainViewActions {
         onHorizontalDragUpdate: _handleHorizontalDragUpdate,
         onHorizontalDragEnd: (_) => _handleHorizontalDragEnd(ref),
         child: AbsorberWatch(
-          listenable: MainProvider.state.select((s) => s.tabIndex),
+          listenable: MainPod.me.select((s) => s.tabIndex),
           builder: (_, tabIndex, ref, _) {
             // return IndexedStack(index: tabIndex, children: tabs);
             return AnimatedSwitcher(
@@ -108,9 +120,15 @@ class _MainViewState extends ConsumerState<MainView> with MainViewActions {
                 return FadeTransition(opacity: animation, child: child);
               },
               layoutBuilder: (currentChild, previousChildren) {
-                return Stack(fit: StackFit.expand, children: <Widget>[...previousChildren, ?currentChild]);
+                return Stack(
+                  fit: StackFit.expand,
+                  children: <Widget>[...previousChildren, ?currentChild],
+                );
               },
-              child: KeyedSubtree(key: ValueKey(tabIndex), child: tabs[tabIndex]),
+              child: KeyedSubtree(
+                key: ValueKey(tabIndex),
+                child: tabs[tabIndex],
+              ),
             );
           },
         ),
@@ -119,11 +137,16 @@ class _MainViewState extends ConsumerState<MainView> with MainViewActions {
   }
 }
 
-SystemUiOverlayStyle _deriveSystemUiOverlayStyle(WidgetRef ref, bool isScrolled) {
+SystemUiOverlayStyle _deriveSystemUiOverlayStyle(
+  WidgetRef ref,
+  bool isScrolled,
+) {
   final theme = ref;
   final brightness = ref.brightness;
   return SystemUiOverlayStyle(
-    statusBarColor: isScrolled ? theme.secondaryColor.withAlpha(100) : theme.background,
+    statusBarColor: isScrolled
+        ? theme.secondaryColor.withAlpha(100)
+        : theme.background,
     statusBarBrightness: brightness,
     statusBarIconBrightness: brightness,
     systemNavigationBarIconBrightness: brightness,

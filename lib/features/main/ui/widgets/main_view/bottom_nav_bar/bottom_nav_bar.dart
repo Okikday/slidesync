@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:slidesync/features/auth/logic/usecases/auth_uc/user_data_functions.dart';
-import 'package:slidesync/features/main/providers/main_provider.dart';
+import 'package:slidesync/features/main/pod/main_pod.dart';
 import 'package:slidesync/features/main/ui/entities/main_view_entity.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_search_view/library_search_view.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -56,7 +56,7 @@ class _BottomNavBarState extends ConsumerState<BottomNavBar> {
               child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
                 child: AbsorberWatch(
-                  listenable: MainProvider.state.select((s) => s.tabIndex),
+                  listenable: MainPod.me.select((s) => s.tabIndex),
                   builder: (context, tabIndex, ref, _) => Row(
                     mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.spaceAround,

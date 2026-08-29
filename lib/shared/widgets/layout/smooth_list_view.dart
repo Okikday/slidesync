@@ -1245,13 +1245,11 @@ class SmoothScrollController {
 
   SmoothScrollController({
     required this.scrollController,
-    required ScrollIntensity intensity,
-    required SmoothScrollPhysics? customPhysics,
-    required bool reverse,
+    required this._intensity,
+    required this._customPhysics,
+    required this._reverse,
     required this.vsync,
-  }) : _intensity = intensity,
-       _customPhysics = customPhysics,
-       _reverse = reverse {
+  }) {
     _updateConfig();
     _currentPosition = scrollController.hasClients
         ? scrollController.offset
