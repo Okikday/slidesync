@@ -8,11 +8,10 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/features/main/pod/home/home_pod.dart';
 import 'package:slidesync/features/main/pod/main_pod.dart';
 import 'package:slidesync/features/main/ui/actions/home/recent_dialog_actions.dart';
-import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recent_dialog/recent_dialog.dart';
+import 'package:slidesync/features/main/ui/widgets/home_tab_view/body/recents_section/recent_dialog/recent_dialog.dart';
+import 'package:slidesync/features/main/ui/widgets/home_tab_view/body/recents_section/src/recent_list_tile.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
-
-import 'recent_list_tile.dart';
 
 class RecentsSectionBody extends ConsumerWidget with RecentDialogActions {
   const RecentsSectionBody({super.key});
@@ -34,33 +33,33 @@ class RecentsSectionBody extends ConsumerWidget with RecentDialogActions {
           itemBuilder: (context, index) {
             final contentTrack = data[index];
             return RecentListTile(
-                  data: RecentListTileModel(
-                    contentTrack: contentTrack,
-                    isStarred: false,
-                    onTapTile: () async {
-                      await onContinueReading(ref, contentTrack.uid);
-                    },
-                    onLongTapTile: () {
-                      UiUtils.showCustomDialog(
-                        context,
-                        canPop: true,
-                        transitionType: TransitionType.cupertinoDialog,
-                        barrierColor: Colors.black.withValues(alpha: 0.6),
-                        transitionDuration: Durations.short4,
-                        reverseTransitionDuration: Durations.short4,
-                        child: RecentDialog(contentTrack: contentTrack),
-                      );
-                    },
-                  ),
-                )
-                .animate(target: tabIndex == 0 ? 1 : 0)
-                .slideX(
-                  begin: 0.1 * (1 - index / 10),
-                  end: 0.0,
-                  duration: 500.inMs,
-                  curve: CustomCurves.defaultIosSpring,
-                )
-                .fadeIn(duration: 500.inMs, curve: CustomCurves.decelerate);
+              data: RecentListTileModel(
+                contentTrack: contentTrack,
+                isStarred: false,
+                onTapTile: () async {
+                  await onContinueReading(ref, contentTrack.uid);
+                },
+                onLongTapTile: () {
+                  UiUtils.showCustomDialog(
+                    context,
+                    canPop: true,
+                    transitionType: TransitionType.cupertinoDialog,
+                    barrierColor: Colors.black.withValues(alpha: 0.6),
+                    transitionDuration: Durations.short4,
+                    reverseTransitionDuration: Durations.short4,
+                    child: RecentDialog(contentTrack: contentTrack),
+                  );
+                },
+              ),
+            );
+            // .animate(target: tabIndex == 0 ? 1 : 0)
+            // .slideX(
+            //   begin: 0.1 * (1 - index / 10),
+            //   end: 0.0,
+            //   duration: 500.inMs,
+            //   curve: CustomCurves.defaultIosSpring,
+            // )
+            // .fadeIn(duration: 500.inMs, curve: CustomCurves.decelerate);
           },
         );
       },

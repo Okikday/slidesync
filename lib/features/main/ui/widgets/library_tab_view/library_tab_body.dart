@@ -15,25 +15,25 @@ class LibraryTabBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final tabIndex = ref.watch(MainPod.me.select((s) => s.tabIndex));
     return SmoothCustomScrollView(
-          intensity: ScrollIntensity.slow,
-          // physics: const BouncingScrollPhysics(),
-          slivers: const [
-            SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
+      intensity: ScrollIntensity.slow,
+      // physics: const BouncingScrollPhysics(),
+      slivers: const [
+        SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
 
-            CoursesView(),
+        CoursesView(),
 
-            SliverToBoxAdapter(
-              child: BottomPadding(withHeight: kToolbarHeight * 2),
-            ),
-          ],
-        )
-        .animate(target: tabIndex == 1 ? 1 : 0)
-        .slideY(
-          begin: 0.05,
-          end: 0,
-          duration: 700.inMs,
-          curve: CustomCurves.defaultIosSpring,
-        )
-        .fadeIn(duration: 500.inMs, curve: CustomCurves.decelerate);
+        SliverToBoxAdapter(
+          child: BottomPadding(withHeight: kToolbarHeight * 2),
+        ),
+      ],
+    );
+    // .animate(target: tabIndex == 1 ? 1 : 0)
+    // .slideY(
+    //   begin: 0.05,
+    //   end: 0,
+    //   duration: 700.inMs,
+    //   curve: CustomCurves.defaultIosSpring,
+    // )
+    // .fadeIn(duration: 500.inMs, curve: CustomCurves.decelerate);
   }
 }

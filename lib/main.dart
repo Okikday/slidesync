@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:slidesync/app/src/ui/app.dart';
 import 'package:slidesync/app/src/startup.dart';
-import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 Object? globalInitError;
 

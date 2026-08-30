@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/features/main/pod/home/home_pod.dart';
-import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recent_list_tile.dart';
-import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recents_section_body.dart';
+import 'package:slidesync/features/main/ui/widgets/home_tab_view/body/recents_section/src/recent_list_tile.dart';
+import 'package:slidesync/features/main/ui/widgets/home_tab_view/body/recents_section/src/recents_section_body.dart';
 import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';

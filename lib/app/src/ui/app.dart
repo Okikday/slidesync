@@ -36,7 +36,7 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == .resumed) {
+    if (state == .resumed || state == .paused) {
       _enforceImmersiveMode();
     }
   }
@@ -77,7 +77,6 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
       title: "SlideSync",
       routerConfig: AppRouter.mainRouter,
       debugShowCheckedModeBanner: false,
-
       theme: themeState.lightTheme,
       darkTheme: themeState.darkTheme,
       themeMode: themeState.themeMode,

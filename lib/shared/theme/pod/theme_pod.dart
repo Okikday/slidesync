@@ -16,7 +16,11 @@ class ThemePod extends Notifier<ThemeState> {
   @override
   ThemeState build() {
     final theme = ref.watch(_themeNotifier);
-    return theme.value!;
+    return theme.value ??
+        ThemeState(
+          theme: defaultUnifiedThemeModels.first,
+          useSystemBrightness: true,
+        );
   }
 
   void setTheme(UnifiedThemeModel newTheme) {

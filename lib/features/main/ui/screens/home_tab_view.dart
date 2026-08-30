@@ -5,8 +5,8 @@ import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/features/main/pod/home/home_pod.dart';
 import 'package:slidesync/features/main/pod/main_pod.dart';
 import 'package:slidesync/features/main/ui/actions/home/home_tab_actions.dart';
-import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_app_bar.dart';
-import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body.dart';
+import 'package:slidesync/features/main/ui/widgets/home_tab_view/above/home_app_bar.dart';
+import 'package:slidesync/features/main/ui/widgets/home_tab_view/body/home_body.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 const double isScrolledLvl = 40.0;

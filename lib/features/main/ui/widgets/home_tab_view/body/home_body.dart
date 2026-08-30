@@ -8,10 +8,10 @@ import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/main/pod/home/home_pod.dart';
 import 'package:slidesync/features/main/pod/main_pod.dart';
 import 'package:slidesync/features/main/ui/actions/home/home_tab_actions.dart';
-import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/home_dashboard.dart';
+import 'package:slidesync/features/main/ui/widgets/home_tab_view/body/dashboard/home_dashboard.dart';
 // import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/more_section.dart';
-import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recents_section_body.dart';
-import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recents_section_header.dart';
+import 'package:slidesync/features/main/ui/widgets/home_tab_view/body/recents_section/src/recents_section_body.dart';
+import 'package:slidesync/features/main/ui/widgets/home_tab_view/body/recents_section/src/recents_section_header.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
@@ -47,29 +47,32 @@ class _HomeBodyState extends ConsumerState<HomeBody> with HomeTabActions {
               return recentContentTrack.when(
                 data: (data) {
                   if (data != null) {
-                    return AbsorberWatch(
-                      listenable: MainPod.me.select((s) => s.tabIndex),
-                      builder: (context, tabIndex, ref, child) {
-                        return child!
-                            .animate(target: tabIndex == 0 ? 1 : 0)
-                            .scaleXY(
-                              begin: 0.95,
-                              end: 1.0,
-                              duration: 400.inMs,
-                              curve: CustomCurves.decelerate,
-                            )
-                            .fadeIn(
-                              duration: 400.inMs,
-                              curve: CustomCurves.decelerate,
-                            );
-                      },
-                      child: HomeDashboard(
-                        data: data,
-                        isFirst: true,
-                        onReadingBtnTapped: () =>
-                            onReadingButtonTapped(ref, data: data),
-                      ),
+                    return HomeDashboard(
+                      data: data,
+                      isFirst: true,
+                      onReadingBtnTapped: () =>
+                          onReadingButtonTapped(ref, data: data),
                     );
+                    // return Consumer(
+                    //   builder: (context, ref, child) {
+                    //     final tabIndex = MainPod.me
+                    //         .select((s) => s.tabIndex)
+                    //         .watch(ref);
+                    //     return child!
+                    //     .animate(target: tabIndex == 0 ? 1 : 0)
+                    //     .scaleXY(
+                    //       begin: 0.95,
+                    //       end: 1.0,
+                    //       duration: 400.inMs,
+                    //       curve: CustomCurves.decelerate,
+                    //     )
+                    //     .fadeIn(
+                    //       duration: 400.inMs,
+                    //       curve: CustomCurves.decelerate,
+                    //     );
+                    //   },
+                    //   child:
+                    // );
                   }
                   return child!;
                 },

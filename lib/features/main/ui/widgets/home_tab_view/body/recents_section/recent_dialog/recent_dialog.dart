@@ -6,7 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
 import 'package:slidesync/features/main/ui/actions/home/recent_dialog_actions.dart';
-import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/recents_section/recent_dialog/recent_dialog_selection_options.dart';
+import 'package:slidesync/features/main/ui/widgets/home_tab_view/body/recents_section/recent_dialog/recent_dialog_selection_options.dart';
 
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/formatter.dart';
