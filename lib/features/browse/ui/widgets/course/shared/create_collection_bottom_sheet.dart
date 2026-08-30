@@ -9,19 +9,27 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 class CreateCollectionBottomSheet extends ConsumerStatefulWidget {
   final String courseId;
   final String title;
-  const CreateCollectionBottomSheet({super.key, required this.courseId, this.title = "New Collection"});
+  const CreateCollectionBottomSheet({
+    super.key,
+    required this.courseId,
+    this.title = "New Collection",
+  });
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _CreateCollectionBottomSheetState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _CreateCollectionBottomSheetState();
 }
 
-class _CreateCollectionBottomSheetState extends ConsumerState<CreateCollectionBottomSheet> {
+class _CreateCollectionBottomSheetState
+    extends ConsumerState<CreateCollectionBottomSheet> {
   late final FocusNode focusNode;
   @override
   void initState() {
     super.initState();
     focusNode = FocusNode();
-    WidgetsBinding.instance.addPostFrameCallback((_) => focusNode.requestFocus());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => focusNode.requestFocus(),
+    );
   }
 
   @override
@@ -33,7 +41,7 @@ class _CreateCollectionBottomSheetState extends ConsumerState<CreateCollectionBo
   @override
   Widget build(BuildContext context) {
     final ModifyModuleActions modifyCollectionActions = ModifyModuleActions();
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     return Stack(
       children: [
@@ -41,8 +49,15 @@ class _CreateCollectionBottomSheetState extends ConsumerState<CreateCollectionBo
         Align(
           alignment: Alignment.bottomCenter,
           child: Container(
-            margin: EdgeInsets.only(bottom: context.bottomPadding + context.viewInsets.bottom),
-            padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0, bottom: 4.0),
+            margin: EdgeInsets.only(
+              bottom: context.bottomPadding + context.viewInsets.bottom,
+            ),
+            padding: EdgeInsets.only(
+              left: 16.0,
+              right: 16.0,
+              top: 16.0,
+              bottom: 4.0,
+            ),
             color: context.scaffoldBackgroundColor,
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -50,7 +65,12 @@ class _CreateCollectionBottomSheetState extends ConsumerState<CreateCollectionBo
               children: [
                 Padding(
                   padding: const EdgeInsets.only(left: 12.0),
-                  child: CustomText(widget.title, fontSize: 13, color: theme.primaryColor, fontWeight: FontWeight.bold),
+                  child: CustomText(
+                    widget.title,
+                    fontSize: 13,
+                    color: theme.primaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 ConstantSizing.columnSpacingSmall,
                 CustomTextfield(
@@ -61,11 +81,12 @@ class _CreateCollectionBottomSheetState extends ConsumerState<CreateCollectionBo
                   onTapOutside: () {},
                   onSubmitted: (text) async {
                     // Create new collection
-                    final outcome = await modifyCollectionActions.onCreateNewCollection(
-                      context,
-                      text: text.trim(),
-                      courseId: widget.courseId,
-                    );
+                    final outcome = await modifyCollectionActions
+                        .onCreateNewCollection(
+                          context,
+                          text: text.trim(),
+                          courseId: widget.courseId,
+                        );
 
                     // Handle outcome
                     if (outcome == null) {
@@ -106,10 +127,15 @@ class _CreateCollectionBottomSheetState extends ConsumerState<CreateCollectionBo
                     }
                   },
                   inputContentPadding: EdgeInsets.symmetric(horizontal: 12.0),
-                  inputTextStyle: TextStyle(fontSize: 15, color: theme.onBackground),
+                  inputTextStyle: TextStyle(
+                    fontSize: 15,
+                    color: theme.onBackground,
+                  ),
                   cursorColor: theme.primaryColor,
                   backgroundColor: Colors.transparent,
-                  border: UnderlineInputBorder(borderSide: BorderSide(color: theme.primaryColor)),
+                  border: UnderlineInputBorder(
+                    borderSide: BorderSide(color: theme.primaryColor),
+                  ),
                   // alwaysShowSuffixIcon: true,
                   // suffixIcon: Padding(
                   //   padding: const EdgeInsets.only(left: 8.0, right: 10.0),

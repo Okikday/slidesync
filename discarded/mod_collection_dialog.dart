@@ -50,7 +50,7 @@
 
 //   @override
 //   Widget build(BuildContext context) {
-//     final theme = ref;
+//     final theme = Theme.of(context).custom;
 //     final collection = widget.collection;
 //     final mca = ModifyCollectionActions();
 //     return AppActionDialog(

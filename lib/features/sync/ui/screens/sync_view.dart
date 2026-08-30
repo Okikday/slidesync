@@ -12,7 +12,8 @@ class SyncView extends ConsumerStatefulWidget {
   ConsumerState<SyncView> createState() => _SyncViewState();
 }
 
-class _SyncViewState extends ConsumerState<SyncView> with SingleTickerProviderStateMixin {
+class _SyncViewState extends ConsumerState<SyncView>
+    with SingleTickerProviderStateMixin {
   late final tabController = TabController(vsync: this, length: 2);
 
   @override
@@ -23,7 +24,7 @@ class _SyncViewState extends ConsumerState<SyncView> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return Scaffold(
       body: TopPadding(
         child: Column(
@@ -62,7 +63,10 @@ class _SyncViewState extends ConsumerState<SyncView> with SingleTickerProviderSt
               ),
             ),
             Expanded(
-              child: TabBarView(controller: tabController, children: [DownloadsTabView(), UploadsTabView()]),
+              child: TabBarView(
+                controller: tabController,
+                children: [DownloadsTabView(), UploadsTabView()],
+              ),
             ),
           ],
         ),

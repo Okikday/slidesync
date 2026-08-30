@@ -22,7 +22,6 @@ import 'package:slidesync/features/browse/logic/src/contents/add_content/store_c
 import 'package:slidesync/features/browse/logic/entities/store_content_args.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
-import 'package:slidesync/shared/theme/src/app_theme.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:uuid/uuid.dart';
 import 'package:saf_stream/saf_stream.dart';
@@ -670,7 +669,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.theme;
+    final theme = Theme.of(context).custom;
     final padding = context.padding;
 
     return AppScaffold(
@@ -763,7 +762,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
   }
 
   Widget _buildBaseFolderStep() {
-    final theme = ref.theme;
+    final theme = Theme.of(context).custom;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -921,7 +920,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
   }
 
   Widget _buildOptionsStep() {
-    final theme = ref.theme;
+    final theme = Theme.of(context).custom;
     final enabledFilters = fileFilters
         .where((filter) => filter.isEnabled)
         .length;
@@ -1071,7 +1070,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
   }
 
   Widget _buildPreviewStep() {
-    final theme = ref.theme;
+    final theme = Theme.of(context).custom;
     final targetFolder = useAsBaseFolder
         ? widget.folderNode
         : selectedSubfolder;
@@ -1327,7 +1326,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
   }
 
   Widget _buildStatChip(
-    AppTheme theme,
+    AppThemeExtension theme,
     IconData icon,
     String value,
     String label,
@@ -1437,7 +1436,7 @@ class _ImportProgressDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = Theme.of(context).custom;
 
     return Dialog(
       backgroundColor: theme.surface,

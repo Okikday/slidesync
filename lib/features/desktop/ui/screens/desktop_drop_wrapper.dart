@@ -108,12 +108,12 @@
 //         gradient: LinearGradient(
 //           begin: Alignment.topLeft,
 //           end: Alignment.bottomRight,
-//           colors: [ref.primary.withValues(alpha: 0.15), ref.secondary.withValues(alpha: 0.15)],
+//           colors: [theme.primary.withValues(alpha: 0.15), theme.secondary.withValues(alpha: 0.15)],
 //         ),
 //       ),
 //       child: Container(
 //         decoration: BoxDecoration(
-//           border: Border.all(color: ref.primary, width: 3),
+//           border: Border.all(color: theme.primary, width: 3),
 //           borderRadius: BorderRadius.circular(12),
 //         ),
 //         margin: const EdgeInsets.all(24),
@@ -136,13 +136,13 @@
 //                         gradient: LinearGradient(
 //                           begin: Alignment.topLeft,
 //                           end: Alignment.bottomRight,
-//                           colors: [ref.primary.withValues(alpha: 0.3), ref.secondary.withValues(alpha: 0.3)],
+//                           colors: [theme.primary.withValues(alpha: 0.3), theme.secondary.withValues(alpha: 0.3)],
 //                         ),
 //                         boxShadow: [
-//                           BoxShadow(color: ref.primary.withValues(alpha: 0.3), blurRadius: 30, spreadRadius: 10),
+//                           BoxShadow(color: theme.primary.withValues(alpha: 0.3), blurRadius: 30, spreadRadius: 10),
 //                         ],
 //                       ),
-//                       child: Icon(Icons.upload_file_rounded, size: 64, color: ref.primary),
+//                       child: Icon(Icons.upload_file_rounded, size: 64, color: theme.primary),
 //                     ),
 //                   );
 //                 },
@@ -156,7 +156,7 @@
 //                 style: TextStyle(
 //                   fontSize: 28,
 //                   fontWeight: FontWeight.bold,
-//                   color: ref.onBackground,
+//                   color: theme.onBackground,
 //                   fontFamily: ref.fontFamily,
 //                 ),
 //               ),
@@ -168,17 +168,17 @@
 //                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
 //                 decoration: BoxDecoration(
 //                   gradient: LinearGradient(
-//                     colors: [ref.primary.withValues(alpha: 0.2), ref.secondary.withValues(alpha: 0.2)],
+//                     colors: [theme.primary.withValues(alpha: 0.2), theme.secondary.withValues(alpha: 0.2)],
 //                   ),
 //                   borderRadius: BorderRadius.circular(20),
-//                   border: Border.all(color: ref.primary.withValues(alpha: 0.5), width: 1),
+//                   border: Border.all(color: theme.primary.withValues(alpha: 0.5), width: 1),
 //                 ),
 //                 child: Text(
 //                   '$fileCount file${fileCount != 1 ? 's' : ''} ready',
 //                   style: TextStyle(
 //                     fontSize: 16,
 //                     fontWeight: FontWeight.w600,
-//                     color: ref.primary,
+//                     color: theme.primary,
 //                     fontFamily: ref.fontFamily,
 //                   ),
 //                 ),

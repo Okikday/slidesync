@@ -33,7 +33,7 @@
 //       child: ModifyingListTile(
 //         leading: BuildImagePathWidget(
 //           fileDetails: FileDetails(),
-//           fallbackWidget: Icon(Iconsax.document, size: 22, color: ref.primaryColor),
+//           fallbackWidget: Icon(Iconsax.document, size: 22, color: theme.primaryColor),
 //         ),
 //         trailing: CustomElevatedButton(
 //           backgroundColor: Colors.transparent,

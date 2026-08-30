@@ -22,10 +22,11 @@ class RecentDialog extends ConsumerStatefulWidget {
   ConsumerState createState() => _RecentDialogState();
 }
 
-class _RecentDialogState extends ConsumerState<RecentDialog> with RecentDialogActions {
+class _RecentDialogState extends ConsumerState<RecentDialog>
+    with RecentDialogActions {
   @override
   Widget build(BuildContext context) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     var divider = Divider(color: theme.onSurface.withAlpha(20), height: 0);
     return GestureDetector(
       onTap: () => Navigator.of(context).pop(),
@@ -44,10 +45,16 @@ class _RecentDialogState extends ConsumerState<RecentDialog> with RecentDialogAc
                 decoration: BoxDecoration(
                   color: theme.surface.withValues(alpha: 0.8),
                   borderRadius: BorderRadius.circular(24),
-                  border: Border.all(color: theme.surface.withValues(alpha: 0.95)),
+                  border: Border.all(
+                    color: theme.surface.withValues(alpha: 0.95),
+                  ),
                 ),
                 child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2, tileMode: TileMode.decal),
+                  filter: ImageFilter.blur(
+                    sigmaX: 2,
+                    sigmaY: 2,
+                    tileMode: TileMode.decal,
+                  ),
                   child: SingleChildScrollView(
                     physics: BouncingScrollPhysics(),
                     child: Column(
@@ -68,9 +75,11 @@ class _RecentDialogState extends ConsumerState<RecentDialog> with RecentDialogAc
                             child: BuildImagePathWidget(
                               fileDetails: widget.contentTrack.thumbnail,
                               fallbackWidget: Icon(
-                                IconHelper.getContentTypeIconData(widget.contentTrack.type),
+                                IconHelper.getContentTypeIconData(
+                                  widget.contentTrack.type,
+                                ),
                                 size: 26,
-                                color: ref.onBackground,
+                                color: theme.onBackground,
                               ),
                             ),
                           ),
@@ -81,7 +90,10 @@ class _RecentDialogState extends ConsumerState<RecentDialog> with RecentDialogAc
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Padding(
-                            padding: const EdgeInsets.only(left: 16.0, right: 12.0),
+                            padding: const EdgeInsets.only(
+                              left: 16.0,
+                              right: 12.0,
+                            ),
                             child: CustomText(
                               () {
                                 final title = widget.contentTrack.title;
@@ -94,16 +106,26 @@ class _RecentDialogState extends ConsumerState<RecentDialog> with RecentDialogAc
                           ),
                         ),
 
-                        if (widget.contentTrack.description.trim().isNotEmpty) ConstantSizing.columnSpacingSmall,
+                        if (widget.contentTrack.description.trim().isNotEmpty)
+                          ConstantSizing.columnSpacingSmall,
 
                         if (widget.contentTrack.description.trim().isNotEmpty)
-                          Padding(padding: const EdgeInsets.symmetric(horizontal: 12.0), child: divider),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12.0,
+                            ),
+                            child: divider,
+                          ),
 
                         if (widget.contentTrack.description.trim().isNotEmpty)
                           Align(
                             alignment: Alignment.centerLeft,
                             child: Padding(
-                              padding: const EdgeInsets.only(left: 16, top: 8.0, right: 12.0),
+                              padding: const EdgeInsets.only(
+                                left: 16,
+                                top: 8.0,
+                                right: 12.0,
+                              ),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -135,7 +157,9 @@ class _RecentDialogState extends ConsumerState<RecentDialog> with RecentDialogAc
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16.0,
+                            ),
                             child: CustomText(
                               "Last accessed ${widget.contentTrack.lastRead == null ? '' : Formatter.timeAgo(widget.contentTrack.lastRead!)}",
                               fontSize: 11,
@@ -146,7 +170,10 @@ class _RecentDialogState extends ConsumerState<RecentDialog> with RecentDialogAc
 
                         ConstantSizing.columnSpacingMedium,
 
-                        RecentDialogSelectionOptions(contentTrack: widget.contentTrack, divider: divider),
+                        RecentDialogSelectionOptions(
+                          contentTrack: widget.contentTrack,
+                          divider: divider,
+                        ),
 
                         ConstantSizing.columnSpacing(24),
                       ],

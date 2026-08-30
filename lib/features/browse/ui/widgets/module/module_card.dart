@@ -54,7 +54,7 @@ class _ModuleCardState extends ConsumerState<ModuleCard> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final collection = widget.module;
     return ScaleClickWrapper(
       borderRadius: 12,
@@ -76,11 +76,15 @@ class _ModuleCardState extends ConsumerState<ModuleCard> {
                 clipBehavior: Clip.hardEdge,
                 padding: EdgeInsets.all(1),
                 decoration: BoxDecoration(
-                  color: collection.metadata.color?.withValues(alpha: 0.1) ?? ref.primary.withValues(alpha: 0.1),
+                  color:
+                      collection.metadata.color?.withValues(alpha: 0.1) ??
+                      theme.primary.withValues(alpha: 0.1),
                   shape: BoxShape.circle,
                   border: Border.fromBorderSide(
                     BorderSide(
-                      color: collection.metadata.color?.withAlpha(40) ?? ref.primary.withAlpha(40),
+                      color:
+                          collection.metadata.color?.withAlpha(40) ??
+                          theme.primary.withAlpha(40),
                       width: 1.0,
                     ),
                   ),
@@ -142,7 +146,10 @@ class _ModuleCardState extends ConsumerState<ModuleCard> {
                         title: "Open in course",
                         iconData: HugeIconsSolid.openSource,
                         onTap: () {
-                          context.pushNamed(Routes.courseDetails.name, extra: widget.module.parentId);
+                          context.pushNamed(
+                            Routes.courseDetails.name,
+                            extra: widget.module.parentId,
+                          );
                         },
                       ),
 
@@ -151,28 +158,43 @@ class _ModuleCardState extends ConsumerState<ModuleCard> {
                       title: "Move",
                       iconData: HugeIconsSolid.scissor,
                       onTap: () async {
-                        final targetCourse = await ModifyModuleActions().pickMoveTargetCourse(
-                          context,
-                          excludeCourseId: collection.parentId,
-                        );
+                        final targetCourse = await ModifyModuleActions()
+                            .pickMoveTargetCourse(
+                              context,
+                              excludeCourseId: collection.parentId,
+                            );
                         if (targetCourse == null) return;
 
                         GlobalNav.withContext(
-                          (c) => UiUtils.showLoadingDialog(c, message: 'Moving collection', canPop: false),
+                          (c) => UiUtils.showLoadingDialog(
+                            c,
+                            message: 'Moving collection',
+                            canPop: false,
+                          ),
                         );
 
-                        final movedModules = await ModuleRepo.moveModules([collection], targetCourse.uid);
+                        final movedModules = await ModuleRepo.moveModules([
+                          collection,
+                        ], targetCourse.uid);
                         GlobalNav.popGlobal();
 
                         if (movedModules.isEmpty) {
                           GlobalNav.withContext(
-                            (c) =>
-                                UiUtils.showFlushBar(c, msg: 'Unable to move collection', vibe: FlushbarVibe.warning),
+                            (c) => UiUtils.showFlushBar(
+                              c,
+                              msg: 'Unable to move collection',
+                              vibe: FlushbarVibe.warning,
+                            ),
                           );
                           return;
                         }
 
-                        GlobalNav.withContext((c) => UiUtils.showFlushBar(c, msg: 'Successfully moved collection'));
+                        GlobalNav.withContext(
+                          (c) => UiUtils.showFlushBar(
+                            c,
+                            msg: 'Successfully moved collection',
+                          ),
+                        );
                       },
                     ),
 
@@ -180,7 +202,10 @@ class _ModuleCardState extends ConsumerState<ModuleCard> {
                       title: "Share",
                       iconData: HugeIconsSolid.share03,
                       onTap: () async {
-                        await ShareContentActions.shareCollection(context, collection.uid);
+                        await ShareContentActions.shareCollection(
+                          context,
+                          collection.uid,
+                        );
                       },
                     ),
 
@@ -190,12 +215,16 @@ class _ModuleCardState extends ConsumerState<ModuleCard> {
                         iconData: HugeIconsSolid.edit01,
                         onTap: () async {
                           // CustomDialog.hide(context);
-                          final coll = await ModuleRepo.getByUid(collection.uid);
+                          final coll = await ModuleRepo.getByUid(
+                            collection.uid,
+                          );
                           if (coll == null) return;
                           GlobalNav.withContext(
                             (c) => UiUtils.showCustomDialog(
                               context.mounted ? context : c,
-                              child: EditCollectionTitleBottomSheet(collection: coll),
+                              child: EditCollectionTitleBottomSheet(
+                                collection: coll,
+                              ),
                             ),
                           );
                         },
@@ -224,7 +253,11 @@ class _ModuleCardState extends ConsumerState<ModuleCard> {
                                   GlobalNav.popGlobal();
                                 },
                                 onDelete: () async {
-                                  await ModifyModuleActions().onDeleteCollection(context, collection: collection);
+                                  await ModifyModuleActions()
+                                      .onDeleteCollection(
+                                        context,
+                                        collection: collection,
+                                      );
                                 },
                               ),
                             );
@@ -240,13 +273,21 @@ class _ModuleCardState extends ConsumerState<ModuleCard> {
                     final isSelected = select?.selected == true;
                     return DecoratedBox(
                       decoration: BoxDecoration(
-                        color: isSelected ? Colors.transparent : ref.onBackground.withAlpha(10),
+                        color: isSelected
+                            ? Colors.transparent
+                            : theme.onBackground.withAlpha(10),
                         shape: BoxShape.circle,
-                        border: Border.all(color: theme.supportingText.withAlpha(12)),
+                        border: Border.all(
+                          color: theme.supportingText.withAlpha(12),
+                        ),
                       ),
                       child: isSelected
-                          ? Icon(Iconsax.tick_circle, color: ref.primary)
-                          : CircleAvatar(radius: 10, backgroundColor: Colors.transparent, child: const SizedBox()),
+                          ? Icon(Iconsax.tick_circle, color: theme.primary)
+                          : CircleAvatar(
+                              radius: 10,
+                              backgroundColor: Colors.transparent,
+                              child: const SizedBox(),
+                            ),
                     );
                   },
                 ),

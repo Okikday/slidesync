@@ -24,11 +24,16 @@ class CourseCardContextMenu extends ConsumerWidget {
   final Course course;
   final void Function() onOpen;
 
-  const CourseCardContextMenu({super.key, required this.tapPosition, required this.course, required this.onOpen});
+  const CourseCardContextMenu({
+    super.key,
+    required this.tapPosition,
+    required this.course,
+    required this.onOpen,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final Size widgetSize = const Size(180, 150);
     final boundedOffset = repositionOffset(
       tapPosition: tapPosition,
@@ -38,13 +43,18 @@ class CourseCardContextMenu extends ConsumerWidget {
     final double dimension = (context.deviceWidth > context.deviceHeight
         ? context.deviceWidth * 0.12
         : context.deviceWidth * 0.12);
-    final divider = Divider(color: theme.background.lightenColor(theme.isDarkMode ? 0.1 : 0.9), height: 0);
+    final divider = Divider(
+      color: theme.background.lightenColor(theme.isDarkMode ? 0.1 : 0.9),
+      height: 0,
+    );
 
     return Stack(
       clipBehavior: Clip.hardEdge,
       children: [
         Positioned.fill(
-          child: SizedBox.expand(child: GestureDetector(onTap: () => UiUtils.hideDialog(context))),
+          child: SizedBox.expand(
+            child: GestureDetector(onTap: () => UiUtils.hideDialog(context)),
+          ),
         ),
         Positioned(
           top: boundedOffset.dy - (kToolbarHeight + 4) - 12,
@@ -58,14 +68,24 @@ class CourseCardContextMenu extends ConsumerWidget {
                 borderRadius: 16,
                 child:
                     Container(
-                      constraints: BoxConstraints(maxHeight: kToolbarHeight * 1.5, maxWidth: 450),
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      constraints: BoxConstraints(
+                        maxHeight: kToolbarHeight * 1.5,
+                        maxWidth: 450,
+                      ),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       decoration: BoxDecoration(
-                        color: theme.background.lightenColor(theme.isDarkMode ? .12 : .88),
+                        color: theme.background.lightenColor(
+                          theme.isDarkMode ? .12 : .88,
+                        ),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
                           width: 2,
-                          color: theme.background.lightenColor(theme.isDarkMode ? .14 : .86),
+                          color: theme.background.lightenColor(
+                            theme.isDarkMode ? .14 : .86,
+                          ),
                         ),
                         boxShadow: [
                           BoxShadow(
@@ -87,16 +107,26 @@ class CourseCardContextMenu extends ConsumerWidget {
                               children: [
                                 CircleAvatar(
                                   radius: 60,
-                                  backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.4),
+                                  backgroundColor: theme.altBackgroundSecondary
+                                      .withValues(alpha: 0.4),
                                   child: ClipOval(
                                     child: CircleAvatar(
                                       radius: dimension / 2 - 4,
-                                      backgroundColor: theme.background.lightenColor(theme.isDarkMode ? .14 : .86),
+                                      backgroundColor: theme.background
+                                          .lightenColor(
+                                            theme.isDarkMode ? .14 : .86,
+                                          ),
                                       child: SizedBox.square(
                                         dimension: dimension - 8,
                                         child: BuildImagePathWidget(
-                                          fileDetails: FilePath(local: course.localThumbnailPath),
-                                          fallbackWidget: Icon(Iconsax.document_1, size: 16, color: theme.onBackground),
+                                          fileDetails: FilePath(
+                                            local: course.localThumbnailPath,
+                                          ),
+                                          fallbackWidget: Icon(
+                                            Iconsax.document_1,
+                                            size: 16,
+                                            color: theme.onBackground,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -134,7 +164,8 @@ class CourseCardContextMenu extends ConsumerWidget {
                                     // overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                if (!(course.metadata.courseCode?.isEmpty == true))
+                                if (!(course.metadata.courseCode?.isEmpty ==
+                                    true))
                                   CustomText(
                                     course.metadata.courseCode ?? '',
                                     fontSize: 10,
@@ -144,9 +175,14 @@ class CourseCardContextMenu extends ConsumerWidget {
                             ),
                           ),
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
-                              color: theme.background.lightenColor(theme.isDarkMode ? .14 : .86),
+                              color: theme.background.lightenColor(
+                                theme.isDarkMode ? .14 : .86,
+                              ),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: CustomText(
@@ -171,11 +207,23 @@ class CourseCardContextMenu extends ConsumerWidget {
                 padding: EdgeInsets.symmetric(vertical: 8),
                 clipBehavior: Clip.antiAlias,
                 decoration: BoxDecoration(
-                  color: theme.background.lightenColor(theme.isDarkMode ? 0.16 : 0.84).withValues(alpha: 0.9),
+                  color: theme.background
+                      .lightenColor(theme.isDarkMode ? 0.16 : 0.84)
+                      .withValues(alpha: 0.9),
                   borderRadius: BorderRadius.circular(20),
                   boxShadow: [
-                    BoxShadow(blurStyle: BlurStyle.outer, blurRadius: 1, offset: Offset(1, 1), color: Colors.black12),
-                    BoxShadow(blurStyle: BlurStyle.outer, blurRadius: 1, offset: Offset(-1, -1), color: Colors.white12),
+                    BoxShadow(
+                      blurStyle: BlurStyle.outer,
+                      blurRadius: 1,
+                      offset: Offset(1, 1),
+                      color: Colors.black12,
+                    ),
+                    BoxShadow(
+                      blurStyle: BlurStyle.outer,
+                      blurRadius: 1,
+                      offset: Offset(-1, -1),
+                      color: Colors.white12,
+                    ),
                   ],
                 ),
                 child: Column(
@@ -187,7 +235,10 @@ class CourseCardContextMenu extends ConsumerWidget {
                       iconData: HugeIconsSolid.play,
                       onTap: () {
                         UiUtils.hideDialog(context);
-                        context.pushNamed(Routes.courseDetails.name, extra: course.uid);
+                        context.pushNamed(
+                          Routes.courseDetails.name,
+                          extra: course.uid,
+                        );
                       },
                     ),
                     divider,
@@ -210,7 +261,8 @@ class CourseCardContextMenu extends ConsumerWidget {
                           enableDrag: false,
                           showDragHandle: false,
                           isScrollControlled: true,
-                          builder: (context) => EditCourseBottomSheet(courseId: course.uid),
+                          builder: (context) =>
+                              EditCourseBottomSheet(courseId: course.uid),
                         );
                         // context.pushNamed(Routes.courseDetails.name, extra: course.courseId);
                       },
@@ -227,7 +279,10 @@ class CourseCardContextMenu extends ConsumerWidget {
                       iconData: HugeIconsSolid.share02,
                       onTap: () {
                         UiUtils.hideDialog(context);
-                        CourseFolderExportManager.showExportScreen(context, course.uid);
+                        CourseFolderExportManager.showExportScreen(
+                          context,
+                          course.uid,
+                        );
                       },
                     ),
                     divider,
@@ -238,8 +293,11 @@ class CourseCardContextMenu extends ConsumerWidget {
                       iconColor: Colors.redAccent,
                       onTap: () {
                         UiUtils.hideDialog(context);
-                        if (rootNavigatorKey.currentContext != null && rootNavigatorKey.currentContext!.mounted) {
-                          ModifyCourseActions().showDeleteCourseDialog(course.uid);
+                        if (rootNavigatorKey.currentContext != null &&
+                            rootNavigatorKey.currentContext!.mounted) {
+                          ModifyCourseActions().showDeleteCourseDialog(
+                            course.uid,
+                          );
                         }
                       },
                     ),
@@ -283,7 +341,10 @@ class BuildExpandCardButton extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return BuildPlainActionButton(
       title: title,
-      icon: Icon(iconData, color: iconColor ?? ref.onBackground),
+      icon: Icon(
+        iconData,
+        color: iconColor ?? context.theme.custom.onBackground,
+      ),
       contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       titleColor: titleColor,
       onTap: onTap,
@@ -291,7 +352,11 @@ class BuildExpandCardButton extends ConsumerWidget {
   }
 }
 
-Offset repositionOffset({required Size screenSize, required Size widgetSize, required Offset tapPosition}) {
+Offset repositionOffset({
+  required Size screenSize,
+  required Size widgetSize,
+  required Offset tapPosition,
+}) {
   double dx = tapPosition.dx;
   double dy = tapPosition.dy;
 
@@ -315,7 +380,8 @@ Alignment calculateAnimationAlignment({
 }) {
   final bool fitsRight = tapPosition.dx + widgetSize.width <= screenSize.width;
   // final bool fitsLeft = tapPosition.dx - widgetSize.width >= 0;
-  final bool fitsBelow = tapPosition.dy + widgetSize.height <= screenSize.height;
+  final bool fitsBelow =
+      tapPosition.dy + widgetSize.height <= screenSize.height;
   // final bool fitsAbove = tapPosition.dy - widgetSize.height >= 0;
 
   final double horizontalAlignment = fitsRight ? -1.0 : 1.0;

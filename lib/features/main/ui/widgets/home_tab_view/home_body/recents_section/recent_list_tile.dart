@@ -22,19 +22,19 @@ class RecentListTile extends ConsumerWidget {
   final RecentListTileModel data;
   const RecentListTile({super.key, required this.data});
 
-  Color _resolveLevelColor(WidgetRef ref, ProgressLevel level) {
+  Color _resolveLevelColor(AppThemeExtension theme, ProgressLevel level) {
     return level == ProgressLevel.danger
         ? Colors.red
         : (level == ProgressLevel.warning
               ? Colors.orange
               : (level == ProgressLevel.success
                     ? Colors.green
-                    : ref.primaryColor));
+                    : theme.primaryColor));
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final contentTrack = data.contentTrack;
     return DecoratedBox(
       decoration: BoxDecoration(
@@ -104,7 +104,7 @@ class RecentListTile extends ConsumerWidget {
                                   contentTrack.type,
                                 ),
                                 size: 26,
-                                color: ref.primary,
+                                color: theme.primary,
                               ),
                             ),
                           ),
@@ -119,7 +119,7 @@ class RecentListTile extends ConsumerWidget {
                   //   contentPadding: EdgeInsets.zero,
                   //   shape: CircleBorder(),
                   //   backgroundColor: ref.surface,
-                  //   overlayColor: ref.secondary.withAlpha(50),
+                  //   overlayColor: theme.secondary.withAlpha(50),
                   //   child: CustomText(
                   //     "${((dataModel.progress ?? 0.0) * 100).truncate()}%",
                   //     fontSize: 11,
@@ -137,7 +137,7 @@ class RecentListTile extends ConsumerWidget {
                         value: contentTrack.progress.clamp(.0, 1.0),
                         strokeCap: StrokeCap.round,
                         color: _resolveLevelColor(
-                          ref,
+                          theme,
                           contentTrack.progress == 1.0
                               ? ProgressLevel.success
                               : (contentTrack.progress >= 0.75

@@ -13,22 +13,33 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_action_dialog.dart';
 
-class RecentDialogSelectionOptions extends ConsumerWidget with RecentDialogActions {
-  const RecentDialogSelectionOptions({super.key, required this.contentTrack, required this.divider});
+class RecentDialogSelectionOptions extends ConsumerWidget
+    with RecentDialogActions {
+  const RecentDialogSelectionOptions({
+    super.key,
+    required this.contentTrack,
+    required this.divider,
+  });
   final ContentTrack contentTrack;
   final Divider divider;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         divider,
 
         BuildPlainActionButton(
-          title: contentTrack.type == ModuleContentType.link ? "Open Link" : "Continue reading",
-          icon: Icon(HugeIconsSolid.playCircle02, size: 24, color: theme.supportingText),
+          title: contentTrack.type == ModuleContentType.link
+              ? "Open Link"
+              : "Continue reading",
+          icon: Icon(
+            HugeIconsSolid.playCircle02,
+            size: 24,
+            color: theme.supportingText,
+          ),
           textStyle: TextStyle(fontSize: 16, color: theme.onBackground),
           onTap: () => onContinueReading(ref, contentTrack.uid),
         ),
@@ -37,14 +48,22 @@ class RecentDialogSelectionOptions extends ConsumerWidget with RecentDialogActio
 
         BuildPlainActionButton(
           title: "Open Outside App",
-          icon: Icon(HugeIconsSolid.sendToMobile02, size: 24, color: theme.supportingText),
+          icon: Icon(
+            HugeIconsSolid.sendToMobile02,
+            size: 24,
+            color: theme.supportingText,
+          ),
           textStyle: TextStyle(fontSize: 16, color: theme.onBackground),
           onTap: () => onOpenOutsideApp(ref, contentTrack.uid),
         ),
         divider,
         BuildPlainActionButton(
           title: "Add to bookmarks",
-          icon: Icon(HugeIconsSolid.bookmark02, size: 24, color: theme.supportingText),
+          icon: Icon(
+            HugeIconsSolid.bookmark02,
+            size: 24,
+            color: theme.supportingText,
+          ),
           textStyle: TextStyle(fontSize: 16, color: theme.onBackground),
           onTap: () => onAddToBookmark(ref, contentTrack.uid),
         ),
@@ -54,14 +73,22 @@ class RecentDialogSelectionOptions extends ConsumerWidget with RecentDialogActio
         if (contentTrack.type != ModuleContentType.link)
           BuildPlainActionButton(
             title: "Share",
-            icon: Icon(HugeIconsSolid.share03, size: 24, color: theme.supportingText),
+            icon: Icon(
+              HugeIconsSolid.share03,
+              size: 24,
+              color: theme.supportingText,
+            ),
             textStyle: TextStyle(fontSize: 15, color: theme.onBackground),
             onTap: () => onShare(context, contentTrack.uid),
           )
         else
           BuildPlainActionButton(
             title: "Copy link",
-            icon: Icon(HugeIconsSolid.copyLink, size: 24, color: theme.supportingText),
+            icon: Icon(
+              HugeIconsSolid.copyLink,
+              size: 24,
+              color: theme.supportingText,
+            ),
             textStyle: TextStyle(fontSize: 15, color: theme.onBackground),
             onTap: () => onCopy(context, contentTrack.uid),
           ),
@@ -70,7 +97,11 @@ class RecentDialogSelectionOptions extends ConsumerWidget with RecentDialogActio
 
         BuildPlainActionButton(
           title: "Go to collection",
-          icon: Icon(HugeIconsSolid.cursorMagicSelection03, size: 24, color: theme.supportingText),
+          icon: Icon(
+            HugeIconsSolid.cursorMagicSelection03,
+            size: 24,
+            color: theme.supportingText,
+          ),
           textStyle: TextStyle(fontSize: 16, color: theme.onBackground),
           onTap: () async {
             context.pop();
@@ -80,7 +111,10 @@ class RecentDialogSelectionOptions extends ConsumerWidget with RecentDialogActio
             if (module == null) return;
 
             GlobalNav.withContext(
-              (c) => (context.mounted ? context : c).pushNamed(Routes.moduleContentsView.name, extra: module),
+              (c) => (context.mounted ? context : c).pushNamed(
+                Routes.moduleContentsView.name,
+                extra: module,
+              ),
             );
           },
         ),
@@ -89,7 +123,11 @@ class RecentDialogSelectionOptions extends ConsumerWidget with RecentDialogActio
 
         BuildPlainActionButton(
           title: "Remove from recents",
-          icon: Icon(Iconsax.box_remove_copy, size: 24, color: Colors.redAccent),
+          icon: Icon(
+            Iconsax.box_remove_copy,
+            size: 24,
+            color: Colors.redAccent,
+          ),
           textStyle: TextStyle(fontSize: 15, color: theme.onBackground),
           onTap: () => onRemoveFromRecents(context, contentTrack),
         ),

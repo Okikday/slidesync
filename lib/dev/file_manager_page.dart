@@ -38,7 +38,9 @@ class _FileManagerPageState extends ConsumerState<FileManagerPage> {
     });
 
     try {
-      final List<FileSystemEntity> children = await dir.list(recursive: false, followLinks: false).toList();
+      final List<FileSystemEntity> children = await dir
+          .list(recursive: false, followLinks: false)
+          .toList();
 
       // sort: directories first, then files, both by name
       children.sort((a, b) {
@@ -71,7 +73,7 @@ class _FileManagerPageState extends ConsumerState<FileManagerPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     // final dirName = _currentDir?.path.split(Platform.pathSeparator).last ?? '';
     return PopScope(
       canPop: false,
@@ -98,11 +100,16 @@ class _FileManagerPageState extends ConsumerState<FileManagerPage> {
             ? Center(child: CircularProgressIndicator())
             : _entries.isEmpty
             ? Center(
-                child: Text('Empty', style: TextStyle(color: theme.onBackground)),
+                child: Text(
+                  'Empty',
+                  style: TextStyle(color: theme.onBackground),
+                ),
               )
             : ListView.separated(
                 itemCount: _entries.length,
-                padding: EdgeInsets.only(top: context.topPadding + kToolbarHeight),
+                padding: EdgeInsets.only(
+                  top: context.topPadding + kToolbarHeight,
+                ),
                 separatorBuilder: (_, _) => Divider(height: 1),
                 itemBuilder: (context, idx) {
                   final ent = _entries[idx];
@@ -113,15 +120,27 @@ class _FileManagerPageState extends ConsumerState<FileManagerPage> {
                     future: ent.stat(),
                     builder: (ctx, snap) {
                       final stat = snap.data;
-                      final modified = stat != null ? DateFormat('yyyy-MM-dd HH:mm').format(stat.modified) : '';
-                      final size = stat != null && !isDir ? _formatBytes(stat.size) : '';
+                      final modified = stat != null
+                          ? DateFormat('yyyy-MM-dd HH:mm').format(stat.modified)
+                          : '';
+                      final size = stat != null && !isDir
+                          ? _formatBytes(stat.size)
+                          : '';
 
                       return ListTile(
-                        leading: Icon(isDir ? Icons.folder : Icons.insert_drive_file),
-                        title: Text(name, style: TextStyle(color: theme.onBackground)),
+                        leading: Icon(
+                          isDir ? Icons.folder : Icons.insert_drive_file,
+                        ),
+                        title: Text(
+                          name,
+                          style: TextStyle(color: theme.onBackground),
+                        ),
                         subtitle: Text(
                           isDir ? modified : '$modified • $size',
-                          style: TextStyle(fontSize: 12, color: theme.onBackground),
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: theme.onBackground,
+                          ),
                         ),
                         onTap: isDir ? () => _listDir(ent) : null,
                         onLongPress: isDir
@@ -133,8 +152,15 @@ class _FileManagerPageState extends ConsumerState<FileManagerPage> {
                                     title: Text('Delete file?'),
                                     content: Text(name),
                                     actions: [
-                                      TextButton(onPressed: () => Navigator.pop(c, false), child: Text('No')),
-                                      TextButton(onPressed: () => Navigator.pop(c, true), child: Text('Yes')),
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(c, false),
+                                        child: Text('No'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () => Navigator.pop(c, true),
+                                        child: Text('Yes'),
+                                      ),
                                     ],
                                   ),
                                 );

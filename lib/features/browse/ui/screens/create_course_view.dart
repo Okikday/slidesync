@@ -24,18 +24,30 @@ class CreateCourseView extends ConsumerStatefulWidget {
   ConsumerState createState() => _CreateCourseViewState();
 }
 
-class _CreateCourseViewState extends ConsumerState<CreateCourseView> with SingleTickerProviderStateMixin {
+class _CreateCourseViewState extends ConsumerState<CreateCourseView>
+    with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion(
-      value: UiUtils.getSystemUiOverlayStyle(Colors.transparent, context.isDarkMode),
+      value: UiUtils.getSystemUiOverlayStyle(
+        Colors.transparent,
+        context.isDarkMode,
+      ),
       child: AppScaffold(
         title: "",
-        appBar: AppBarContainer(child: AppBarContainerChild(context.isDarkMode, title: "Create Course")),
+        appBar: AppBarContainer(
+          child: AppBarContainerChild(
+            context.isDarkMode,
+            title: "Create Course",
+          ),
+        ),
         floatingActionButton: kDebugMode
             ? FloatingActionButton(
                 onPressed: () {
-                  Navigator.push(context, PageAnimation.pageRouteBuilder(const FileManagerPage()));
+                  Navigator.push(
+                    context,
+                    PageAnimation.pageRouteBuilder(const FileManagerPage()),
+                  );
                 },
                 child: const Icon(Icons.folder),
               )
@@ -52,10 +64,12 @@ class CreateCourseOuterSection extends ConsumerStatefulWidget {
   const CreateCourseOuterSection({super.key, required this.pushToCreated});
 
   @override
-  ConsumerState<CreateCourseOuterSection> createState() => _CreateCourseOuterSectionState();
+  ConsumerState<CreateCourseOuterSection> createState() =>
+      _CreateCourseOuterSectionState();
 }
 
-class _CreateCourseOuterSectionState extends ConsumerState<CreateCourseOuterSection> {
+class _CreateCourseOuterSectionState
+    extends ConsumerState<CreateCourseOuterSection> {
   final courseNameController = TextEditingController();
   final courseCodeController = TextEditingController();
   final scrollController = ScrollController();
@@ -74,6 +88,7 @@ class _CreateCourseOuterSectionState extends ConsumerState<CreateCourseOuterSect
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).custom;
     return SizedBox(
       height: context.deviceHeight,
       width: context.deviceWidth,
@@ -111,16 +126,20 @@ class _CreateCourseOuterSectionState extends ConsumerState<CreateCourseOuterSect
                       builder: (context, value, child) {
                         if (value.text.isNotEmpty) return const SizedBox();
                         return CustomElevatedButton(
-                          backgroundColor: ref.secondary.withAlpha(50),
-                          textColor: ref.secondary,
+                          backgroundColor: theme.secondary.withAlpha(50),
+                          textColor: theme.secondary,
                           borderRadius: 40,
                           pixelHeight: 50,
                           label: "Import Folder",
                           onClick: () {
                             if (Platform.isAndroid) {
-                              CourseFolderImportManager.showFolderImportScreen(context);
+                              CourseFolderImportManager.showFolderImportScreen(
+                                context,
+                              );
                             } else {
-                              CourseFolderImportManagerWindows.showFolderImportScreen(context);
+                              CourseFolderImportManagerWindows.showFolderImportScreen(
+                                context,
+                              );
                             }
                           },
                         );

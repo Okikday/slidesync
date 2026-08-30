@@ -100,12 +100,19 @@ class ExploreCard extends ConsumerWidget {
   final VoidCallback? onTap;
   final VoidCallback? onAuthorTap;
 
-  const ExploreCard({super.key, required this.data, this.onTap, this.onAuthorTap});
+  const ExploreCard({
+    super.key,
+    required this.data,
+    this.onTap,
+    this.onAuthorTap,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
-    final shadowSurfaceColor = theme.surface.lightenColor(0.5).withValues(alpha: 0.1);
+    final theme = Theme.of(context).custom;
+    final shadowSurfaceColor = theme.surface
+        .lightenColor(0.5)
+        .withValues(alpha: 0.1);
     final accentColor = data.accentColor ?? theme.primary;
 
     return ScaleClickWrapper(
@@ -117,7 +124,9 @@ class ExploreCard extends ConsumerWidget {
           color: theme.surface,
           borderRadius: BorderRadius.circular(22),
           border: Border.all(
-            color: data.isFeatured ? accentColor.withValues(alpha: 0.3) : shadowSurfaceColor,
+            color: data.isFeatured
+                ? accentColor.withValues(alpha: 0.3)
+                : shadowSurfaceColor,
             width: data.isFeatured ? 1.5 : 1,
           ),
         ),
@@ -160,7 +169,10 @@ class ExploreCard extends ConsumerWidget {
                           ),
                           ConstantSizing.rowSpacing(4),
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: accentColor.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(4),
@@ -205,8 +217,16 @@ class ExploreCard extends ConsumerWidget {
                             borderRadius: BorderRadius.circular(100),
                           ),
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
-                            child: CustomText(tag, fontSize: 11, color: accentColor, fontWeight: FontWeight.w500),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8.0,
+                              vertical: 4.0,
+                            ),
+                            child: CustomText(
+                              tag,
+                              fontSize: 11,
+                              color: accentColor,
+                              fontWeight: FontWeight.w500,
+                            ),
                           ),
                         );
                       }).toList(),
@@ -236,18 +256,28 @@ class ExploreCard extends ConsumerWidget {
                   children: [
                     if (data.itemCount > 0) ...[
                       Icon(
-                        data.type == ExploreCardType.course ? Icons.slideshow : Icons.content_copy,
+                        data.type == ExploreCardType.course
+                            ? Icons.slideshow
+                            : Icons.content_copy,
                         size: 14,
                         color: theme.supportingText,
                       ),
                       ConstantSizing.rowSpacing(4),
-                      CustomText('${data.itemCount}', fontSize: 11, color: theme.supportingText),
+                      CustomText(
+                        '${data.itemCount}',
+                        fontSize: 11,
+                        color: theme.supportingText,
+                      ),
                       ConstantSizing.rowSpacing(8),
                     ],
                     if (data.viewCount > 0) ...[
                       Icon(Iconsax.eye, size: 14, color: theme.supportingText),
                       ConstantSizing.rowSpacing(4),
-                      CustomText(data.formattedViewCount, fontSize: 11, color: theme.supportingText),
+                      CustomText(
+                        data.formattedViewCount,
+                        fontSize: 11,
+                        color: theme.supportingText,
+                      ),
                     ],
                   ],
                 ),
@@ -258,7 +288,11 @@ class ExploreCard extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.end,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      CustomText(data.relativeTime, fontSize: 11, color: theme.supportingText),
+                      CustomText(
+                        data.relativeTime,
+                        fontSize: 11,
+                        color: theme.supportingText,
+                      ),
                       ConstantSizing.columnSpacing(4),
                       GestureDetector(
                         onTap: onAuthorTap,
@@ -268,12 +302,18 @@ class ExploreCard extends ConsumerWidget {
                           children: [
                             CircleAvatar(
                               radius: 10,
-                              backgroundColor: accentColor.withValues(alpha: 0.1),
+                              backgroundColor: accentColor.withValues(
+                                alpha: 0.1,
+                              ),
                               backgroundImage: data.authorAvatarUrl != null
                                   ? NetworkImage(data.authorAvatarUrl!)
                                   : null,
                               child: data.authorAvatarUrl == null
-                                  ? Icon(Iconsax.profile_2user, color: accentColor, size: 12)
+                                  ? Icon(
+                                      Iconsax.profile_2user,
+                                      color: accentColor,
+                                      size: 12,
+                                    )
                                   : null,
                             ),
                             ConstantSizing.rowSpacing(4),
@@ -305,7 +345,8 @@ class ExploreCard extends ConsumerWidget {
 final sampleData = ExploreCardData(
   id: '1',
   title: 'Advanced Flutter Development',
-  description: 'Master Flutter with advanced techniques and best practices for building professional apps',
+  description:
+      'Master Flutter with advanced techniques and best practices for building professional apps',
   type: ExploreCardType.content,
   tags: ['Flutter', 'Mobile', 'Advanced', 'Development'],
   authorName: 'Okikiola',

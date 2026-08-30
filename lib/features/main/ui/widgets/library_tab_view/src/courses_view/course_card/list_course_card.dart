@@ -26,7 +26,7 @@ class ListCourseCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return Container(
       margin: EdgeInsets.all(2.0),
       padding: EdgeInsets.symmetric(vertical: 16, horizontal: 16),
@@ -35,7 +35,9 @@ class ListCourseCard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: theme.cardColor,
         borderRadius: BorderRadius.circular(24),
-        border: Border.fromBorderSide(BorderSide(color: theme.onBackground.withAlpha(10))),
+        border: Border.fromBorderSide(
+          BorderSide(color: theme.onBackground.withAlpha(10)),
+        ),
         boxShadow: context.isDarkMode
             ? [
                 BoxShadow(
@@ -68,13 +70,17 @@ class ListCourseCard extends ConsumerWidget {
       ),
       child: Badge(
         backgroundColor: Colors.transparent,
-        isLabelVisible: (course.createdAt.difference(DateTime.now()).inMinutes.abs()) <= 5,
+        isLabelVisible:
+            (course.createdAt.difference(DateTime.now()).inMinutes.abs()) <= 5,
         alignment: Alignment.bottomRight,
         offset: Offset(-8, 0),
         label: DecoratedBox(
           decoration: BoxDecoration(
             color: theme.onSecondary.withValues(alpha: 0.4),
-            borderRadius: BorderRadius.only(bottomRight: Radius.circular(12), topLeft: Radius.circular(12)),
+            borderRadius: BorderRadius.only(
+              bottomRight: Radius.circular(12),
+              topLeft: Radius.circular(12),
+            ),
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -83,7 +89,12 @@ class ListCourseCard extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 // Icon(Iconsax.star_1, size: 10, color: theme.adjustBgAndPrimaryWithLerpExtra),
-                CustomText("New", fontSize: 8, fontWeight: FontWeight.bold, color: theme.secondary),
+                CustomText(
+                  "New",
+                  fontSize: 8,
+                  fontWeight: FontWeight.bold,
+                  color: theme.secondary,
+                ),
               ],
             ),
           ),
@@ -102,7 +113,12 @@ class ListCourseCard extends ConsumerWidget {
             ),
 
             // ListCourseCardProgressIndicator(courseId: course.courseId),
-            Icon(Iconsax.arrow_right, size: 30, color: course.metadata.color ?? theme.supportingText.withAlpha(100)),
+            Icon(
+              Iconsax.arrow_right,
+              size: 30,
+              color:
+                  course.metadata.color ?? theme.supportingText.withAlpha(100),
+            ),
           ],
         ),
       ),
@@ -111,7 +127,11 @@ class ListCourseCard extends ConsumerWidget {
 }
 
 class ListCourseCardIcon extends ConsumerStatefulWidget {
-  const ListCourseCardIcon({super.key, required this.course, required this.onTapIcon});
+  const ListCourseCardIcon({
+    super.key,
+    required this.course,
+    required this.onTapIcon,
+  });
   final Course course;
   final void Function() onTapIcon;
 
@@ -140,7 +160,7 @@ class _ListCourseCardIconState extends ConsumerState<ListCourseCardIcon> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return Stack(
       children: [
         InkWell(
@@ -159,7 +179,12 @@ class _ListCourseCardIconState extends ConsumerState<ListCourseCardIcon> {
               color: theme.altBackgroundPrimary,
               // border: courseCode.isEmpty ? null : Border.all(color: theme.altBackgroundPrimary),
               border: theme.isDarkMode
-                  ? Border.fromBorderSide(BorderSide(color: ref.primary.withAlpha(40), width: 1.0))
+                  ? Border.fromBorderSide(
+                      BorderSide(
+                        color: theme.primary.withAlpha(40),
+                        width: 1.0,
+                      ),
+                    )
                   : Border.all(color: theme.altBackgroundPrimary),
               // borderRadius: BorderRadius.circular(12),
             ),
@@ -169,7 +194,8 @@ class _ListCourseCardIconState extends ConsumerState<ListCourseCardIcon> {
                 child: BuildImagePathWidget(
                   height: 64,
                   width: 64,
-                  fileDetails: widget.course.metadata.thumbnail ?? FilePath.empty(),
+                  fileDetails:
+                      widget.course.metadata.thumbnail ?? FilePath.empty(),
                   fallbackWidget: Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Center(
@@ -180,7 +206,10 @@ class _ListCourseCardIconState extends ConsumerState<ListCourseCardIcon> {
                               ? ''
                               : courseCode.isEmpty
                               ? ''
-                              : courseCode.substring(0, courseCode.length.clamp(0, 8))
+                              : courseCode.substring(
+                                  0,
+                                  courseCode.length.clamp(0, 8),
+                                )
                           // widget.course.courseTitle
                           //       .splitMapJoin(" ", onNonMatch: (str) => str.isNotEmpty ? str[0] : "")
                           //       .toUpperCase()
@@ -214,17 +243,23 @@ class _ListCourseCardIconState extends ConsumerState<ListCourseCardIcon> {
                   fit: StackFit.expand,
                   children: [
                     CircularProgressIndicator(
-                      value: asyncSnapshot.connectionState == ConnectionState.active
+                      value:
+                          asyncSnapshot.connectionState ==
+                              ConnectionState.active
                           ? progress?.clamp(0.01, 1.0) ?? 0.01
                           : progress,
                       strokeCap: StrokeCap.round,
                       color: theme.primaryColor,
-                      backgroundColor: theme.altBackgroundSecondary.withValues(alpha: 0.4),
+                      backgroundColor: theme.altBackgroundSecondary.withValues(
+                        alpha: 0.4,
+                      ),
                     ),
 
                     if (progress != null &&
-                        !(widget.course.metadata.courseCode?.isNotEmpty == true) &&
-                        !(widget.course.metadata.thumbnail?.containsAnyPath ?? false))
+                        !(widget.course.metadata.courseCode?.isNotEmpty ==
+                            true) &&
+                        !(widget.course.metadata.thumbnail?.containsAnyPath ??
+                            false))
                       Positioned.fill(
                         child: Center(
                           child: CustomText(
@@ -262,7 +297,7 @@ class ListCourseCardTitleColumn extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
@@ -275,7 +310,12 @@ class ListCourseCardTitleColumn extends ConsumerWidget {
               pixelHeight: 24,
               borderRadius: 8,
               contentPadding: EdgeInsets.symmetric(horizontal: 5.0),
-              child: CustomText(courseCode, fontSize: 12, fontWeight: FontWeight.bold, color: theme.secondary),
+              child: CustomText(
+                courseCode,
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: theme.secondary,
+              ),
             ),
           ),
 
@@ -340,7 +380,7 @@ class ListCourseCardTitleColumn extends ConsumerWidget {
 
 //   @override
 //   Widget build(BuildContext context) {
-//     final theme = ref;
+//     final theme = Theme.of(context).custom;
 //     return StreamBuilder<CourseTrack?>(
 //       stream: _courseTrackStream,
 //       builder: (context, asyncSnapshot) {

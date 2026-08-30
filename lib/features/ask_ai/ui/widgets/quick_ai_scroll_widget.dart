@@ -16,11 +16,17 @@ class QuickAiScrollWidget extends StatelessWidget {
         padding: EdgeInsets.only(left: 24.0),
         scrollDirection: Axis.horizontal,
         children: [
-          QuickAiScrollButton(label: "Summarize", iconData: Icons.lightbulb_outlined),
+          QuickAiScrollButton(
+            label: "Summarize",
+            iconData: Icons.lightbulb_outlined,
+          ),
           ConstantSizing.rowSpacingMedium,
           QuickAiScrollButton(label: "Explain", iconData: Iconsax.flash_copy),
           ConstantSizing.rowSpacingMedium,
-          QuickAiScrollButton(label: "Send documents", iconData: Iconsax.document_copy),
+          QuickAiScrollButton(
+            label: "Send documents",
+            iconData: Iconsax.document_copy,
+          ),
           ConstantSizing.rowSpacingMedium,
         ],
       ).animate().moveX(begin: 40, end: 0),
@@ -31,11 +37,15 @@ class QuickAiScrollWidget extends StatelessWidget {
 class QuickAiScrollButton extends ConsumerWidget {
   final String label;
   final IconData iconData;
-  const QuickAiScrollButton({super.key, required this.label, required this.iconData});
+  const QuickAiScrollButton({
+    super.key,
+    required this.label,
+    required this.iconData,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return CustomElevatedButton(
       contentPadding: EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
       backgroundColor: theme.altBackgroundPrimary,

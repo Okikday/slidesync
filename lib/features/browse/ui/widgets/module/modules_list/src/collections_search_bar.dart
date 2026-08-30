@@ -24,10 +24,12 @@ class CollectionsViewSearchBar extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<CollectionsViewSearchBar> createState() => _CollectionsViewSearchBarState();
+  ConsumerState<CollectionsViewSearchBar> createState() =>
+      _CollectionsViewSearchBarState();
 }
 
-class _CollectionsViewSearchBarState extends ConsumerState<CollectionsViewSearchBar> {
+class _CollectionsViewSearchBarState
+    extends ConsumerState<CollectionsViewSearchBar> {
   // final FocusNode focusNode = FocusNode();
 
   // @override
@@ -38,18 +40,28 @@ class _CollectionsViewSearchBarState extends ConsumerState<CollectionsViewSearch
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final isDesktop = DeviceUtils.isDesktop();
     // final searchNotifier = ref.read(CourseDetailsProvider.state.select((s) => s.searchCollectionTextNotifier));
     return BackSoftEdgeBlur(
-      color: isDesktop ? ref.background : ref.background.withAlpha(200),
+      color: isDesktop ? theme.background : theme.background.withAlpha(200),
       applyHeightToSize: true,
       height: 80,
       edgeType: EdgeType.topEdge,
       child: Padding(
         padding: isDesktop
-            ? const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0, top: 4.0)
-            : const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 24.0, top: 12.0),
+            ? const EdgeInsets.only(
+                left: 16.0,
+                right: 16.0,
+                bottom: 16.0,
+                top: 4.0,
+              )
+            : const EdgeInsets.only(
+                left: 16.0,
+                right: 16.0,
+                bottom: 24.0,
+                top: 12.0,
+              ),
         child: Row(
           spacing: 12.0,
           children: [
@@ -62,12 +74,27 @@ class _CollectionsViewSearchBarState extends ConsumerState<CollectionsViewSearch
                   autoDispose: false,
                   hintStyle: TextStyle(color: theme.supportingText),
                   selectionHandleColor: theme.primaryColor,
-                  inputTextStyle: TextStyle(fontSize: 15, color: theme.onBackground),
+                  inputTextStyle: TextStyle(
+                    fontSize: 15,
+                    color: theme.onBackground,
+                  ),
                   backgroundColor: theme.surface,
-                  border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.zero),
+                  border: OutlineInputBorder(
+                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.zero,
+                  ),
                   prefixIcon: Padding(
-                    padding: const EdgeInsets.only(left: 12.0, right: 10.0, top: 12.0, bottom: 12.0),
-                    child: Icon(Iconsax.search_normal_copy, size: 20, color: theme.supportingText),
+                    padding: const EdgeInsets.only(
+                      left: 12.0,
+                      right: 10.0,
+                      top: 12.0,
+                      bottom: 12.0,
+                    ),
+                    child: Icon(
+                      Iconsax.search_normal_copy,
+                      size: 20,
+                      color: theme.supportingText,
+                    ),
                   ),
                   onchanged: widget.onChanged,
                   // onTapOutside: widget.onTapOutside == null
@@ -84,10 +111,19 @@ class _CollectionsViewSearchBarState extends ConsumerState<CollectionsViewSearch
               CustomElevatedButton(
                 pixelHeight: 48,
                 pixelWidth: 48,
-                backgroundColor: ref.secondary.withAlpha(50),
-                shape: CircleBorder(side: BorderSide(color: ref.onBackground.withAlpha(10))),
-                onClick: () => CourseViewActions.showMoreOptionsDialog(context, courseId: widget.courseId),
-                child: Icon(Iconsax.more_copy, size: 24, color: ref.secondary),
+                backgroundColor: theme.secondary.withAlpha(50),
+                shape: CircleBorder(
+                  side: BorderSide(color: theme.onBackground.withAlpha(10)),
+                ),
+                onClick: () => CourseViewActions.showMoreOptionsDialog(
+                  context,
+                  courseId: widget.courseId,
+                ),
+                child: Icon(
+                  Iconsax.more_copy,
+                  size: 24,
+                  color: theme.secondary,
+                ),
               ),
           ],
         ),

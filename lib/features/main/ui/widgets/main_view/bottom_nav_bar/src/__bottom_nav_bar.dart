@@ -5,7 +5,7 @@ class _SearchNavItem extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
@@ -29,14 +29,21 @@ class _SearchNavItem extends ConsumerWidget {
               duration: 700.inMs,
               type: TransitionType.combine(
                 transitions: [
-                  TransitionType.scale(alignment: Alignment.bottomRight, from: 0.1),
+                  TransitionType.scale(
+                    alignment: Alignment.bottomRight,
+                    from: 0.1,
+                  ),
                   TransitionType.fadeIn,
                 ],
               ),
             ),
           );
         },
-        child: Icon(HugeIconsSolid.search02, color: theme.onBackground, size: 25),
+        child: Icon(
+          HugeIconsSolid.search02,
+          color: theme.onBackground,
+          size: 25,
+        ),
       ),
     );
   }
@@ -74,7 +81,12 @@ class _BuildNavItem extends StatelessWidget {
           children: [
             icon,
             ConstantSizing.columnSpacing(4),
-            AppText(label, fontSize: 11, color: labelColor, fontWeight: FontWeight.w500),
+            AppText(
+              label,
+              fontSize: 11,
+              color: labelColor,
+              fontWeight: FontWeight.w500,
+            ),
           ],
         ),
       ),

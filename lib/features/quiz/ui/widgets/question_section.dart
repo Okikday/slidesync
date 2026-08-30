@@ -13,7 +13,7 @@ class QuestionSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     return ValueListenableBuilder<int>(
       valueListenable: state.currentQuestionIndexNotifier,
@@ -34,7 +34,10 @@ class QuestionSection extends ConsumerWidget {
               Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: theme.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(6),
@@ -52,7 +55,10 @@ class QuestionSection extends ConsumerWidget {
                   const Spacer(),
                   if (question.correctAnswers.length > 1)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: theme.secondary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(6),
@@ -76,7 +82,11 @@ class QuestionSection extends ConsumerWidget {
                   config: MarkdownConfig(
                     configs: [
                       PConfig(
-                        textStyle: TextStyle(color: theme.onSurface, fontSize: 16, fontFamily: theme.fontFamily),
+                        textStyle: TextStyle(
+                          color: theme.onSurface,
+                          fontSize: 16,
+                          fontFamily: theme.fontFamily,
+                        ),
                       ),
                     ],
                   ),

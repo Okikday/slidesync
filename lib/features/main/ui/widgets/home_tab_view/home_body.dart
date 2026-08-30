@@ -94,7 +94,7 @@ class _HomeBodyState extends ConsumerState<HomeBody> with HomeTabActions {
         // SliverToBoxAdapter(
         //   child: Padding(
         //     padding: const EdgeInsets.only(left: 12),
-        //     child: CustomText("Quick access", color: ref.onBackground, fontSize: 16, fontWeight: FontWeight.bold),
+        //     child: CustomText("Quick access", color: theme.onBackground, fontSize: 16, fontWeight: FontWeight.bold),
         //   ),
         // ),
         // // const SliverToBoxAdapter(child: ConstantSizing.columnSpacingLarge),

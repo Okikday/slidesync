@@ -13,7 +13,7 @@ class AnswerExplanationSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     return ValueListenableBuilder<int>(
       valueListenable: state.currentQuestionIndexNotifier,

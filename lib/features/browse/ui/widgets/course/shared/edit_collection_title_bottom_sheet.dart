@@ -13,16 +13,20 @@ class EditCollectionTitleBottomSheet extends ConsumerStatefulWidget {
   const EditCollectionTitleBottomSheet({super.key, required this.collection});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _EditCollectionTitleBottomSheetState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _EditCollectionTitleBottomSheetState();
 }
 
-class _EditCollectionTitleBottomSheetState extends ConsumerState<EditCollectionTitleBottomSheet> {
+class _EditCollectionTitleBottomSheetState
+    extends ConsumerState<EditCollectionTitleBottomSheet> {
   late final FocusNode focusNode;
   @override
   void initState() {
     super.initState();
     focusNode = FocusNode();
-    WidgetsBinding.instance.addPostFrameCallback((_) => focusNode.requestFocus());
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => focusNode.requestFocus(),
+    );
   }
 
   @override
@@ -35,7 +39,7 @@ class _EditCollectionTitleBottomSheetState extends ConsumerState<EditCollectionT
   Widget build(BuildContext context) {
     final ModifyModuleActions modifyCollectionActions = ModifyModuleActions();
     final collection = widget.collection;
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     return Stack(
       children: [
@@ -43,8 +47,15 @@ class _EditCollectionTitleBottomSheetState extends ConsumerState<EditCollectionT
         Align(
           alignment: Alignment.bottomCenter,
           child: Container(
-            margin: EdgeInsets.only(bottom: context.bottomPadding + context.viewInsets.bottom),
-            padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0, bottom: 4.0),
+            margin: EdgeInsets.only(
+              bottom: context.bottomPadding + context.viewInsets.bottom,
+            ),
+            padding: EdgeInsets.only(
+              left: 16.0,
+              right: 16.0,
+              top: 16.0,
+              bottom: 4.0,
+            ),
             color: context.scaffoldBackgroundColor,
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -69,16 +80,18 @@ class _EditCollectionTitleBottomSheetState extends ConsumerState<EditCollectionT
                   // onTapOutside: () {},
                   onSubmitted: (text) async {
                     final collectionTitle = collection.title;
-                    final isValid = await ModifyModuleActions().validateCollectionTitle(
-                      context,
-                      text: text,
-                      collectionTitle: collectionTitle,
-                    );
+                    final isValid = await ModifyModuleActions()
+                        .validateCollectionTitle(
+                          context,
+                          text: text,
+                          collectionTitle: collectionTitle,
+                        );
                     if (isValid != null) return;
                     // Create new collection
-                    final outcome = await modifyCollectionActions.renameCollectionAction(
-                      collection.copyWith(title: text),
-                    );
+                    final outcome = await modifyCollectionActions
+                        .renameCollectionAction(
+                          collection.copyWith(title: text),
+                        );
                     // Handle outcome
                     if (outcome == null) {
                       if (context.mounted) {
@@ -96,10 +109,15 @@ class _EditCollectionTitleBottomSheetState extends ConsumerState<EditCollectionT
                     }
                   },
                   inputContentPadding: EdgeInsets.symmetric(horizontal: 12.0),
-                  inputTextStyle: TextStyle(fontSize: 15, color: theme.onBackground),
+                  inputTextStyle: TextStyle(
+                    fontSize: 15,
+                    color: theme.onBackground,
+                  ),
                   cursorColor: theme.primaryColor,
                   backgroundColor: Colors.transparent,
-                  border: UnderlineInputBorder(borderSide: BorderSide(color: theme.primaryColor)),
+                  border: UnderlineInputBorder(
+                    borderSide: BorderSide(color: theme.primaryColor),
+                  ),
                   // alwaysShowSuffixIcon: true,
                   // suffixIcon: Padding(
                   //   padding: const EdgeInsets.only(left: 8.0, right: 10.0),

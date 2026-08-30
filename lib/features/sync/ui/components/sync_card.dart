@@ -9,7 +9,15 @@ import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
 enum TransferType { course, collection, content }
 
 // Transfer state enum
-enum TransferState { queued, downloading, uploading, paused, completed, failed, cancelled }
+enum TransferState {
+  queued,
+  downloading,
+  uploading,
+  paused,
+  completed,
+  failed,
+  cancelled,
+}
 
 // Transfer direction enum
 enum TransferDirection { download, upload }
@@ -53,11 +61,11 @@ class TransferCardData {
   // Helper to get type icon
   IconData get typeIcon {
     switch (type) {
-      case TransferType.course:
+      case .course:
         return Icons.school;
-      case TransferType.collection:
+      case .collection:
         return Icons.collections;
-      case TransferType.content:
+      case .content:
         return Icons.description;
     }
   }
@@ -65,11 +73,11 @@ class TransferCardData {
   // Helper to get type label
   String get typeLabel {
     switch (type) {
-      case TransferType.course:
+      case .course:
         return 'Course';
-      case TransferType.collection:
+      case .collection:
         return 'Collection';
-      case TransferType.content:
+      case .content:
         return 'Content';
     }
   }
@@ -77,57 +85,60 @@ class TransferCardData {
   // Helper to get state icon
   IconData get stateIcon {
     switch (state) {
-      case TransferState.queued:
+      case .queued:
         return Iconsax.clock;
-      case TransferState.downloading:
-      case TransferState.uploading:
-        return direction == TransferDirection.download ? Iconsax.arrow_down_1 : Iconsax.arrow_up_3;
-      case TransferState.paused:
+      case .downloading:
+      case .uploading:
+        return direction == TransferDirection.download
+            ? Iconsax.arrow_down_1
+            : Iconsax.arrow_up_3;
+      case .paused:
         return Iconsax.pause;
-      case TransferState.completed:
+      case .completed:
         return Iconsax.tick_circle;
-      case TransferState.failed:
+      case .failed:
         return Iconsax.close_circle;
-      case TransferState.cancelled:
+      case .cancelled:
         return Iconsax.close_square;
     }
   }
 
   // Helper to get state color
-  Color getStateColor(WidgetRef ref) {
+  Color getStateColor(BuildContext context) {
+    final theme = Theme.of(context).custom;
     switch (state) {
-      case TransferState.queued:
-        return ref.supportingText;
-      case TransferState.downloading:
-      case TransferState.uploading:
-        return ref.primary;
-      case TransferState.paused:
+      case .queued:
+        return theme.supportingText;
+      case .downloading:
+      case .uploading:
+        return theme.primary;
+      case .paused:
         return Colors.orange;
-      case TransferState.completed:
+      case .completed:
         return Colors.green;
-      case TransferState.failed:
+      case .failed:
         return Colors.red;
-      case TransferState.cancelled:
-        return ref.supportingText;
+      case .cancelled:
+        return theme.supportingText;
     }
   }
 
   // Helper to get state label
   String get stateLabel {
     switch (state) {
-      case TransferState.queued:
+      case .queued:
         return 'Queued';
-      case TransferState.downloading:
+      case .downloading:
         return 'Downloading';
-      case TransferState.uploading:
+      case .uploading:
         return 'Uploading';
-      case TransferState.paused:
+      case .paused:
         return 'Paused';
-      case TransferState.completed:
+      case .completed:
         return 'Completed';
-      case TransferState.failed:
+      case .failed:
         return 'Failed';
-      case TransferState.cancelled:
+      case .cancelled:
         return 'Cancelled';
     }
   }
@@ -158,7 +169,9 @@ class TransferCardData {
 
   // Get remaining time estimate
   String get estimatedTimeRemaining {
-    if (speed == null || speed == 0 || state != TransferState.downloading && state != TransferState.uploading) {
+    if (speed == null ||
+        speed == 0 ||
+        state != .downloading && state != .uploading) {
       return '--';
     }
 
@@ -239,9 +252,11 @@ class TransferCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final stateColor = data.getStateColor(ref);
-    final shadowSurfaceColor = ref.surface.lightenColor(0.5).withValues(alpha: 0.1);
-    final isActive = data.state == TransferState.downloading || data.state == TransferState.uploading;
+    final stateColor = data.getStateColor(context);
+    final theme = Theme.of(context).custom;
+    final isActive =
+        data.state == TransferState.downloading ||
+        data.state == TransferState.uploading;
 
     return ScaleClickWrapper(
       borderRadius: 20,
@@ -249,10 +264,12 @@ class TransferCard extends ConsumerWidget {
       child: Container(
         constraints: BoxConstraints(maxHeight: 200, maxWidth: 450),
         decoration: BoxDecoration(
-          color: ref.surface,
+          color: theme.surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isActive ? stateColor.withValues(alpha: 0.3) : shadowSurfaceColor,
+            color: isActive
+                ? stateColor.withValues(alpha: 0.3)
+                : theme.surface.lightenColor(0.5).withValues(alpha: 0.1),
             width: isActive ? 1.5 : 1,
           ),
         ),
@@ -294,7 +311,7 @@ class TransferCard extends ConsumerWidget {
                             child: CustomText(
                               data.title,
                               fontSize: 14,
-                              color: ref.onBackground,
+                              color: theme.onBackground,
                               fontWeight: FontWeight.bold,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -307,15 +324,18 @@ class TransferCard extends ConsumerWidget {
                         children: [
                           // Type badge
                           Container(
-                            padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
-                              color: ref.primary.withValues(alpha: 0.15),
+                              color: theme.primary.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: CustomText(
                               data.typeLabel,
                               fontSize: 10,
-                              color: ref.primary,
+                              color: theme.primary,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -323,14 +343,19 @@ class TransferCard extends ConsumerWidget {
                           // State badge
                           Icon(data.stateIcon, size: 12, color: stateColor),
                           ConstantSizing.rowSpacing(4),
-                          CustomText(data.stateLabel, fontSize: 11, color: stateColor, fontWeight: FontWeight.w500),
+                          CustomText(
+                            data.stateLabel,
+                            fontSize: 11,
+                            color: stateColor,
+                            fontWeight: FontWeight.w500,
+                          ),
                         ],
                       ),
                     ],
                   ),
                 ),
                 // Action buttons
-                _buildActionButtons(ref, stateColor),
+                _buildActionButtons(theme, stateColor),
               ],
             ),
 
@@ -360,17 +385,31 @@ class TransferCard extends ConsumerWidget {
                     children: [
                       if (data.itemCount > 0) ...[
                         Icon(
-                          data.type == TransferType.course ? Icons.slideshow : Icons.content_copy,
+                          data.type == TransferType.course
+                              ? Icons.slideshow
+                              : Icons.content_copy,
                           size: 13,
-                          color: ref.supportingText,
+                          color: theme.supportingText,
                         ),
                         ConstantSizing.rowSpacing(4),
-                        CustomText('${data.itemCount}', fontSize: 11, color: ref.supportingText),
+                        CustomText(
+                          '${data.itemCount}',
+                          fontSize: 11,
+                          color: theme.supportingText,
+                        ),
                         ConstantSizing.rowSpacing(10),
                       ],
-                      Icon(Iconsax.document_download, size: 13, color: ref.supportingText),
+                      Icon(
+                        Iconsax.document_download,
+                        size: 13,
+                        color: theme.supportingText,
+                      ),
                       ConstantSizing.rowSpacing(4),
-                      CustomText(data.sizeProgress, fontSize: 11, color: ref.supportingText),
+                      CustomText(
+                        data.sizeProgress,
+                        fontSize: 11,
+                        color: theme.supportingText,
+                      ),
                     ],
                   ),
                 ),
@@ -379,7 +418,11 @@ class TransferCard extends ConsumerWidget {
                 if (isActive)
                   Row(
                     children: [
-                      Icon(Iconsax.flash_1, size: 13, color: ref.supportingText),
+                      Icon(
+                        Iconsax.flash_1,
+                        size: 13,
+                        color: theme.supportingText,
+                      ),
                       ConstantSizing.rowSpacing(4),
                       // CustomText(data.formattedSpeed, fontSize: 11, color: ref.supportingText),
                       // ConstantSizing.rowSpacing(10),
@@ -392,7 +435,8 @@ class TransferCard extends ConsumerWidget {
             ),
 
             // Error message for failed state
-            if (data.state == TransferState.failed && data.errorMessage != null) ...[
+            if (data.state == TransferState.failed &&
+                data.errorMessage != null) ...[
               ConstantSizing.columnSpacing(8),
               Container(
                 padding: EdgeInsets.all(8),
@@ -419,7 +463,8 @@ class TransferCard extends ConsumerWidget {
             ],
 
             // Completion info
-            if (data.state == TransferState.completed && data.completedAt != null) ...[
+            if (data.state == TransferState.completed &&
+                data.completedAt != null) ...[
               ConstantSizing.columnSpacing(8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -428,10 +473,19 @@ class TransferCard extends ConsumerWidget {
                     children: [
                       Icon(Iconsax.tick_circle, size: 14, color: Colors.green),
                       ConstantSizing.rowSpacing(4),
-                      CustomText('Completed', fontSize: 11, color: Colors.green, fontWeight: FontWeight.w600),
+                      CustomText(
+                        'Completed',
+                        fontSize: 11,
+                        color: Colors.green,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ],
                   ),
-                  CustomText(_formatCompletionTime(data.completedAt!), fontSize: 11, color: ref.supportingText),
+                  CustomText(
+                    _formatCompletionTime(data.completedAt!),
+                    fontSize: 11,
+                    color: theme.supportingText,
+                  ),
                 ],
               ),
             ],
@@ -441,32 +495,53 @@ class TransferCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildActionButtons(WidgetRef ref, Color stateColor) {
+  Widget _buildActionButtons(AppThemeExtension theme, Color stateColor) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         // Pause/Resume button
-        if (data.state == TransferState.downloading || data.state == TransferState.uploading)
-          _ActionButton(icon: Iconsax.pause, color: Colors.orange, onTap: onPause)
+        if (data.state == TransferState.downloading ||
+            data.state == TransferState.uploading)
+          _ActionButton(
+            icon: Iconsax.pause,
+            color: Colors.orange,
+            onTap: onPause,
+          )
         else if (data.state == TransferState.paused)
-          _ActionButton(icon: Iconsax.play, color: ref.primary, onTap: onResume),
+          _ActionButton(
+            icon: Iconsax.play,
+            color: theme.primary,
+            onTap: onResume,
+          ),
 
         // Retry button for failed
-        if (data.state == TransferState.failed)
-          _ActionButton(icon: Iconsax.refresh, color: ref.primary, onTap: onRetry),
+        if (data.state == .failed)
+          _ActionButton(
+            icon: Iconsax.refresh,
+            color: theme.primary,
+            onTap: onRetry,
+          ),
 
         ConstantSizing.rowSpacing(8),
 
         // Cancel/Delete button
-        if (data.state == TransferState.downloading ||
-            data.state == TransferState.uploading ||
-            data.state == TransferState.paused ||
-            data.state == TransferState.queued)
-          _ActionButton(icon: Iconsax.close_circle, color: Colors.red.withValues(alpha: 0.8), onTap: onCancel)
-        else if (data.state == TransferState.completed ||
-            data.state == TransferState.failed ||
-            data.state == TransferState.cancelled)
-          _ActionButton(icon: Iconsax.trash, color: ref.supportingText, onTap: onDelete),
+        if (data.state == .downloading ||
+            data.state == .uploading ||
+            data.state == .paused ||
+            data.state == .queued)
+          _ActionButton(
+            icon: Iconsax.close_circle,
+            color: Colors.red.withValues(alpha: 0.8),
+            onTap: onCancel,
+          )
+        else if (data.state == .completed ||
+            data.state == .failed ||
+            data.state == .cancelled)
+          _ActionButton(
+            icon: Iconsax.trash,
+            color: theme.supportingText,
+            onTap: onDelete,
+          ),
       ],
     );
   }
@@ -499,7 +574,10 @@ class _ActionButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: EdgeInsets.all(6),
-        decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(8)),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: Icon(icon, size: 16, color: color),
       ),
     );

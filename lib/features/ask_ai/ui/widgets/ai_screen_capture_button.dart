@@ -11,8 +11,10 @@ class AiScreenCaptureButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
-    final capturedImage = ref.watch(AskAiScreenProvider.state.select((s) => s.imageToAi));
+    final theme = Theme.of(context).custom;
+    final capturedImage = ref.watch(
+      AskAiScreenProvider.state.select((s) => s.imageToAi),
+    );
     if (capturedImage != null) {
       final size = context.deviceHeight * 0.15;
       return GestureDetector(
@@ -28,31 +30,43 @@ class AiScreenCaptureButton extends ConsumerWidget {
               child: SizedBox.expand(
                 child: Container(
                   alignment: Alignment.center,
-                  child: Image.memory(capturedImage, width: context.deviceWidth * 0.9),
+                  child: Image.memory(
+                    capturedImage,
+                    width: context.deviceWidth * 0.9,
+                  ),
                 ),
               ),
             ),
           );
         },
-        onLongPress: () => ref.read(AskAiScreenProvider.notifier).clearCurrentCapture(),
-        onDoubleTap: () => ref.read(AskAiScreenProvider.notifier).clearCurrentCapture(),
+        onLongPress: () =>
+            ref.read(AskAiScreenProvider.notifier).clearCurrentCapture(),
+        onDoubleTap: () =>
+            ref.read(AskAiScreenProvider.notifier).clearCurrentCapture(),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           spacing: 4.0,
           children: [
             Container(
                   height: size,
-                  decoration: BoxDecoration(color: theme.background.withAlpha(10)),
+                  decoration: BoxDecoration(
+                    color: theme.background.withAlpha(10),
+                  ),
                   child: Image.memory(capturedImage),
                 )
                 .animate()
-                .scaleXY(begin: 1.1, end: 1, duration: Durations.medium4, curve: CustomCurves.defaultIosSpring)
+                .scaleXY(
+                  begin: 1.1,
+                  end: 1,
+                  duration: Durations.medium4,
+                  curve: CustomCurves.defaultIosSpring,
+                )
                 .fadeIn(),
             CustomText(
               "Long press to clear selection",
               fontWeight: FontWeight.bold,
               fontSize: 12,
-              color: ref.onBackground,
+              color: theme.onBackground,
             ),
           ],
         ),
@@ -60,9 +74,13 @@ class AiScreenCaptureButton extends ConsumerWidget {
     }
     return GestureDetector(
       onTap: () async {
-        final hasImage = ref.read(AskAiScreenProvider.state.select((s) => s.imageToAi != null));
+        final hasImage = ref.read(
+          AskAiScreenProvider.state.select((s) => s.imageToAi != null),
+        );
         if (!hasImage) {
-          await ref.read(AskAiScreenProvider.notifier).captureCurrentView(context);
+          await ref
+              .read(AskAiScreenProvider.notifier)
+              .captureCurrentView(context);
         }
       },
       child: DottedBorder(

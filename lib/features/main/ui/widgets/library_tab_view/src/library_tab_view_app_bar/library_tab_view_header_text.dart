@@ -16,7 +16,7 @@ class LibraryTabViewHeaderText extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final bgColor = theme.surface;
     final onBackground = theme.onBackground;
     final textStyle = TextStyle(

@@ -657,7 +657,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.theme;
+    final theme = Theme.of(context).custom;
     final padding = context.padding;
 
     return AppScaffold(
@@ -750,7 +750,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
   }
 
   Widget _buildBaseFolderStep() {
-    final theme = ref.theme;
+    final theme = Theme.of(context).custom;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -908,7 +908,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
   }
 
   Widget _buildOptionsStep() {
-    final theme = ref.theme;
+    final theme = Theme.of(context).custom;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1042,7 +1042,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
   }
 
   Widget _buildPreviewStep() {
-    final theme = ref.theme;
+    final theme = Theme.of(context).custom;
     final targetFolder = useAsBaseFolder
         ? widget.folderNode
         : selectedSubfolder;
@@ -1298,7 +1298,7 @@ class _FolderImportScreenState extends ConsumerState<_FolderImportScreen> {
   }
 
   Widget _buildStatChip(
-    AppTheme theme,
+    AppThemeExtension theme,
     IconData icon,
     String value,
     String label,
@@ -1408,7 +1408,7 @@ class _ImportProgressDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = Theme.of(context).custom;
 
     return Dialog(
       backgroundColor: theme.surface,

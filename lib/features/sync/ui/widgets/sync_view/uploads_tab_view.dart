@@ -27,9 +27,16 @@ class UploadsTabView extends ConsumerWidget {
             padding: const EdgeInsets.fromLTRB(14, 12, 14, 8),
             child: Row(
               children: [
-                Expanded(child: CustomText('Uploads', fontSize: 15, fontWeight: FontWeight.w700)),
+                Expanded(
+                  child: CustomText(
+                    'Uploads',
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
                 TextButton.icon(
-                  onPressed: () => ref.read(uploadFeedProvider.notifier).clearInactive(),
+                  onPressed: () =>
+                      ref.read(uploadFeedProvider.notifier).clearInactive(),
                   icon: const Icon(Icons.delete_sweep_outlined, size: 18),
                   label: const CustomText('Clear Finished', fontSize: 12),
                 ),
@@ -38,7 +45,10 @@ class UploadsTabView extends ConsumerWidget {
           ),
         ),
         if (uploads.isEmpty)
-          const SliverFillRemaining(hasScrollBody: false, child: _EmptyUploadsState())
+          const SliverFillRemaining(
+            hasScrollBody: false,
+            child: _EmptyUploadsState(),
+          )
         else
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(14, 0, 14, 18),
@@ -67,20 +77,24 @@ class _UploadCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final feedNotifier = ref.read(uploadFeedProvider.notifier);
     final transferNotifier = ref.read(transferStateProvider.notifier);
     final canOpenContent =
-        item.contentId != null && item.contentId!.isNotEmpty && item.status == UploadFeedStatus.completed;
+        item.contentId != null &&
+        item.contentId!.isNotEmpty &&
+        item.status == UploadFeedStatus.completed;
     final latestMessage = _latestMessage(item);
 
     return ScaleClickWrapper(
       borderRadius: 16,
-      onTap: canOpenContent ? () => _openCompletedContent(context, ref, item.contentId) : null,
+      onTap: canOpenContent
+          ? () => _openCompletedContent(context, ref, item.contentId)
+          : null,
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: theme.background.lightenColor(theme.isDarkMode ? 0.08 : 0.92),
+          color: theme.background.lightenColor(theme.isDarkTheme ? 0.08 : 0.92),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: theme.onBackground.withValues(alpha: 0.1)),
         ),
@@ -103,7 +117,11 @@ class _UploadCard extends ConsumerWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 2),
-                      CustomText(_statusLabel(item), fontSize: 11, color: theme.supportingText),
+                      CustomText(
+                        _statusLabel(item),
+                        fontSize: 11,
+                        color: theme.supportingText,
+                      ),
                     ],
                   ),
                 ),
@@ -112,7 +130,10 @@ class _UploadCard extends ConsumerWidget {
                     icon: const Icon(Icons.pause_circle_outline_rounded),
                     onPressed: () {
                       feedNotifier.pause(item.id);
-                      transferNotifier.updateStatus(id: item.id, status: TransferStatus.paused);
+                      transferNotifier.updateStatus(
+                        id: item.id,
+                        status: TransferStatus.paused,
+                      );
                     },
                   ),
                 if (item.status == UploadFeedStatus.paused)
@@ -120,7 +141,10 @@ class _UploadCard extends ConsumerWidget {
                     icon: const Icon(Icons.play_circle_outline_rounded),
                     onPressed: () {
                       feedNotifier.resume(item.id);
-                      transferNotifier.updateStatus(id: item.id, status: TransferStatus.inProgress);
+                      transferNotifier.updateStatus(
+                        id: item.id,
+                        status: TransferStatus.inProgress,
+                      );
                     },
                   ),
                 if (item.status == UploadFeedStatus.running ||
@@ -133,7 +157,12 @@ class _UploadCard extends ConsumerWidget {
                       transferNotifier.removeTransfer(item.id);
                     },
                   ),
-                if (canOpenContent) Icon(Icons.open_in_new_rounded, size: 18, color: theme.primaryColor),
+                if (canOpenContent)
+                  Icon(
+                    Icons.open_in_new_rounded,
+                    size: 18,
+                    color: theme.primaryColor,
+                  ),
               ],
             ),
             if (_showProgress(item)) ...[
@@ -155,7 +184,12 @@ class _UploadCard extends ConsumerWidget {
             ],
             if (latestMessage != null) ...[
               const SizedBox(height: 8),
-              CustomText(latestMessage, fontSize: 11, color: theme.supportingText, maxLines: 2),
+              CustomText(
+                latestMessage,
+                fontSize: 11,
+                color: theme.supportingText,
+                maxLines: 2,
+              ),
             ],
           ],
         ),
@@ -165,13 +199,25 @@ class _UploadCard extends ConsumerWidget {
 
   Widget _statusIcon(UploadFeedState item) {
     if (item.status == UploadFeedStatus.failed) {
-      return Icon(Icons.error_outline_rounded, color: Colors.red.shade400, size: 18);
+      return Icon(
+        Icons.error_outline_rounded,
+        color: Colors.red.shade400,
+        size: 18,
+      );
     }
     if (item.status == UploadFeedStatus.completed) {
-      return Icon(Icons.check_circle_outline_rounded, color: Colors.green.shade500, size: 18);
+      return Icon(
+        Icons.check_circle_outline_rounded,
+        color: Colors.green.shade500,
+        size: 18,
+      );
     }
     if (item.status == UploadFeedStatus.paused) {
-      return Icon(Icons.pause_circle_outline_rounded, color: Colors.orange.shade500, size: 18);
+      return Icon(
+        Icons.pause_circle_outline_rounded,
+        color: Colors.orange.shade500,
+        size: 18,
+      );
     }
     return const Icon(Icons.upload_rounded, size: 18);
   }
@@ -209,35 +255,53 @@ class _UploadCard extends ConsumerWidget {
     return lastLog.isEmpty ? null : lastLog;
   }
 
-  Future<void> _openCompletedContent(BuildContext context, WidgetRef ref, String? contentId) async {
+  Future<void> _openCompletedContent(
+    BuildContext context,
+    WidgetRef ref,
+    String? contentId,
+  ) async {
     if (contentId == null || contentId.isEmpty) {
-      GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: 'No content available to open.'));
+      GlobalNav.withContext(
+        (context) =>
+            UiUtils.showFlushBar(context, msg: 'No content available to open.'),
+      );
       return;
     }
 
     final content = await ModuleContentRepo.getByUid(contentId);
     if (content == null) {
-      GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: 'Could not find the content record.'));
+      GlobalNav.withContext(
+        (context) => UiUtils.showFlushBar(
+          context,
+          msg: 'Could not find the content record.',
+        ),
+      );
       return;
     }
 
     try {
       await ContentViewGateActions.redirectToViewer(ref, content);
     } catch (_) {
-      GlobalNav.withContext((context) => _showSnack(context, 'Failed to open content: ${content.title}'));
+      GlobalNav.withContext(
+        (context) =>
+            _showSnack(context, 'Failed to open content: ${content.title}'),
+      );
     }
   }
 
   void _showSnack(BuildContext context, String message) {
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
   }
 
   String _formatBytes(int bytes) {
     if (bytes <= 0) return '0 B';
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    if (bytes < 1024 * 1024 * 1024) return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    if (bytes < 1024 * 1024 * 1024)
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
   }
 
@@ -255,16 +319,25 @@ class _EmptyUploadsState extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(28),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.cloud_upload_outlined, size: 42, color: theme.supportingText.withValues(alpha: 0.8)),
+            Icon(
+              Icons.cloud_upload_outlined,
+              size: 42,
+              color: theme.supportingText.withValues(alpha: 0.8),
+            ),
             const SizedBox(height: 10),
-            CustomText('No uploads yet', fontSize: 16, fontWeight: FontWeight.w700, color: theme.onBackground),
+            CustomText(
+              'No uploads yet',
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: theme.onBackground,
+            ),
             const SizedBox(height: 6),
             CustomText(
               'Uploads in progress and completed uploads will show here.',

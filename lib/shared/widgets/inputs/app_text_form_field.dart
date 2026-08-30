@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
-import 'package:slidesync/shared/theme/src/app_theme.dart';
 import 'package:slidesync/shared/widgets/layout/app_text.dart';
 
 class AppTextFormField extends ConsumerWidget {
@@ -100,9 +99,13 @@ class AppTextFormField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final customTheme = Theme.of(context).custom;
     return titleText == null && title == null && footer == null
-        ? SizedBox(height: height, width: double.infinity, child: _buildTextFormField(theme))
+        ? SizedBox(
+            height: height,
+            width: double.infinity,
+            child: _buildTextFormField(customTheme),
+          )
         : SizedBox(
             height: height,
             width: double.infinity,
@@ -115,17 +118,19 @@ class AppTextFormField extends ConsumerWidget {
                       width: double.infinity,
                       child: AppText(
                         titleText ?? '',
-                        style: titleStyle ?? TextStyle(color: theme.primary, fontSize: 14),
+                        style:
+                            titleStyle ??
+                            TextStyle(color: customTheme.primary, fontSize: 14),
                       ),
                     ),
-                _buildTextFormField(theme),
+                _buildTextFormField(customTheme),
                 footer ?? const SizedBox.shrink(),
               ],
             ),
           );
   }
 
-  TextFormField _buildTextFormField(AppTheme theme) {
+  TextFormField _buildTextFormField(AppThemeExtension theme) {
     return TextFormField(
       enabled: enabled,
       controller: controller,
@@ -159,7 +164,8 @@ class AppTextFormField extends ConsumerWidget {
         errorText: errorText,
         error: error,
         hintStyle: TextStyle(color: theme.supportingText, fontSize: 14),
-        errorStyle: errorStyle ?? TextStyle(color: theme.supportingText, fontSize: 11),
+        errorStyle:
+            errorStyle ?? TextStyle(color: theme.supportingText, fontSize: 11),
         contentPadding: contentPadding ?? const EdgeInsets.all(12),
         prefix: prefix,
         prefixIcon: prefixIcon,
@@ -187,7 +193,10 @@ class AppTextFormField extends ConsumerWidget {
         ),
 
         errorBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: theme.errorColor.withAlpha(100), width: 1),
+          borderSide: BorderSide(
+            color: theme.errorColor.withAlpha(100),
+            width: 1,
+          ),
           borderRadius: BorderRadius.circular(borderRadius ?? 16),
         ),
       ),
@@ -204,7 +213,10 @@ class _DefaultContextMenuBuilder extends ConsumerWidget {
   final EditableTextState editableTextState;
   const _DefaultContextMenuBuilder({required this.editableTextState});
 
-  static String getButtonLabel(BuildContext context, ContextMenuButtonItem buttonItem) {
+  static String getButtonLabel(
+    BuildContext context,
+    ContextMenuButtonItem buttonItem,
+  ) {
     if (buttonItem.label != null) {
       return buttonItem.label!;
     }
@@ -212,23 +224,30 @@ class _DefaultContextMenuBuilder extends ConsumerWidget {
     switch (Theme.of(context).platform) {
       case TargetPlatform.iOS:
       case TargetPlatform.macOS:
-        return CupertinoTextSelectionToolbarButton.getButtonLabel(context, buttonItem);
+        return CupertinoTextSelectionToolbarButton.getButtonLabel(
+          context,
+          buttonItem,
+        );
       case TargetPlatform.android:
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.windows:
         assert(debugCheckHasMaterialLocalizations(context));
-        final MaterialLocalizations localizations = MaterialLocalizations.of(context);
+        final MaterialLocalizations localizations = MaterialLocalizations.of(
+          context,
+        );
         return switch (buttonItem.type) {
           ContextMenuButtonType.cut => localizations.cutButtonLabel,
           ContextMenuButtonType.copy => localizations.copyButtonLabel,
           ContextMenuButtonType.paste => localizations.pasteButtonLabel,
           ContextMenuButtonType.selectAll => localizations.selectAllButtonLabel,
-          ContextMenuButtonType.delete => localizations.deleteButtonTooltip.toUpperCase(),
+          ContextMenuButtonType.delete =>
+            localizations.deleteButtonTooltip.toUpperCase(),
           ContextMenuButtonType.lookUp => localizations.lookUpButtonLabel,
           ContextMenuButtonType.searchWeb => localizations.searchWebButtonLabel,
           ContextMenuButtonType.share => localizations.shareButtonLabel,
-          ContextMenuButtonType.liveTextInput => localizations.scanTextButtonLabel,
+          ContextMenuButtonType.liveTextInput =>
+            localizations.scanTextButtonLabel,
           ContextMenuButtonType.custom => '',
         };
     }
@@ -240,15 +259,26 @@ class _DefaultContextMenuBuilder extends ConsumerWidget {
     final buttonItems = editableTextState.contextMenuButtonItems;
     return TextSelectionToolbar(
       anchorAbove: anchors.primaryAnchor,
-      anchorBelow: anchors.secondaryAnchor == null ? anchors.primaryAnchor : anchors.secondaryAnchor!,
-      toolbarBuilder: (context, child) => _TextSelectionToolbarContainer(primaryColor: ref.primary, child: child),
+      anchorBelow: anchors.secondaryAnchor == null
+          ? anchors.primaryAnchor
+          : anchors.secondaryAnchor!,
+      toolbarBuilder: (context, child) => _TextSelectionToolbarContainer(
+        primaryColor: context.theme.custom.primary,
+        child: child,
+      ),
       children: [
         for (int i = 0; i < buttonItems.length; i++)
           TextSelectionToolbarTextButton(
-            padding: TextSelectionToolbarTextButton.getPadding(i, buttonItems.length),
+            padding: TextSelectionToolbarTextButton.getPadding(
+              i,
+              buttonItems.length,
+            ),
             onPressed: buttonItems[i].onPressed,
             alignment: AlignmentDirectional.centerStart,
-            child: AppText(getButtonLabel(context, buttonItems[i]), fontWeight: FontWeight.w500),
+            child: AppText(
+              getButtonLabel(context, buttonItems[i]),
+              fontWeight: FontWeight.w500,
+            ),
           ),
       ],
     );
@@ -256,14 +286,23 @@ class _DefaultContextMenuBuilder extends ConsumerWidget {
 }
 
 class _TextSelectionToolbarContainer extends StatelessWidget {
-  const _TextSelectionToolbarContainer({required this.primaryColor, required this.child});
+  const _TextSelectionToolbarContainer({
+    required this.primaryColor,
+    required this.child,
+  });
   final Color primaryColor;
   final Widget child;
 
   Color _getColor(ColorScheme colorScheme) {
     final bool isDefaultSurface = switch (colorScheme.brightness) {
-      Brightness.light => identical(ThemeData().colorScheme.surface, colorScheme.surface),
-      Brightness.dark => identical(ThemeData.dark().colorScheme.surface, colorScheme.surface),
+      Brightness.light => identical(
+        ThemeData().colorScheme.surface,
+        colorScheme.surface,
+      ),
+      Brightness.dark => identical(
+        ThemeData.dark().colorScheme.surface,
+        colorScheme.surface,
+      ),
     };
     if (!isDefaultSurface) {
       return colorScheme.surface;
@@ -279,14 +318,21 @@ class _TextSelectionToolbarContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData theme = Theme.of(context);
     return Material(
-      // This value was eyeballed to match the native text selection menu on
-      // a Pixel 6 emulator running Android API level 34.
-      borderRadius: const BorderRadius.all(Radius.circular(20)),
-      clipBehavior: Clip.antiAlias,
-      color: _getColor(theme.colorScheme),
-      elevation: 1.0,
-      type: MaterialType.card,
-      child: child,
-    ).animate().scaleXY(duration: 400.inMs, curve: CustomCurves.defaultIosSpring, begin: 0.9).slideY(begin: -0.05);
+          // This value was eyeballed to match the native text selection menu on
+          // a Pixel 6 emulator running Android API level 34.
+          borderRadius: const BorderRadius.all(Radius.circular(20)),
+          clipBehavior: Clip.antiAlias,
+          color: _getColor(theme.colorScheme),
+          elevation: 1.0,
+          type: MaterialType.card,
+          child: child,
+        )
+        .animate()
+        .scaleXY(
+          duration: 400.inMs,
+          curve: CustomCurves.defaultIosSpring,
+          begin: 0.9,
+        )
+        .slideY(begin: -0.05);
   }
 }

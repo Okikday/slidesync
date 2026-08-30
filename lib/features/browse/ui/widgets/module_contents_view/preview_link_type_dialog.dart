@@ -17,13 +17,18 @@ class PreviewLinkTypeDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     return AppCustomizableDialog(
       size: Size(400, 500),
       leading: Padding(
         padding: const EdgeInsets.only(left: 20, right: 16, bottom: 12),
-        child: CustomText(content.title, fontSize: 16, fontWeight: FontWeight.bold, color: theme.onBackground),
+        child: CustomText(
+          content.title,
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+          color: theme.onBackground,
+        ),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -59,7 +64,12 @@ class PreviewLinkTypeDialog extends ConsumerWidget {
                       spacing: 6.0,
                       children: [
                         Icon(Iconsax.link, color: theme.secondary, size: 20),
-                        Flexible(child: CustomText("Copy link", color: theme.secondary)),
+                        Flexible(
+                          child: CustomText(
+                            "Copy link",
+                            color: theme.secondary,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -79,8 +89,14 @@ class PreviewLinkTypeDialog extends ConsumerWidget {
                       mainAxisAlignment: MainAxisAlignment.center,
                       spacing: 6.0,
                       children: [
-                        Icon(Icons.share_outlined, color: theme.primary, size: 20),
-                        Flexible(child: CustomText("Share", color: theme.primary)),
+                        Icon(
+                          Icons.share_outlined,
+                          color: theme.primary,
+                          size: 20,
+                        ),
+                        Flexible(
+                          child: CustomText("Share", color: theme.primary),
+                        ),
                       ],
                     ),
                   ),
@@ -94,7 +110,7 @@ class PreviewLinkTypeDialog extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeaderSection(WidgetRef theme) {
+  Widget _buildHeaderSection(AppThemeExtension theme) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Row(
@@ -104,7 +120,9 @@ class PreviewLinkTypeDialog extends ConsumerWidget {
             decoration: BoxDecoration(
               color: theme.altBackgroundPrimary,
               borderRadius: BorderRadius.circular(15),
-              border: Border.fromBorderSide(BorderSide(color: theme.onBackground.withAlpha(60))),
+              border: Border.fromBorderSide(
+                BorderSide(color: theme.onBackground.withAlpha(60)),
+              ),
             ),
             child: SizedBox.square(
               dimension: 60,
@@ -113,7 +131,11 @@ class PreviewLinkTypeDialog extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(15),
                   child: Opacity(
                     opacity: 0.6,
-                    child: ContentCardPreviewImage(content: content, isSelected: false, isRefreshing: false),
+                    child: ContentCardPreviewImage(
+                      content: content,
+                      isSelected: false,
+                      isRefreshing: false,
+                    ),
                   ),
                 ),
               ),
@@ -128,14 +150,22 @@ class PreviewLinkTypeDialog extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 spacing: 4,
                 children: [
-                  CustomText(content.path.url ?? "Link error!", fontWeight: FontWeight.bold, color: theme.secondary),
+                  CustomText(
+                    content.path.url ?? "Link error!",
+                    fontWeight: FontWeight.bold,
+                    color: theme.secondary,
+                  ),
                   Flexible(
                     child: Tooltip(
-                      message: content.description.trim().isEmpty ? "No description" : content.description,
+                      message: content.description.trim().isEmpty
+                          ? "No description"
+                          : content.description,
                       triggerMode: TooltipTriggerMode.tap,
                       showDuration: 4.inSeconds,
                       child: CustomText(
-                        content.description.trim().isEmpty ? "No description" : content.description,
+                        content.description.trim().isEmpty
+                            ? "No description"
+                            : content.description,
                         color: theme.onBackground.withValues(alpha: .5),
                         overflow: TextOverflow.fade,
                       ),

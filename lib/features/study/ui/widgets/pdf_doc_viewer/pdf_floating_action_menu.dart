@@ -12,31 +12,53 @@ class PdfFloatingActionMenu extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     return ValueListenableBuilder(
-      valueListenable: ref.watch(PdfDocViewerProvider.searchState(contentId).select((s) => s.searchTickNotifier)),
+      valueListenable: ref.watch(
+        PdfDocViewerProvider.searchState(
+          contentId,
+        ).select((s) => s.searchTickNotifier),
+      ),
       builder: (context, searchTick, child) {
         return Consumer(
           builder: (context, ref, child) {
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (ref.watch(PdfDocViewerProvider.searchState(contentId).select((s) => s.searchResult)) != null)
+                if (ref.watch(
+                      PdfDocViewerProvider.searchState(
+                        contentId,
+                      ).select((s) => s.searchResult),
+                    ) !=
+                    null)
                   DecoratedBox(
-                    decoration: BoxDecoration(color: theme.background, borderRadius: BorderRadius.circular(20)),
+                    decoration: BoxDecoration(
+                      color: theme.background,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                     child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
                       child: NavigationControls(contentId: contentId),
                     ),
                   ),
                 ValueListenableBuilder(
                   valueListenable: ref.watch(
-                    PdfDocViewerProvider.state(contentId).select((s) => s.isAppBarVisibleNotifier),
+                    PdfDocViewerProvider.state(
+                      contentId,
+                    ).select((s) => s.isAppBarVisibleNotifier),
                   ),
                   builder: (context, isAppBarVisible, child) {
                     final value =
-                        ref.watch(PdfDocViewerProvider.searchState(contentId).select((s) => s.searchResult)) != null;
+                        ref.watch(
+                          PdfDocViewerProvider.searchState(
+                            contentId,
+                          ).select((s) => s.searchResult),
+                        ) !=
+                        null;
                     if (!isAppBarVisible || value) return const SizedBox();
                     return PdfToolsMenu(isVisible: true, contentId: contentId);
                   },

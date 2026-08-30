@@ -17,7 +17,7 @@
 
 //   @override
 //   Widget build(BuildContext context, WidgetRef ref) {
-//     // final theme = ref;
+//     // final theme = Theme.of(context).custom;
 //     final contentType = clipboardData.contentType;
 
 //     switch (contentType) {
@@ -89,7 +89,7 @@
 
 //   @override
 //   Widget build(BuildContext context, WidgetRef ref) {
-//     final theme = ref;
+//     final theme = Theme.of(context).custom;
 //     const double size = 400;
 //     return Material(
 //       color: Colors.transparent,
@@ -136,7 +136,7 @@
 
 //   @override
 //   Widget build(BuildContext context, WidgetRef ref) {
-//     final theme = ref;
+//     final theme = Theme.of(context).custom;
 //     return _DialogAppScaffold( title: "",
 //       closeOverlay: closeOverlay,
 //       child: Column(
@@ -180,7 +180,7 @@
 
 //   @override
 //   Widget build(BuildContext context, WidgetRef ref) {
-//     final theme = ref;
+//     final theme = Theme.of(context).custom;
 //     return Row(
 //       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
 //       children: [

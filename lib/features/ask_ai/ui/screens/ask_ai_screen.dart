@@ -15,7 +15,8 @@ class AskAiScreen extends ConsumerStatefulWidget {
   ConsumerState<ConsumerStatefulWidget> createState() => _AskAiScreenState();
 }
 
-class _AskAiScreenState extends ConsumerState<AskAiScreen> with SingleTickerProviderStateMixin {
+class _AskAiScreenState extends ConsumerState<AskAiScreen>
+    with SingleTickerProviderStateMixin {
   // late final AnimationController animationController;
   // late final Animation<double> gradientAnimation;
 
@@ -35,14 +36,16 @@ class _AskAiScreenState extends ConsumerState<AskAiScreen> with SingleTickerProv
 
   @override
   void dispose() {
-    WidgetsBinding.instance.addPostFrameCallback((_) => SystemChrome.setPreferredOrientations([]));
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => SystemChrome.setPreferredOrientations([]),
+    );
     // animationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // final theme = ref;
+    // final theme = Theme.of(context).custom;
     return AppScaffold(
       title: "",
       backgroundColor: Colors.transparent,
@@ -53,11 +56,18 @@ class _AskAiScreenState extends ConsumerState<AskAiScreen> with SingleTickerProv
           children: [
             const ShimmeryGradientBackground(),
             Positioned(top: 24, right: 12, child: CloseButton()),
-            Positioned(top: (context.topPadding + 12) * 2, child: const AiScreenCaptureButton()),
+            Positioned(
+              top: (context.topPadding + 12) * 2,
+              child: const AiScreenCaptureButton(),
+            ),
             SingleChildScrollView(
               child: SizedBox(
                 width: context.deviceWidth,
-                height: (context.deviceHeight * 0.8 + 24 - (context.viewInsets.bottom / 2)).clamp(100, double.infinity),
+                height:
+                    (context.deviceHeight * 0.8 +
+                            24 -
+                            (context.viewInsets.bottom / 2))
+                        .clamp(100, double.infinity),
                 child: const AiInteractionView(),
               ),
             ),

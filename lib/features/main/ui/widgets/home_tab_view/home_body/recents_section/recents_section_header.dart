@@ -11,7 +11,7 @@ class RecentsSectionHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final asyncMostRecent = HomePod.recentContentTracks(
       1,
     ).select((s) => s.whenData((v) => v.isEmpty ? null : v.last)).watch(ref);

@@ -20,7 +20,7 @@ class SignInView extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     const Color primaryPurple = Color(0xFF7D19FF);
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return AnnotatedRegion(
       value: UiUtils.getSystemUiOverlayStyle(
         theme.background,
@@ -126,7 +126,7 @@ class _SigningInDialogState extends ConsumerState<SigningInDialog>
     with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return Stack(
       fit: StackFit.expand,
       alignment: Alignment.center,

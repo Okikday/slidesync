@@ -15,11 +15,17 @@ class TransferCard extends ConsumerWidget {
   final VoidCallback? onResume;
   final VoidCallback? onCancel;
 
-  const TransferCard({super.key, required this.transfer, this.onPause, this.onResume, this.onCancel});
+  const TransferCard({
+    super.key,
+    required this.transfer,
+    this.onPause,
+    this.onResume,
+    this.onCancel,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final isCompleted = transfer.status == TransferStatus.completed;
     final isFailed = transfer.status == TransferStatus.failed;
     final isPaused = transfer.status == TransferStatus.paused;
@@ -51,7 +57,10 @@ class TransferCard extends ConsumerWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(transfer.status, theme).withValues(alpha: 0.1),
+                        color: _getStatusColor(
+                          transfer.status,
+                          theme,
+                        ).withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: Icon(
@@ -80,7 +89,10 @@ class TransferCard extends ConsumerWidget {
                           const SizedBox(height: 4),
                           // Type badge
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 2,
+                            ),
                             decoration: BoxDecoration(
                               color: theme.primaryColor.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(4),
@@ -97,7 +109,12 @@ class TransferCard extends ConsumerWidget {
                     ),
                     const SizedBox(width: 12),
                     // Status indicator
-                    _buildStatusIndicator(theme, isFailed, isCompleted, isInProgress),
+                    _buildStatusIndicator(
+                      theme,
+                      isFailed,
+                      isCompleted,
+                      isInProgress,
+                    ),
                   ],
                 ),
                 const SizedBox(height: 12),
@@ -106,7 +123,11 @@ class TransferCard extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    CustomText(transfer.sizeString, fontSize: 12, color: theme.supportingText),
+                    CustomText(
+                      transfer.sizeString,
+                      fontSize: 12,
+                      color: theme.supportingText,
+                    ),
                     if (isInProgress)
                       CustomText(
                         transfer.speedString,
@@ -125,7 +146,9 @@ class TransferCard extends ConsumerWidget {
                     value: isCompleted ? 1.0 : transfer.progress,
                     minHeight: 6,
                     backgroundColor: theme.onBackground.withValues(alpha: 0.15),
-                    valueColor: AlwaysStoppedAnimation<Color>(_getStatusColor(transfer.status, theme)),
+                    valueColor: AlwaysStoppedAnimation<Color>(
+                      _getStatusColor(transfer.status, theme),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -145,7 +168,9 @@ class TransferCard extends ConsumerWidget {
                           : '${(transfer.progress * 100).toStringAsFixed(1)}%',
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: isCompleted || isFailed ? _getStatusColor(transfer.status, theme) : theme.onBackground,
+                      color: isCompleted || isFailed
+                          ? _getStatusColor(transfer.status, theme)
+                          : theme.onBackground,
                     ),
                     // Time remaining or no. of bytes
                     if (transfer.estimatedTimeRemaining != null && isInProgress)
@@ -159,15 +184,27 @@ class TransferCard extends ConsumerWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (isPaused && onResume != null) ...[
-                          _buildActionButton(icon: HugeIconsSolid.play, color: theme.primaryColor, onTap: onResume!),
+                          _buildActionButton(
+                            icon: HugeIconsSolid.play,
+                            color: theme.primaryColor,
+                            onTap: onResume!,
+                          ),
                           const SizedBox(width: 8),
                         ],
                         if (isInProgress && onPause != null) ...[
-                          _buildActionButton(icon: HugeIconsSolid.pause, color: Colors.orangeAccent, onTap: onPause!),
+                          _buildActionButton(
+                            icon: HugeIconsSolid.pause,
+                            color: Colors.orangeAccent,
+                            onTap: onPause!,
+                          ),
                           const SizedBox(width: 8),
                         ],
                         if (onCancel != null && !isCompleted && !isFailed) ...[
-                          _buildActionButton(icon: HugeIconsSolid.cancel01, color: Colors.redAccent, onTap: onCancel!),
+                          _buildActionButton(
+                            icon: HugeIconsSolid.cancel01,
+                            color: Colors.redAccent,
+                            onTap: onCancel!,
+                          ),
                         ],
                       ],
                     ),
@@ -182,16 +219,32 @@ class TransferCard extends ConsumerWidget {
   }
 
   /// Build status indicator icon
-  Widget _buildStatusIndicator(WidgetRef theme, bool isFailed, bool isCompleted, bool isInProgress) {
+  Widget _buildStatusIndicator(
+    AppThemeExtension theme,
+    bool isFailed,
+    bool isCompleted,
+    bool isInProgress,
+  ) {
     if (isCompleted) {
-      return Icon(HugeIconsSolid.checkmarkCircle02, color: Colors.greenAccent, size: 24);
+      return Icon(
+        HugeIconsSolid.checkmarkCircle02,
+        color: Colors.greenAccent,
+        size: 24,
+      );
     } else if (isFailed) {
-      return Icon(HugeIconsSolid.alertCircle, color: Colors.redAccent, size: 24);
+      return Icon(
+        HugeIconsSolid.alertCircle,
+        color: Colors.redAccent,
+        size: 24,
+      );
     } else if (isInProgress) {
       return SizedBox(
         width: 24,
         height: 24,
-        child: CircularProgressIndicator(strokeWidth: 2, valueColor: AlwaysStoppedAnimation<Color>(theme.primaryColor)),
+        child: CircularProgressIndicator(
+          strokeWidth: 2,
+          valueColor: AlwaysStoppedAnimation<Color>(theme.primaryColor),
+        ),
       );
     }
     return const SizedBox(width: 24);
@@ -211,7 +264,7 @@ class TransferCard extends ConsumerWidget {
   }
 
   /// Get color for transfer status
-  Color _getStatusColor(TransferStatus status, WidgetRef theme) {
+  Color _getStatusColor(TransferStatus status, AppThemeExtension theme) {
     switch (status) {
       case TransferStatus.completed:
         return Colors.greenAccent;
@@ -227,12 +280,19 @@ class TransferCard extends ConsumerWidget {
   }
 
   /// Build small action button
-  Widget _buildActionButton({required IconData icon, required Color color, required VoidCallback onTap}) {
+  Widget _buildActionButton({
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.all(6),
-        decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(6),
+        ),
         child: Icon(icon, size: 16, color: color),
       ),
     );

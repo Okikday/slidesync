@@ -16,7 +16,7 @@ class InputCourseTitleField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return CustomTextfield(
       controller: courseNameController,
       backgroundColor: theme.surface.withValues(alpha: 0.8),
@@ -24,7 +24,9 @@ class InputCourseTitleField extends ConsumerWidget {
       selectionHandleColor: theme.primaryColor,
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
-        borderSide: BorderSide(color: theme.altBackgroundPrimary.withAlpha(150)),
+        borderSide: BorderSide(
+          color: theme.altBackgroundPrimary.withAlpha(150),
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(8.0),
@@ -64,7 +66,9 @@ class InputCourseTitleField extends ConsumerWidget {
             valueListenable: isCourseCodeFieldVisible,
             builder: (context, visible, child) {
               return Icon(
-                visible ? Icons.keyboard_arrow_up_rounded : Icons.keyboard_arrow_down_rounded,
+                visible
+                    ? Icons.keyboard_arrow_up_rounded
+                    : Icons.keyboard_arrow_down_rounded,
                 size: 30,
                 color: theme.supportingText,
               );

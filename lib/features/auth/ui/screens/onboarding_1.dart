@@ -19,7 +19,7 @@ class Onboarding1 extends ConsumerWidget {
         ? context.deviceWidth
         : context.deviceHeight;
     const Color primaryPurple = Color(0xFF7D19FF);
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return AppScaffold(
       title: "",
       backgroundColor: Color(0xFFE1E1E0),

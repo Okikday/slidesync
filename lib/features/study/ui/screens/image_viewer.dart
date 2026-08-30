@@ -31,11 +31,15 @@ class ImageViewer extends ConsumerStatefulWidget {
   ConsumerState<ImageViewer> createState() => _ImageViewerState();
 }
 
-final _activeImageContentIdProvider = NotifierProvider<ImpliedNotifierN<String>, String?>(
-  () => ImpliedNotifierN<String>(),
+final _activeImageContentIdProvider =
+    NotifierProvider<ImpliedNotifierN<String>, String?>(
+      () => ImpliedNotifierN<String>(),
+      isAutoDispose: true,
+    );
+final _imageViewerPositionProvider = NotifierProvider<IntNotifier, int>(
+  () => IntNotifier(0),
   isAutoDispose: true,
 );
-final _imageViewerPositionProvider = NotifierProvider<IntNotifier, int>(() => IntNotifier(0), isAutoDispose: true);
 
 class _ImageViewerState extends ConsumerState<ImageViewer> {
   late final Future<Module> collectionFuture;
@@ -59,27 +63,38 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     return AnnotatedRegion(
-      value: UiUtils.getSystemUiOverlayStyle(theme.background, theme.isDarkMode),
+      value: UiUtils.getSystemUiOverlayStyle(
+        theme.background,
+        theme.isDarkTheme,
+      ),
       child: AppScaffold(
         title: "",
         body: FutureBuilder<Module>(
           future: collectionFuture,
           builder: (context, snapshot) {
-            if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
+            if (!snapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-            final contents = snapshot.data!.contents.where((c) => c.type == ModuleContentType.image).toList();
+            final contents = snapshot.data!.contents
+                .where((c) => c.type == ModuleContentType.image)
+                .toList();
 
             if (!_isInitialJumpDone && contents.isNotEmpty) {
-              final startIndex = contents.indexWhere((c) => c.uid == widget.content.uid);
+              final startIndex = contents.indexWhere(
+                (c) => c.uid == widget.content.uid,
+              );
               final index = startIndex != -1 ? startIndex : 0;
 
               _isInitialJumpDone = true;
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 ref.read(_imageViewerPositionProvider.notifier).set(index);
-                ref.read(_activeImageContentIdProvider.notifier).set(contents[index].uid);
+                ref
+                    .read(_activeImageContentIdProvider.notifier)
+                    .set(contents[index].uid);
                 if (pageController.hasClients) pageController.jumpToPage(index);
               });
             }
@@ -94,35 +109,53 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
                     itemCount: contents.length,
                     controller: pageController,
                     onPageChanged: (value) {
-                      ref.read(_imageViewerPositionProvider.notifier).set(value);
-                      ref.read(_activeImageContentIdProvider.notifier).set(contents[value].uid);
+                      ref
+                          .read(_imageViewerPositionProvider.notifier)
+                          .set(value);
+                      ref
+                          .read(_activeImageContentIdProvider.notifier)
+                          .set(contents[value].uid);
                     },
                     itemBuilder: (context, index) {
                       final currContent = contents[index];
-                      final stateProvider = ImageViewerProvider.state(currContent.uid);
+                      final stateProvider = ImageViewerProvider.state(
+                        currContent.uid,
+                      );
                       final state = ref.read(stateProvider);
 
                       return FutureBuilder(
                         key: ValueKey(currContent.uid),
                         future: state.isInitialized,
                         builder: (context, asyncSnapshot) {
-                          if (asyncSnapshot.connectionState != ConnectionState.done) {
-                            return const Center(child: CircularProgressIndicator());
+                          if (asyncSnapshot.connectionState !=
+                              ConnectionState.done) {
+                            return const Center(
+                              child: CircularProgressIndicator(),
+                            );
                           }
 
                           return ValueListenableBuilder(
-                            valueListenable: ref.watch(stateProvider.select((s) => s.isAppBarVisibleNotifier)),
+                            valueListenable: ref.watch(
+                              stateProvider.select(
+                                (s) => s.isAppBarVisibleNotifier,
+                              ),
+                            ),
                             builder: (context, isAppBarVisible, _) {
                               return PhotoView(
                                 enablePanAlways: true,
                                 maxScale: 10.0,
                                 filterQuality: FilterQuality.high,
                                 minScale: PhotoViewComputedScale.contained,
-                                controller: ref.watch(stateProvider.select((s) => s.controller)),
-                                imageProvider: currContent.path.containsLocalPath
+                                controller: ref.watch(
+                                  stateProvider.select((s) => s.controller),
+                                ),
+                                imageProvider:
+                                    currContent.path.containsLocalPath
                                     ? VersionedFileImage(
                                         File(currContent.path.local ?? ''),
-                                        version: fileImageVersion(File(currContent.path.local ?? '')),
+                                        version: fileImageVersion(
+                                          File(currContent.path.local ?? ''),
+                                        ),
                                       )
                                     : NetworkImage(currContent.path.url ?? ''),
                                 onTapUp: (context, details, controllerValue) {
@@ -140,15 +173,26 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
                 // 2. AppBar Layer (Synced with current position)
                 Consumer(
                   builder: (context, ref, _) {
-                    final activeContentId = ref.watch(_activeImageContentIdProvider);
+                    final activeContentId = ref.watch(
+                      _activeImageContentIdProvider,
+                    );
                     if (activeContentId == null) {
-                      return AppBarContainer(child: AppBarContainerChild(theme.isDarkMode, title: "Loading..."));
+                      return AppBarContainer(
+                        child: AppBarContainerChild(
+                          theme.isDarkTheme,
+                          title: "Loading...",
+                        ),
+                      );
                     }
 
-                    final activeProvider = ImageViewerProvider.state(activeContentId);
+                    final activeProvider = ImageViewerProvider.state(
+                      activeContentId,
+                    );
 
                     return ValueListenableBuilder(
-                      valueListenable: ref.watch(activeProvider.select((s) => s.isAppBarVisibleNotifier)),
+                      valueListenable: ref.watch(
+                        activeProvider.select((s) => s.isAppBarVisibleNotifier),
+                      ),
                       builder: (context, isVisible, _) {
                         return Consumer(
                           builder: (context, ref, _) {
@@ -156,40 +200,51 @@ class _ImageViewerState extends ConsumerState<ImageViewer> {
                             final currentItem = contents[pos];
 
                             return AppBarContainer(
-                              child: AppBarContainerChild(
-                                theme.isDarkMode,
-                                title: currentItem.title,
-                                trailing: AppPopupMenuButton(
-                                  actions: [
-                                    PopupMenuAction(
-                                      title: "Rotate Image",
-                                      iconData: Iconsax.d_rotate,
-                                      onTap: () => ref.read(activeProvider).setRotation(),
+                                  child: AppBarContainerChild(
+                                    theme.isDarkTheme,
+                                    title: currentItem.title,
+                                    trailing: AppPopupMenuButton(
+                                      actions: [
+                                        PopupMenuAction(
+                                          title: "Rotate Image",
+                                          iconData: Iconsax.d_rotate,
+                                          onTap: () => ref
+                                              .read(activeProvider)
+                                              .setRotation(),
+                                        ),
+                                        PopupMenuAction(
+                                          title: "Share",
+                                          iconData: Icons.share_rounded,
+                                          onTap: () =>
+                                              ShareContentActions.shareFileContent(
+                                                context,
+                                                currentItem.uid,
+                                              ),
+                                        ),
+                                        PopupMenuAction(
+                                          title: "Invoke Study AI",
+                                          iconData: Iconsax.magic_star_copy,
+                                          onTap: () {
+                                            Navigator.push(
+                                              context,
+                                              PageAnimation.pageRouteBuilder(
+                                                AskAiScreen(
+                                                  contentId: currentItem.uid,
+                                                ),
+                                                type: TransitionType.none,
+                                                opaque: false,
+                                                barrierColor: theme.background
+                                                    .withAlpha(180),
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ],
                                     ),
-                                    PopupMenuAction(
-                                      title: "Share",
-                                      iconData: Icons.share_rounded,
-                                      onTap: () => ShareContentActions.shareFileContent(context, currentItem.uid),
-                                    ),
-                                    PopupMenuAction(
-                                      title: "Invoke Study AI",
-                                      iconData: Iconsax.magic_star_copy,
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          PageAnimation.pageRouteBuilder(
-                                            AskAiScreen(contentId: currentItem.uid),
-                                            type: TransitionType.none,
-                                            opaque: false,
-                                            barrierColor: theme.background.withAlpha(180),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ).animate(target: isVisible ? 1 : 0).slideY(begin: -1, end: 0);
+                                  ),
+                                )
+                                .animate(target: isVisible ? 1 : 0)
+                                .slideY(begin: -1, end: 0);
                           },
                         );
                       },

@@ -2,7 +2,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/features/study/logic/services/drive_browser.dart' as drive_service;
+import 'package:slidesync/features/study/logic/services/drive_browser.dart'
+    as drive_service;
 import 'package:slidesync/features/sync/providers/entities/selection_state.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/buttons/scale_click_wrapper.dart';
@@ -28,7 +29,10 @@ class DriveContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     if (resource.isFolder) {
       if (resource.children?.isEmpty == true) {
-        return const SliverFillRemaining(hasScrollBody: false, child: DriveEmptyFolderState());
+        return const SliverFillRemaining(
+          hasScrollBody: false,
+          child: DriveEmptyFolderState(),
+        );
       }
 
       return SliverList.builder(
@@ -47,7 +51,9 @@ class DriveContent extends ConsumerWidget {
             file: file,
             isSelected: isSelected,
             selectionMode: selectionMode,
-            onLongPress: file.id != null ? () => onSelectToggle(file.id!) : null,
+            onLongPress: file.id != null
+                ? () => onSelectToggle(file.id!)
+                : null,
             onTap: () {
               if (selectionMode) {
                 if (file.id != null) {
@@ -66,7 +72,9 @@ class DriveContent extends ConsumerWidget {
 
               onFileOpen(file);
             },
-            onSelectTap: file.id != null ? () => onSelectToggle(file.id!) : null,
+            onSelectTap: file.id != null
+                ? () => onSelectToggle(file.id!)
+                : null,
           );
         },
       );
@@ -74,7 +82,10 @@ class DriveContent extends ConsumerWidget {
 
     final file = resource.file;
     if (file == null) {
-      return const SliverFillRemaining(hasScrollBody: false, child: DriveEmptyState());
+      return const SliverFillRemaining(
+        hasScrollBody: false,
+        child: DriveEmptyState(),
+      );
     }
 
     final isSelected = file.id != null && selection.isSelected(file.id!);
@@ -121,7 +132,7 @@ class DriveFileCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final isDarkMode = theme.isDarkMode;
     final isFolder = file.isFolderLike;
 
@@ -138,12 +149,20 @@ class DriveFileCard extends ConsumerWidget {
           borderRadius: BorderRadius.circular(24),
           border: Border.fromBorderSide(
             BorderSide(
-              color: isSelected ? theme.primaryColor.withValues(alpha: 0.8) : theme.onBackground.withAlpha(24),
+              color: isSelected
+                  ? theme.primaryColor.withValues(alpha: 0.8)
+                  : theme.onBackground.withAlpha(24),
               width: isSelected ? 1.5 : 1,
             ),
           ),
           boxShadow: isDarkMode
-              ? [BoxShadow(color: Colors.black.withValues(alpha: 0.08), offset: const Offset(0, 1), blurRadius: 3)]
+              ? [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.08),
+                    offset: const Offset(0, 1),
+                    blurRadius: 3,
+                  ),
+                ]
               : [
                   BoxShadow(
                     color: Colors.black.withValues(alpha: 0.03),
@@ -185,7 +204,8 @@ class DriveFileCard extends ConsumerWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if (file.ownerDisplayName != null && file.ownerDisplayName!.isNotEmpty) ...[
+                    if (file.ownerDisplayName != null &&
+                        file.ownerDisplayName!.isNotEmpty) ...[
                       const SizedBox(height: 4),
                       CustomText(
                         file.ownerDisplayName!,
@@ -198,7 +218,12 @@ class DriveFileCard extends ConsumerWidget {
                   ],
                 ),
               ),
-              if (isFolder) Icon(Icons.chevron_right, color: theme.supportingText.withValues(alpha: 0.7), size: 20),
+              if (isFolder)
+                Icon(
+                  Icons.chevron_right,
+                  color: theme.supportingText.withValues(alpha: 0.7),
+                  size: 20,
+                ),
               if (isFolder) const SizedBox(width: 6),
               if (selectionMode)
                 GestureDetector(
@@ -211,13 +236,19 @@ class DriveFileCard extends ConsumerWidget {
                       height: 28,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: isSelected ? theme.primaryColor : Colors.transparent,
+                        color: isSelected
+                            ? theme.primaryColor
+                            : Colors.transparent,
                         border: Border.all(
-                          color: isSelected ? theme.primaryColor : theme.supportingText.withAlpha(80),
+                          color: isSelected
+                              ? theme.primaryColor
+                              : theme.supportingText.withAlpha(80),
                           width: 2,
                         ),
                       ),
-                      child: isSelected ? Icon(Icons.check, color: theme.onPrimary, size: 16) : const SizedBox.shrink(),
+                      child: isSelected
+                          ? Icon(Icons.check, color: theme.onPrimary, size: 16)
+                          : const SizedBox.shrink(),
                     ),
                   ),
                 ),
@@ -271,7 +302,7 @@ class DriveFileThumbnail extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final thumbnailLink = file.thumbnailLink;
 
     if (thumbnailLink != null && thumbnailLink.isNotEmpty) {
@@ -292,7 +323,10 @@ class DriveFileThumbnail extends ConsumerWidget {
   }
 }
 
-Widget _buildFallbackIcon(WidgetRef theme, drive_service.DriveFile file) {
+Widget _buildFallbackIcon(
+  AppThemeExtension theme,
+  drive_service.DriveFile file,
+) {
   final mimeType = (file.mimeType ?? '').toLowerCase();
   IconData iconData;
   Color iconColor;
@@ -346,7 +380,7 @@ class DriveLoadingState extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     return Center(
       child: Padding(
@@ -356,7 +390,11 @@ class DriveLoadingState extends ConsumerWidget {
           children: [
             LoadingLogo(color: theme.primaryColor),
             const SizedBox(height: 16),
-            CustomText('Loading files...', fontSize: 14, color: theme.supportingText),
+            CustomText(
+              'Loading files...',
+              fontSize: 14,
+              color: theme.supportingText,
+            ),
           ],
         ),
       ),
@@ -368,11 +406,15 @@ class DriveErrorState extends ConsumerWidget {
   final Object error;
   final VoidCallback onRetry;
 
-  const DriveErrorState({super.key, required this.error, required this.onRetry});
+  const DriveErrorState({
+    super.key,
+    required this.error,
+    required this.onRetry,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     return Center(
       child: Padding(
@@ -383,8 +425,15 @@ class DriveErrorState extends ConsumerWidget {
             Container(
               width: 72,
               height: 72,
-              decoration: BoxDecoration(color: Colors.red.withValues(alpha: 0.1), shape: BoxShape.circle),
-              child: Icon(Icons.error_outline, size: 36, color: Colors.red.withValues(alpha: 0.9)),
+              decoration: BoxDecoration(
+                color: Colors.red.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.error_outline,
+                size: 36,
+                color: Colors.red.withValues(alpha: 0.9),
+              ),
             ),
             const SizedBox(height: 16),
             CustomText(
@@ -412,7 +461,12 @@ class DriveErrorState extends ConsumerWidget {
                 children: [
                   Icon(Icons.refresh, color: theme.onPrimary, size: 18),
                   const SizedBox(width: 8),
-                  CustomText('Try Again', color: theme.onPrimary, fontSize: 14, fontWeight: FontWeight.w600),
+                  CustomText(
+                    'Try Again',
+                    color: theme.onPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ],
               ),
             ),
@@ -428,7 +482,7 @@ class DriveEmptyState extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     return Center(
       child: Padding(
@@ -439,8 +493,15 @@ class DriveEmptyState extends ConsumerWidget {
             Container(
               width: 72,
               height: 72,
-              decoration: BoxDecoration(color: theme.primaryColor.withValues(alpha: 0.1), shape: BoxShape.circle),
-              child: Icon(Icons.folder_open, size: 36, color: theme.primaryColor),
+              decoration: BoxDecoration(
+                color: theme.primaryColor.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.folder_open,
+                size: 36,
+                color: theme.primaryColor,
+              ),
             ),
             const SizedBox(height: 16),
             CustomText(
@@ -469,7 +530,7 @@ class DriveEmptyFolderState extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     return Center(
       child: Padding(
@@ -480,8 +541,15 @@ class DriveEmptyFolderState extends ConsumerWidget {
             Container(
               width: 72,
               height: 72,
-              decoration: BoxDecoration(color: theme.supportingText.withValues(alpha: 0.08), shape: BoxShape.circle),
-              child: Icon(Icons.folder_off_outlined, size: 36, color: theme.supportingText),
+              decoration: BoxDecoration(
+                color: theme.supportingText.withValues(alpha: 0.08),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.folder_off_outlined,
+                size: 36,
+                color: theme.supportingText,
+              ),
             ),
             const SizedBox(height: 16),
             CustomText(

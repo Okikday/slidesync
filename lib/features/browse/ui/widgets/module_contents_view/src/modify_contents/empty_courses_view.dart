@@ -10,6 +10,7 @@ class EmptyCoursesView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context).custom;
     return SliverToBoxAdapter(
       child: SizedBox(
         height: context.deviceHeight / 2,
@@ -29,12 +30,12 @@ class EmptyCoursesView extends ConsumerWidget {
 
                   context.pushNamed(Routes.createCourse.name);
                 },
-                backgroundColor: ref.altBackgroundPrimary,
+                backgroundColor: theme.altBackgroundPrimary,
                 borderRadius: 12,
                 pixelHeight: 44,
                 label: "Create your course",
                 textSize: 15,
-                textColor: ref.onBackground,
+                textColor: theme.onBackground,
               ),
             ),
           ],

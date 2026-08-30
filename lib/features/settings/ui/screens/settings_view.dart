@@ -23,7 +23,7 @@ import 'package:slidesync/features/settings/ui/components/settings_appearance_di
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/routes/routes.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
-import 'package:slidesync/shared/theme/theme.dart';
+import 'package:slidesync/shared/theme/pod/theme_pod.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_alert_dialog.dart';
@@ -37,7 +37,7 @@ class SettingsView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     return AnnotatedRegion(
       value: UiUtils.getSystemUiOverlayStyle(
@@ -88,25 +88,23 @@ class SettingsView extends ConsumerWidget {
 
                   ConstantSizing.columnSpacingMedium,
 
-                  SettingsCard(
-                    title: "Use system brightness",
-                    iconData: Iconsax.sun_1,
-                    content: "Switch theme when system brightness changes",
-                    trailing: Switch(
-                      value: settingsModel.useSystemBrightness,
-                      onChanged: (p) async {
-                        ref
-                            .read(SettingsProvider.settingsProvider.notifier)
-                            .set(
-                              await ref.read(
-                                SettingsProvider.settingsProvider.selectAsync(
-                                  (s) => s.copyWith(useSystemBrightness: p),
-                                ),
-                              ),
-                            );
-                        notifyThemeOnBrightnessChanged(ref);
-                      },
-                    ),
+                  Consumer(
+                    builder: (_, ref, _) {
+                      final usb = ThemePod.me.read(ref).useSystemBrightness;
+                      return SettingsCard(
+                        title: "Use system brightness",
+                        iconData: Iconsax.sun_1,
+                        content: "Switch theme when system brightness changes",
+                        trailing: Switch(
+                          value: usb,
+                          onChanged: (p) async {
+                            ref
+                                .read(ThemePod.me.notifier)
+                                .setUseSystemBrightness(p);
+                          },
+                        ),
+                      );
+                    },
                   ),
 
                   // ConstantSizing.columnSpacingLarge,
@@ -477,7 +475,7 @@ class SettingsCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return Tooltip(
       textAlign: TextAlign.left,
       showDuration: 4.inSeconds,

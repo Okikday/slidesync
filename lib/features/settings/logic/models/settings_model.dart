@@ -1,7 +1,4 @@
 class SettingsModel {
-  /// Whether to automatically switch theme based on system brightness
-  final bool useSystemBrightness;
-
   /// Whether content copying is disabled (requires storage permission)
   final bool contentNotCopied;
 
@@ -17,7 +14,6 @@ class SettingsModel {
   final bool showMaterialsInFullScreen;
 
   const SettingsModel({
-    this.useSystemBrightness = true,
     this.contentNotCopied = false,
     // this.useBuiltInViewer = true,
     this.useBuiltInViewer,
@@ -28,7 +24,6 @@ class SettingsModel {
 
   factory SettingsModel.fromMap(Map<String, dynamic> map) {
     return SettingsModel(
-      useSystemBrightness: map['useSystemBrightness'] ?? false,
       contentNotCopied: map['contentNotCopied'] ?? false,
       useBuiltInViewer: map['useBuiltInViewer'] ?? true,
       summarizedSuggestions: map['summarizedSuggestions'] ?? false,
@@ -39,7 +34,6 @@ class SettingsModel {
 
   Map<String, dynamic> toMap() {
     return {
-      'useSystemBrightness': useSystemBrightness,
       'contentNotCopied': contentNotCopied,
       'useBuiltInViewer': useBuiltInViewer,
       'summarizedSuggestions': summarizedSuggestions,
@@ -51,7 +45,6 @@ class SettingsModel {
 
 extension SettingsModelExtension on SettingsModel {
   SettingsModel copyWith({
-    bool? useSystemBrightness,
     bool? contentNotCopied,
     bool? useBuiltInViewer,
     bool? summarizedSuggestions,
@@ -59,12 +52,14 @@ extension SettingsModelExtension on SettingsModel {
     bool? showMaterialsInFullScreen,
   }) {
     return SettingsModel(
-      useSystemBrightness: useSystemBrightness ?? this.useSystemBrightness,
       contentNotCopied: contentNotCopied ?? this.contentNotCopied,
       useBuiltInViewer: useBuiltInViewer ?? this.useBuiltInViewer,
-      summarizedSuggestions: summarizedSuggestions ?? this.summarizedSuggestions,
-      allowMultipleContents: allowMultipleContents ?? this.allowMultipleContents,
-      showMaterialsInFullScreen: showMaterialsInFullScreen ?? this.showMaterialsInFullScreen,
+      summarizedSuggestions:
+          summarizedSuggestions ?? this.summarizedSuggestions,
+      allowMultipleContents:
+          allowMultipleContents ?? this.allowMultipleContents,
+      showMaterialsInFullScreen:
+          showMaterialsInFullScreen ?? this.showMaterialsInFullScreen,
     );
   }
 }

@@ -10,7 +10,7 @@ class TimerWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     return ValueListenableBuilder<Duration?>(
       valueListenable: state.remainingTimeNotifier,
@@ -25,13 +25,19 @@ class TimerWidget extends ConsumerWidget {
           margin: const EdgeInsets.only(right: 16),
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
           decoration: BoxDecoration(
-            color: isWarning ? Colors.red.withValues(alpha: 0.1) : theme.altBackgroundPrimary,
+            color: isWarning
+                ? Colors.red.withValues(alpha: 0.1)
+                : theme.altBackgroundPrimary,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.timer_outlined, size: 18, color: isWarning ? Colors.red : theme.onSurface),
+              Icon(
+                Icons.timer_outlined,
+                size: 18,
+                color: isWarning ? Colors.red : theme.onSurface,
+              ),
               const SizedBox(width: 6),
               Text(
                 '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',

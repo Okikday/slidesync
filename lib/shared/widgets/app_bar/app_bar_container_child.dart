@@ -34,7 +34,7 @@ class AppBarContainerChild extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return Tooltip(
       triggerMode: TooltipTriggerMode.tap,
       message: tooltipMessage ?? title,
@@ -52,15 +52,23 @@ class AppBarContainerChild extends ConsumerWidget {
                   Flexible(
                     child: Container(
                       constraints: BoxConstraints(maxHeight: kToolbarHeight),
-                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: theme.surface.withValues(alpha: 0.25),
-                        border: Border.fromBorderSide(BorderSide(color: theme.onBackground.withValues(alpha: 0.04))),
+                        border: Border.fromBorderSide(
+                          BorderSide(
+                            color: theme.onBackground.withValues(alpha: 0.04),
+                          ),
+                        ),
                         borderRadius: BorderRadius.circular(40),
                       ),
                       child:
                           titleWidget ??
-                          ((subtitle != null || (subtitle != null && subtitle!.isNotEmpty))
+                          ((subtitle != null ||
+                                  (subtitle != null && subtitle!.isNotEmpty))
                               ? Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -79,7 +87,9 @@ class AppBarContainerChild extends ConsumerWidget {
                                     CustomText(
                                       subtitle!,
                                       fontSize: 12,
-                                      color: theme.background.lightenColor(theme.isDarkMode ? .4 : .6),
+                                      color: theme.background.lightenColor(
+                                        theme.isDarkTheme ? .4 : .6,
+                                      ),
                                       overflow: TextOverflow.ellipsis,
                                       style: subtitleStyle,
                                       maxLines: 1,
@@ -116,7 +126,7 @@ class AppBackButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return ClipOval(
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
@@ -133,8 +143,14 @@ class AppBackButton extends ConsumerWidget {
           pixelWidth: 40,
           contentPadding: EdgeInsets.zero,
           backgroundColor: theme.scaffoldBackgroundColor.withValues(alpha: 0.6),
-          shape: CircleBorder(side: BorderSide(color: theme.onSurface.withValues(alpha: .1))),
-          child: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: theme.supportingText),
+          shape: CircleBorder(
+            side: BorderSide(color: theme.onSurface.withValues(alpha: .1)),
+          ),
+          child: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 20,
+            color: theme.supportingText,
+          ),
         ),
       ),
     );
@@ -151,7 +167,7 @@ class AppBackButton extends ConsumerWidget {
     //   icon: Icon(Icons.arrow_back_ios_new_rounded, size: 20, color: theme.supportingText),
     //   style: ButtonStyle(
     //     backgroundColor: WidgetStatePropertyAll(backgroundColor ?? theme.altBackgroundPrimary.withValues(alpha: 0.9)),
-    //     shape: WidgetStatePropertyAll(CircleBorder(side: BorderSide(color: ref.onBackground.withAlpha(10)))),
+    //     shape: WidgetStatePropertyAll(CircleBorder(side: BorderSide(color: theme.onBackground.withAlpha(10)))),
     //   ),
     // );
   }

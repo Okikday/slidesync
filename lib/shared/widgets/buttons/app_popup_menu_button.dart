@@ -70,12 +70,14 @@ class AppPopupMenuButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     return PopupMenuTheme(
       data: PopupMenuThemeData(
         color: theme.background.withValues(alpha: 0.98),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadiusGeometry.circular(16)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadiusGeometry.circular(16),
+        ),
         shadowColor: theme.supportingText.withAlpha(20),
       ),
       child: PopupMenuButton<int>(
@@ -83,7 +85,13 @@ class AppPopupMenuButton extends ConsumerWidget {
         style: buttonStyle,
         clipBehavior: clipBehavior ?? Clip.hardEdge,
         menuPadding: menuPadding ?? EdgeInsets.zero,
-        icon: child ?? Icon(icon ?? Iconsax.more_copy, color: iconColor ?? theme.supportingText, size: iconSize),
+        icon:
+            child ??
+            Icon(
+              icon ?? Iconsax.more_copy,
+              color: iconColor ?? theme.supportingText,
+              size: iconSize,
+            ),
         enabled: enabled,
         position: position ?? PopupMenuPosition.under,
         offset: offset ?? Offset.zero,
@@ -143,7 +151,7 @@ class PopupMenuItemChild extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final effectiveIconColor = enabled
         ? (iconColor ?? theme.supportingText)
         : (iconColor ?? theme.supportingText).withValues(alpha: 0.38);

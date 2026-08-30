@@ -83,7 +83,10 @@ class _TextDocViewerState extends ConsumerState<TextDocViewer> {
             },
           ),
           extendBodyBehindAppBar: true,
-          systemUiOverlayStyle: UiUtils.getSystemUiOverlayStyle(context.scaffoldBackgroundColor, context.isDarkMode),
+          systemUiOverlayStyle: UiUtils.getSystemUiOverlayStyle(
+            context.scaffoldBackgroundColor,
+            context.isDarkMode,
+          ),
           body: snapshot.hasData
               ? SingleChildScrollView(
                   controller: _scrollController,
@@ -97,7 +100,7 @@ class _TextDocViewerState extends ConsumerState<TextDocViewer> {
                     snapshot.data ?? "No text was found",
                     style: TextStyle(
                       fontSize: 14,
-                      color: ref.onBackground,
+                      color: context.theme.custom.onBackground,
                       fontWeight: FontWeight.w500,
                       letterSpacing: 0.2,
                       height: 1.5,
@@ -112,7 +115,9 @@ class _TextDocViewerState extends ConsumerState<TextDocViewer> {
                     child: Text(
                       'Error loading file: ${snapshot.error}',
                       textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.red),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Colors.red),
                     ),
                   ),
                 )

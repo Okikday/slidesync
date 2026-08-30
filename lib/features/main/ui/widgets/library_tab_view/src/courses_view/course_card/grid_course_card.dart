@@ -30,8 +30,10 @@ class GridCourseCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
-    final shadowSurfaceColor = theme.surface.lightenColor(0.5).withValues(alpha: 0.1);
+    final theme = Theme.of(context).custom;
+    final shadowSurfaceColor = theme.surface
+        .lightenColor(0.5)
+        .withValues(alpha: 0.1);
 
     return Padding(
       padding: const EdgeInsets.all(1.5),
@@ -64,7 +66,7 @@ class GridCourseCardStackedCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return Padding(
       padding: const EdgeInsets.only(left: 8, right: 8, top: 12),
       child: SingleChildScrollView(
@@ -83,10 +85,20 @@ class GridCourseCardStackedCard extends ConsumerWidget {
                         .withValues(alpha: 0.4 + (i * 0.3))
                         .lightenColor(context.isDarkMode ? 0.3 : 0.75),
                     borderRadius: BorderRadius.circular(20),
-                    border: i == 2 ? Border.all(color: theme.surface.lightenColor(0.5).withAlpha(40)) : null,
+                    border: i == 2
+                        ? Border.all(
+                            color: theme.surface
+                                .lightenColor(0.5)
+                                .withAlpha(40),
+                          )
+                        : null,
                   ),
                   padding: EdgeInsets.fromLTRB(12, 8, 12, 40),
-                  margin: EdgeInsets.only(top: 4.5 * i, left: 4.0 * (2 - i), right: 4.0 * (2 - i)),
+                  margin: EdgeInsets.only(
+                    top: 4.5 * i,
+                    left: 4.0 * (2 - i),
+                    right: 4.0 * (2 - i),
+                  ),
 
                   child: i == 2
                       ? Row(
@@ -102,8 +114,11 @@ class GridCourseCardStackedCard extends ConsumerWidget {
                                     // color: theme.surface.withAlpha(100),
                                     color: context.isDarkMode
                                         ? theme.surface.withAlpha(100)
-                                        : theme.adjustBgAndPrimaryWithLerpExtra.withValues(alpha: 0.5),
-                                    border: Border.all(color: theme.primary.withAlpha(20)),
+                                        : theme.adjustBgAndPrimaryWithLerpExtra
+                                              .withValues(alpha: 0.5),
+                                    border: Border.all(
+                                      color: theme.primary.withAlpha(20),
+                                    ),
                                   ),
                                   // child: SizedBox(width: 40, height: 40),
                                   child: SizedBox.square(
@@ -111,11 +126,15 @@ class GridCourseCardStackedCard extends ConsumerWidget {
                                     child: BuildImagePathWidget(
                                       width: 40,
                                       height: 40,
-                                      fileDetails: course.metadata.thumbnail ?? FilePath.empty(),
+                                      fileDetails:
+                                          course.metadata.thumbnail ??
+                                          FilePath.empty(),
                                       fallbackWidget: Icon(
                                         Iconsax.star,
                                         size: 16,
-                                        color: theme.isDarkMode ? Colors.white : Colors.black,
+                                        color: theme.isDarkMode
+                                            ? Colors.white
+                                            : Colors.black,
                                       ),
                                     ),
                                   ),
@@ -130,12 +149,19 @@ class GridCourseCardStackedCard extends ConsumerWidget {
                                   spacing: 4.0,
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    if (course.metadata.courseCode?.isNotEmpty == true)
+                                    if (course
+                                            .metadata
+                                            .courseCode
+                                            ?.isNotEmpty ==
+                                        true)
                                       CustomTextButton(
-                                        backgroundColor: theme.altBackgroundSecondary,
+                                        backgroundColor:
+                                            theme.altBackgroundSecondary,
                                         pixelHeight: 16,
                                         borderRadius: 8,
-                                        contentPadding: EdgeInsets.symmetric(horizontal: 5.0),
+                                        contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 5.0,
+                                        ),
                                         child: CustomText(
                                           course.metadata.courseCode ?? '',
                                           fontSize: 8,
@@ -143,7 +169,10 @@ class GridCourseCardStackedCard extends ConsumerWidget {
                                           color: theme.secondary,
                                         ),
                                       ),
-                                    GridCourseCardProgressIndicator(courseId: course.uid, color: course.metadata.color),
+                                    GridCourseCardProgressIndicator(
+                                      courseId: course.uid,
+                                      color: course.metadata.color,
+                                    ),
                                   ],
                                 ),
                               ),
@@ -161,16 +190,22 @@ class GridCourseCardStackedCard extends ConsumerWidget {
 }
 
 class GridCourseCardProgressIndicator extends ConsumerStatefulWidget {
-  const GridCourseCardProgressIndicator({super.key, required this.courseId, this.color});
+  const GridCourseCardProgressIndicator({
+    super.key,
+    required this.courseId,
+    this.color,
+  });
 
   final String courseId;
   final Color? color;
 
   @override
-  ConsumerState<GridCourseCardProgressIndicator> createState() => _GridCourseCardProgressIndicatorState();
+  ConsumerState<GridCourseCardProgressIndicator> createState() =>
+      _GridCourseCardProgressIndicatorState();
 }
 
-class _GridCourseCardProgressIndicatorState extends ConsumerState<GridCourseCardProgressIndicator> {
+class _GridCourseCardProgressIndicatorState
+    extends ConsumerState<GridCourseCardProgressIndicator> {
   late Stream<CourseTrack?> _courseTrackStream;
 
   @override
@@ -191,7 +226,7 @@ class _GridCourseCardProgressIndicatorState extends ConsumerState<GridCourseCard
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return StreamBuilder<CourseTrack?>(
       stream: _courseTrackStream,
       builder: (context, asyncSnapshot) {
@@ -226,11 +261,14 @@ class GridCourseCardBottomStack extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final categoriesCount = course.modules.length;
     return ClipRRect(
       clipBehavior: Clip.antiAlias,
-      borderRadius: BorderRadius.only(bottomLeft: Radius.circular(22), bottomRight: Radius.circular(22)),
+      borderRadius: BorderRadius.only(
+        bottomLeft: Radius.circular(22),
+        bottomRight: Radius.circular(22),
+      ),
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: theme.adjustBgAndPrimaryWithLerpExtra.withValues(alpha: 0.9),

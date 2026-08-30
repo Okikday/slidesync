@@ -32,10 +32,15 @@ final _refreshedLinksNotifier = NotifierProvider.autoDispose.family(
 );
 final _progressStreamNotifier = StreamNotifierProvider.autoDispose.family(
   (int contentId) => StreamedNotifier<_ProgressWithDetRecord>(
-    () => ContentTrackRepo.watchById(contentId).map((c) => (progress: c?.progress, detail: c?.extraDetail)),
+    () => ContentTrackRepo.watchById(
+      contentId,
+    ).map((c) => (progress: c?.progress, detail: c?.extraDetail)),
   ),
 );
-typedef ContentCardSelectRecord = ({bool isSelected, void Function(ModuleContent content) onSelect});
+typedef ContentCardSelectRecord = ({
+  bool isSelected,
+  void Function(ModuleContent content) onSelect,
+});
 
 class ContentCard extends ConsumerWidget {
   const ContentCard({super.key, required this.content, this.select});
@@ -43,8 +48,9 @@ class ContentCard extends ConsumerWidget {
   final ModuleContent content;
   final ContentCardSelectRecord? select;
 
-  static NotifierProvider<ImpliedNotifier, Set<int>> refreshedLinksNotifier(String collectionId) =>
-      _refreshedLinksNotifier(collectionId);
+  static NotifierProvider<ImpliedNotifier, Set<int>> refreshedLinksNotifier(
+    String collectionId,
+  ) => _refreshedLinksNotifier(collectionId);
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -54,8 +60,9 @@ class ContentCard extends ConsumerWidget {
         Flexible(
           child: GestureDetector(
             behavior: HitTestBehavior.translucent,
-            onTap: () =>
-                select == null ? ContentViewGateActions.redirectToViewer(ref, content) : select?.onSelect(content),
+            onTap: () => select == null
+                ? ContentViewGateActions.redirectToViewer(ref, content)
+                : select?.onSelect(content),
             child: _CardOuterShell(content: content, select: select),
           ),
         ),
@@ -72,7 +79,7 @@ class _CardOuterShell extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return Heroine(
       tag: content.uid,
       flightShuttleBuilder: const FlipShuttleBuilder(),
@@ -88,7 +95,7 @@ class _CardOuterShell extends ConsumerWidget {
     );
   }
 
-  BoxDecoration _getCardDecoration(WidgetRef theme) {
+  BoxDecoration _getCardDecoration(AppThemeExtension theme) {
     final shadow = select?.isSelected == true
         ? theme.shadow
         : (theme.shadow.withValues(alpha: theme.isDarkMode ? 0.8 : 0.4));
@@ -96,11 +103,25 @@ class _CardOuterShell extends ConsumerWidget {
       color: theme.cardColor,
       borderRadius: BorderRadius.circular(16),
       border: Border.fromBorderSide(
-        BorderSide(color: theme.outline.withValues(alpha: select?.isSelected == true ? 1 : 0.8)),
+        BorderSide(
+          color: theme.outline.withValues(
+            alpha: select?.isSelected == true ? 1 : 0.8,
+          ),
+        ),
       ),
       boxShadow: [
-        BoxShadow(color: shadow, offset: const Offset(0, 1), blurRadius: 3, spreadRadius: 0),
-        BoxShadow(color: shadow, offset: const Offset(0, 4), blurRadius: 6, spreadRadius: 0),
+        BoxShadow(
+          color: shadow,
+          offset: const Offset(0, 1),
+          blurRadius: 3,
+          spreadRadius: 0,
+        ),
+        BoxShadow(
+          color: shadow,
+          offset: const Offset(0, 4),
+          blurRadius: 6,
+          spreadRadius: 0,
+        ),
       ],
     );
   }
@@ -145,9 +166,15 @@ class _StackedBelowState extends ConsumerState<_StackedBelow> {
   }
 
   void _initializeData() =>
-      Future.microtask(() => isRefreshing ? _revalidateContentIfNeeded(ref, widget.content) : () {}).then(
+      Future.microtask(
+        () => isRefreshing
+            ? _revalidateContentIfNeeded(ref, widget.content)
+            : () {},
+      ).then(
         (_) => WidgetsBinding.instance.addPostFrameCallback(
-          (_) => mounted && isRefreshing ? setState(() => isRefreshing = false) : () {},
+          (_) => mounted && isRefreshing
+              ? setState(() => isRefreshing = false)
+              : () {},
         ),
       );
 
@@ -164,7 +191,7 @@ class _StackedBelowState extends ConsumerState<_StackedBelow> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final isDarkMode = theme.isDarkMode;
     return Column(
       children: [
@@ -177,11 +204,15 @@ class _StackedBelowState extends ConsumerState<_StackedBelow> {
         ),
 
         AbsorberWatch<double>(
-          listenable: progressProvider.select((s) => s.progress as double? ?? 0.0),
+          listenable: progressProvider.select(
+            (s) => s.progress as double? ?? 0.0,
+          ),
           builder: (context, progressAsync, ref, _) => LinearProgressIndicator(
             value: progressAsync,
             color: theme.primaryColor,
-            backgroundColor: theme.background.lightenColor(isDarkMode ? 0.15 : 0.85).withAlpha(200),
+            backgroundColor: theme.background
+                .lightenColor(isDarkMode ? 0.15 : 0.85)
+                .withAlpha(200),
           ),
         ),
 
@@ -206,11 +237,15 @@ class _CardAboveFooter extends ConsumerWidget {
   final ModuleContent content;
   final bool? isSelected;
   final bool isRefreshing;
-  final StreamNotifierProvider<StreamedNotifier<_ProgressWithDetRecord>, _ProgressWithDetRecord> progressProvider;
+  final StreamNotifierProvider<
+    StreamedNotifier<_ProgressWithDetRecord>,
+    _ProgressWithDetRecord
+  >
+  progressProvider;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 8, 4, 8),
       child: Row(
@@ -225,7 +260,9 @@ class _CardAboveFooter extends ConsumerWidget {
                   child: Tooltip(
                     showDuration: 4.inSeconds,
                     message: content.title,
-                    triggerMode: isSelected == null ? TooltipTriggerMode.tap : TooltipTriggerMode.longPress,
+                    triggerMode: isSelected == null
+                        ? TooltipTriggerMode.tap
+                        : TooltipTriggerMode.longPress,
                     child: CustomText(
                       content.title,
                       color: theme.onBackground,
@@ -235,11 +272,18 @@ class _CardAboveFooter extends ConsumerWidget {
                   ),
                 ),
                 if (isRefreshing)
-                  CustomText("Loading link...", fontSize: 10, color: theme.primary)
+                  CustomText(
+                    "Loading link...",
+                    fontSize: 10,
+                    color: theme.primary,
+                  )
                 else
                   AbsorberWatch(
                     listenable: progressProvider.select(
-                      (s) => s.value ?? (detail: null, progress: null) as _ProgressWithDetRecord,
+                      (s) =>
+                          s.value ??
+                          (detail: null, progress: null)
+                              as _ProgressWithDetRecord,
                     ),
                     builder: (context, progressAsync, ref, _) {
                       final progress = progressAsync.progress;
@@ -255,7 +299,9 @@ class _CardAboveFooter extends ConsumerWidget {
                             ? "Almost done!"
                             : "${((progress.clamp(0, 100)) * 100.0).toInt()}% read${content.type == ModuleContentType.document && detail != null && detail.isNotEmpty ? " of $detail pages" : ""}",
                         fontSize: 10,
-                        color: progress == 1.0 ? theme.primary : theme.supportingText,
+                        color: progress == 1.0
+                            ? theme.primary
+                            : theme.supportingText,
                       );
                     },
                   ),
@@ -270,27 +316,39 @@ class _CardAboveFooter extends ConsumerWidget {
               child: InkWell(
                 overlayColor: WidgetStatePropertyAll(theme.onSurface),
                 onTap: () async {
-                  final collection = await ModuleRepo.getByUid(content.parentId);
+                  final collection = await ModuleRepo.getByUid(
+                    content.parentId,
+                  );
                   if (collection == null) return;
                   GlobalNav.withContext(
                     (c) => Navigator.push(
                       context.mounted ? context : c,
                       PageAnimation.pageRouteBuilder(
-                        ContentCardContextMenu(collection: collection, content: content),
+                        ContentCardContextMenu(
+                          collection: collection,
+                          content: content,
+                        ),
                         opaque: false,
                       ),
                     ),
                   );
                 },
-                child: SizedBox.square(dimension: 36, child: Icon(HugeIconsSolid.moreHorizontal)),
+                child: SizedBox.square(
+                  dimension: 36,
+                  child: Icon(HugeIconsSolid.moreHorizontal),
+                ),
               ),
             )
           else
             Builder(
               builder: (context) {
                 return Icon(
-                  isSelected == true ? HugeIconsSolid.tick04 : HugeIconsSolid.circle,
-                  color: isSelected == true ? theme.primary : theme.onPrimary.withAlpha(100),
+                  isSelected == true
+                      ? HugeIconsSolid.tick04
+                      : HugeIconsSolid.circle,
+                  color: isSelected == true
+                      ? theme.primary
+                      : theme.onPrimary.withAlpha(100),
                   size: 24,
                 );
               },
@@ -316,22 +374,32 @@ class ContentCardPreviewImage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     if (isRefreshing) {
-      final theme = ref;
+      final theme = Theme.of(context).custom;
       ColoredBox(
-        color: theme.background.lightenColor(ref.isDarkMode ? 0.15 : 0.85).withAlpha(200),
-        child: SizedBox.expand(),
-      ).animate(onInit: (c) => c.repeat()).shimmer(color: theme.primary.withAlpha(20), duration: 1.5.seconds);
+            color: theme.background
+                .lightenColor(theme.isDarkMode ? 0.15 : 0.85)
+                .withAlpha(200),
+            child: SizedBox.expand(),
+          )
+          .animate(onInit: (c) => c.repeat())
+          .shimmer(color: theme.primary.withAlpha(20), duration: 1.5.seconds);
     }
     return SizedBox.expand(
       child: ClipRRect(
-        borderRadius: const BorderRadius.only(topLeft: Radius.circular(15), topRight: Radius.circular(15)),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(15),
+          topRight: Radius.circular(15),
+        ),
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 300),
           opacity: isSelected ? 0.6 : 1.0,
           child: BuildImagePathWidget(
             fileDetails: content.metadata?.thumbnail ?? FilePath.empty(),
             fit: BoxFit.cover,
-            fallbackWidget: Icon(IconHelper.getContentTypeIconData(content.type, false), size: 36),
+            fallbackWidget: Icon(
+              IconHelper.getContentTypeIconData(content.type, false),
+              size: 36,
+            ),
           ),
         ),
       ),
@@ -346,7 +414,7 @@ class ContentTypeBadge extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return Positioned(
       top: 8,
       right: 8,
@@ -382,7 +450,10 @@ class ContentTypeBadge extends ConsumerWidget {
   }
 }
 
-Future<dynamic> _revalidateContentIfNeeded(WidgetRef ref, ModuleContent content) async => switch (content.type) {
+Future<dynamic> _revalidateContentIfNeeded(
+  WidgetRef ref,
+  ModuleContent content,
+) async => switch (content.type) {
   ModuleContentType.link => _refreshLinkIfNeeded(ref, content),
   _ => '',
 };
@@ -390,7 +461,9 @@ Future<dynamic> _revalidateContentIfNeeded(WidgetRef ref, ModuleContent content)
 Future<void> _refreshLinkIfNeeded(WidgetRef ref, ModuleContent content) async {
   if (!_shouldRefresh(content)) return;
   if (!ref.context.mounted) return;
-  final refreshProvider = ref.read(ContentCard.refreshedLinksNotifier(content.parentId));
+  final refreshProvider = ref.read(
+    ContentCard.refreshedLinksNotifier(content.parentId),
+  );
   if (refreshProvider.contains(content.id)) return;
   refreshProvider.add(content.id);
 
@@ -398,8 +471,14 @@ Future<void> _refreshLinkIfNeeded(WidgetRef ref, ModuleContent content) async {
   if (!path.containsUrlPath) return;
 
   log("Refreshing link content url ${content.path.url}");
-  final previewLinkDetails = await RetriveContentUc.getLinkPreviewData(content.path.url);
-  await AddLinkActions.onAddLinkContent(path.url!, parentId: content.parentId, details: previewLinkDetails);
+  final previewLinkDetails = await RetriveContentUc.getLinkPreviewData(
+    content.path.url,
+  );
+  await AddLinkActions.onAddLinkContent(
+    path.url!,
+    parentId: content.parentId,
+    details: previewLinkDetails,
+  );
 }
 
 bool _shouldRefresh(ModuleContent content) {

@@ -31,7 +31,7 @@ class EmptyContentsView extends ConsumerWidget {
               child: CustomText(
                 "We couldn't find any material over here..\n   ---You can click the Floating Add button below to add",
                 fontSize: 12,
-                color: ref.backgroundSupportingText,
+                color: context.theme.custom.backgroundSupportingText,
               ),
             ),
             ConstantSizing.columnSpacingMedium,
@@ -52,13 +52,13 @@ class EmptyContentsView extends ConsumerWidget {
             //         ),
             //       );
             //     },
-            //     backgroundColor: ref.primaryColor,
-            //     // backgroundColor: ref.secondary,
+            //     backgroundColor: theme.primaryColor,
+            //     // backgroundColor: theme.secondary,
             //     borderRadius: 12,
             //     pixelHeight: 44,
             //     label: "Add a content",
             //     textSize: 15,
-            //     textColor: ref.onPrimary,
+            //     textColor: theme.onPrimary,
             //   ),
             // ),
 
@@ -67,7 +67,7 @@ class EmptyContentsView extends ConsumerWidget {
             // Padding(
             //   padding: const EdgeInsets.symmetric(horizontal: 20.0),
             //   child: CustomElevatedButton(
-            //     backgroundColor: ref.primaryColor,
+            //     backgroundColor: theme.primaryColor,
             //     borderRadius: 12,
             //     pixelHeight: 44,
             //     label: "Explore Contents",

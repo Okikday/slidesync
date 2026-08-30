@@ -29,10 +29,11 @@ class CreateCourseButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context).custom;
     return CustomElevatedButton(
-      backgroundColor: ref.primaryColor,
+      backgroundColor: theme.primaryColor,
       label: "Create Course",
-      textColor: ref.onPrimary,
+      textColor: theme.onPrimary,
       textSize: 14,
       pixelWidth: context.deviceWidth,
       pixelHeight: 48,
@@ -40,13 +41,21 @@ class CreateCourseButton extends ConsumerWidget {
       onClick: () async {
         final String courseName = courseNameController.text.trim();
         final String courseCode = courseCodeController.text.trim();
-        final String? errorString = checkIfCanCreateCourse(courseName, courseCode, isCourseCodeFieldVisible.value);
+        final String? errorString = checkIfCanCreateCourse(
+          courseName,
+          courseCode,
+          isCourseCodeFieldVisible.value,
+        );
         if (errorString != null) {
           UiUtils.showFlushBar(
             context,
             msg: errorString,
             vibe: FlushbarVibe.error,
-            margin: EdgeInsets.only(left: 24, right: 24, bottom: context.bottomPadding + 60),
+            margin: EdgeInsets.only(
+              left: 24,
+              right: 24,
+              bottom: context.bottomPadding + 60,
+            ),
             barBlur: 2.0,
           );
           return;
@@ -64,11 +73,12 @@ class CreateCourseButton extends ConsumerWidget {
           ),
         );
 
-        final Result<Course> createCourseOutcome = await CreateCourseUc().createCourseAction(
-          courseName: courseName,
-          courseCode: courseCode,
-          courseImagePath: courseImagePathNotifier.value,
-        );
+        final Result<Course> createCourseOutcome = await CreateCourseUc()
+            .createCourseAction(
+              courseName: courseName,
+              courseCode: courseCode,
+              courseImagePath: courseImagePathNotifier.value,
+            );
 
         GlobalNav.withContext((context) => UiUtils.hideDialog(context));
 
@@ -77,14 +87,24 @@ class CreateCourseButton extends ConsumerWidget {
               GlobalNav.withContextAsync((context) async {
                 if (pushToCreated) {
                   DeviceUtils.isDesktop()
-                      ? context.pushReplacementNamed(Routes.courseDetails.name, extra: value.uid)
-                      : context.pushNamed(Routes.courseDetails.name, extra: value.uid);
+                      ? context.pushReplacementNamed(
+                          Routes.courseDetails.name,
+                          extra: value.uid,
+                        )
+                      : context.pushNamed(
+                          Routes.courseDetails.name,
+                          extra: value.uid,
+                        );
                 } else {
                   //
                 }
                 await Future.delayed(Durations.short4);
                 // ignore: use_build_context_synchronously
-                await UiUtils.showFlushBar(context, msg: "Successfully created course!", vibe: FlushbarVibe.success);
+                await UiUtils.showFlushBar(
+                  context,
+                  msg: "Successfully created course!",
+                  vibe: FlushbarVibe.success,
+                );
               });
             })
             .onError((error, [_]) async {
@@ -92,7 +112,11 @@ class CreateCourseButton extends ConsumerWidget {
                 context,
                 msg: error,
                 vibe: FlushbarVibe.error,
-                margin: EdgeInsets.only(left: 24, right: 24, bottom: context.bottomPadding + 60),
+                margin: EdgeInsets.only(
+                  left: 24,
+                  right: 24,
+                  bottom: context.bottomPadding + 60,
+                ),
               );
             });
       },
@@ -115,7 +139,8 @@ String? checkIfCanCreateCourse(
     if (courseName.length < 2) return "Course title too short!";
     if (courseName.length > 64) return "Course title too long!";
     return "Kindly input a valid course title!";
-  } else if (isCourseCodeVisible && (courseCode.length < 2 || courseCode.length > 16)) {
+  } else if (isCourseCodeVisible &&
+      (courseCode.length < 2 || courseCode.length > 16)) {
     return "Kindly input a valid course code or hide it";
   }
   return null;

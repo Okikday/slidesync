@@ -10,7 +10,7 @@ class OptionsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final theme = ref;
+    // final theme = Theme.of(context).custom;
 
     return ValueListenableBuilder<int>(
       valueListenable: state.currentQuestionIndexNotifier,
@@ -43,7 +43,8 @@ class OptionsSection extends ConsumerWidget {
                         isCorrect: isCorrect,
                         showCorrectness: showCorrectness,
                         isMultiple: isMultiple,
-                        onTap: () => state.selectOption(currentIndex, index, isMultiple),
+                        onTap: () =>
+                            state.selectOption(currentIndex, index, isMultiple),
                       ),
                     );
                   }),

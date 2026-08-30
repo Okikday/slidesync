@@ -21,7 +21,7 @@ class QuizScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(QuizScreenProvider.state(config));
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     log("question: ${config.questions}");
 
@@ -33,7 +33,10 @@ class QuizScreen extends ConsumerWidget {
         elevation: 0,
         title: Text(
           'Quiz',
-          style: TextStyle(color: theme.onSurface, fontFamily: theme.fontFamily),
+          style: TextStyle(
+            color: theme.onSurface,
+            fontFamily: theme.fontFamily,
+          ),
         ),
         actions: [if (config.hasTimer) TimerWidget(state: state)],
       ),

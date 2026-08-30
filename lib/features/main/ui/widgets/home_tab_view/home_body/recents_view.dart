@@ -18,7 +18,7 @@ class RecentsView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final asyncProgressTrackValues = HomePod.recentContentTracks(
       100,
     ).watch(ref);
@@ -33,7 +33,7 @@ class RecentsView extends ConsumerWidget {
         data: (data) {
           if (data.isEmpty) {
             return Center(
-              child: CustomText("No recent reads", color: ref.onBackground),
+              child: CustomText("No recent reads", color: theme.onBackground),
             );
           }
           return SmoothListView.builder(

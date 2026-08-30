@@ -77,12 +77,12 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
-        <provider
+        <!-- <provider
             android:name="com.superlist.super_native_extensions.DataProvider"
             android:authorities="com.bubble.slidesync.SuperClipboardDataProvider"
             android:exported="true"
             android:grantUriPermissions="true">
-        </provider>
+        </provider> -->
     </application>
 
     <!-- Required to query activities that can process text, see:

@@ -8,10 +8,15 @@ import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/animations/animated_sizing.dart';
-import 'package:slidesync/shared/widgets/decorations/back_soft_edge_blur.dart';
+import 'package:slidesync/shared/widgets/decorations/backdrop_shadow.dart';
 
 class HomeAppBar extends ConsumerWidget {
-  const HomeAppBar({super.key, required this.onClickHamburger, required this.title, required this.onClickFocusButton});
+  const HomeAppBar({
+    super.key,
+    required this.onClickHamburger,
+    required this.title,
+    required this.onClickFocusButton,
+  });
 
   final void Function() onClickHamburger;
 
@@ -19,7 +24,7 @@ class HomeAppBar extends ConsumerWidget {
   final void Function() onClickFocusButton;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final appBarHeight = kToolbarHeight + (context.topPadding / 2);
 
     return Consumer(
@@ -37,24 +42,27 @@ class HomeAppBar extends ConsumerWidget {
           surfaceTintColor: Colors.transparent,
           systemOverlayStyle: SystemUiOverlayStyle(
             statusBarColor: theme.background.withValues(alpha: 0.6),
-            statusBarBrightness: context.isDarkMode ? Brightness.light : Brightness.dark,
-            statusBarIconBrightness: context.isDarkMode ? Brightness.light : Brightness.dark,
+            statusBarBrightness: context.isDarkMode
+                ? Brightness.light
+                : Brightness.dark,
+            statusBarIconBrightness: context.isDarkMode
+                ? Brightness.light
+                : Brightness.dark,
           ),
           flexibleSpace: FlexibleSpaceBar(
             expandedTitleScale: 1.0,
-            background: GestureDetector(
-              onTap: () {},
-              child: BackSoftEdgeBlur(height: 80, applyHeightToSize: true, child: const SizedBox.shrink()),
-            ),
+            background: GestureDetector(onTap: () {}, child: _BackDropWidget()),
             // collapseMode: CollapseMode.pin,
             titlePadding: EdgeInsets.zero,
             title: Align(
               alignment: Alignment(0, 0.75),
               child: GestureDetector(
                 onTap: () {
-                  PrimaryScrollController.of(
-                    context,
-                  ).animateTo(0, duration: Durations.extralong1, curve: CustomCurves.defaultIosSpring);
+                  PrimaryScrollController.of(context).animateTo(
+                    0,
+                    duration: Durations.extralong1,
+                    curve: CustomCurves.defaultIosSpring,
+                  );
                 },
                 child: AnimatedSizing.fast(
                   child: Padding(
@@ -70,9 +78,18 @@ class HomeAppBar extends ConsumerWidget {
                               pixelHeight: 48,
                               pixelWidth: 48,
                               contentPadding: EdgeInsets.zero,
-                              backgroundColor: theme.scaffoldBackgroundColor.withValues(alpha: 0.6),
-                              shape: CircleBorder(side: BorderSide(color: theme.onSurface.withValues(alpha: .1))),
-                              child: Icon(Iconsax.menu_1_copy, color: theme.onBackground, size: 48 * 0.5),
+                              backgroundColor: theme.scaffoldBackgroundColor
+                                  .withValues(alpha: 0.6),
+                              shape: CircleBorder(
+                                side: BorderSide(
+                                  color: theme.onSurface.withValues(alpha: .1),
+                                ),
+                              ),
+                              child: Icon(
+                                Iconsax.menu_1_copy,
+                                color: theme.onBackground,
+                                size: 48 * 0.5,
+                              ),
                             ),
                           ),
                         ),
@@ -94,16 +111,24 @@ class HomeAppBar extends ConsumerWidget {
                               onClick: onClickFocusButton,
                               pixelWidth: 44,
                               pixelHeight: 44,
-                              overlayColor: ref.secondary.withAlpha(40),
+                              overlayColor: theme.secondary.withAlpha(40),
                               contentPadding: EdgeInsets.zero,
                               shape: CircleBorder(
-                                side: BorderSide(color: theme.altBackgroundSecondary.withValues(alpha: 0.4)),
+                                side: BorderSide(
+                                  color: theme.altBackgroundSecondary
+                                      .withValues(alpha: 0.4),
+                                ),
                               ),
-                              backgroundColor: theme.scaffoldBackgroundColor.withValues(alpha: 0.6),
+                              backgroundColor: theme.scaffoldBackgroundColor
+                                  .withValues(alpha: 0.6),
                               child: Badge(
                                 backgroundColor: Colors.transparent,
                                 offset: Offset(-1, -1),
-                                child: Icon(HugeIconsSolid.focusPoint, color: theme.supportingText, size: 24),
+                                child: Icon(
+                                  HugeIconsSolid.focusPoint,
+                                  color: theme.supportingText,
+                                  size: 24,
+                                ),
                               ),
                             ),
                           ),
@@ -117,6 +142,18 @@ class HomeAppBar extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _BackDropWidget extends StatelessWidget {
+  const _BackDropWidget();
+
+  @override
+  Widget build(BuildContext context) {
+    return BackdropShadow(
+      height: context.topPadding + 80,
+      shadowDirection: (.topCenter, .bottomCenter),
     );
   }
 }

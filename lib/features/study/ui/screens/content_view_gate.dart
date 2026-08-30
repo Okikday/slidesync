@@ -39,7 +39,7 @@
 //   @override
 //   Widget build(BuildContext context) {
 //     final content = widget.content;
-//     final theme = ref;
+//     final theme = Theme.of(context).custom;
 //     return Material(
 //       type: MaterialType.transparency,
 //       child: Stack(

@@ -21,7 +21,7 @@ class EmptyLibraryView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final child = SingleChildScrollView(
       physics: NeverScrollableScrollPhysics(),
       child: Column(

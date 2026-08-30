@@ -8,7 +8,6 @@ import 'package:slidesync/features/main/pod/library/library_pod.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/create_course_f_a_b.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
-import 'package:slidesync/shared/widgets/state/absorber.dart';
 
 class LibraryTabFAB extends ConsumerWidget {
   final bool isDesktop;
@@ -21,16 +20,15 @@ class LibraryTabFAB extends ConsumerWidget {
     final isAtLibrary = tabIndex == 1;
     // final isAtElsewhere = !isAtHome && !isAtLibrary;
     if (!isAtLibrary && !isDesktop) return const SizedBox();
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final tolerance = libraryAppBarMaxHeight + scrollTolerance;
 
-    final isScrolledListenable = LibraryPod.scrollOffset.select(
-      (s) => s > tolerance,
-    );
+    return Consumer(
+      builder: (context, ref, child) {
+        final isScrolled = LibraryPod.scrollOffset
+            .select((s) => s > tolerance)
+            .watch(ref);
 
-    return AbsorberWatch(
-      listenable: isScrolledListenable,
-      builder: (context, isScrolled, ref, child) {
         if (isScrolled) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 80),
@@ -39,7 +37,7 @@ class LibraryTabFAB extends ConsumerWidget {
               pixelWidth: 32,
               contentPadding: EdgeInsets.zero,
               shape: const CircleBorder(),
-              backgroundColor: ref.primary,
+              backgroundColor: theme.primary,
               onClick: () {
                 PrimaryScrollController.of(context).animateTo(
                   0,

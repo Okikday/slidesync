@@ -14,7 +14,8 @@ class CourseDescriptionDialog extends ConsumerStatefulWidget {
   ConsumerState createState() => _CourseDescriptionDialogState();
 }
 
-class _CourseDescriptionDialogState extends ConsumerState<CourseDescriptionDialog> {
+class _CourseDescriptionDialogState
+    extends ConsumerState<CourseDescriptionDialog> {
   late final ScrollController scrollController;
 
   @override
@@ -31,6 +32,7 @@ class _CourseDescriptionDialogState extends ConsumerState<CourseDescriptionDialo
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).custom;
     return Stack(
       alignment: Alignment.center,
       children: [
@@ -45,9 +47,16 @@ class _CourseDescriptionDialogState extends ConsumerState<CourseDescriptionDialo
             decoration: BoxDecoration(
               color: context.scaffoldBackgroundColor.withValues(alpha: 0.95),
               borderRadius: BorderRadius.circular(12),
-              border: Border.fromBorderSide(BorderSide(color: ref.onBackground.withAlpha(40))),
+              border: Border.fromBorderSide(
+                BorderSide(color: theme.onBackground.withAlpha(40)),
+              ),
             ),
-            constraints: BoxConstraints(maxWidth: 500, minWidth: 200, maxHeight: 700, minHeight: 300),
+            constraints: BoxConstraints(
+              maxWidth: 500,
+              minWidth: 200,
+              maxHeight: 700,
+              minHeight: 300,
+            ),
             // height: context.deviceWidth > context.deviceHeight
             //     ? context.deviceHeight * 0.75
             //     : context.deviceWidth * 0.75,
@@ -78,22 +87,29 @@ class _CourseDescriptionDialogState extends ConsumerState<CourseDescriptionDialo
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
                           textAlign: TextAlign.center,
-                          color: ref.onBackground,
+                          color: theme.onBackground,
                         ),
                       ),
                     ),
                     ConstantSizing.columnSpacingSmall,
-                    Divider(color: context.isDarkMode ? Colors.lightBlue.withAlpha(40) : Colors.grey.withAlpha(40)),
+                    Divider(
+                      color: context.isDarkMode
+                          ? Colors.lightBlue.withAlpha(40)
+                          : Colors.grey.withAlpha(40),
+                    ),
                     Flexible(
                       child: SingleChildScrollView(
                         physics: const BouncingScrollPhysics(),
                         controller: scrollController,
-                        padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+                        padding: EdgeInsets.symmetric(
+                          vertical: 8.0,
+                          horizontal: 8.0,
+                        ),
                         child: CustomText(
                           widget.description,
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: ref.onBackground,
+                          color: theme.onBackground,
                         ),
                       ),
                     ),

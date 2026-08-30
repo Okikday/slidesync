@@ -47,6 +47,7 @@ enum HiveDataKey<T> {
   driveUploadSession,
   driveDownloadSession,
   isFocusMode<bool>(),
+  useSystemBrightness<bool>(),
 }
 
 // class HiveDataPaths {

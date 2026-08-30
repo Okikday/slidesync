@@ -19,7 +19,11 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/state/absorber.dart';
 
 class CourseViewHeader extends ConsumerWidget {
-  const CourseViewHeader({super.key, required this.courseId, required this.scrollOffsetNotifier});
+  const CourseViewHeader({
+    super.key,
+    required this.courseId,
+    required this.scrollOffsetNotifier,
+  });
 
   final String courseId;
   final ValueNotifier<double> scrollOffsetNotifier;
@@ -27,7 +31,7 @@ class CourseViewHeader extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final appBarCollapsedHeight = kToolbarHeight;
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return SliverAppBar(
       pinned: true,
       automaticallyImplyLeading: false,
@@ -53,7 +57,10 @@ class CourseViewHeader extends ConsumerWidget {
         titlePadding: EdgeInsets.zero,
         title: ColoredBox(
           color: theme.background.withAlpha(200),
-          child: _HeaderContent(courseId: courseId, scrollOffsetNotifier: scrollOffsetNotifier),
+          child: _HeaderContent(
+            courseId: courseId,
+            scrollOffsetNotifier: scrollOffsetNotifier,
+          ),
         ),
       ),
     );
@@ -62,10 +69,18 @@ class CourseViewHeader extends ConsumerWidget {
 
 const _shapeSize = kToolbarHeight * 2;
 
-typedef _CourseSelectData = ({String courseCode, String courseName, String description, String thumbnailPath});
+typedef _CourseSelectData = ({
+  String courseCode,
+  String courseName,
+  String description,
+  String thumbnailPath,
+});
 
 class _HeaderContent extends ConsumerWidget {
-  const _HeaderContent({required this.courseId, required this.scrollOffsetNotifier});
+  const _HeaderContent({
+    required this.courseId,
+    required this.scrollOffsetNotifier,
+  });
 
   final String courseId;
   final ValueNotifier<double> scrollOffsetNotifier;
@@ -89,7 +104,10 @@ class _HeaderContent extends ConsumerWidget {
         children: [
           _AboveHeader(courseSelectData: courseSelectData, courseId: courseId),
 
-          _UnderHeader(courseSelectData: courseSelectData, scrollOffsetNotifier: scrollOffsetNotifier),
+          _UnderHeader(
+            courseSelectData: courseSelectData,
+            scrollOffsetNotifier: scrollOffsetNotifier,
+          ),
         ],
       ),
     );
@@ -97,14 +115,17 @@ class _HeaderContent extends ConsumerWidget {
 }
 
 class _UnderHeader extends ConsumerWidget {
-  const _UnderHeader({required this.courseSelectData, required this.scrollOffsetNotifier});
+  const _UnderHeader({
+    required this.courseSelectData,
+    required this.scrollOffsetNotifier,
+  });
 
   final _CourseSelectData courseSelectData;
   final ValueNotifier<double> scrollOffsetNotifier;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final description = courseSelectData.description;
     return AnimatedPositioned(
       left: ConstantSizing.spaceMedium,
@@ -112,7 +133,9 @@ class _UnderHeader extends ConsumerWidget {
       top: 50 + 8,
       duration: Durations.short2,
       child: ConstrainedBox(
-        constraints: BoxConstraints(maxHeight: courseDetailsAppBarHeight - (48 + 8)),
+        constraints: BoxConstraints(
+          maxHeight: courseDetailsAppBarHeight - (48 + 8),
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -130,7 +153,10 @@ class _UnderHeader extends ConsumerWidget {
             Flexible(
               child: CustomTextButton(
                 borderRadius: 4.0,
-                contentPadding: EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 2,
+                  vertical: 2,
+                ),
                 onClick: () {
                   if (description.isNotEmpty) {
                     GlobalNav.withContext(
@@ -141,7 +167,9 @@ class _UnderHeader extends ConsumerWidget {
                         reverseTransitionDuration: Durations.short4,
                         curve: CustomCurves.defaultIosSpring,
                         barrierColor: Colors.black.withAlpha(100),
-                        child: CourseDescriptionDialog(description: description),
+                        child: CourseDescriptionDialog(
+                          description: description,
+                        ),
                       ),
                     );
                   }
@@ -167,9 +195,12 @@ class _AboveHeader extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return Padding(
-      padding: const EdgeInsets.only(left: ConstantSizing.spaceSmall, right: ConstantSizing.spaceSmall),
+      padding: const EdgeInsets.only(
+        left: ConstantSizing.spaceSmall,
+        right: ConstantSizing.spaceSmall,
+      ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         spacing: 8,
@@ -192,7 +223,10 @@ class _AboveHeader extends ConsumerWidget {
                       fontWeight: FontWeight.bold,
                       color: theme.primaryColor,
                     ),
-                  ).animate().scaleXY(duration: Durations.extralong4, curve: CustomCurves.defaultIosSpring),
+                  ).animate().scaleXY(
+                    duration: Durations.extralong4,
+                    curve: CustomCurves.defaultIosSpring,
+                  ),
               ],
             ),
           ),
@@ -208,14 +242,28 @@ class _AboveHeader extends ConsumerWidget {
                       return AnimatedShapeProgressWidget(
                             progress: data,
                             shapeSize: _shapeSize,
-                            fileDetails: FilePath(local: courseSelectData.thumbnailPath),
-                            onClick: () async => await Future.delayed(
-                              Durations.short4,
-                            ).then((_) => ModifyCourseActions.onClickCourseImage(ref, courseId: courseId)),
+                            fileDetails: FilePath(
+                              local: courseSelectData.thumbnailPath,
+                            ),
+                            onClick: () async =>
+                                await Future.delayed(Durations.short4).then(
+                                  (_) => ModifyCourseActions.onClickCourseImage(
+                                    ref,
+                                    courseId: courseId,
+                                  ),
+                                ),
                           )
                           .animate()
-                          .fadeIn(duration: Durations.medium4, curve: CustomCurves.bouncySpring)
-                          .scaleXY(begin: .4, end: 1, duration: Durations.extralong2, curve: CustomCurves.bouncySpring);
+                          .fadeIn(
+                            duration: Durations.medium4,
+                            curve: CustomCurves.bouncySpring,
+                          )
+                          .scaleXY(
+                            begin: .4,
+                            end: 1,
+                            duration: Durations.extralong2,
+                            curve: CustomCurves.bouncySpring,
+                          );
                     },
                     error: (_, _) => Icon(Icons.error),
                     loading: () => LoadingLogo(size: 10),
@@ -242,10 +290,12 @@ class CourseDetailsHeaderTitle extends ConsumerStatefulWidget {
   final ValueNotifier<double> scrollOffsetNotifier;
 
   @override
-  ConsumerState<CourseDetailsHeaderTitle> createState() => _CourseDetailsHeaderTitleState();
+  ConsumerState<CourseDetailsHeaderTitle> createState() =>
+      _CourseDetailsHeaderTitleState();
 }
 
-class _CourseDetailsHeaderTitleState extends ConsumerState<CourseDetailsHeaderTitle>
+class _CourseDetailsHeaderTitleState
+    extends ConsumerState<CourseDetailsHeaderTitle>
     with SingleTickerProviderStateMixin {
   late final AnimationController moveAnimController;
   @override
@@ -261,8 +311,11 @@ class _CourseDetailsHeaderTitleState extends ConsumerState<CourseDetailsHeaderTi
 
   void listener() {
     final offset = widget.scrollOffsetNotifier.value;
-    final double percentScroll = (offset / (courseDetailsAppBarHeight + context.topPadding)).clamp(0, 1);
-    percentScroll >= 0.5 ? moveAnimController.reverse() : moveAnimController.forward();
+    final double percentScroll =
+        (offset / (courseDetailsAppBarHeight + context.topPadding)).clamp(0, 1);
+    percentScroll >= 0.5
+        ? moveAnimController.reverse()
+        : moveAnimController.forward();
   }
 
   @override
@@ -274,7 +327,7 @@ class _CourseDetailsHeaderTitleState extends ConsumerState<CourseDetailsHeaderTi
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final textWidget =
         Tooltip(
               message: widget.courseName,

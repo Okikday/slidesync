@@ -6,11 +6,15 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 class InputCourseCodeField extends ConsumerWidget {
   final ValueNotifier<bool> isCourseCodeFieldVisible;
   final TextEditingController courseCodeController;
-  const InputCourseCodeField({super.key, required this.courseCodeController, required this.isCourseCodeFieldVisible});
+  const InputCourseCodeField({
+    super.key,
+    required this.courseCodeController,
+    required this.isCourseCodeFieldVisible,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return AnimatedSize(
       duration: Durations.extralong4,
       curve: CustomCurves.bouncySpring,
@@ -31,7 +35,9 @@ class InputCourseCodeField extends ConsumerWidget {
                     selectionHandleColor: theme.primaryColor,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8.0),
-                      borderSide: BorderSide(color: theme.altBackgroundPrimary.withAlpha(150)),
+                      borderSide: BorderSide(
+                        color: theme.altBackgroundPrimary.withAlpha(150),
+                      ),
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8.0),
@@ -41,9 +47,15 @@ class InputCourseCodeField extends ConsumerWidget {
                     onTapOutside: () {},
                     constraints: BoxConstraints(maxWidth: 200),
                     pixelHeight: 60,
-                    inputContentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 18),
+                    inputContentPadding: EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 18,
+                    ),
                     hint: "Optional course code",
-                    inputTextStyle: TextStyle(fontSize: 16, color: theme.onBackground),
+                    inputTextStyle: TextStyle(
+                      fontSize: 16,
+                      color: theme.onBackground,
+                    ),
                   ),
                 ),
 
@@ -62,7 +74,10 @@ class InputCourseCodeField extends ConsumerWidget {
                         ),
                       ),
                       Container(
-                        width: (context.deviceWidth - 48 - 200).clamp(80, context.deviceWidth),
+                        width: (context.deviceWidth - 48 - 200).clamp(
+                          80,
+                          context.deviceWidth,
+                        ),
                         height: 4,
                         decoration: BoxDecoration(
                           color: Colors.grey.withAlpha(40),

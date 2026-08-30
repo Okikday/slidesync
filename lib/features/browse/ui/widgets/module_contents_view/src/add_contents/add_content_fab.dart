@@ -13,15 +13,24 @@ class AddContentFAB extends ConsumerWidget {
   final Module collection;
   final bool isScrolled;
   final ScrollController? scrollController;
-  const AddContentFAB({super.key, required this.collection, required this.isScrolled, this.scrollController});
+  const AddContentFAB({
+    super.key,
+    required this.collection,
+    required this.isScrolled,
+    this.scrollController,
+  });
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     // final isScrolled = scrollOffsetProvider == null ? false : ref.watch(scrollOffsetProvider!) < 100.0;
     if (isScrolled) {
       return BuildButton(
         onTap: () {
-          scrollController?.animateTo(0, duration: Durations.short1, curve: Curves.easeInOut);
+          scrollController?.animateTo(
+            0,
+            duration: Durations.short1,
+            curve: Curves.easeInOut,
+          );
         },
         shape: const CircleBorder(),
         size: Size.square(32),
@@ -35,7 +44,10 @@ class AddContentFAB extends ConsumerWidget {
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        ModuleContentsSearchButton(collectionId: collection.uid, backgroundColor: theme.secondary.withAlpha(50)),
+        ModuleContentsSearchButton(
+          collectionId: collection.uid,
+          backgroundColor: theme.secondary.withAlpha(50),
+        ),
         FloatingActionButton(
           backgroundColor: theme.secondary,
           shape: CircleBorder(),

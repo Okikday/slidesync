@@ -10,14 +10,17 @@ class SelectedItemsCountPopUp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final customTheme = Theme.of(context).custom;
     return Container(
       height: 48,
       padding: EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       margin: EdgeInsets.symmetric(horizontal: 16.0),
       clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
-        color: ref.primaryColor.withValues(alpha: .4),
-        border: Border.fromBorderSide(BorderSide(color: ref.secondary.withAlpha(20))),
+        color: customTheme.primaryColor.withValues(alpha: .4),
+        border: Border.fromBorderSide(
+          BorderSide(color: customTheme.secondary.withAlpha(20)),
+        ),
         borderRadius: BorderRadius.circular(24),
       ),
       child: Row(
@@ -25,9 +28,15 @@ class SelectedItemsCountPopUp extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         spacing: 4.0,
         children: [
-          Icon(Iconsax.check, size: 18, color: ref.secondary.withAlpha(80)),
+          Icon(
+            Iconsax.check,
+            size: 18,
+            color: customTheme.secondary.withAlpha(80),
+          ),
           if (selectedItemsCount != null)
-            CustomText('$selectedItemsCount ${selectedItemsCount! <= 1 ? "item" : "items"} selected!'),
+            CustomText(
+              '$selectedItemsCount ${selectedItemsCount! <= 1 ? "item" : "items"} selected!',
+            ),
         ],
       ),
     )

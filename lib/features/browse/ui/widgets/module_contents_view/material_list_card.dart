@@ -39,10 +39,12 @@ class MaterialListCard extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<MaterialListCard> createState() => _CourseMaterialListCardState();
+  ConsumerState<MaterialListCard> createState() =>
+      _CourseMaterialListCardState();
 }
 
-class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with SingleTickerProviderStateMixin {
+class _CourseMaterialListCardState extends ConsumerState<MaterialListCard>
+    with SingleTickerProviderStateMixin {
   late final Stream<double> progressStream;
   late final ValueNotifier<bool> isCardExpandedNotifier;
   late AnimationController expandAnimationController;
@@ -71,7 +73,9 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
   }
 
   void cardExpandListener() {
-    isCardExpandedNotifier.value ? expandAnimationController.forward() : expandAnimationController.reverse();
+    isCardExpandedNotifier.value
+        ? expandAnimationController.forward()
+        : expandAnimationController.reverse();
   }
 
   @override
@@ -86,7 +90,8 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
   @override
   Widget build(BuildContext context) {
     final ModuleContent content = widget.content;
-    List<CourseMaterialListCardActionModel> courseMaterialListCardActionModels = [
+    List<CourseMaterialListCardActionModel>
+    courseMaterialListCardActionModels = [
       CourseMaterialListCardActionModel(
         label: "Open",
         icon: Iconsax.play_circle,
@@ -99,7 +104,11 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
           label: "Open Outside app",
           icon: Icons.send_to_mobile_outlined,
           onTap: () {
-            ContentViewGateActions.redirectToViewer(ref, content, openOutsideApp: true);
+            ContentViewGateActions.redirectToViewer(
+              ref,
+              content,
+              openOutsideApp: true,
+            );
           },
         ),
       if (content.type == ModuleContentType.link)
@@ -107,7 +116,10 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
           label: "View link",
           icon: Icons.remove_red_eye_outlined,
           onTap: () {
-            UiUtils.showCustomDialog(context, child: PreviewLinkTypeDialog(content: content));
+            UiUtils.showCustomDialog(
+              context,
+              child: PreviewLinkTypeDialog(content: content),
+            );
           },
         ),
 
@@ -135,7 +147,10 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
             if ((DeviceUtils.isDesktop())) GlobalNav.popGlobal();
             await 100.inMs.delay();
             GlobalNav.withContext(
-              (c) => (context.mounted ? context : c).pushNamed(Routes.moduleContentsView.name, extra: module),
+              (c) => (context.mounted ? context : c).pushNamed(
+                Routes.moduleContentsView.name,
+                extra: module,
+              ),
             );
           },
         ),
@@ -162,14 +177,16 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
       ),
     ];
 
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return AnimatedContainer(
       duration: Durations.extralong4,
       margin: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
         color: theme.background.lightenColor(theme.isDarkMode ? 0.1 : 0.9),
         borderRadius: BorderRadius.circular(12),
-        border: Border.fromBorderSide(BorderSide(width: 2, color: theme.onBackground.withAlpha(10))),
+        border: Border.fromBorderSide(
+          BorderSide(width: 2, color: theme.onBackground.withAlpha(10)),
+        ),
       ),
       child: Material(
         type: MaterialType.transparency,
@@ -210,7 +227,13 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
                         ),
                         child: BuildImagePathWidget(
                           fileDetails: content.thumbnailDetails,
-                          fallbackWidget: Icon(IconHelper.getContentTypeIconData(content.type, true), size: 20),
+                          fallbackWidget: Icon(
+                            IconHelper.getContentTypeIconData(
+                              content.type,
+                              true,
+                            ),
+                            size: 20,
+                          ),
                         ),
                       ),
                       ConstantSizing.rowSpacingMedium,
@@ -225,7 +248,10 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
                                 child: CustomText(
                                   (content.type == ModuleContentType.link
                                           ? content.path.url
-                                          : content.title + p.extension(content.path.local ?? '')) ??
+                                          : content.title +
+                                                p.extension(
+                                                  content.path.local ?? '',
+                                                )) ??
                                       "Unknown",
                                   fontSize: 13,
                                   color: theme.onBackground,
@@ -249,10 +275,14 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
                                       Expanded(
                                         child: LinearProgressIndicator(
                                           minHeight: 8,
-                                          borderRadius: BorderRadius.circular(36),
+                                          borderRadius: BorderRadius.circular(
+                                            36,
+                                          ),
                                           value: asyncSnapshot.data,
-                                          backgroundColor: Colors.black.withAlpha(40),
-                                          color: theme.primaryColor, //.withAlpha(40)
+                                          backgroundColor: Colors.black
+                                              .withAlpha(40),
+                                          color: theme
+                                              .primaryColor, //.withAlpha(40)
                                         ),
                                       ),
                                       CustomText(
@@ -278,15 +308,22 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard> with 
                           ContentViewGateActions.redirectToViewer(ref, content);
                         },
                         contentPadding: EdgeInsets.all(8.0),
-                        child: Icon(Iconsax.arrow_circle_right, color: theme.onSurface),
+                        child: Icon(
+                          Iconsax.arrow_circle_right,
+                          color: theme.onSurface,
+                        ),
                       ),
                     ],
                   ),
 
-                  SizeTransition(sizeFactor: expandAnim, child: ConstantSizing.columnSpacingMedium),
+                  SizeTransition(
+                    sizeFactor: expandAnim,
+                    child: ConstantSizing.columnSpacingMedium,
+                  ),
 
                   AnimatedCourseMaterialListCardMenu(
-                    courseMaterialListCardActionModels: courseMaterialListCardActionModels,
+                    courseMaterialListCardActionModels:
+                        courseMaterialListCardActionModels,
                     expandAnim: expandAnim,
                   ),
                 ],
@@ -306,17 +343,20 @@ class AnimatedCourseMaterialListCardMenu extends ConsumerStatefulWidget {
     required this.expandAnim,
   });
 
-  final List<CourseMaterialListCardActionModel> courseMaterialListCardActionModels;
+  final List<CourseMaterialListCardActionModel>
+  courseMaterialListCardActionModels;
   final Animation<double> expandAnim;
 
   @override
-  ConsumerState<AnimatedCourseMaterialListCardMenu> createState() => _AnimatedCourseMaterialListCardMenuState();
+  ConsumerState<AnimatedCourseMaterialListCardMenu> createState() =>
+      _AnimatedCourseMaterialListCardMenuState();
 }
 
-class _AnimatedCourseMaterialListCardMenuState extends ConsumerState<AnimatedCourseMaterialListCardMenu> {
+class _AnimatedCourseMaterialListCardMenuState
+    extends ConsumerState<AnimatedCourseMaterialListCardMenu> {
   @override
   Widget build(BuildContext context) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return Builder(
       builder: (context) {
         final cam = widget.courseMaterialListCardActionModels;
@@ -345,7 +385,12 @@ class _AnimatedCourseMaterialListCardMenuState extends ConsumerState<AnimatedCou
             opacity: widget.expandAnim,
             child: Padding(
               padding: EdgeInsets.only(left: 66),
-              child: Wrap(runAlignment: WrapAlignment.start, spacing: 8.0, runSpacing: 8.0, children: genCardFuncs),
+              child: Wrap(
+                runAlignment: WrapAlignment.start,
+                spacing: 8.0,
+                runSpacing: 8.0,
+                children: genCardFuncs,
+              ),
             ),
           ),
         );
@@ -391,9 +436,17 @@ class CourseMaterialListCardActionModel {
   final IconData icon;
   final void Function() onTap;
 
-  CourseMaterialListCardActionModel({required this.label, required this.icon, required this.onTap});
+  CourseMaterialListCardActionModel({
+    required this.label,
+    required this.icon,
+    required this.onTap,
+  });
 
-  CourseMaterialListCardActionModel copyWith({String? label, IconData? icon, void Function()? onTap}) {
+  CourseMaterialListCardActionModel copyWith({
+    String? label,
+    IconData? icon,
+    void Function()? onTap,
+  }) {
     return CourseMaterialListCardActionModel(
       label: label ?? this.label,
       icon: icon ?? this.icon,

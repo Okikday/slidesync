@@ -14,25 +14,34 @@ import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class PdfDocNormalAppBar extends ConsumerWidget {
-  const PdfDocNormalAppBar({super.key, required this.contentId, required this.title, required this.onSearch});
+  const PdfDocNormalAppBar({
+    super.key,
+    required this.contentId,
+    required this.title,
+    required this.onSearch,
+  });
   final String contentId;
   final String title;
   final VoidCallback onSearch;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return Consumer(
       builder: (context, value, child) {
         final docViewP = PdfDocViewerProvider.searchState(contentId);
         return ValueListenableBuilder(
-          valueListenable: ref.watch(docViewP.select((s) => s.isSearchingNotifier)),
+          valueListenable: ref.watch(
+            docViewP.select((s) => s.isSearchingNotifier),
+          ),
           builder: (context, isSearching, child) {
             return AppBarContainerChild(
-                  theme.isDarkMode,
+                  theme.isDarkTheme,
                   title: title,
                   onBackButtonClicked: () async {
-                    GlobalNav.withContext((c) => (context.mounted ? context : c).pop());
+                    GlobalNav.withContext(
+                      (c) => (context.mounted ? context : c).pop(),
+                    );
                   },
                   trailing: Padding(
                     padding: const EdgeInsets.only(left: 8.0),
@@ -51,7 +60,9 @@ class PdfDocNormalAppBar extends ConsumerWidget {
                               title: "Go to last page",
                               iconData: HugeIconsSolid.playCircle,
                               onTap: () async {
-                                final p = ref.read(PdfDocViewerProvider.state(contentId));
+                                final p = ref.read(
+                                  PdfDocViewerProvider.state(contentId),
+                                );
                                 p.controller.jumpToPage(p.initialPage ?? 1);
                               },
                             ),
@@ -59,7 +70,10 @@ class PdfDocNormalAppBar extends ConsumerWidget {
                               title: "Share",
                               iconData: HugeIconsSolid.share01,
                               onTap: () async {
-                                ShareContentActions.shareFileContent(context, contentId);
+                                ShareContentActions.shareFileContent(
+                                  context,
+                                  contentId,
+                                );
                               },
                             ),
                             // PopupMenuAction(
@@ -70,12 +84,29 @@ class PdfDocNormalAppBar extends ConsumerWidget {
                             //   },
                             // ),
                             () {
-                              final isDarkMode = (ref.watch(PdfDocViewerProvider.ispdfViewerInDarkMode).value ?? false);
+                              final isDarkMode =
+                                  (ref
+                                      .watch(
+                                        PdfDocViewerProvider
+                                            .ispdfViewerInDarkMode,
+                                      )
+                                      .value ??
+                                  false);
                               return PopupMenuAction(
-                                title: isDarkMode ? "Normal mode(Light)" : "Inverted mode(Dark)",
-                                iconData: isDarkMode ? HugeIconsSolid.sun01 : HugeIconsSolid.moon,
+                                title: isDarkMode
+                                    ? "Normal mode(Light)"
+                                    : "Inverted mode(Dark)",
+                                iconData: isDarkMode
+                                    ? HugeIconsSolid.sun01
+                                    : HugeIconsSolid.moon,
                                 onTap: () {
-                                  ref.read(PdfDocViewerProvider.ispdfViewerInDarkMode.notifier).toggle();
+                                  ref
+                                      .read(
+                                        PdfDocViewerProvider
+                                            .ispdfViewerInDarkMode
+                                            .notifier,
+                                      )
+                                      .toggle();
                                 },
                               );
                             }(),
@@ -182,7 +213,12 @@ class PdfDocNormalAppBar extends ConsumerWidget {
                   ),
                 )
                 .animate(target: isSearching ? 0 : 1)
-                .slideY(begin: 1.0, end: 0.0, curve: CustomCurves.defaultIosSpring, duration: Durations.medium4)
+                .slideY(
+                  begin: 1.0,
+                  end: 0.0,
+                  curve: CustomCurves.defaultIosSpring,
+                  duration: Durations.medium4,
+                )
                 .fadeIn();
           },
         );

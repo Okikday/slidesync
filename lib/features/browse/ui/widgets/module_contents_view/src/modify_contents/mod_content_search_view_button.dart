@@ -15,7 +15,7 @@
 
 //   @override
 //   Widget build(BuildContext context, WidgetRef ref) {
-//     final theme = ref;
+//     final theme = Theme.of(context).custom;
 //     return SearchAnchor(
 //       viewBackgroundColor: theme.background,
 //       dividerColor: theme.supportingText.withAlpha(40),

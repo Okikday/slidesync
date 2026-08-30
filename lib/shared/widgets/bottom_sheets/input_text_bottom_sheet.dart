@@ -20,7 +20,8 @@ class InputTextBottomSheet extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _InputTextBottomSheetState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _InputTextBottomSheetState();
 }
 
 class _InputTextBottomSheetState extends ConsumerState<InputTextBottomSheet> {
@@ -30,10 +31,15 @@ class _InputTextBottomSheetState extends ConsumerState<InputTextBottomSheet> {
   void initState() {
     super.initState();
     focusNode = FocusNode();
-    textEditingController = widget.textEditingController ?? TextEditingController(text: widget.defaultText);
+    textEditingController =
+        widget.textEditingController ??
+        TextEditingController(text: widget.defaultText);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       focusNode.requestFocus();
-      textEditingController.selection = TextSelection(baseOffset: 0, extentOffset: textEditingController.text.length);
+      textEditingController.selection = TextSelection(
+        baseOffset: 0,
+        extentOffset: textEditingController.text.length,
+      );
     });
   }
 
@@ -46,18 +52,29 @@ class _InputTextBottomSheetState extends ConsumerState<InputTextBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return Stack(
       children: [
         Positioned.fill(child: GestureDetector(onTap: () => context.pop())),
         Align(
           alignment: Alignment.bottomCenter,
           child: Container(
-            margin: EdgeInsets.only(bottom: context.bottomPadding + context.viewInsets.bottom),
-            padding: EdgeInsets.only(left: 16.0, right: 16.0, top: 16.0, bottom: 4.0),
+            margin: EdgeInsets.only(
+              bottom: context.bottomPadding + context.viewInsets.bottom,
+            ),
+            padding: EdgeInsets.only(
+              left: 16.0,
+              right: 16.0,
+              top: 16.0,
+              bottom: 4.0,
+            ),
             decoration: BoxDecoration(
               color: theme.background,
-              border: Border(top: BorderSide(color: ref.supportingText.withValues(alpha: 0.1))),
+              border: Border(
+                top: BorderSide(
+                  color: theme.supportingText.withValues(alpha: 0.1),
+                ),
+              ),
             ),
 
             child: Column(
@@ -66,7 +83,12 @@ class _InputTextBottomSheetState extends ConsumerState<InputTextBottomSheet> {
               children: [
                 Padding(
                   padding: const EdgeInsets.only(left: 12.0),
-                  child: CustomText(widget.title, fontSize: 14, color: theme.primaryColor, fontWeight: FontWeight.bold),
+                  child: CustomText(
+                    widget.title,
+                    fontSize: 14,
+                    color: theme.primaryColor,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 ConstantSizing.columnSpacingSmall,
                 CustomTextfield(
@@ -79,11 +101,16 @@ class _InputTextBottomSheetState extends ConsumerState<InputTextBottomSheet> {
                   onSubmitted: widget.onSubmitted,
 
                   inputContentPadding: EdgeInsets.symmetric(horizontal: 12.0),
-                  inputTextStyle: TextStyle(fontSize: 15, color: theme.onBackground),
+                  inputTextStyle: TextStyle(
+                    fontSize: 15,
+                    color: theme.onBackground,
+                  ),
                   cursorColor: theme.primaryColor,
                   selectionHandleColor: theme.primaryColor,
                   backgroundColor: Colors.transparent,
-                  border: UnderlineInputBorder(borderSide: BorderSide(color: theme.primaryColor)),
+                  border: UnderlineInputBorder(
+                    borderSide: BorderSide(color: theme.primaryColor),
+                  ),
                 ),
                 ConstantSizing.columnSpacing(4.0),
               ],

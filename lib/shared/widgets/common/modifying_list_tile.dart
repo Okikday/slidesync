@@ -29,14 +29,14 @@ class ModifyingListTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final buttonPadding = 16.0;
     final btnDimension = 56.0;
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: ColoredBox(
         // color: context.isDarkMode ? Color.fromARGB(255, 52, 33, 79) : Color(0xFFDBF3FF),
-        color: theme.background.lightenColor(theme.isDarkMode ? 0.1 : 0.9),
+        color: theme.background.lightenColor(theme.isDarkTheme ? 0.1 : 0.9),
         child: Padding(
           padding: const EdgeInsets.all(4.0),
           child: CustomElevatedButton(
@@ -46,7 +46,9 @@ class ModifyingListTile extends ConsumerWidget {
 
             contentPadding: EdgeInsets.all(buttonPadding),
             // backgroundColor: context.isDarkMode ? Color.fromARGB(255, 46, 29, 70) : Color(0xFFDBF3FF).withValues(alpha: 0.89),
-            backgroundColor: theme.background.lightenColor(theme.isDarkMode ? .11 : .89),
+            backgroundColor: theme.background.lightenColor(
+              theme.isDarkTheme ? .11 : .89,
+            ),
             child: ConstrainedBox(
               constraints: BoxConstraints(maxHeight: 120),
               child: Row(
@@ -59,7 +61,10 @@ class ModifyingListTile extends ConsumerWidget {
                       color: theme.primary.withAlpha(50),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: SizedBox.square(dimension: btnDimension, child: leading),
+                    child: SizedBox.square(
+                      dimension: btnDimension,
+                      child: leading,
+                    ),
                   ),
 
                   Expanded(
@@ -72,11 +77,16 @@ class ModifyingListTile extends ConsumerWidget {
                               title,
                               fontWeight: FontWeight.bold,
                               fontSize: 13.5,
-                              color: ref.onBackground,
+                              color: theme.onBackground,
                               overflow: TextOverflow.fade,
                             ),
                         ConstantSizing.columnSpacing(4),
-                        subtitleWidget ?? CustomText(subtitle, fontSize: 12, color: ref.supportingText),
+                        subtitleWidget ??
+                            CustomText(
+                              subtitle,
+                              fontSize: 12,
+                              color: theme.supportingText,
+                            ),
                       ],
                     ),
                   ),

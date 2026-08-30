@@ -1,5 +1,6 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
@@ -15,10 +16,12 @@ class AddContentsBottomSheet extends ConsumerStatefulWidget {
   const AddContentsBottomSheet({super.key, required this.collection});
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _AddContentsBottomSheetState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _AddContentsBottomSheetState();
 }
 
-class _AddContentsBottomSheetState extends ConsumerState<AddContentsBottomSheet> {
+class _AddContentsBottomSheetState
+    extends ConsumerState<AddContentsBottomSheet> {
   late final FixedExtentScrollController fixedExtentScrollController;
 
   @override
@@ -43,7 +46,9 @@ class _AddContentsBottomSheetState extends ConsumerState<AddContentsBottomSheet>
       // canPop: canPop,
       child: Stack(
         children: [
-          Positioned.fill(child: GestureDetector(onTap: () => UiUtils.hideDialog(context))),
+          Positioned.fill(
+            child: GestureDetector(onTap: () => UiUtils.hideDialog(context)),
+          ),
           Positioned(
             left: 0,
             right: 0,
@@ -52,7 +57,8 @@ class _AddContentsBottomSheetState extends ConsumerState<AddContentsBottomSheet>
               alignment: Alignment.bottomCenter,
               child:
                   AddContentCardSection(
-                        fixedExtentScrollController: fixedExtentScrollController,
+                        fixedExtentScrollController:
+                            fixedExtentScrollController,
                         collection: widget.collection,
                       )
                       .animate()
@@ -76,7 +82,11 @@ class _AddContentsBottomSheetState extends ConsumerState<AddContentsBottomSheet>
 typedef _CourseContentTypeDetails = ({String title, IconData icon});
 
 class AddContentCardSection extends ConsumerWidget {
-  const AddContentCardSection({super.key, required this.fixedExtentScrollController, required this.collection});
+  const AddContentCardSection({
+    super.key,
+    required this.fixedExtentScrollController,
+    required this.collection,
+  });
 
   final FixedExtentScrollController fixedExtentScrollController;
   final Module collection;
@@ -85,22 +95,34 @@ class AddContentCardSection extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     const typesMap = <ModuleContentType, _CourseContentTypeDetails>{
       ModuleContentType.image: (title: "Image", icon: HugeIconsSolid.image01),
-      ModuleContentType.unknown: (title: "Auto", icon: HugeIconsSolid.magicWand03),
-      ModuleContentType.document: (title: "Document", icon: HugeIconsSolid.documentAttachment),
+      ModuleContentType.unknown: (
+        title: "Auto",
+        icon: HugeIconsSolid.magicWand03,
+      ),
+      ModuleContentType.document: (
+        title: "Document",
+        icon: HugeIconsSolid.documentAttachment,
+      ),
       ModuleContentType.link: (title: "Link", icon: HugeIconsSolid.link01),
     };
 
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return Container(
       width: context.deviceWidth,
       constraints: BoxConstraints(maxWidth: 400, maxHeight: 340),
-      margin: EdgeInsets.only(bottom: context.bottomPadding + context.viewInsets.bottom, left: 20, right: 20),
+      margin: EdgeInsets.only(
+        bottom: context.bottomPadding + context.viewInsets.bottom,
+        left: 20,
+        right: 20,
+      ),
       padding: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
         color: theme.background,
         borderRadius: BorderRadius.circular(30),
-        border: Border.fromBorderSide(BorderSide(color: theme.onBackground.withAlpha(20))),
+        border: Border.fromBorderSide(
+          BorderSide(color: theme.onBackground.withAlpha(20)),
+        ),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -132,8 +154,11 @@ class AddContentCardSection extends ConsumerWidget {
                           child: BuildPlainActionButton(
                             title: e.value.title,
                             icon: Icon(e.value.icon, color: theme.primaryColor),
-                            onTap: () =>
-                                AddContentsActions.onClickToAddContent(context, collection: collection, type: e.key),
+                            onTap: () => AddContentsActions.onClickToAddContent(
+                              context,
+                              collection: collection,
+                              type: e.key,
+                            ),
                           ),
                         ),
                       )

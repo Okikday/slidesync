@@ -17,6 +17,7 @@ class NoCollectionView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context).custom;
     return SliverToBoxAdapter(
       child: Center(
         child: ListView(
@@ -47,12 +48,12 @@ class NoCollectionView extends ConsumerWidget {
                   onClick: () {
                     if (onClickAddCollection != null) onClickAddCollection!();
                   },
-                  backgroundColor: ref.primaryColor,
+                  backgroundColor: theme.primaryColor,
                   borderRadius: 12,
                   pixelHeight: 44,
                   label: "Add a new collection",
                   textSize: 15,
-                  textColor: ref.onPrimary,
+                  textColor: theme.onPrimary,
                 ),
               ),
             ],

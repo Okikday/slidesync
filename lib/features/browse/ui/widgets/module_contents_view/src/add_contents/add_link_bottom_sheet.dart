@@ -56,6 +56,7 @@ class _AddLinkBottomSheetState extends ConsumerState<AddLinkBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).custom;
     return Stack(
       children: [
         InputTextBottomSheet(
@@ -84,7 +85,9 @@ class _AddLinkBottomSheetState extends ConsumerState<AddLinkBottomSheet> {
               (result) => GlobalNav.withContext(
                 (c) => UiUtils.showFlushBar(
                   context.mounted ? context : c,
-                  msg: result ? "Successfully added link" : "Unable to add link to collection",
+                  msg: result
+                      ? "Successfully added link"
+                      : "Unable to add link to collection",
                   vibe: result ? FlushbarVibe.success : FlushbarVibe.error,
                 ),
               ),
@@ -94,36 +97,47 @@ class _AddLinkBottomSheetState extends ConsumerState<AddLinkBottomSheet> {
         Positioned(
           left: 24,
           bottom: context.bottomPadding + 120,
-          child: Container(
-            width: 100,
-            height: 100,
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [BoxShadow(color: ref.onBackground.withValues(alpha: 0.2))],
-            ),
-            child: ValueListenableBuilder(
-              valueListenable: linkDetailsNotifier,
-              builder: (context, linkDetails, child) {
-                if (linkDetails == null || linkDetails.previewUrl == null) return const SizedBox();
-                return BuildImagePathWidget(
-                  fileDetails: FilePath(url: linkDetails.previewUrl),
-                  fit: BoxFit.cover,
-                  width: 100,
-                  height: 100,
-                );
-              },
-            ),
-          ).animate(onComplete: (controller) => controller.repeat()).shimmer(duration: Durations.extralong4),
+          child:
+              Container(
+                    width: 100,
+                    height: 100,
+                    clipBehavior: Clip.antiAlias,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: theme.onBackground.withValues(alpha: 0.2),
+                        ),
+                      ],
+                    ),
+                    child: ValueListenableBuilder(
+                      valueListenable: linkDetailsNotifier,
+                      builder: (context, linkDetails, child) {
+                        if (linkDetails == null ||
+                            linkDetails.previewUrl == null) {
+                          return const SizedBox();
+                        }
+                        return BuildImagePathWidget(
+                          fileDetails: FilePath(url: linkDetails.previewUrl),
+                          fit: BoxFit.cover,
+                          width: 100,
+                          height: 100,
+                        );
+                      },
+                    ),
+                  )
+                  .animate(onComplete: (controller) => controller.repeat())
+                  .shimmer(duration: Durations.extralong4),
         ),
         Positioned(
           right: 12,
           bottom: context.bottomPadding + 120,
           child: CustomElevatedButton(
             label: "Paste from Clipboard",
-            backgroundColor: ref.altBackgroundPrimary,
-            textColor: ref.primaryColor,
-            onClick: () => AddLinkActions.pasteFromClipboard(linkInputController),
+            backgroundColor: theme.altBackgroundPrimary,
+            textColor: theme.primaryColor,
+            onClick: () =>
+                AddLinkActions.pasteFromClipboard(linkInputController),
           ),
         ),
       ],

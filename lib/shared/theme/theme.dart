@@ -3,58 +3,16 @@ import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
-import 'package:slidesync/core/utils/result.dart';
-import 'package:slidesync/features/settings/providers/settings_provider.dart';
-import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
-import 'package:slidesync/shared/helpers/extensions/extensions.dart';
-import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/theme/src/app_theme.dart';
-import 'package:slidesync/shared/theme/src/built_in_themes.dart';
+import 'package:slidesync/shared/theme/src/app_theme_extension.dart';
 
 export 'package:slidesync/shared/theme/src/app_theme.dart';
 
-final appThemeProvider = NotifierProvider(
-  () => HiveImpliedNotifier<Map, UnifiedThemeModel>(
-    HiveDataKey.appTheme.name,
-    defaultUnifiedThemeModels[0].copyWith(currentBrightness: Brightness.dark),
-    transformer: (raw) => raw.toMap(),
-    builder: (data) =>
-        data == null ? null : UnifiedThemeModel.fromMap(Map.castFrom(data)),
-  ),
-);
-
-Future<void> notifyThemeOnBrightnessChanged(WidgetRef ref) async {
-  final context = ref.context;
-  await Result.tryRunAsync(() async {
-    final isAdaptiveBrightness = await SettingsProvider.settingsProvider
-        .selectAsync((s) => s.useSystemBrightness)
-        .read(ref);
-    if (isAdaptiveBrightness) {
-      GlobalNav.withContext(
-        (c) => appThemeProvider.expand(
-          ref,
-          (ref, s) => s
-              .act(ref)
-              .set(
-                appThemeProvider
-                    .read(ref)
-                    .copyWith(
-                      currentBrightness:
-                          (context.mounted ? context : c).platformBrightness,
-                    ),
-              ),
-        ),
-      );
-    }
-  });
-}
-
 ThemeData resolveThemeData(AppTheme theme) {
   TextTheme? googleTextTheme;
-  if (theme.fontFamily?.isNotEmpty == true) {
+  if (theme.fontFamily.isNotEmpty) {
     try {
-      googleTextTheme = GoogleFonts.getTextTheme(theme.fontFamily!);
+      googleTextTheme = GoogleFonts.getTextTheme(theme.fontFamily);
     } catch (e) {
       log(
         'resolveThemeData: Unable to load Google Font "${theme.fontFamily}": $e',
@@ -311,5 +269,6 @@ ThemeData resolveThemeData(AppTheme theme) {
     // Material 3 specific
     applyElevationOverlayColor: theme.brightness == Brightness.dark,
     visualDensity: VisualDensity.adaptivePlatformDensity,
+    extensions: [AppThemeExtension.fromAppTheme(theme)],
   );
 }

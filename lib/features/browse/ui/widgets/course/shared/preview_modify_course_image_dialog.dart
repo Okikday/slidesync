@@ -20,7 +20,9 @@ class PreviewModifyCourseImageDialog extends ConsumerWidget {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Positioned.fill(child: GestureDetector(onTap: () => CustomDialog.hide(context))),
+          Positioned.fill(
+            child: GestureDetector(onTap: () => CustomDialog.hide(context)),
+          ),
           Positioned(
             width: dimension > 300 ? 300 : dimension,
             height: dimension > 300 ? 300 : dimension,
@@ -28,7 +30,10 @@ class PreviewModifyCourseImageDialog extends ConsumerWidget {
               fileDetails: imagePath,
               fit: BoxFit.contain,
               width: dimension,
-              fallbackWidget: Icon(Iconsax.document, color: ref.primaryColor),
+              fallbackWidget: Icon(
+                Iconsax.document,
+                color: context.theme.custom.primaryColor,
+              ),
             ),
           ),
         ],

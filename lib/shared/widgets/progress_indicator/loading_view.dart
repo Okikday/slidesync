@@ -11,6 +11,7 @@ class LoadingView extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final customTheme = Theme.of(context).custom;
     return SingleChildScrollView(
       child: ConstrainedBox(
         constraints: BoxConstraints(maxHeight: 124),
@@ -18,9 +19,10 @@ class LoadingView extends ConsumerWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             ConstantSizing.columnSpacingMedium,
-            LoadingLogo(color: ref.primary, size: 64),
+            LoadingLogo(color: customTheme.primary, size: 64),
             if (msg.isNotEmpty) ConstantSizing.columnSpacingMedium,
-            if (msg.isNotEmpty) CustomText(msg, color: ref.onBackground),
+            if (msg.isNotEmpty)
+              CustomText(msg, color: customTheme.onBackground),
           ],
         ),
       ),

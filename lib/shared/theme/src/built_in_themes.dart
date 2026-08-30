@@ -3,8 +3,6 @@ import 'package:slidesync/shared/theme/src/app_theme.dart';
 
 List<UnifiedThemeModel> defaultUnifiedThemeModels = [
   const UnifiedThemeModel(
-    title: 'Default',
-    fontFamily: 'Raleway',
     theme: AppTheme(
       title: 'Default',
       fontFamily: 'Raleway',
@@ -55,8 +53,6 @@ List<UnifiedThemeModel> defaultUnifiedThemeModels = [
   ),
 
   const UnifiedThemeModel(
-    title: 'Monochrome',
-    fontFamily: 'IBM Plex Sans',
     theme: AppTheme(
       title: 'Monochrome',
       fontFamily: 'IBM Plex Sans',
@@ -107,8 +103,6 @@ List<UnifiedThemeModel> defaultUnifiedThemeModels = [
   ),
 
   const UnifiedThemeModel(
-    title: 'Ocean Cream',
-    fontFamily: 'DM Sans',
     theme: AppTheme(
       title: 'Ocean Cream',
       fontFamily: 'DM Sans',
@@ -159,8 +153,6 @@ List<UnifiedThemeModel> defaultUnifiedThemeModels = [
   ),
 
   const UnifiedThemeModel(
-    title: 'Twilight Academia',
-    fontFamily: 'Nunito',
     theme: AppTheme(
       title: 'Twilight Academia',
       fontFamily: 'Nunito',

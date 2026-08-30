@@ -48,7 +48,7 @@ class _ContentCardContextMenuState
     extends ConsumerState<ContentCardContextMenu> {
   @override
   Widget build(BuildContext context) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     var divider = Divider(color: theme.onSurface.withAlpha(20), height: 0);
 
@@ -515,7 +515,7 @@ class _ContentCardContextMenuState
     required IconData iconData,
     required void Function() onTap,
   }) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return Expanded(
       child: CustomElevatedButton(
         contentPadding: EdgeInsets.zero,

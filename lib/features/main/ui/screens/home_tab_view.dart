@@ -56,7 +56,7 @@ class _HomeTabViewState extends ConsumerState<HomeTabView>
     // Listen to events on isFocusModeProvider
     ref.listen(
       MainPod.me.link(ref).isFocusMode,
-      (a, b) => focusModeListener(a?.value, b.value!),
+      (a, b) => focusModeListener(a?.value, b.value ?? false),
     );
     // final tabIndex = MainPod.me.select((s) => s.tabIndex).watch(ref);
     return NestedScrollView(

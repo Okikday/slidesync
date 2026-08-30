@@ -24,14 +24,16 @@ class CustomShapeWaveFilledWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return Stack(
       children: [
         Positioned(
           width: waveSize.width,
           height: waveSize.height,
           child: Wave(
-            value: progress.isNaN || progress.isInfinite ? 0.0 : progress.clamp(0.0, 1.0),
+            value: progress.isNaN || progress.isInfinite
+                ? 0.0
+                : progress.clamp(0.0, 1.0),
             color: waveColor ?? theme.primaryColor.withAlpha(150),
             direction: Axis.vertical,
           ),
@@ -59,7 +61,12 @@ class Wave extends StatefulWidget {
   final Color color;
   final Axis direction;
 
-  const Wave({super.key, required this.value, required this.color, required this.direction});
+  const Wave({
+    super.key,
+    required this.value,
+    required this.color,
+    required this.direction,
+  });
 
   @override
   State<Wave> createState() => _WaveState();
@@ -72,7 +79,10 @@ class _WaveState extends State<Wave> with SingleTickerProviderStateMixin {
   void initState() {
     super.initState();
 
-    _animationController = AnimationController(vsync: this, duration: Duration(seconds: 2));
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(seconds: 2),
+    );
     _animationController.repeat();
   }
 
@@ -85,7 +95,10 @@ class _WaveState extends State<Wave> with SingleTickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+      animation: CurvedAnimation(
+        parent: _animationController,
+        curve: Curves.easeInOut,
+      ),
       child: ColoredBox(color: widget.color),
       builder: (context, child) => ClipPath(
         clipBehavior: Clip.hardEdge,
@@ -105,7 +118,11 @@ class _WaveClipper extends CustomClipper<Path> {
   final double? value;
   final Axis direction;
 
-  _WaveClipper({required this.animationValue, required this.value, required this.direction});
+  _WaveClipper({
+    required this.animationValue,
+    required this.value,
+    required this.direction,
+  });
 
   // Clamp value to [0.0, 1.0], defaulting to 0 if null/NaN
   double get _safeValue {
@@ -140,7 +157,10 @@ class _WaveClipper extends CustomClipper<Path> {
     final waveList = <Offset>[];
     for (int i = -2; i <= size.height.toInt() + 2; i++) {
       final waveHeight = (size.width / 20);
-      final dx = math.sin((animationValue * 360 - i) % 360 * (math.pi / 180)) * waveHeight + (size.width * _safeValue);
+      final dx =
+          math.sin((animationValue * 360 - i) % 360 * (math.pi / 180)) *
+              waveHeight +
+          (size.width * _safeValue);
       waveList.add(Offset(dx, i.toDouble()));
     }
     return waveList;
@@ -151,7 +171,8 @@ class _WaveClipper extends CustomClipper<Path> {
     for (int i = -2; i <= size.width.toInt() + 2; i++) {
       final waveHeight = (size.height / 20);
       final dy =
-          math.sin((animationValue * 360 - i) % 360 * (math.pi / 180)) * waveHeight +
+          math.sin((animationValue * 360 - i) % 360 * (math.pi / 180)) *
+              waveHeight +
           (size.height - (size.height * _safeValue));
       waveList.add(Offset(i.toDouble(), dy));
     }
@@ -159,5 +180,6 @@ class _WaveClipper extends CustomClipper<Path> {
   }
 
   @override
-  bool shouldReclip(_WaveClipper oldClipper) => animationValue != oldClipper.animationValue;
+  bool shouldReclip(_WaveClipper oldClipper) =>
+      animationValue != oldClipper.animationValue;
 }

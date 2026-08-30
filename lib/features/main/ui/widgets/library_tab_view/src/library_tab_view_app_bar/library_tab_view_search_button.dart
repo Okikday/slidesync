@@ -24,13 +24,14 @@ import 'package:slidesync/routes/routes.dart';
 final _searchTypeProvider = NotifierProvider.autoDispose(IntNotifier.new);
 const strCategories = ['Courses', 'Collections', 'Materials'];
 
-class LibraryTabViewSearchButton extends ConsumerWidget with CoursesViewActions {
+class LibraryTabViewSearchButton extends ConsumerWidget
+    with CoursesViewActions {
   final Color? backgroundColor;
   const LibraryTabViewSearchButton({super.key, this.backgroundColor});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     // final isDarkMode = ref.isDarkMode;
     final bottomPadding = context.bottomPadding;
     final bottomInsets = context.viewInsets.bottom;
@@ -46,7 +47,9 @@ class LibraryTabViewSearchButton extends ConsumerWidget with CoursesViewActions 
               actions: List.generate(strCategories.length, (index) {
                 return PopupMenuAction(
                   title: strCategories[index],
-                  iconData: selectedIndex == index ? Icons.check_rounded : Icons.check_box_outline_blank,
+                  iconData: selectedIndex == index
+                      ? Icons.check_rounded
+                      : Icons.check_box_outline_blank,
                   onTap: () {
                     ref.read(_searchTypeProvider.notifier).set(index);
                   },
@@ -62,7 +65,9 @@ class LibraryTabViewSearchButton extends ConsumerWidget with CoursesViewActions 
         },
         iconData: Iconsax.search_normal_copy,
         backgroundColor: backgroundColor,
-        shape: CircleBorder(side: BorderSide(color: theme.onBackground.withAlpha(10))),
+        shape: CircleBorder(
+          side: BorderSide(color: theme.onBackground.withAlpha(10)),
+        ),
       ),
       suggestionsBuilder: (context, controller) async {
         final searchType = ref.watch(_searchTypeProvider);
@@ -70,7 +75,11 @@ class LibraryTabViewSearchButton extends ConsumerWidget with CoursesViewActions 
         if (controller.text.isEmpty) {
           return [
             Padding(
-              padding: const EdgeInsets.only(top: kToolbarHeight, left: 16, right: 16),
+              padding: const EdgeInsets.only(
+                top: kToolbarHeight,
+                left: 16,
+                right: 16,
+              ),
               child: SizedBox(
                 child: Center(
                   child: Consumer(
@@ -87,9 +96,18 @@ class LibraryTabViewSearchButton extends ConsumerWidget with CoursesViewActions 
           ];
         }
         final List searchResults = switch (searchType) {
-          0 => await (CourseRepo.filter).titleContains(controller.text, caseSensitive: false).findAll(),
-          1 => await (ModuleRepo.filter).titleContains(controller.text, caseSensitive: false).findAll(),
-          2 => await (ModuleContentRepo.filter).titleContains(controller.text, caseSensitive: false).findAll(),
+          0 =>
+            await (CourseRepo.filter)
+                .titleContains(controller.text, caseSensitive: false)
+                .findAll(),
+          1 =>
+            await (ModuleRepo.filter)
+                .titleContains(controller.text, caseSensitive: false)
+                .findAll(),
+          2 =>
+            await (ModuleContentRepo.filter)
+                .titleContains(controller.text, caseSensitive: false)
+                .findAll(),
           _ => [],
         };
 
@@ -97,7 +115,10 @@ class LibraryTabViewSearchButton extends ConsumerWidget with CoursesViewActions 
           SmoothListView.builder(
             shrinkWrap: true,
             itemCount: searchResults.length,
-            padding: EdgeInsets.only(top: 12, bottom: bottomPadding + bottomInsets + kToolbarHeight + 12),
+            padding: EdgeInsets.only(
+              top: 12,
+              bottom: bottomPadding + bottomInsets + kToolbarHeight + 12,
+            ),
             itemBuilder: (context, i) {
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -120,11 +141,17 @@ class LibraryTabViewSearchButton extends ConsumerWidget with CoursesViewActions 
                           subtitleText: "${value.contents.length} items",
                           onTap: () {
                             context.pop();
-                            context.pushNamed(Routes.moduleContentsView.name, extra: value);
+                            context.pushNamed(
+                              Routes.moduleContentsView.name,
+                              extra: value,
+                            );
                           },
                         ),
                       ),
-                      2 => MaterialListCard(content: value as ModuleContent, showGoToCollection: true),
+                      2 => MaterialListCard(
+                        content: value as ModuleContent,
+                        showGoToCollection: true,
+                      ),
                       _ => const SizedBox(),
                     };
                   },

@@ -59,7 +59,7 @@ class _MoreOptionsDialogState extends ConsumerState<MoreOptionsDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final course = widget.course;
     // final mca = ModifyCollectionActions();
     return AppActionDialog(

@@ -18,7 +18,7 @@ class EditCourseInputDescriptionField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return SliverToBoxAdapter(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -50,7 +50,9 @@ class EditCourseInputDescriptionField extends ConsumerWidget {
               selectionHandleColor: theme.primaryColor,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.0),
-                borderSide: BorderSide(color: theme.altBackgroundPrimary.withAlpha(150)),
+                borderSide: BorderSide(
+                  color: theme.altBackgroundPrimary.withAlpha(150),
+                ),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8.0),
@@ -61,11 +63,17 @@ class EditCourseInputDescriptionField extends ConsumerWidget {
               counterText: null,
               autoDispose: false,
               alwaysShowSuffixIcon: true,
-              suffixIcon: SizedBox(width: 24, child: const SizedBox(child: Icon(Icons.expand))),
+              suffixIcon: SizedBox(
+                width: 24,
+                child: const SizedBox(child: Icon(Icons.expand)),
+              ),
               pixelWidth: context.deviceWidth,
               minLines: 3,
               maxLines: 6,
-              inputContentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              inputContentPadding: EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
               hint: "Enter new description",
               inputTextStyle: TextStyle(color: theme.onBackground),
             ),

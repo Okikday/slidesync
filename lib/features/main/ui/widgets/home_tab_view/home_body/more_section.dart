@@ -12,7 +12,7 @@ class MoreSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final theme = ref;
+    // final theme = Theme.of(context).custom;
     return SizedBox(
       height: 60,
       child: ListView(
@@ -71,7 +71,7 @@ class MoreSectionOption extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return ScaleClickWrapper(
       borderRadius: 36,
       onTap: onTap,

@@ -19,7 +19,7 @@ class RecentsSectionBody extends ConsumerWidget with RecentDialogActions {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final tabIndex = MainPod.me.select((s) => s.tabIndex).watch(ref);
 
     final asyncProgressTrackValues = HomePod.recentContentTracks(10).watch(ref);
@@ -94,6 +94,7 @@ class LoadingRecentsSection extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context).custom;
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -101,13 +102,13 @@ class LoadingRecentsSection extends ConsumerWidget {
         spacing: 12,
         children: [
           LoadingLogo(
-            color: ref.primary,
+            color: theme.primary,
             rotate: false,
             size: context.deviceWidth * 0.4,
           ),
           CustomText(
             "Looking around for your recents...Where could they be?",
-            color: ref.onBackground,
+            color: theme.onBackground,
             textAlign: TextAlign.center,
           ),
         ],
@@ -126,7 +127,7 @@ class RecommendedSection extends ConsumerStatefulWidget {
 class _RecommendedSectionState extends ConsumerState<RecommendedSection> {
   @override
   Widget build(BuildContext context) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: 220),
       child: Column(
@@ -143,16 +144,16 @@ class _RecommendedSectionState extends ConsumerState<RecommendedSection> {
               color: theme.onBackground,
             ),
           ),
-          Center(
-            child: SizedBox.square(
-              dimension: 100,
-              child: LottieBuilder.asset(
-                Assets.anims.roundedPlayingFace,
-                reverse: true,
-              ),
-            ),
-          ),
 
+          // Center(
+          //   child: SizedBox.square(
+          //     dimension: 100,
+          //     child: LottieBuilder.asset(
+          //       Assets.anims.roundedPlayingFace,
+          //       reverse: true,
+          //     ),
+          //   ),
+          // ),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),

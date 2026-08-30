@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:kickin_utilities/kickin_utilities.dart' as ku;
+import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
+import 'package:slidesync/features/auth/logic/usecases/auth_uc/user_data_functions.dart';
 import 'package:slidesync/features/main/pod/home/home_pod.dart';
 import 'package:slidesync/features/main/pod/main_pod.dart';
 import 'package:slidesync/features/main/ui/actions/main_view_actions.dart';
@@ -13,8 +16,40 @@ import 'package:slidesync/shared/widgets/decorations/back_soft_edge_blur.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
 import 'package:slidesync/shared/widgets/state/absorber.dart';
 import 'package:soft_edge_blur/soft_edge_blur.dart';
+import 'package:flutter/material.dart';
+import 'package:hugeicons_pro/hugeicons.dart';
+import 'package:slidesync/features/main/ui/screens/home_tab_view.dart';
+import 'package:slidesync/features/main/ui/screens/library_tab_view.dart';
+import 'package:slidesync/features/sync/ui/screens/sync_view.dart';
 
 import '../widgets/main_view/bottom_nav_bar/bottom_nav_bar.dart';
+
+typedef _TabDetails = ({
+  String label,
+  String tooltip,
+  IconData icon,
+  IconData activeIcon,
+});
+final mainViewTabOptions = <Widget, _TabDetails>{
+  const HomeTabView(): (
+    label: "Home",
+    tooltip: "Home",
+    icon: HugeIconsStroke.home01,
+    activeIcon: HugeIconsSolid.home01,
+  ),
+  const LibraryTabView(): (
+    label: "Library",
+    tooltip: "Library holding all your courses",
+    icon: HugeIconsStroke.folder01,
+    activeIcon: HugeIconsSolid.folder01,
+  ),
+  const SyncView(): (
+    label: "Sync",
+    tooltip: "Sync details",
+    icon: HugeIconsStroke.fileSync,
+    activeIcon: HugeIconsSolid.fileSync,
+  ),
+};
 
 class MainView extends ConsumerStatefulWidget {
   final int tabIndex;
@@ -25,51 +60,48 @@ class MainView extends ConsumerStatefulWidget {
 }
 
 class _MainViewState extends ConsumerState<MainView> with MainViewActions {
-  late final PageController pageController;
-  double _horizontalDragDistance = 0;
+  final PageController pageController = PageController(initialPage: 0);
 
   @override
   void initState() {
     super.initState();
-    pageController = PageController(initialPage: widget.tabIndex);
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => MainPod.me.act(ref).setTabIndex(widget.tabIndex),
-    );
+    pageController.addListener(_pageListener);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final tabIndex = MainPod.me.select((s) => s.tabIndex).read(ref);
+      if (pageController.hasClients &&
+          pageController.page?.round() != tabIndex) {
+        _animateToTab(tabIndex);
+      }
+    });
   }
+
+  void _pageListener() => WidgetsBinding.instance.addPostFrameCallback((_) {
+    final isScrolling = pageController.position.isScrollingNotifier.value;
+    final userScrolled = pageController.position.userScrollDirection != .idle;
+    if (isScrolling && !userScrolled) return;
+
+    final isHalfway =
+        pageController.page != null && pageController.page! % 1 != 0;
+    if (isHalfway && isScrolling && !userScrolled) return;
+
+    MainPod.me.not(ref).setTabIndex(pageController.page?.round() ?? 0);
+  });
 
   @override
   void dispose() {
+    pageController.removeListener(_pageListener);
     pageController.dispose();
     super.dispose();
   }
 
-  void _handleHorizontalDragUpdate(DragUpdateDetails details) {
-    if (DeviceUtils.isDesktop()) return;
-    _horizontalDragDistance += details.primaryDelta ?? 0;
-  }
-
-  void _handleHorizontalDragEnd(WidgetRef ref) {
-    if (DeviceUtils.isDesktop()) return;
-
-    if (_horizontalDragDistance <= -50) {
-      final len = mainViewTabOptions.keys.length;
-      final nextIndex = (MainPod.me.read(ref).tabIndex + 1).clamp(0, len - 1);
-      MainPod.me.act(ref).setTabIndex(nextIndex);
-    } else if (_horizontalDragDistance >= 50) {
-      final len = mainViewTabOptions.keys.length;
-      final previousIndex = (MainPod.me.read(ref).tabIndex - 1).clamp(
-        0,
-        len - 1,
-      );
-      MainPod.me.act(ref).setTabIndex(previousIndex);
-    }
-
-    _horizontalDragDistance = 0;
-  }
+  void _animateToTab(int index) => pageController.animateToPage(
+    index,
+    duration: NumDurationExtension(450).inMs,
+    curve: ku.KCurves.defaultIosSpring,
+  );
 
   @override
   Widget build(BuildContext context) {
-    final tabs = mainViewTabOptions.keys.toList();
     return Consumer(
       builder: (context, ref, body) {
         final isScrolled = HomePod.me.select((s) => s.isScrolled).watch(ref);
@@ -82,67 +114,77 @@ class _MainViewState extends ConsumerState<MainView> with MainViewActions {
           extendBody: true,
           drawer: const HomeDrawer(),
           floatingActionButton: const LibraryTabFAB(),
-          systemUiOverlayStyle: _deriveSystemUiOverlayStyle(ref, isScrolled),
+          systemUiOverlayStyle: _deriveSystemUiOverlayStyle(
+            context,
+            isScrolled,
+          ),
           body: body!,
-          footer: BackSoftEdgeBlur(
-            edgeType: EdgeType.bottomEdge,
-            height: 84 + context.bottomPadding,
-            child: BottomNavBar(
-              onTap: (index) => onTapBottomNavBarItem(
-                ref,
-                index: index,
-                pageController: pageController,
-              ),
-            ),
+          footer: BottomNavBar(
+            onTap: (index) {
+              if (MainPod.me.read(ref).tabIndex == index) {
+                // Tapping the active tab scrolls to top
+                PrimaryScrollController.of(context).animateTo(
+                  0,
+                  duration: NumDurationExtension(200).inMs,
+                  curve: Curves.easeInOutCubicEmphasized,
+                );
+                return;
+              }
+              _animateToTab(index);
+              MainPod.me.not(ref).setTabIndex(index);
+            },
           ),
         );
       },
-      // child: PageView(
-      //   controller: pageController,
-      //   physics: const NeverScrollableScrollPhysics(),
-      //   onPageChanged: (index) => MainPod.me.act(ref).setTabIndex(index),
-      //   children: tabs,
-      // ),
-      child: GestureDetector(
-        onHorizontalDragStart: (_) => _horizontalDragDistance = 0,
-        onHorizontalDragUpdate: _handleHorizontalDragUpdate,
-        onHorizontalDragEnd: (_) => _handleHorizontalDragEnd(ref),
-        child: AbsorberWatch(
-          listenable: MainPod.me.select((s) => s.tabIndex),
-          builder: (_, tabIndex, ref, _) {
-            // return IndexedStack(index: tabIndex, children: tabs);
-            return AnimatedSwitcher(
-              duration: 200.inMs,
-              switchInCurve: Curves.easeInOut,
-              switchOutCurve: Curves.easeInOut,
-              // swap
-              transitionBuilder: (child, animation) {
-                return FadeTransition(opacity: animation, child: child);
-              },
-              layoutBuilder: (currentChild, previousChildren) {
-                return Stack(
-                  fit: StackFit.expand,
-                  children: <Widget>[...previousChildren, ?currentChild],
-                );
-              },
-              child: KeyedSubtree(
-                key: ValueKey(tabIndex),
-                child: tabs[tabIndex],
-              ),
-            );
-          },
-        ),
+      child: PageView(
+        controller: pageController,
+        onPageChanged: (index) => MainPod.me.act(ref).setTabIndex(index),
+        children:
+            (UserDataFunctions.me.isUserSignedIn()
+                    ? mainViewTabOptions.keys
+                    : mainViewTabOptions.keys.take(2))
+                .toList(),
       ),
+      // child: GestureDetector(
+      //   onHorizontalDragStart: (_) => _horizontalDragDistance = 0,
+      //   onHorizontalDragUpdate: _handleHorizontalDragUpdate,
+      //   onHorizontalDragEnd: (_) => _handleHorizontalDragEnd(ref),
+      //   child: AbsorberWatch(
+      //     listenable: MainPod.me.select((s) => s.tabIndex),
+      //     builder: (_, tabIndex, ref, _) {
+      //       // return IndexedStack(index: tabIndex, children: tabs);
+      //       return AnimatedSwitcher(
+      //         duration: 200.inMs,
+      //         switchInCurve: Curves.easeInOut,
+      //         switchOutCurve: Curves.easeInOut,
+      //         // swap
+      //         transitionBuilder: (child, animation) {
+      //           return FadeTransition(opacity: animation, child: child);
+      //         },
+      //         layoutBuilder: (currentChild, previousChildren) {
+      //           return Stack(
+      //             fit: StackFit.expand,
+      //             children: <Widget>[...previousChildren, ?currentChild],
+      //           );
+      //         },
+      //         child: KeyedSubtree(
+      //           key: ValueKey(tabIndex),
+      //           child: tabs[tabIndex],
+      //         ),
+      //       );
+      //     },
+      //   ),
+      // ),
     );
   }
 }
 
 SystemUiOverlayStyle _deriveSystemUiOverlayStyle(
-  WidgetRef ref,
+  BuildContext context,
   bool isScrolled,
 ) {
-  final theme = ref;
-  final brightness = ref.brightness;
+  final theme = Theme.of(context).custom;
+  final brightness = theme.brightness;
   return SystemUiOverlayStyle(
     statusBarColor: isScrolled
         ? theme.secondaryColor.withAlpha(100)
@@ -150,6 +192,6 @@ SystemUiOverlayStyle _deriveSystemUiOverlayStyle(
     statusBarBrightness: brightness,
     statusBarIconBrightness: brightness,
     systemNavigationBarIconBrightness: brightness,
-    systemNavigationBarColor: ref.cardColor,
+    systemNavigationBarColor: theme.cardColor,
   );
 }

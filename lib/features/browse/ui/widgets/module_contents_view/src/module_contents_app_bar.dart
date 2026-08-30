@@ -20,11 +20,15 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 class ModuleContentsAppBar extends ConsumerWidget {
   final Module collection;
   final bool isFullScreen;
-  const ModuleContentsAppBar({super.key, required this.collection, required this.isFullScreen});
+  const ModuleContentsAppBar({
+    super.key,
+    required this.collection,
+    required this.isFullScreen,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final state = ModuleContentsProvider.state(collection.id);
 
     return Row(
@@ -34,15 +38,28 @@ class ModuleContentsAppBar extends ConsumerWidget {
           CustomElevatedButton(
             onClick: () async {
               context.pop();
-              Result.tryRun(() => context.pushNamed("${Routes.moduleContentsView.name}full", extra: collection));
+              Result.tryRun(
+                () => context.pushNamed(
+                  "${Routes.moduleContentsView.name}full",
+                  extra: collection,
+                ),
+              );
             },
             pixelWidth: 30,
             pixelHeight: 30,
-            overlayColor: ref.secondary.withAlpha(40),
+            overlayColor: theme.secondary.withAlpha(40),
             contentPadding: EdgeInsets.zero,
-            shape: CircleBorder(side: BorderSide(color: theme.altBackgroundSecondary.withValues(alpha: 0.4))),
+            shape: CircleBorder(
+              side: BorderSide(
+                color: theme.altBackgroundSecondary.withValues(alpha: 0.4),
+              ),
+            ),
             backgroundColor: Colors.transparent,
-            child: Icon(HugeIconsSolid.crop, color: theme.supportingText, size: 14),
+            child: Icon(
+              HugeIconsSolid.crop,
+              color: theme.supportingText,
+              size: 14,
+            ),
           ),
           ConstantSizing.rowSpacingSmall,
         ],
@@ -56,9 +73,17 @@ class ModuleContentsAppBar extends ConsumerWidget {
               buttonStyle: ButtonStyle(
                 padding: WidgetStateProperty.all(EdgeInsets.all(6)),
                 shape: WidgetStateProperty.all(
-                  CircleBorder(side: BorderSide(color: theme.altBackgroundSecondary.withValues(alpha: 0.4))),
+                  CircleBorder(
+                    side: BorderSide(
+                      color: theme.altBackgroundSecondary.withValues(
+                        alpha: 0.4,
+                      ),
+                    ),
+                  ),
                 ),
-                overlayColor: WidgetStateProperty.all(theme.secondary.withAlpha(40)),
+                overlayColor: WidgetStateProperty.all(
+                  theme.secondary.withAlpha(40),
+                ),
                 backgroundColor: WidgetStateProperty.all(Colors.transparent),
               ),
               icon: HugeIconsSolid.more01,
@@ -75,12 +100,19 @@ class ModuleContentsAppBar extends ConsumerWidget {
                     UiUtils.showCustomDialog(
                       context,
                       child: AppCustomizableDialog(
-                        backgroundColor: theme.background.withValues(alpha: 0.9),
+                        backgroundColor: theme.background.withValues(
+                          alpha: 0.9,
+                        ),
                         child: ConstrainedBox(
                           constraints: BoxConstraints(maxHeight: 250),
                           child: Column(
                             children: [
-                              CustomText("Sort by", color: theme.onSurface, fontSize: 24, fontWeight: FontWeight.bold),
+                              CustomText(
+                                "Sort by",
+                                color: theme.onSurface,
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
                               ConstantSizing.columnSpacingSmall,
                               Expanded(
                                 child: Consumer(
@@ -98,18 +130,33 @@ class ModuleContentsAppBar extends ConsumerWidget {
                                           backgroundColor: Colors.transparent,
                                           borderRadius: 0,
                                           onClick: () async {
-                                            final newValue = EntityOrdering.values[index];
-                                            state.act(ref).contentsPagination.act(ref).updateContentsOrdering(newValue);
-                                            if (context.mounted) UiUtils.hideDialog(context);
+                                            final newValue =
+                                                EntityOrdering.values[index];
+                                            state
+                                                .act(ref)
+                                                .contentsPagination
+                                                .act(ref)
+                                                .updateContentsOrdering(
+                                                  newValue,
+                                                );
+                                            if (context.mounted)
+                                              UiUtils.hideDialog(context);
                                           },
                                           child: Row(
                                             children: [
                                               RadioGroup<int>(
-                                                groupValue: contentOrdering.index,
+                                                groupValue:
+                                                    contentOrdering.index,
                                                 onChanged: (p) async {},
                                                 child: Radio(value: index),
                                               ),
-                                              Expanded(child: CustomText(EntityOrdering.values[index].label)),
+                                              Expanded(
+                                                child: CustomText(
+                                                  EntityOrdering
+                                                      .values[index]
+                                                      .label,
+                                                ),
+                                              ),
                                             ],
                                           ),
                                         );

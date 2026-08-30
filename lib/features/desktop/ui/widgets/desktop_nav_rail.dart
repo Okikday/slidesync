@@ -14,7 +14,7 @@
 
 //   @override
 //   Widget build(BuildContext context, WidgetRef ref) {
-//     final theme = ref.theme;
+//     final theme = Theme.of(context).custom;
 
 //     return NavigationRail(
 //       selectedIndex: selectedIndex,

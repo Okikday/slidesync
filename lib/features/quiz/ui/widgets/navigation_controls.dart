@@ -10,7 +10,7 @@ class NavigationControls extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     return ValueListenableBuilder<int>(
       valueListenable: state.currentQuestionIndexNotifier,
@@ -23,7 +23,11 @@ class NavigationControls extends ConsumerWidget {
           decoration: BoxDecoration(
             color: theme.surface,
             boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, offset: const Offset(0, -2)),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.05),
+                blurRadius: 10,
+                offset: const Offset(0, -2),
+              ),
             ],
           ),
           child: Row(
@@ -34,11 +38,16 @@ class NavigationControls extends ConsumerWidget {
                   style: OutlinedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 14),
                     side: BorderSide(color: theme.primary),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: Text(
                     'Previous',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontFamily: theme.fontFamily),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: theme.fontFamily,
+                    ),
                   ),
                 ),
               ),
@@ -50,11 +59,16 @@ class NavigationControls extends ConsumerWidget {
                     backgroundColor: theme.primary,
                     foregroundColor: theme.onPrimary,
                     padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   child: Text(
                     'Next',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontFamily: theme.fontFamily),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontFamily: theme.fontFamily,
+                    ),
                   ),
                 ),
               ),

@@ -13,8 +13,10 @@ class GroupedContentCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
-    final shadowSurfaceColor = theme.surface.lightenColor(0.5).withValues(alpha: 0.1);
+    final theme = Theme.of(context).custom;
+    final shadowSurfaceColor = theme.surface
+        .lightenColor(0.5)
+        .withValues(alpha: 0.1);
 
     return Padding(
       padding: const EdgeInsets.all(1.5),
@@ -49,7 +51,7 @@ class _GroupedStackedCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return Padding(
       padding: const EdgeInsets.only(left: 8, right: 8, top: 12),
       child: SingleChildScrollView(
@@ -67,10 +69,20 @@ class _GroupedStackedCard extends ConsumerWidget {
                         .withValues(alpha: 0.4 + (i * 0.3))
                         .lightenColor(context.isDarkMode ? 0.3 : 0.75),
                     borderRadius: BorderRadius.circular(20),
-                    border: i == 2 ? Border.all(color: theme.surface.lightenColor(0.5).withAlpha(40)) : null,
+                    border: i == 2
+                        ? Border.all(
+                            color: theme.surface
+                                .lightenColor(0.5)
+                                .withAlpha(40),
+                          )
+                        : null,
                   ),
                   padding: const EdgeInsets.fromLTRB(12, 8, 12, 40),
-                  margin: EdgeInsets.only(top: 4.5 * i, left: 4.0 * (2 - i), right: 4.0 * (2 - i)),
+                  margin: EdgeInsets.only(
+                    top: 4.5 * i,
+                    left: 4.0 * (2 - i),
+                    right: 4.0 * (2 - i),
+                  ),
                   // Only the front layer carries content.
                   child: i == 2 ? _ThumbnailStrip(group: group) : null,
                 ),
@@ -93,7 +105,7 @@ class _ThumbnailStrip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final thumbs = group.previewThumbnails;
     final count = thumbs.length.clamp(1, kGroupedThumbnailLimit);
 
@@ -111,7 +123,9 @@ class _ThumbnailStrip extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(8),
                   color: context.isDarkMode
                       ? theme.surface.withAlpha(100)
-                      : theme.adjustBgAndPrimaryWithLerpExtra.withValues(alpha: 0.5),
+                      : theme.adjustBgAndPrimaryWithLerpExtra.withValues(
+                          alpha: 0.5,
+                        ),
                   border: Border.all(color: theme.primary.withAlpha(20)),
                 ),
                 child: SizedBox.square(
@@ -121,7 +135,10 @@ class _ThumbnailStrip extends ConsumerWidget {
                     height: 40,
                     fileDetails: thumbs[i],
                     fallbackWidget: Icon(
-                      IconHelper.getContentTypeIconData(group.leadingType, false),
+                      IconHelper.getContentTypeIconData(
+                        group.leadingType,
+                        false,
+                      ),
                       size: 16,
                       color: theme.isDarkMode ? Colors.white : Colors.black,
                     ),
@@ -173,12 +190,17 @@ class _GroupedCardBottomStrip extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return ClipRRect(
       clipBehavior: Clip.antiAlias,
-      borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(22), bottomRight: Radius.circular(22)),
+      borderRadius: const BorderRadius.only(
+        bottomLeft: Radius.circular(22),
+        bottomRight: Radius.circular(22),
+      ),
       child: DecoratedBox(
-        decoration: BoxDecoration(color: theme.adjustBgAndPrimaryWithLerpExtra.withValues(alpha: 0.9)),
+        decoration: BoxDecoration(
+          color: theme.adjustBgAndPrimaryWithLerpExtra.withValues(alpha: 0.9),
+        ),
         child: SizedBox(
           height: 60,
           width: double.infinity,
@@ -230,18 +252,24 @@ class _SizeLabel extends StatelessWidget {
   const _SizeLabel({required this.totalBytes, required this.theme});
 
   final int totalBytes;
-  final WidgetRef theme;
+  final AppThemeExtension theme;
 
   @override
   Widget build(BuildContext context) {
-    return CustomText(_formatBytes(totalBytes), fontSize: 8, color: theme.supportingText);
+    return CustomText(
+      _formatBytes(totalBytes),
+      fontSize: 8,
+      color: theme.supportingText,
+    );
   }
 
   String _formatBytes(int bytes) {
     if (bytes <= 0) return '0 B';
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    if (bytes < 1024 * 1024 * 1024) return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    if (bytes < 1024 * 1024 * 1024) {
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    }
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
   }
 }

@@ -19,7 +19,7 @@ class AddCollectionActionButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return FloatingActionButton.extended(
       shape: isScrolled ? CircleBorder() : null,
       backgroundColor: theme.onPrimary,
@@ -38,8 +38,16 @@ class AddCollectionActionButton extends ConsumerWidget {
       extendedIconLabelSpacing: isScrolled ? 0 : null,
       label: isScrolled
           ? const SizedBox()
-          : CustomText("Add a collection", fontWeight: FontWeight.bold, color: theme.primaryColor),
-      icon: Icon(isScrolled ? HugeIconsSolid.arrowUp01 : Iconsax.add_circle, size: 32, color: theme.primaryColor),
+          : CustomText(
+              "Add a collection",
+              fontWeight: FontWeight.bold,
+              color: theme.primaryColor,
+            ),
+      icon: Icon(
+        isScrolled ? HugeIconsSolid.arrowUp01 : Iconsax.add_circle,
+        size: 32,
+        color: theme.primaryColor,
+      ),
     );
   }
 }

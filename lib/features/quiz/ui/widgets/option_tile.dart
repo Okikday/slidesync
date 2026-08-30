@@ -27,7 +27,7 @@ class OptionTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     Color borderColor = theme.onSurface.withValues(alpha: 0.2);
     Color backgroundColor = theme.surface;
     Color textColor = theme.onSurface;
@@ -73,7 +73,9 @@ class OptionTile extends ConsumerWidget {
                     ? Icon(
                         isMultiple ? Icons.check : Icons.circle,
                         size: 16,
-                        color: showCorrectness ? (isCorrect ? Colors.white : Colors.white) : theme.onPrimary,
+                        color: showCorrectness
+                            ? (isCorrect ? Colors.white : Colors.white)
+                            : theme.onPrimary,
                       )
                     : Text(
                         optionLetter,
@@ -93,14 +95,20 @@ class OptionTile extends ConsumerWidget {
                 config: MarkdownConfig(
                   configs: [
                     PConfig(
-                      textStyle: TextStyle(color: textColor, fontSize: 14, fontFamily: theme.fontFamily),
+                      textStyle: TextStyle(
+                        color: textColor,
+                        fontSize: 14,
+                        fontFamily: theme.fontFamily,
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
-            if (showCorrectness && isCorrect) Icon(Icons.check_circle, color: Colors.green, size: 20),
-            if (showCorrectness && isSelected && !isCorrect) Icon(Icons.cancel, color: Colors.red, size: 20),
+            if (showCorrectness && isCorrect)
+              Icon(Icons.check_circle, color: Colors.green, size: 20),
+            if (showCorrectness && isSelected && !isCorrect)
+              Icon(Icons.cancel, color: Colors.red, size: 20),
           ],
         ),
       ),

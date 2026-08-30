@@ -30,8 +30,12 @@ class EditCourseTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
-    final side = BorderSide(color: theme.background.lightenColor(theme.isDarkMode ? 0.2 : 0.7).withAlpha(20));
+    final theme = Theme.of(context).custom;
+    final side = BorderSide(
+      color: theme.background
+          .lightenColor(theme.isDarkMode ? 0.2 : 0.7)
+          .withAlpha(20),
+    );
     return InkWell(
       borderRadius: BorderRadius.circular(12),
       onTap: onTap,
@@ -50,18 +54,25 @@ class EditCourseTile extends ConsumerWidget {
             ClipOval(
               // borderRadius: BorderRadius.circular(13),
               child: ColoredBox(
-                color: theme.background.lightenColor(theme.isDarkMode ? 0.2 : 0.7).withAlpha(80),
+                color: theme.background
+                    .lightenColor(theme.isDarkMode ? 0.2 : 0.7)
+                    .withAlpha(80),
                 child: Padding(
                   padding: EdgeInsets.all(2),
                   child: ClipOval(
                     child: SizedBox.square(
                       dimension: 44,
-                      child: BuildImagePathWidget(fileDetails: FilePath(local: imgFilePath)),
+                      child: BuildImagePathWidget(
+                        fileDetails: FilePath(local: imgFilePath),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ).animate().fade(begin: selectionState.selected ? 1.0 : 0.5, end: selectionState.selected ? 0.5 : 1.0),
+            ).animate().fade(
+              begin: selectionState.selected ? 1.0 : 0.5,
+              end: selectionState.selected ? 0.5 : 1.0,
+            ),
             ConstantSizing.rowSpacingMedium,
             Expanded(
               child: Column(
@@ -74,13 +85,23 @@ class EditCourseTile extends ConsumerWidget {
                       pixelHeight: 24,
                       borderRadius: 12,
                       contentPadding: EdgeInsets.symmetric(horizontal: 8.0),
-                      child: CustomText(courseCode, fontSize: 12, fontWeight: FontWeight.bold, color: ref.secondary),
+                      child: CustomText(
+                        courseCode,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: theme.secondary,
+                      ),
                     ),
 
                   if (courseCode.isNotEmpty) ConstantSizing.columnSpacing(2),
 
                   Flexible(
-                    child: CustomText(courseName, fontSize: 14, fontWeight: FontWeight.bold, color: theme.onBackground),
+                    child: CustomText(
+                      courseName,
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: theme.onBackground,
+                    ),
                   ),
 
                   ConstantSizing.columnSpacing(2.0),
@@ -89,7 +110,11 @@ class EditCourseTile extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // CustomText("This is a Content."),
-                      CustomText("$categoriesCount items", fontSize: 12, color: theme.supportingText),
+                      CustomText(
+                        "$categoriesCount items",
+                        fontSize: 12,
+                        color: theme.supportingText,
+                      ),
                     ],
                   ),
                 ],

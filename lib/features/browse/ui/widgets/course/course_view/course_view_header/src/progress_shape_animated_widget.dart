@@ -24,10 +24,12 @@ class AnimatedShapeProgressWidget extends ConsumerWidget {
   final FilePath fileDetails;
   final void Function()? onClick;
 
-  final shape = materialShapes[math.Random().nextInt(materialShapes.length)].shape;
+  final shape =
+      materialShapes[math.Random().nextInt(materialShapes.length)].shape;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context).custom;
     return ScaleClickWrapper(
       scaleBetween: (1.0, 1.1),
       onTap: onClick,
@@ -39,15 +41,25 @@ class AnimatedShapeProgressWidget extends ConsumerWidget {
           size: Size.square(shapeSize),
           child: CustomShapeWaveFilledWidget(
             progress: progress,
-            waveColor: ref.primary.withAlpha(100),
+            waveColor: theme.primary.withAlpha(100),
             waveSize: Size.square(shapeSize),
-            textStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 13, color: ref.primaryColor),
+            textStyle: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+              color: theme.primaryColor,
+            ),
             backgroundWidget: ColoredBox(
-              color: ref.altBackgroundPrimary.withValues(alpha: .2),
-              child: BuildImagePathWidget(
-                fileDetails: fileDetails,
-                fallbackWidget: const SizedBox(),
-              ).animate().fade(begin: 1.0, end: 0.15, duration: Durations.extralong1, curve: CustomCurves.decelerate),
+              color: theme.altBackgroundPrimary.withValues(alpha: .2),
+              child:
+                  BuildImagePathWidget(
+                    fileDetails: fileDetails,
+                    fallbackWidget: const SizedBox(),
+                  ).animate().fade(
+                    begin: 1.0,
+                    end: 0.15,
+                    duration: Durations.extralong1,
+                    curve: CustomCurves.decelerate,
+                  ),
             ),
           ),
         ),

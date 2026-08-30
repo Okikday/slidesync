@@ -22,7 +22,7 @@ class LibraryTabViewAppBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     return SliverAppBar(
       pinned: true,
@@ -32,14 +32,14 @@ class LibraryTabViewAppBar extends ConsumerWidget {
       backgroundColor: Colors.transparent,
       // backgroundColor: theme.background.withAlpha(200),
       systemOverlayStyle: UiUtils.getSystemUiOverlayStyle(
-        ref.background,
-        ref.isDarkMode,
+        theme.background,
+        theme.isDarkMode,
       ),
       automaticallyImplyLeading: false,
       flexibleSpace: FlexibleSpaceBar(
         expandedTitleScale: 1.0,
         titlePadding: EdgeInsets.all(0),
-        background: _bgDecoration(ref),
+        background: _bgDecoration(theme),
         title: Stack(
           children: [
             ClipRRect(
@@ -147,8 +147,7 @@ class LibraryTabViewAppBar extends ConsumerWidget {
     );
   }
 
-  DecoratedBox _bgDecoration(WidgetRef ref) {
-    final theme = ref;
+  DecoratedBox _bgDecoration(AppThemeExtension theme) {
     return DecoratedBox(
       decoration: BoxDecoration(
         // color: theme.background.withAlpha(200),
@@ -157,7 +156,7 @@ class LibraryTabViewAppBar extends ConsumerWidget {
           image: Assets.images.zigZagWavy.asImageProvider,
           repeat: ImageRepeat.repeat,
           // fit: BoxFit.cover,
-          opacity: ref.isDarkMode ? 0.05 : 0.02,
+          opacity: theme.isDarkMode ? 0.05 : 0.02,
           colorFilter: ColorFilter.mode(theme.primaryColor, BlendMode.srcIn),
         ),
       ),

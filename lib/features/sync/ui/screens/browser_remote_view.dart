@@ -44,7 +44,7 @@ class _BrowseRemoteViewState extends ConsumerState<BrowseRemoteView> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     if (_isLoading) {
       return Center(child: CircularProgressIndicator());
@@ -57,9 +57,18 @@ class _BrowseRemoteViewState extends ConsumerState<BrowseRemoteView> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.cloud_off_outlined, size: 48, color: theme.primaryColor),
+              Icon(
+                Icons.cloud_off_outlined,
+                size: 48,
+                color: theme.primaryColor,
+              ),
               const SizedBox(height: 16),
-              CustomText('No Remote Courses', fontSize: 18, fontWeight: FontWeight.w600, color: theme.onBackground),
+              CustomText(
+                'No Remote Courses',
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: theme.onBackground,
+              ),
               const SizedBox(height: 8),
               CustomText(
                 'No courses found on remote',

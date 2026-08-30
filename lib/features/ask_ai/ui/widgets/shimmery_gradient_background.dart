@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -6,10 +5,12 @@ class ShimmeryGradientBackground extends ConsumerStatefulWidget {
   const ShimmeryGradientBackground({super.key});
 
   @override
-  ConsumerState<ShimmeryGradientBackground> createState() => _ShimmeryGradientBackgroundState();
+  ConsumerState<ShimmeryGradientBackground> createState() =>
+      _ShimmeryGradientBackgroundState();
 }
 
-class _ShimmeryGradientBackgroundState extends ConsumerState<ShimmeryGradientBackground>
+class _ShimmeryGradientBackgroundState
+    extends ConsumerState<ShimmeryGradientBackground>
     with SingleTickerProviderStateMixin {
   // late final AnimationController animationController;
   // late final Animation<double> gradientAnimation;
@@ -31,8 +32,9 @@ class _ShimmeryGradientBackgroundState extends ConsumerState<ShimmeryGradientBac
   Widget build(BuildContext context) {
     return ColoredBox(
       color: Colors.black.withAlpha(60),
-      child: SizedBox.expand());
-    // final theme = ref;
+      child: SizedBox.expand(),
+    );
+    // final theme = Theme.of(context).custom;
     // final firstColor = theme.primary.withValues(alpha: 0.4);
     // final midColor = Colors.transparent;
     // final secondColor = theme.secondary.withValues(alpha: 0.4);

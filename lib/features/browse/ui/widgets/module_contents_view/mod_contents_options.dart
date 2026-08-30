@@ -17,16 +17,32 @@ typedef _OptionStruct = ({
   void Function(BuildContext c, ModuleContentsNotifier n) onClick,
 });
 final _options = <_OptionStruct>[
-  (title: "Copy", iconData: HugeIconsSolid.copy01, onClick: (c, n) => ModContentsOptionsActions.onCopy(c, n)),
-  (title: "Move", iconData: HugeIconsSolid.move, onClick: (c, n) => ModContentsOptionsActions.onMove(c, n)),
+  (
+    title: "Copy",
+    iconData: HugeIconsSolid.copy01,
+    onClick: (c, n) => ModContentsOptionsActions.onCopy(c, n),
+  ),
+  (
+    title: "Move",
+    iconData: HugeIconsSolid.move,
+    onClick: (c, n) => ModContentsOptionsActions.onMove(c, n),
+  ),
 
-  (title: "Share", iconData: HugeIconsSolid.share01, onClick: (c, n) => ModContentsOptionsActions.onShare(c, n)),
+  (
+    title: "Share",
+    iconData: HugeIconsSolid.share01,
+    onClick: (c, n) => ModContentsOptionsActions.onShare(c, n),
+  ),
   (
     title: "Select All",
     iconData: HugeIconsSolid.select01,
     onClick: (c, n) => ModContentsOptionsActions.onSelectAll(c, n),
   ),
-  (title: "Delete", iconData: HugeIconsSolid.delete01, onClick: (c, n) => ModContentsOptionsActions.delete(c, n)),
+  (
+    title: "Delete",
+    iconData: HugeIconsSolid.delete01,
+    onClick: (c, n) => ModContentsOptionsActions.delete(c, n),
+  ),
 ];
 
 class ModContentsOptions extends ConsumerWidget {
@@ -38,7 +54,7 @@ class ModContentsOptions extends ConsumerWidget {
     final moduleContentsPro = ModuleContentsProvider.state(collection.id);
     ref.listen(moduleContentsPro, (p, n) => n);
 
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final plainBtnBgColor = theme.supportingText.withAlpha(20);
     final plainBtnTextColor = theme.onSurface;
     return PinnedHeaderSliver(
@@ -62,8 +78,12 @@ class ModContentsOptions extends ConsumerWidget {
                           padding: EdgeInsets.fromLTRB(4, 4, 4, 4),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(30),
-                            color: theme.background.lightenColor(context.isDarkMode ? 0.2 : 0.9),
-                            border: Border.all(color: theme.supportingText.withAlpha(20)),
+                            color: theme.background.lightenColor(
+                              context.isDarkMode ? 0.2 : 0.9,
+                            ),
+                            border: Border.all(
+                              color: theme.supportingText.withAlpha(20),
+                            ),
                           ),
                           child: ListView(
                             scrollDirection: Axis.horizontal,
@@ -72,17 +92,28 @@ class ModContentsOptions extends ConsumerWidget {
                               Padding(
                                 padding: EdgeInsets.only(right: 8),
                                 child: CustomElevatedButton(
-                                  backgroundColor: theme.onPrimary.withAlpha(200),
-                                  onClick: () => moduleContentsPro.act(ref).unselectAllContents(),
+                                  backgroundColor: theme.onPrimary.withAlpha(
+                                    200,
+                                  ),
+                                  onClick: () => moduleContentsPro
+                                      .act(ref)
+                                      .unselectAllContents(),
                                   shape: CircleBorder(),
-                                  child: Icon(HugeIconsStroke.cancelCircle, color: theme.primary),
+                                  child: Icon(
+                                    HugeIconsStroke.cancelCircle,
+                                    color: theme.primary,
+                                  ),
                                 ),
                               ),
                               Padding(
                                 padding: EdgeInsets.only(right: 8),
                                 child: CustomElevatedButton(
-                                  backgroundColor: theme.background.withAlpha(200),
-                                  onClick: () => moduleContentsPro.act(ref).unselectAllContents(),
+                                  backgroundColor: theme.background.withAlpha(
+                                    200,
+                                  ),
+                                  onClick: () => moduleContentsPro
+                                      .act(ref)
+                                      .unselectAllContents(),
                                   child: CustomText(
                                     "${proState.selectedContents.length} item${proState.selectedContents.length == 1 ? '' : 's'}",
                                     color: theme.onBackground.withAlpha(200),
@@ -95,10 +126,16 @@ class ModContentsOptions extends ConsumerWidget {
                                 (e) => Padding(
                                   padding: EdgeInsets.only(right: 8),
                                   child: _PlainOptionButton(
-                                    color: (bgColor: plainBtnBgColor, onBgColor: plainBtnTextColor),
+                                    color: (
+                                      bgColor: plainBtnBgColor,
+                                      onBgColor: plainBtnTextColor,
+                                    ),
                                     title: e.title,
                                     iconData: e.iconData,
-                                    onClick: () => e.onClick(context, moduleContentsPro.link(ref)),
+                                    onClick: () => e.onClick(
+                                      context,
+                                      moduleContentsPro.link(ref),
+                                    ),
                                   ),
                                 ),
                               )),
@@ -116,7 +153,12 @@ class ModContentsOptions extends ConsumerWidget {
 }
 
 class _PlainOptionButton extends StatelessWidget {
-  const _PlainOptionButton({required this.color, required this.title, required this.iconData, this.onClick});
+  const _PlainOptionButton({
+    required this.color,
+    required this.title,
+    required this.iconData,
+    this.onClick,
+  });
   final String title;
   final IconData iconData;
   final void Function()? onClick;

@@ -8,7 +8,7 @@ import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/features/main/pod/main_pod.dart';
 import 'package:slidesync/routes/app_router.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
-import 'package:slidesync/shared/theme/theme.dart';
+import 'package:slidesync/shared/theme/pod/theme_pod.dart';
 
 class App extends ConsumerStatefulWidget {
   const App({super.key});
@@ -24,9 +24,6 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
   @override
   void didChangePlatformBrightness() async {
     _enforceImmersiveMode();
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) async => notifyThemeOnBrightnessChanged(ref),
-    );
     super.didChangePlatformBrightness();
   }
 
@@ -55,10 +52,9 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
       ReceiveSharingHandler.instance.init();
     }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      SystemChrome.setEnabledSystemUIMode(.edgeToEdge);
-      await notifyThemeOnBrightnessChanged(ref);
-    });
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) async => SystemChrome.setEnabledSystemUIMode(.edgeToEdge),
+    );
   }
 
   @override
@@ -70,31 +66,33 @@ class _AppState extends ConsumerState<App> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.theme;
-
     // onFilesDropped: (filePaths) async {
     //     log("Dropped files: $filePaths");
     //     Future.delayed(const Duration(milliseconds: 500), () async {
     //       await _showSavingBottomSheet(filePaths);
     //     });
     //   },
+    final themeState = ref.watch(ThemePod.me);
     return MaterialApp.router(
       title: "SlideSync",
       routerConfig: AppRouter.mainRouter,
       debugShowCheckedModeBanner: false,
-      theme: resolveThemeData(theme),
+
+      theme: themeState.lightTheme,
+      darkTheme: themeState.darkTheme,
+      themeMode: themeState.themeMode,
     );
   }
 }
 
-// class DummyApp extends ConsumerWidget {
-//   const DummyApp({super.key});
+class DummyApp extends ConsumerWidget {
+  const DummyApp({super.key});
 
-//   @override
-//   Widget build(BuildContext context, WidgetRef ref) {
-//     return MaterialApp(home: Center(child: Text("This is a text"),));
-//   }
-// }
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return MaterialApp(home: Center(child: Text("This is a text")));
+  }
+}
 
 
 

@@ -13,16 +13,20 @@ class CreateCourseFAB extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return FloatingActionButton(
-      onPressed: () => context.pushNamed(Routes.createCourse.name, extra: pushToCreated),
+      onPressed: () =>
+          context.pushNamed(Routes.createCourse.name, extra: pushToCreated),
       tooltip: "Create course",
       shape: const CircleBorder(),
       backgroundColor: theme.primaryColor,
       child: ClipOval(
         child: ColoredBox(
           color: theme.primary,
-          child: SizedBox.square(dimension: 51, child: Icon(HugeIconsSolid.add01, color: theme.onPrimary)),
+          child: SizedBox.square(
+            dimension: 51,
+            child: Icon(HugeIconsSolid.add01, color: theme.onPrimary),
+          ),
         ),
       ),
     ).animate().scale(

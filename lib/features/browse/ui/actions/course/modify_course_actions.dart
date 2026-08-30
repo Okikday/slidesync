@@ -25,12 +25,17 @@ import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 
 class ModifyCourseActions {
   /// When the course image is clicked, it shows some options in a dialog the user can choose from.
-  static void onClickCourseImage(WidgetRef ref, {required String courseId}) async {
+  static void onClickCourseImage(
+    WidgetRef ref, {
+    required String courseId,
+  }) async {
     final course = await CourseRepo.getByUid(courseId);
     if (course == null) return;
     final hasImage = await File(course.localThumbnailPath).exists();
     final context = ref.context;
-    final iconColor = ref.supportingText;
+    // ignore: use_build_context_synchronously
+    final theme = Theme.of(context).custom;
+    final iconColor = theme.supportingText;
 
     Future<void> closeAndWaitThenExecute({required void Function() operation}) {
       if (context.mounted) CustomDialog.hide(context);
@@ -43,7 +48,10 @@ class ModifyCourseActions {
         iconData: hasImage ? HugeIconsSolid.view : HugeIconsSolid.imageAdd02,
         onTap: () async => closeAndWaitThenExecute(
           operation: () => hasImage
-              ? _previewImageActionRoute(courseImagePath: course.metadata.thumbnail ?? FilePath.empty())
+              ? _previewImageActionRoute(
+                  courseImagePath:
+                      course.metadata.thumbnail ?? FilePath.empty(),
+                )
               : _pickImageActionRoute(courseDbId: course.id),
         ),
       ),
@@ -51,18 +59,24 @@ class ModifyCourseActions {
         (
           title: "Change",
           iconData: HugeIconsSolid.imageUpload,
-          onTap: () async => closeAndWaitThenExecute(operation: () => _pickImageActionRoute(courseDbId: course.id)),
+          onTap: () async => closeAndWaitThenExecute(
+            operation: () => _pickImageActionRoute(courseDbId: course.id),
+          ),
         ),
         (
           title: "Remove image",
           iconData: HugeIconsSolid.delete02,
-          onTap: () async => closeAndWaitThenExecute(operation: () => _deleteCourseImageAction(courseDbId: course.id)),
+          onTap: () async => closeAndWaitThenExecute(
+            operation: () => _deleteCourseImageAction(courseDbId: course.id),
+          ),
         ),
       ],
     ];
 
     final dialogModels = options.map((e) {
-      final resolveColor = e.title.startsWith("Remove") ? Colors.red : iconColor;
+      final resolveColor = e.title.startsWith("Remove")
+          ? Colors.red
+          : iconColor;
       return AppActionDialogModel(
         title: e.title,
         titleColor: resolveColor,
@@ -87,7 +101,7 @@ class ModifyCourseActions {
                   hasImage ? course.title : "No image set",
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: ref.onBackground,
+                  color: theme.onBackground,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -109,7 +123,8 @@ class ModifyCourseActions {
         context,
         barrierColor: Colors.black.withAlpha(140),
         child: ConfirmDeletionDialog(
-          content: "Deleting this course will delete it's collections and contents",
+          content:
+              "Deleting this course will delete it's collections and contents",
           animateFrom: Alignment.topRight,
           onCancel: () {
             log("Cancelled");
@@ -119,12 +134,21 @@ class ModifyCourseActions {
             context.pop();
 
             GlobalNav.withContext(
-              (context) => UiUtils.showLoadingDialog(context, message: "Deleting course...", canPop: false),
+              (context) => UiUtils.showLoadingDialog(
+                context,
+                message: "Deleting course...",
+                canPop: false,
+              ),
             );
             await _onDeleteCourse(courseId: courseId);
             GlobalNav.withContext((context) => context.pop());
             GlobalNav.withContext((context) => context.pop());
-            GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "Successfully deleted course"));
+            GlobalNav.withContext(
+              (context) => UiUtils.showFlushBar(
+                context,
+                msg: "Successfully deleted course",
+              ),
+            );
           },
         ),
       );
@@ -132,8 +156,16 @@ class ModifyCourseActions {
   }
 
   /// This deletes the course image
-  static Future<void> _deleteCourseImageAction({required int courseDbId}) async {
-    GlobalNav.withContext((context) => CustomDialog.showLoadingDialog(context, msg: "Removing image", canPop: false));
+  static Future<void> _deleteCourseImageAction({
+    required int courseDbId,
+  }) async {
+    GlobalNav.withContext(
+      (context) => CustomDialog.showLoadingDialog(
+        context,
+        msg: "Removing image",
+        canPop: false,
+      ),
+    );
     final course = await CourseRepo.getCourseById(courseDbId);
     if (course == null) return;
     final thumbnailPath = course.metadata.thumbnail;
@@ -144,7 +176,9 @@ class ModifyCourseActions {
           lastModified: DateTime.now(),
         ),
       );
-      if (thumbnailPath.local != null) await FileUtils.deleteFileAtPath(thumbnailPath.local!);
+      if (thumbnailPath.local != null) {
+        await FileUtils.deleteFileAtPath(thumbnailPath.local!);
+      }
 
       GlobalNav.withContext((context) => CustomDialog.hide(context));
     }
@@ -153,7 +187,11 @@ class ModifyCourseActions {
   /// When user clicks Add Description.
   /// If there's a description, it shows the Description
   /// else, it brings the option to add description
-  void onClickAddDescription(BuildContext context, {required String courseId, required String currDescription}) {
+  void onClickAddDescription(
+    BuildContext context, {
+    required String courseId,
+    required String currDescription,
+  }) {
     if (currDescription.isNotEmpty) {
       CustomDialog.show(
         context,
@@ -162,9 +200,13 @@ class ModifyCourseActions {
         transitionType: TransitionType.fade,
         curve: CustomCurves.defaultIosSpring,
         barrierColor: Colors.black54,
-        child: CourseDescriptionDialog(
-          description: currDescription,
-        ).animate().scale(begin: Offset(0.5, 0.5), duration: Durations.extralong1, curve: CustomCurves.bouncySpring),
+        child: CourseDescriptionDialog(description: currDescription)
+            .animate()
+            .scale(
+              begin: Offset(0.5, 0.5),
+              duration: Durations.extralong1,
+              curve: CustomCurves.bouncySpring,
+            ),
       );
     } else {
       showModalBottomSheet(
@@ -174,7 +216,10 @@ class ModifyCourseActions {
         barrierColor: Colors.black54,
         isScrollControlled: true,
         builder: (context) {
-          return EditCourseBottomSheet(courseId: courseId, isEditingDescription: true);
+          return EditCourseBottomSheet(
+            courseId: courseId,
+            isEditingDescription: true,
+          );
         },
       );
     }
@@ -196,29 +241,39 @@ class ModifyCourseActions {
   }
 
   /// When the user Modifies image
-  static Future<Result> _modifyCourseImageAction({required int id, required File newImageFile}) async {
-    final Result<bool?> createCourseOutcome = await Result.tryRunAsync<bool>(() async {
-      Course? course = await CourseRepo.getCourseById(id);
-      if (course == null) return false;
+  static Future<Result> _modifyCourseImageAction({
+    required int id,
+    required File newImageFile,
+  }) async {
+    final Result<bool?> createCourseOutcome = await Result.tryRunAsync<bool>(
+      () async {
+        Course? course = await CourseRepo.getCourseById(id);
+        if (course == null) return false;
 
-      final oldPath = course.metadata.thumbnail?.local;
-      if (oldPath != null && oldPath.isNotEmpty) await FileUtils.deleteFileAtPath(oldPath);
-      final String? newPath = await ContentThumbnailCreator.createThumbnailForCourse(
-        newImageFile.path,
-        filename: course.uid,
-      );
-      if (newPath != null) {
-        final newCourse = course.copyWith(
-          metadata: course.metadata.copyWith(thumbnail: FilePath(local: newPath)),
-          lastModified: DateTime.now(),
-        );
-        log("New course thumbnail path: ${newCourse.metadata}");
-        await CourseRepo.addCourse(newCourse);
-        log("Successfully changed image ");
-        return true;
-      }
-      return false;
-    });
+        final oldPath = course.metadata.thumbnail?.local;
+        if (oldPath != null && oldPath.isNotEmpty) {
+          await FileUtils.deleteFileAtPath(oldPath);
+        }
+        final String? newPath =
+            await ContentThumbnailCreator.createThumbnailForCourse(
+              newImageFile.path,
+              filename: course.uid,
+            );
+        if (newPath != null) {
+          final newCourse = course.copyWith(
+            metadata: course.metadata.copyWith(
+              thumbnail: FilePath(local: newPath),
+            ),
+            lastModified: DateTime.now(),
+          );
+          log("New course thumbnail path: ${newCourse.metadata}");
+          await CourseRepo.addCourse(newCourse);
+          log("Successfully changed image ");
+          return true;
+        }
+        return false;
+      },
+    );
 
     if (createCourseOutcome.isSuccess) {
       return Result.success(createCourseOutcome.data!);
@@ -237,22 +292,33 @@ class ModifyCourseActions {
         canPop: false,
       ),
     );
-    final XFile? pickedImage = await ImagePicker().pickImage(source: ImageSource.gallery);
+    final XFile? pickedImage = await ImagePicker().pickImage(
+      source: ImageSource.gallery,
+    );
     if (pickedImage == null) {
       GlobalNav.withContext((context) {
         UiUtils.hideDialog(context);
-        UiUtils.showFlushBar(context, msg: "Oops, You didn't select an image!", vibe: FlushbarVibe.warning);
+        UiUtils.showFlushBar(
+          context,
+          msg: "Oops, You didn't select an image!",
+          vibe: FlushbarVibe.warning,
+        );
       });
       return;
     }
 
-    final result = await _modifyCourseImageAction(id: courseDbId, newImageFile: File(pickedImage.path));
+    final result = await _modifyCourseImageAction(
+      id: courseDbId,
+      newImageFile: File(pickedImage.path),
+    );
 
     GlobalNav.withContext((context) {
       UiUtils.hideDialog(context);
       UiUtils.showFlushBar(
         context,
-        msg: result.isSuccess ? "Successfully changed course Image!" : "Unable to change course Image!",
+        msg: result.isSuccess
+            ? "Successfully changed course Image!"
+            : "Unable to change course Image!",
         vibe: result.isSuccess ? FlushbarVibe.success : FlushbarVibe.error,
       );
     });

@@ -13,14 +13,21 @@ class AiChatTextfield extends ConsumerStatefulWidget {
   ConsumerState<AiChatTextfield> createState() => _AiChatTextfieldState();
 }
 
-class _AiChatTextfieldState extends ConsumerState<AiChatTextfield> with SingleTickerProviderStateMixin {
+class _AiChatTextfieldState extends ConsumerState<AiChatTextfield>
+    with SingleTickerProviderStateMixin {
   late final AnimationController animationController;
   late final Animation<double> gradientAnimation;
   @override
   void initState() {
     super.initState();
-    animationController = AnimationController(vsync: this, duration: const Duration(seconds: 2));
-    gradientAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(animationController);
+    animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
+    gradientAnimation = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(animationController);
     animationController.loop(reverse: true, count: 1);
   }
 
@@ -32,7 +39,7 @@ class _AiChatTextfieldState extends ConsumerState<AiChatTextfield> with SingleTi
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return AnimatedBuilder(
           animation: gradientAnimation,
           builder: (context, child) {
@@ -47,7 +54,9 @@ class _AiChatTextfieldState extends ConsumerState<AiChatTextfield> with SingleTi
                     theme.primary.withValues(alpha: gradientAnimation.value),
                     theme.secondary.withValues(alpha: gradientAnimation.value),
                   ],
-                  transform: GradientRotation(gradientAnimation.value * 2 * 3.14159),
+                  transform: GradientRotation(
+                    gradientAnimation.value * 2 * 3.14159,
+                  ),
                 ),
               ),
               child: child,
@@ -55,14 +64,21 @@ class _AiChatTextfieldState extends ConsumerState<AiChatTextfield> with SingleTi
           },
           child: CustomTextfield(
             autoDispose: false,
-            controller: ref.read(AskAiScreenProvider.notifier).aiFieldInputController,
+            controller: ref
+                .read(AskAiScreenProvider.notifier)
+                .aiFieldInputController,
             hint: "How may i assist you?",
             hintStyle: TextStyle(color: theme.onSurface.withValues(alpha: 0.6)),
             inputTextStyle: TextStyle(fontSize: 16, color: theme.onSurface),
             inputContentPadding: EdgeInsets.only(left: 12, bottom: 20, top: 20),
-            backgroundColor: theme.background.lightenColor(ref.isDarkMode ? 0.2 : 0.8),
+            backgroundColor: theme.background.lightenColor(
+              theme.isDarkMode ? 0.2 : 0.8,
+            ),
             maxLines: 4,
-            border: OutlineInputBorder(borderSide: BorderSide.none, borderRadius: BorderRadius.circular(40)),
+            border: OutlineInputBorder(
+              borderSide: BorderSide.none,
+              borderRadius: BorderRadius.circular(40),
+            ),
             alwaysShowSuffixIcon: true,
             onTapOutside: () {},
             suffixIcon: Padding(
@@ -70,13 +86,19 @@ class _AiChatTextfieldState extends ConsumerState<AiChatTextfield> with SingleTi
               child: CustomElevatedButton(
                 pixelHeight: 48,
                 onClick: () async {
-                  await ref.read(AskAiScreenProvider.notifier).sendCurrContentToAi();
+                  await ref
+                      .read(AskAiScreenProvider.notifier)
+                      .sendCurrContentToAi();
                   if (context.mounted) FocusScope.of(context).unfocus();
                 },
                 shape: CircleBorder(),
                 contentPadding: EdgeInsets.all(12.0),
                 backgroundColor: Colors.white.withAlpha(20),
-                child: Icon(Iconsax.send_2_copy, size: 22, color: context.isDarkMode ? Colors.white : Colors.white),
+                child: Icon(
+                  Iconsax.send_2_copy,
+                  size: 22,
+                  color: context.isDarkMode ? Colors.white : Colors.white,
+                ),
               ),
             ),
           ),
@@ -89,7 +111,12 @@ class _AiChatTextfieldState extends ConsumerState<AiChatTextfield> with SingleTi
           curve: CustomCurves.defaultIosSpring,
           duration: Durations.extralong2,
         )
-        .slideY(begin: -0.1, end: 0, curve: CustomCurves.defaultIosSpring, duration: Durations.extralong2)
+        .slideY(
+          begin: -0.1,
+          end: 0,
+          curve: CustomCurves.defaultIosSpring,
+          duration: Durations.extralong2,
+        )
         .fadeIn(duration: Durations.medium3);
   }
 }

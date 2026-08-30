@@ -28,7 +28,7 @@ class AppCustomizableDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final maxHeight = size?.height ?? context.deviceHeight * 0.7;
     final maxWidth = size?.width ?? 500.0;
     return Stack(
@@ -49,26 +49,41 @@ class AppCustomizableDialog extends ConsumerWidget {
         Positioned(
           left: 24,
           right: 24,
-          bottom: alignment == Alignment.bottomCenter ? context.padding.bottom + 16.0 : null,
-          top: alignment == Alignment.topCenter ? context.padding.top + 16.0 : null,
+          bottom: alignment == Alignment.bottomCenter
+              ? context.padding.bottom + 16.0
+              : null,
+          top: alignment == Alignment.topCenter
+              ? context.padding.top + 16.0
+              : null,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Flexible(
                 child: Container(
                   clipBehavior: Clip.hardEdge,
-                  constraints: BoxConstraints(maxHeight: maxHeight, maxWidth: maxWidth),
+                  constraints: BoxConstraints(
+                    maxHeight: maxHeight,
+                    maxWidth: maxWidth,
+                  ),
                   decoration: BoxDecoration(
-                    color: backgroundColor ?? theme.background.withValues(alpha: 0.9),
+                    color:
+                        backgroundColor ??
+                        theme.background.withValues(alpha: 0.9),
                     borderRadius: BorderRadius.circular(30.0),
                     border: Border.fromBorderSide(
-                      BorderSide(color: theme.supportingText.withAlpha(40), strokeAlign: BorderSide.strokeAlignOutside),
+                      BorderSide(
+                        color: theme.supportingText.withAlpha(40),
+                        strokeAlign: BorderSide.strokeAlignOutside,
+                      ),
                     ),
                   ),
                   padding: EdgeInsets.only(top: 16.0, bottom: 8.0),
                   child: blurSigma != null
                       ? BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: blurSigma!.dx, sigmaY: blurSigma!.dy),
+                          filter: ImageFilter.blur(
+                            sigmaX: blurSigma!.dx,
+                            sigmaY: blurSigma!.dy,
+                          ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,

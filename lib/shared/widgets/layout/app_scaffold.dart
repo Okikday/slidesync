@@ -62,9 +62,9 @@ class AppScaffold<T> extends ConsumerWidget {
     this.footerPadding,
   });
 
-  Widget _defaultAppBar(WidgetRef ref) => AppBarContainer(
+  Widget _defaultAppBar(bool isDarkTheme) => AppBarContainer(
     child: AppBarContainerChild(
-      ref.isDarkMode,
+      isDarkTheme,
       title: title,
       subtitle: subtitle,
       onBackButtonClicked: onBackButtonPressed,
@@ -73,12 +73,14 @@ class AppScaffold<T> extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final systemUiOverlayStyle = this.systemUiOverlayStyle == const SystemUiOverlayStyle()
+    final customTheme = Theme.of(context).custom;
+    final systemUiOverlayStyle =
+        this.systemUiOverlayStyle == const SystemUiOverlayStyle()
         ? null
         : (this.systemUiOverlayStyle ??
               UiUtils.getSystemUiOverlayStyle(
-                ref.scaffoldBackgroundColor,
-                ref.isDarkMode,
+                customTheme.scaffoldBackgroundColor,
+                customTheme.isDarkTheme,
                 statusBarColor: Colors.transparent,
               ));
     return PopScope<T>(
@@ -100,7 +102,7 @@ class AppScaffold<T> extends ConsumerWidget {
               applyDefaultAppBar: applyDefaultAppBar,
               appBarPadding: appBarPadding,
               footerPadding: footerPadding,
-              defaultAppBar: _defaultAppBar(ref),
+              defaultAppBar: _defaultAppBar(customTheme.isDarkTheme),
             )
           : AnnotatedRegion(
               value: systemUiOverlayStyle,
@@ -119,7 +121,7 @@ class AppScaffold<T> extends ConsumerWidget {
                 applyDefaultAppBar: applyDefaultAppBar,
                 appBarPadding: appBarPadding,
                 footerPadding: footerPadding,
-                defaultAppBar: _defaultAppBar(ref),
+                defaultAppBar: _defaultAppBar(customTheme.isDarkTheme),
               ),
             ),
     );
@@ -196,7 +198,8 @@ class _AppScaffoldBody extends StatelessWidget {
                   footer: footer,
                   extendBody: extendBody,
                 ),
-                if (footer != null) Positioned(bottom: 0, left: 0, right: 0, child: footer!),
+                if (footer != null)
+                  Positioned(bottom: 0, left: 0, right: 0, child: footer!),
               ],
             )
           : _NotExtendBodyBehindAppBar(
@@ -259,7 +262,9 @@ class _ExtendBodyBehindAppBar extends StatelessWidget {
             left: 0,
             right: 0,
             child: Padding(
-              padding: appBarPadding != null ? appBarPadding!(defaultPadding) : defaultPadding,
+              padding: appBarPadding != null
+                  ? appBarPadding!(defaultPadding)
+                  : defaultPadding,
               child: appBar ?? defaultAppBar,
             ),
           ),
@@ -268,7 +273,10 @@ class _ExtendBodyBehindAppBar extends StatelessWidget {
             bottom: 0,
             left: 0,
             right: 0,
-            child: Padding(padding: footerPadding ?? defaultPadding, child: footer!),
+            child: Padding(
+              padding: footerPadding ?? defaultPadding,
+              child: footer!,
+            ),
           ),
       ],
     );
@@ -305,7 +313,9 @@ class _NotExtendBodyBehindAppBar extends StatelessWidget {
       children: [
         if (applyDefaultAppBar || appBar != null)
           Padding(
-            padding: appBarPadding != null ? appBarPadding!(defaultPadding) : defaultPadding,
+            padding: appBarPadding != null
+                ? appBarPadding!(defaultPadding)
+                : defaultPadding,
             child: appBar ?? defaultAppBar,
           ),
         Flexible(

@@ -28,7 +28,7 @@ class BuildButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     return ClipOval(
       child: BackdropFilter(
@@ -37,14 +37,22 @@ class BuildButton extends ConsumerWidget {
           contentPadding: EdgeInsets.zero,
           pixelHeight: size?.height ?? (DeviceUtils.isDesktop() ? 44 : 48),
           pixelWidth: size?.width ?? (DeviceUtils.isDesktop() ? 44 : 48),
-          backgroundColor: backgroundColor ?? theme.altBackgroundPrimary.withValues(alpha: 0.8),
+          backgroundColor:
+              backgroundColor ??
+              theme.altBackgroundPrimary.withValues(alpha: 0.8),
           shape:
               shape ??
               CircleBorder(
                 side: BorderSide(color: theme.onSurface.withValues(alpha: .1)),
               ), //backgroundColor?.withValues(alpha: 0.8) ??
           onClick: onTap,
-          child: child ?? Icon(iconData, size: 20, color: iconColor ?? theme.supportingText),
+          child:
+              child ??
+              Icon(
+                iconData,
+                size: 20,
+                color: iconColor ?? theme.supportingText,
+              ),
         ),
       ),
     );

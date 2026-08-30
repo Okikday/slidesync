@@ -48,13 +48,17 @@ class _LibrarySearchViewState extends ConsumerState<LibrarySearchView> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return AppScaffold(
       title: "",
       extendBody: true,
       extendBodyBehindAppBar: true,
       appBarPadding: (apply) => EdgeInsets.zero.copyWith(top: apply.top),
-      appBar: BackSoftEdgeBlur(height: 40, applyHeightToSize: true, child: SizedBox()),
+      appBar: BackSoftEdgeBlur(
+        height: 40,
+        applyHeightToSize: true,
+        child: SizedBox(),
+      ),
       body: TopPadding(
         child: BottomPadding(
           withHeight: 8,
@@ -62,7 +66,12 @@ class _LibrarySearchViewState extends ConsumerState<LibrarySearchView> {
             valueListenable: futureContentsNotifier,
             builder: (context, futureContents, child) {
               return futureContents == null
-                  ? Center(child: CustomText("Input a title to search", color: theme.onBackground))
+                  ? Center(
+                      child: CustomText(
+                        "Input a title to search",
+                        color: theme.onBackground,
+                      ),
+                    )
                   : FutureBuilder(
                       future: futureContents,
                       builder: (context, snapshot) {
@@ -74,12 +83,17 @@ class _LibrarySearchViewState extends ConsumerState<LibrarySearchView> {
                             itemBuilder: (context, index) {
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 8.0),
-                                child: MaterialListCard(content: contents[index], showGoToCollection: true),
+                                child: MaterialListCard(
+                                  content: contents[index],
+                                  showGoToCollection: true,
+                                ),
                               );
                             },
                           );
-                        } else if (snapshot.connectionState == ConnectionState.waiting ||
-                            snapshot.connectionState == ConnectionState.active) {
+                        } else if (snapshot.connectionState ==
+                                ConnectionState.waiting ||
+                            snapshot.connectionState ==
+                                ConnectionState.active) {
                           return AppCircularLoadingIndicator(dimension: 30);
                         } else {
                           return Center(
@@ -113,21 +127,35 @@ class _LibrarySearchViewState extends ConsumerState<LibrarySearchView> {
                       controller: searchTextController,
                       // autoDispose: false,
                       fillColor: theme.background.withValues(alpha: 0.9),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
                       style: TextStyle(color: theme.onBackground, fontSize: 15),
                       borderRadius: 40,
-                      borderSide: BorderSide(color: theme.onBackground.withValues(alpha: 0.15)),
+                      borderSide: BorderSide(
+                        color: theme.onBackground.withValues(alpha: 0.15),
+                      ),
 
                       hintText: "Search materials",
                       onChanged: (text) {
                         if (text.trim().isEmpty) {
                           if (futureContentsNotifier.value != null) {
-                            futureContentsNotifier.value = ModuleContentRepo.getAll();
+                            futureContentsNotifier.value =
+                                ModuleContentRepo.getAll();
                           }
                         } else {
                           futureContentsNotifier.value =
-                              (filter as QueryBuilder<ModuleContent, ModuleContent, QFilterCondition>)
-                                  .titleContains(searchTextController.text, caseSensitive: false)
+                              (filter
+                                      as QueryBuilder<
+                                        ModuleContent,
+                                        ModuleContent,
+                                        QFilterCondition
+                                      >)
+                                  .titleContains(
+                                    searchTextController.text,
+                                    caseSensitive: false,
+                                  )
                                   .findAll();
                         }
                       },

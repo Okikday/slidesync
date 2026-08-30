@@ -10,7 +10,7 @@ class CourseViewFAB extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return FloatingActionButton(
       backgroundColor: theme.primary,
       shape: CircleBorder(),

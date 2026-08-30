@@ -9,11 +9,15 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 class PdfToolsMenu extends ConsumerWidget {
   final bool isVisible;
   final String contentId;
-  const PdfToolsMenu({super.key, required this.isVisible, required this.contentId});
+  const PdfToolsMenu({
+    super.key,
+    required this.isVisible,
+    required this.contentId,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return ScaleClickWrapper(
       borderRadius: 100,
       onTap: () {

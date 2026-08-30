@@ -915,7 +915,7 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = ref.theme;
+    final theme = Theme.of(context).custom;
     final isDarkMode = theme.isDarkTheme;
 
     return AppScaffold(
@@ -1138,7 +1138,7 @@ class _ExportScreenState extends ConsumerState<_ExportScreen> {
   }
 
   Widget _buildStatChip(
-    AppTheme theme,
+    AppThemeExtension theme,
     IconData icon,
     String value,
     String label,
@@ -1233,7 +1233,7 @@ class _ExportProgressDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref.theme;
+    final theme = Theme.of(context).custom;
 
     return Dialog(
       backgroundColor: theme.surface,

@@ -12,10 +12,23 @@ class AppActionDialogModel {
   final Widget icon;
   final void Function()? onTap;
 
-  AppActionDialogModel({required this.title, this.titleColor, required this.icon, required this.onTap});
+  AppActionDialogModel({
+    required this.title,
+    this.titleColor,
+    required this.icon,
+    required this.onTap,
+  });
 
-  AppActionDialogModel copyWith({String? title, Widget? icon, void Function()? onTap}) {
-    return AppActionDialogModel(title: title ?? this.title, icon: icon ?? this.icon, onTap: onTap ?? this.onTap);
+  AppActionDialogModel copyWith({
+    String? title,
+    Widget? icon,
+    void Function()? onTap,
+  }) {
+    return AppActionDialogModel(
+      title: title ?? this.title,
+      icon: icon ?? this.icon,
+      onTap: onTap ?? this.onTap,
+    );
   }
 }
 
@@ -40,8 +53,11 @@ class AppActionDialog extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
-    final divider = Divider(color: theme.supportingText.withAlpha(60), height: 0);
+    final theme = Theme.of(context).custom;
+    final divider = Divider(
+      color: theme.supportingText.withAlpha(60),
+      height: 0,
+    );
     return AppCustomizableDialog(
       blurSigma: blurSigma,
       backgroundColor: backgroundColor,
@@ -143,7 +159,10 @@ class BuildPlainActionButton extends ConsumerWidget {
     this.onTap,
     this.backgroundColor,
     this.textStyle,
-    this.contentPadding = const EdgeInsets.symmetric(horizontal: 12.0, vertical: 12.0),
+    this.contentPadding = const EdgeInsets.symmetric(
+      horizontal: 12.0,
+      vertical: 12.0,
+    ),
   });
 
   @override
@@ -161,7 +180,7 @@ class BuildPlainActionButton extends ConsumerWidget {
           Expanded(
             child: CustomText(
               title,
-              color: titleColor ?? ref.onBackground,
+              color: titleColor ?? context.theme.custom.onBackground,
               style: textStyle,
               fontWeight: FontWeight.w500,
             ),

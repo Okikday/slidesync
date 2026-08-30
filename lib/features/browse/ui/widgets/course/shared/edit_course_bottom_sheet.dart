@@ -17,16 +17,24 @@ import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 class EditCourseBottomSheet extends ConsumerStatefulWidget {
   final bool isEditingDescription;
   final String courseId;
-  const EditCourseBottomSheet({super.key, required this.courseId, this.isEditingDescription = false});
+  const EditCourseBottomSheet({
+    super.key,
+    required this.courseId,
+    this.isEditingDescription = false,
+  });
 
   @override
   ConsumerState createState() => _EditCourseBottomSheetState();
 }
 
 class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
-  final courseNameTextController = TextEditingController(text: defaultCourse.title);
+  final courseNameTextController = TextEditingController(
+    text: defaultCourse.title,
+  );
   final courseCodeController = TextEditingController();
-  final descriptionTextController = TextEditingController(text: defaultCourse.metadata.courseCode);
+  final descriptionTextController = TextEditingController(
+    text: defaultCourse.metadata.courseCode,
+  );
   final descriptionFocusNode = FocusNode();
   final canExitNotifier = ValueNotifier<bool>(false);
   final isCourseCodeFieldVisible = ValueNotifier<bool>(false);
@@ -39,13 +47,23 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
   }
 
   void initPostFrame() async {
-    if (mounted) UiUtils.showLoadingDialog(context, canPop: false, message: "Loading course details...");
+    if (mounted) {
+      UiUtils.showLoadingDialog(
+        context,
+        canPop: false,
+        message: "Loading course details...",
+      );
+    }
     try {
-      final readCourse = await ref.read(CourseProviders.watchCourseProvider(widget.courseId).future);
+      final readCourse = await ref.read(
+        CourseProviders.watchCourseProvider(widget.courseId).future,
+      );
 
       courseNameTextController.text = readCourse.title;
       final courseCode = readCourse.metadata.courseCode;
-      if (courseCode != null && courseCode.isNotEmpty) courseCodeController.text = courseCode;
+      if (courseCode != null && courseCode.isNotEmpty) {
+        courseCodeController.text = courseCode;
+      }
 
       if (readCourse.description.isNotEmpty) {
         descriptionTextController.text = readCourse.description;
@@ -74,7 +92,10 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
 
   @override
   Widget build(BuildContext context) {
-    final Course course = ref.watch(CourseProviders.watchCourseProvider(widget.courseId)).value ?? defaultCourse;
+    final theme = Theme.of(context).custom;
+    final Course course =
+        ref.watch(CourseProviders.watchCourseProvider(widget.courseId)).value ??
+        defaultCourse;
 
     final double keyboardInsets = double.parse(
       (context.viewInsets.bottom / context.deviceHeight).toStringAsFixed(2),
@@ -85,7 +106,9 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
       builder: (context, canExit, child) {
         return PopScope(
           canPop: canExit,
-          onPopInvokedWithResult: (_, _) => EditCourseActions.of(ref).onPopInvokedWithResult(context, canExitNotifier),
+          onPopInvokedWithResult: (_, _) => EditCourseActions.of(
+            ref,
+          ).onPopInvokedWithResult(context, canExitNotifier),
 
           child: child!,
         );
@@ -100,13 +123,19 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
           snapSizes: [],
           builder: (context, scrollController) {
             return ClipRSuperellipse(
-              borderRadius: BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
               child: ColoredBox(
                 color: context.scaffoldBackgroundColor,
                 child: Stack(
                   children: [
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 24),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 24,
+                      ),
                       child: SmoothCustomScrollView(
                         slivers: [
                           PinnedHeaderSliver(
@@ -115,13 +144,15 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
                               child: CustomText(
                                 "Edit course",
                                 fontSize: 18,
-                                color: ref.primaryColor,
+                                color: theme.primaryColor,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                           ),
 
-                          SliverToBoxAdapter(child: ConstantSizing.columnSpacingMedium),
+                          SliverToBoxAdapter(
+                            child: ConstantSizing.columnSpacingMedium,
+                          ),
 
                           SliverToBoxAdapter(
                             child: Column(
@@ -129,26 +160,38 @@ class _EditCourseBottomSheetState extends ConsumerState<EditCourseBottomSheet> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               spacing: 6.0,
                               children: [
-                                CustomText("Title", fontSize: 13, color: ref.onBackground),
+                                CustomText(
+                                  "Title",
+                                  fontSize: 13,
+                                  color: theme.onBackground,
+                                ),
                                 InputCourseTitleField(
-                                  courseNameController: courseNameTextController,
-                                  isCourseCodeFieldVisible: isCourseCodeFieldVisible,
+                                  courseNameController:
+                                      courseNameTextController,
+                                  isCourseCodeFieldVisible:
+                                      isCourseCodeFieldVisible,
                                 ),
 
                                 InputCourseCodeField(
                                   courseCodeController: courseCodeController,
-                                  isCourseCodeFieldVisible: isCourseCodeFieldVisible,
+                                  isCourseCodeFieldVisible:
+                                      isCourseCodeFieldVisible,
                                 ),
                               ],
                             ),
                           ),
 
-                          SliverToBoxAdapter(child: ConstantSizing.columnSpacingLarge),
+                          SliverToBoxAdapter(
+                            child: ConstantSizing.columnSpacingLarge,
+                          ),
 
                           EditCourseInputDescriptionField(
-                            descriptionTextController: descriptionTextController,
+                            descriptionTextController:
+                                descriptionTextController,
                             course: course,
-                            descriptionFocusNode: widget.isEditingDescription ? descriptionFocusNode : null,
+                            descriptionFocusNode: widget.isEditingDescription
+                                ? descriptionFocusNode
+                                : null,
                           ),
 
                           SliverToBoxAdapter(child: AnimatedSpacing()),
@@ -184,7 +227,9 @@ class AnimatedSpacing extends StatelessWidget {
     return AnimatedSize(
       duration: Durations.medium1,
       curve: CustomCurves.decelerate,
-      child: ConstantSizing.columnSpacing(context.viewInsets.bottom + bottomPadding + 48),
+      child: ConstantSizing.columnSpacing(
+        context.viewInsets.bottom + bottomPadding + 48,
+      ),
     );
   }
 }
@@ -209,7 +254,7 @@ class PositionedUpdateDetailsButton extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final double bottomPadding = MediaQuery.paddingOf(context).bottom;
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     return AnimatedPositioned(
       duration: Durations.extralong1,
@@ -227,7 +272,9 @@ class PositionedUpdateDetailsButton extends ConsumerWidget {
               description: descriptionTextController.text,
               isCourseCodeFieldVisible: isCourseCodeFieldVisible.value,
               canExitNotifier: canExitNotifier,
-              modifyCourseProvider: CourseProviders.watchCourseProvider(courseId),
+              modifyCourseProvider: CourseProviders.watchCourseProvider(
+                courseId,
+              ),
             );
           },
           contentPadding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),

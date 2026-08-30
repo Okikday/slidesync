@@ -25,14 +25,20 @@ class AiInteractionView extends ConsumerStatefulWidget {
 class _AiInteractionViewState extends ConsumerState<AiInteractionView> {
   @override
   Widget build(BuildContext context) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final state = ref.watch(AskAiScreenProvider.state);
-    final chatController = ref.read(AskAiScreenProvider.notifier).chatController;
+    final chatController = ref
+        .read(AskAiScreenProvider.notifier)
+        .chatController;
     return Chat(
-      currentUserId: ref.watch(AskAiScreenProvider.userIdProvider).value ?? "user",
+      currentUserId:
+          ref.watch(AskAiScreenProvider.userIdProvider).value ?? "user",
       resolveUser: (String id) async => User(id: id),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.only(topLeft: Radius.circular(40), topRight: Radius.circular(40)),
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(40),
+          topRight: Radius.circular(40),
+        ),
         // color: ref.watch(AskAiScreenProvider.state).chatController.messages.isEmpty ? null : theme.background,
       ),
       builders: Builders(
@@ -42,10 +48,16 @@ class _AiInteractionViewState extends ConsumerState<AiInteractionView> {
               spacing: 12,
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox.square(dimension: 60, child: Image.asset("assets/logo/ic_foreground.png")),
+                SizedBox.square(
+                  dimension: 60,
+                  child: Image.asset("assets/logo/ic_foreground.png"),
+                ),
                 CustomText(
                   "AI Study",
-                  style: TextStyle(color: theme.onBackground, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: theme.onBackground,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 CustomText(
                   "Powered by Gemini\nAI responses may contain mistakes",
@@ -56,98 +68,134 @@ class _AiInteractionViewState extends ConsumerState<AiInteractionView> {
             ),
           );
         },
-        textMessageBuilder: (context, message, index, {groupStatus, required isSentByMe}) {
-          final userTextStyle = TextStyle(color: theme.onPrimary, fontSize: 12.5, fontWeight: FontWeight.bold);
+        textMessageBuilder:
+            (context, message, index, {groupStatus, required isSentByMe}) {
+              final userTextStyle = TextStyle(
+                color: theme.onPrimary,
+                fontSize: 12.5,
+                fontWeight: FontWeight.bold,
+              );
 
-          if (isSentByMe) {
-            return TextSelectionTheme(
-              data: TextSelectionThemeData(
-                cursorColor: Colors.blue.withAlpha(100),
-                selectionColor: Colors.blue.withAlpha(100),
-                selectionHandleColor: theme.secondary,
-              ),
-              child: SelectionArea(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  child: CustomText(message.text, style: userTextStyle),
-                ),
-              ),
-            );
-          }
-
-          final isLastMessage = index == chatController.messages.length - 1;
-
-          if (message.text.trim().isEmpty) {
-            return Padding(
-              padding: const EdgeInsets.all(16),
-              child: LoadingLogo(color: theme.primary, rotate: false),
-            );
-          }
-
-          final isStreaming = isLastMessage && state.isGenerating;
-
-          return buildAiMessageContent(
-            text: message.text,
-            isSentByMe: isSentByMe,
-            primaryColor: theme.primary,
-            onSurfaceColor: theme.onSurface,
-            onPrimaryColor: theme.onPrimary,
-            isStreaming: isStreaming,
-          );
-        },
-        chatMessageBuilder: (context, message, index, animation, child, {groupStatus, isRemoved, required isSentByMe}) {
-          final messages = chatController.messages;
-          final hasPrev = index < 1 ? null : messages.elementAtOrNull(index - 1);
-          final hasNext = messages.length > index + 1 ? messages.elementAtOrNull(index + 1) : null;
-          final isSameNextUser = hasNext != null ? (hasNext.authorId == message.authorId) : false;
-          bool isSamePrevUser = hasPrev != null ? hasPrev.authorId == message.authorId : false;
-          final bool isLast = chatController.messages.length - 1 == index;
-          final bool isFirst = index == 0;
-          return Align(
-            alignment: isSentByMe ? Alignment.centerRight : Alignment.centerLeft,
-            child:
-                AnimatedContainer(
-                      duration: Durations.extralong1,
-                      curve: CustomCurves.defaultIosSpring,
-                      margin: EdgeInsets.only(
-                        bottom: isLast ? 72 : (isSamePrevUser || isSameNextUser ? 4 : 12),
-                        right: 12,
-                        left: isSentByMe ? 48 : 12,
-                        top: isFirst ? 20 : 0,
+              if (isSentByMe) {
+                return TextSelectionTheme(
+                  data: TextSelectionThemeData(
+                    cursorColor: Colors.blue.withAlpha(100),
+                    selectionColor: Colors.blue.withAlpha(100),
+                    selectionHandleColor: theme.secondary,
+                  ),
+                  child: SelectionArea(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
                       ),
-                      decoration: BoxDecoration(
-                        color: isSentByMe ? theme.primary : theme.surface,
-                        gradient: isSentByMe
-                            ? LinearGradient(
-                                colors: [theme.primary, theme.secondary],
-                                stops: [0.9, 1],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              )
-                            : null,
-                        borderRadius: BorderRadius.only(
-                          topRight: isSentByMe
-                              ? (isSamePrevUser ? Radius.circular(24) : Radius.circular(2))
-                              : Radius.circular(24),
-                          topLeft: isSentByMe
-                              ? Radius.circular(24)
-                              : (isSamePrevUser ? Radius.circular(24) : Radius.circular(2)),
-                          bottomLeft: Radius.circular(24),
-                          bottomRight: Radius.circular(24),
-                        ),
-                      ),
-                      child: child,
-                    )
-                    .animate()
-                    .scaleX(
-                      alignment: isSentByMe ? Alignment.topRight : Alignment.topLeft,
-                      begin: 0.98,
-                      end: 1,
-                      duration: Durations.medium1,
-                    )
-                    .fadeIn(),
-          );
-        },
+                      child: CustomText(message.text, style: userTextStyle),
+                    ),
+                  ),
+                );
+              }
+
+              final isLastMessage = index == chatController.messages.length - 1;
+
+              if (message.text.trim().isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: LoadingLogo(color: theme.primary, rotate: false),
+                );
+              }
+
+              final isStreaming = isLastMessage && state.isGenerating;
+
+              return buildAiMessageContent(
+                text: message.text,
+                isSentByMe: isSentByMe,
+                primaryColor: theme.primary,
+                onSurfaceColor: theme.onSurface,
+                onPrimaryColor: theme.onPrimary,
+                isStreaming: isStreaming,
+              );
+            },
+        chatMessageBuilder:
+            (
+              context,
+              message,
+              index,
+              animation,
+              child, {
+              groupStatus,
+              isRemoved,
+              required isSentByMe,
+            }) {
+              final messages = chatController.messages;
+              final hasPrev = index < 1
+                  ? null
+                  : messages.elementAtOrNull(index - 1);
+              final hasNext = messages.length > index + 1
+                  ? messages.elementAtOrNull(index + 1)
+                  : null;
+              final isSameNextUser = hasNext != null
+                  ? (hasNext.authorId == message.authorId)
+                  : false;
+              bool isSamePrevUser = hasPrev != null
+                  ? hasPrev.authorId == message.authorId
+                  : false;
+              final bool isLast = chatController.messages.length - 1 == index;
+              final bool isFirst = index == 0;
+              return Align(
+                alignment: isSentByMe
+                    ? Alignment.centerRight
+                    : Alignment.centerLeft,
+                child:
+                    AnimatedContainer(
+                          duration: Durations.extralong1,
+                          curve: CustomCurves.defaultIosSpring,
+                          margin: EdgeInsets.only(
+                            bottom: isLast
+                                ? 72
+                                : (isSamePrevUser || isSameNextUser ? 4 : 12),
+                            right: 12,
+                            left: isSentByMe ? 48 : 12,
+                            top: isFirst ? 20 : 0,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isSentByMe ? theme.primary : theme.surface,
+                            gradient: isSentByMe
+                                ? LinearGradient(
+                                    colors: [theme.primary, theme.secondary],
+                                    stops: [0.9, 1],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  )
+                                : null,
+                            borderRadius: BorderRadius.only(
+                              topRight: isSentByMe
+                                  ? (isSamePrevUser
+                                        ? Radius.circular(24)
+                                        : Radius.circular(2))
+                                  : Radius.circular(24),
+                              topLeft: isSentByMe
+                                  ? Radius.circular(24)
+                                  : (isSamePrevUser
+                                        ? Radius.circular(24)
+                                        : Radius.circular(2)),
+                              bottomLeft: Radius.circular(24),
+                              bottomRight: Radius.circular(24),
+                            ),
+                          ),
+                          child: child,
+                        )
+                        .animate()
+                        .scaleX(
+                          alignment: isSentByMe
+                              ? Alignment.topRight
+                              : Alignment.topLeft,
+                          begin: 0.98,
+                          end: 1,
+                          duration: Durations.medium1,
+                        )
+                        .fadeIn(),
+              );
+            },
         composerBuilder: (context) {
           return Align(
             alignment: Alignment.bottomCenter,
@@ -188,7 +236,11 @@ Widget buildAiMessageContent({
       child: SelectionArea(
         child: CustomText(
           text,
-          style: TextStyle(color: onPrimaryColor, fontSize: 12.5, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            color: onPrimaryColor,
+            fontSize: 12.5,
+            fontWeight: FontWeight.bold,
+          ),
         ),
       ),
     );
@@ -224,7 +276,12 @@ MarkdownConfig _buildMarkdownConfig({
   required Color primaryColor,
   required bool isStreaming,
 }) {
-  final textStyle = TextStyle(color: onSurfaceColor, fontSize: 13, fontWeight: FontWeight.w500, height: 1.5);
+  final textStyle = TextStyle(
+    color: onSurfaceColor,
+    fontSize: 13,
+    fontWeight: FontWeight.w500,
+    height: 1.5,
+  );
 
   return MarkdownConfig(
     configs: [
@@ -232,17 +289,32 @@ MarkdownConfig _buildMarkdownConfig({
       PConfig(textStyle: textStyle),
 
       // Heading configs
-      H1Config(style: textStyle.copyWith(fontSize: 20, fontWeight: FontWeight.bold)),
-      H2Config(style: textStyle.copyWith(fontSize: 18, fontWeight: FontWeight.bold)),
-      H3Config(style: textStyle.copyWith(fontSize: 16, fontWeight: FontWeight.bold)),
-      H4Config(style: textStyle.copyWith(fontSize: 14, fontWeight: FontWeight.bold)),
-      H5Config(style: textStyle.copyWith(fontSize: 13, fontWeight: FontWeight.bold)),
-      H6Config(style: textStyle.copyWith(fontSize: 12, fontWeight: FontWeight.bold)),
+      H1Config(
+        style: textStyle.copyWith(fontSize: 20, fontWeight: FontWeight.bold),
+      ),
+      H2Config(
+        style: textStyle.copyWith(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
+      H3Config(
+        style: textStyle.copyWith(fontSize: 16, fontWeight: FontWeight.bold),
+      ),
+      H4Config(
+        style: textStyle.copyWith(fontSize: 14, fontWeight: FontWeight.bold),
+      ),
+      H5Config(
+        style: textStyle.copyWith(fontSize: 13, fontWeight: FontWeight.bold),
+      ),
+      H6Config(
+        style: textStyle.copyWith(fontSize: 12, fontWeight: FontWeight.bold),
+      ),
 
       // Code block config
       PreConfig(
         textStyle: textStyle.copyWith(fontFamily: 'monospace', fontSize: 12),
-        decoration: BoxDecoration(color: onSurfaceColor.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+        decoration: BoxDecoration(
+          color: onSurfaceColor.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
         padding: const EdgeInsets.all(12),
         margin: const EdgeInsets.symmetric(vertical: 8),
       ),
@@ -267,7 +339,10 @@ MarkdownConfig _buildMarkdownConfig({
 
       // Link config
       LinkConfig(
-        style: textStyle.copyWith(color: primaryColor, decoration: TextDecoration.underline),
+        style: textStyle.copyWith(
+          color: primaryColor,
+          decoration: TextDecoration.underline,
+        ),
       ),
 
       // // List configs
@@ -283,7 +358,10 @@ MarkdownConfig _buildMarkdownConfig({
       TableConfig(
         bodyStyle: textStyle,
         headerStyle: textStyle.copyWith(fontWeight: FontWeight.bold),
-        border: TableBorder.all(color: onSurfaceColor.withValues(alpha: 0.2), width: 1),
+        border: TableBorder.all(
+          color: onSurfaceColor.withValues(alpha: 0.2),
+          width: 1,
+        ),
       ),
 
       // Horizontal rule config
@@ -314,8 +392,15 @@ MarkdownConfig _buildMarkdownConfig({
 }
 
 // Example usage in your textMessageBuilder:
-Widget textMessageBuilder(BuildContext context, message, int index, bool isSentByMe, WidgetRef ref, bool isStreaming) {
-  final theme = ref.theme; // Your theme provider
+Widget textMessageBuilder(
+  BuildContext context,
+  message,
+  int index,
+  bool isSentByMe,
+  WidgetRef ref,
+  bool isStreaming,
+) {
+  final theme = Theme.of(context).custom; // Your theme provider
 
   return buildAiMessageContent(
     text: message.text,

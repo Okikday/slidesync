@@ -16,7 +16,7 @@ class DesktopShellView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // final currentPath = GoRouterState.of(context).uri.path;
     // final isDetailRoute = _isDetailRoute(currentPath);
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     return PopScope(
       canPop: false,
@@ -31,7 +31,12 @@ class DesktopShellView extends ConsumerWidget {
                 constraints: const BoxConstraints(minWidth: 300, maxWidth: 400),
                 child: Container(
                   decoration: BoxDecoration(
-                    border: Border(right: BorderSide(color: Theme.of(context).dividerColor, width: 1)),
+                    border: Border(
+                      right: BorderSide(
+                        color: Theme.of(context).dividerColor,
+                        width: 1,
+                      ),
+                    ),
                   ),
                   child: const HomeTabView(),
                 ),
@@ -42,13 +47,22 @@ class DesktopShellView extends ConsumerWidget {
               child: Container(
                 constraints: const BoxConstraints(minWidth: 300, maxWidth: 400),
                 decoration: BoxDecoration(
-                  border: Border(right: BorderSide(color: theme.onBackground.withValues(alpha: 0.1), width: 1)),
+                  border: Border(
+                    right: BorderSide(
+                      color: theme.onBackground.withValues(alpha: 0.1),
+                      width: 1,
+                    ),
+                  ),
                 ),
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
                     const LibraryTabView(),
-                    Positioned(bottom: 12, right: 12, child: const LibraryTabFAB(isDesktop: true)),
+                    Positioned(
+                      bottom: 12,
+                      right: 12,
+                      child: const LibraryTabFAB(isDesktop: true),
+                    ),
                   ],
                 ),
               ),

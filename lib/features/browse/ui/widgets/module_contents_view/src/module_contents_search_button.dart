@@ -15,11 +15,15 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 class ModuleContentsSearchButton extends ConsumerWidget {
   final Color? backgroundColor;
   final String collectionId;
-  const ModuleContentsSearchButton({super.key, this.backgroundColor, required this.collectionId});
+  const ModuleContentsSearchButton({
+    super.key,
+    this.backgroundColor,
+    required this.collectionId,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return SearchAnchor(
       viewBackgroundColor: theme.background,
       dividerColor: theme.supportingText.withAlpha(40),
@@ -36,19 +40,27 @@ class ModuleContentsSearchButton extends ConsumerWidget {
         if (controller.text.isEmpty) {
           return [
             Padding(
-              padding: const EdgeInsets.only(top: kToolbarHeight, left: 16, right: 16),
+              padding: const EdgeInsets.only(
+                top: kToolbarHeight,
+                left: 16,
+                right: 16,
+              ),
               child: SizedBox(
                 child: Center(
-                  child: CustomText("Input a title to search...", color: theme.backgroundSupportingText.withAlpha(150)),
+                  child: CustomText(
+                    "Input a title to search...",
+                    color: theme.backgroundSupportingText.withAlpha(150),
+                  ),
                 ),
               ),
             ),
           ];
         }
-        final List<ModuleContent> searchResults = await (ModuleContentRepo.filter)
-            .parentIdEqualTo(collectionId)
-            .titleContains(controller.text, caseSensitive: false)
-            .findAll();
+        final List<ModuleContent> searchResults =
+            await (ModuleContentRepo.filter)
+                .parentIdEqualTo(collectionId)
+                .titleContains(controller.text, caseSensitive: false)
+                .findAll();
         return [
           ConstantSizing.columnSpacing(8),
           for (int i = 0; i < searchResults.length; i++)
@@ -60,12 +72,16 @@ class ModuleContentsSearchButton extends ConsumerWidget {
                 onTapCard: () {
                   context.pop();
                   // context.pushNamed(Routes.contentGate.name, extra: searchResults[i]);
-                  ContentViewGateActions.redirectToViewer(ref, searchResults[i]);
+                  ContentViewGateActions.redirectToViewer(
+                    ref,
+                    searchResults[i],
+                  );
                 },
               ),
             ),
 
-          if (context.mounted) ConstantSizing.columnSpacing(context.viewInsets.bottom),
+          if (context.mounted)
+            ConstantSizing.columnSpacing(context.viewInsets.bottom),
         ];
       },
     );

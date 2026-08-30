@@ -24,13 +24,15 @@ class DownloadsTabView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedType = ref.watch(downloadHistoryFilterProvider);
 
-    final feedItems = ref.watch(downloadFeedProvider).values.toList(growable: false)
-      ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
+    final feedItems =
+        ref.watch(downloadFeedProvider).values.toList(growable: false)
+          ..sort((a, b) => b.updatedAt.compareTo(a.updatedAt));
     final historyState = ref.watch(downloadHistoryProvider);
-    final historyEntries = (historyState.value ?? const <Map<String, dynamic>>[])
-        .map(DownloadHistoryEntry.fromMap)
-        .where((entry) => entry.id.isNotEmpty)
-        .toList(growable: false);
+    final historyEntries =
+        (historyState.value ?? const <Map<String, dynamic>>[])
+            .map(DownloadHistoryEntry.fromMap)
+            .where((entry) => entry.id.isNotEmpty)
+            .toList(growable: false);
 
     final items = <_UnifiedDownloadItem>[
       ...feedItems
@@ -50,7 +52,10 @@ class DownloadsTabView extends ConsumerWidget {
           ),
         ),
         if (items.isEmpty)
-          SliverFillRemaining(hasScrollBody: false, child: _EmptyState(selectedType: selectedType))
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: _EmptyState(selectedType: selectedType),
+          )
         else
           SliverPadding(
             padding: const EdgeInsets.fromLTRB(14, 0, 14, 18),
@@ -73,7 +78,11 @@ class DownloadsTabView extends ConsumerWidget {
               child: TextButton.icon(
                 onPressed: () => _confirmAndClearHistory(context, ref),
                 icon: const Icon(Icons.delete_sweep_outlined, size: 18),
-                label: const CustomText('Clear History', fontSize: 12, fontWeight: FontWeight.w600),
+                label: const CustomText(
+                  'Clear History',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
@@ -84,15 +93,26 @@ class DownloadsTabView extends ConsumerWidget {
     );
   }
 
-  Future<void> _confirmAndClearHistory(BuildContext context, WidgetRef ref) async {
+  Future<void> _confirmAndClearHistory(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Clear download history?'),
-        content: const Text('This removes persisted download history entries. Active downloads are not cancelled.'),
+        content: const Text(
+          'This removes persisted download history entries. Active downloads are not cancelled.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('Clear')),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Clear'),
+          ),
         ],
       ),
     );
@@ -111,7 +131,7 @@ class _HeaderRow extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -125,14 +145,17 @@ class _HeaderRow extends ConsumerWidget {
           if (selectedType != null)
             IconButton(
               tooltip: 'Reset filter',
-              onPressed: () => ref.read(downloadHistoryFilterProvider.notifier).state = null,
+              onPressed: () =>
+                  ref.read(downloadHistoryFilterProvider.notifier).state = null,
               icon: Icon(Icons.close_rounded, color: theme.primaryColor),
             )
           else
             const SizedBox(width: 8),
           Expanded(
             child: CustomText(
-              selectedType == null ? 'All downloads' : 'Filtered: ${_labelForType(selectedType!)}',
+              selectedType == null
+                  ? 'All downloads'
+                  : 'Filtered: ${_labelForType(selectedType!)}',
               fontSize: 13,
               fontWeight: FontWeight.w700,
               color: theme.onBackground,
@@ -143,20 +166,38 @@ class _HeaderRow extends ConsumerWidget {
           PopupMenuButton<SyncType?>(
             tooltip: 'Filter downloads',
             initialValue: selectedType,
-            onSelected: (value) => ref.read(downloadHistoryFilterProvider.notifier).state = value,
+            onSelected: (value) =>
+                ref.read(downloadHistoryFilterProvider.notifier).state = value,
             itemBuilder: (context) => const [
               PopupMenuItem<SyncType?>(value: null, child: Text('All')),
-              PopupMenuItem<SyncType?>(value: SyncType.course, child: Text('Course')),
-              PopupMenuItem<SyncType?>(value: SyncType.collection, child: Text('Collections')),
-              PopupMenuItem<SyncType?>(value: SyncType.content, child: Text('Materials')),
+              PopupMenuItem<SyncType?>(
+                value: SyncType.course,
+                child: Text('Course'),
+              ),
+              PopupMenuItem<SyncType?>(
+                value: SyncType.collection,
+                child: Text('Collections'),
+              ),
+              PopupMenuItem<SyncType?>(
+                value: SyncType.content,
+                child: Text('Materials'),
+              ),
             ],
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               child: Row(
                 children: [
-                  Icon(Icons.tune_rounded, size: 17, color: theme.supportingText),
+                  Icon(
+                    Icons.tune_rounded,
+                    size: 17,
+                    color: theme.supportingText,
+                  ),
                   const SizedBox(width: 6),
-                  CustomText('Filter', fontSize: 12, color: theme.supportingText),
+                  CustomText(
+                    'Filter',
+                    fontSize: 12,
+                    color: theme.supportingText,
+                  ),
                 ],
               ),
             ),
@@ -186,18 +227,20 @@ class _DownloadTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     final transferNotifier = ref.read(transferStateProvider.notifier);
     final feedNotifier = ref.read(downloadFeedProvider.notifier);
     final latestMessage = _latestMessage(item);
 
     return ScaleClickWrapper(
       borderRadius: 16,
-      onTap: item.canOpenContent ? () => _openCompletedContent(context, ref, item.contentId) : null,
+      onTap: item.canOpenContent
+          ? () => _openCompletedContent(context, ref, item.contentId)
+          : null,
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: theme.background.lightenColor(theme.isDarkMode ? 0.08 : 0.92),
+          color: theme.background.lightenColor(theme.isDarkTheme ? 0.08 : 0.92),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: theme.onBackground.withValues(alpha: 0.1)),
         ),
@@ -237,7 +280,10 @@ class _DownloadTile extends ConsumerWidget {
                           icon: const Icon(Icons.pause_circle_outline_rounded),
                           onPressed: () {
                             feedNotifier.pause(item.feedId!);
-                            transferNotifier.updateStatus(id: item.feedId!, status: TransferStatus.paused);
+                            transferNotifier.updateStatus(
+                              id: item.feedId!,
+                              status: TransferStatus.paused,
+                            );
                           },
                         ),
                       if (item.feedStatus == DownloadFeedStatus.paused)
@@ -245,7 +291,10 @@ class _DownloadTile extends ConsumerWidget {
                           icon: const Icon(Icons.play_circle_outline_rounded),
                           onPressed: () {
                             feedNotifier.resume(item.feedId!);
-                            transferNotifier.updateStatus(id: item.feedId!, status: TransferStatus.inProgress);
+                            transferNotifier.updateStatus(
+                              id: item.feedId!,
+                              status: TransferStatus.inProgress,
+                            );
                           },
                         ),
                       if (item.feedStatus != DownloadFeedStatus.completed &&
@@ -254,14 +303,21 @@ class _DownloadTile extends ConsumerWidget {
                         IconButton(
                           icon: const Icon(Icons.cancel_outlined),
                           onPressed: () {
-                            feedNotifier.cancel(item.feedId!, message: 'Cancelled');
+                            feedNotifier.cancel(
+                              item.feedId!,
+                              message: 'Cancelled',
+                            );
                             transferNotifier.removeTransfer(item.feedId!);
                           },
                         ),
                     ],
                   )
                 else if (item.canOpenContent)
-                  Icon(Icons.open_in_new_rounded, size: 18, color: theme.primaryColor),
+                  Icon(
+                    Icons.open_in_new_rounded,
+                    size: 18,
+                    color: theme.primaryColor,
+                  ),
               ],
             ),
             if (item.showProgress) ...[
@@ -283,7 +339,12 @@ class _DownloadTile extends ConsumerWidget {
             ],
             if (latestMessage != null) ...[
               const SizedBox(height: 8),
-              CustomText(latestMessage, fontSize: 11, color: theme.supportingText, maxLines: 2),
+              CustomText(
+                latestMessage,
+                fontSize: 11,
+                color: theme.supportingText,
+                maxLines: 2,
+              ),
             ],
           ],
         ),
@@ -291,34 +352,66 @@ class _DownloadTile extends ConsumerWidget {
     );
   }
 
-  Widget _statusIcon(WidgetRef theme) {
+  Widget _statusIcon(AppThemeExtension theme) {
     if (item.feedStatus == DownloadFeedStatus.failed) {
-      return Icon(Icons.error_outline_rounded, color: Colors.red.shade400, size: 18);
+      return Icon(
+        Icons.error_outline_rounded,
+        color: Colors.red.shade400,
+        size: 18,
+      );
     }
-    if (item.feedStatus == DownloadFeedStatus.completed || item.feedStatus == null) {
-      return Icon(Icons.check_circle_outline_rounded, color: Colors.green.shade500, size: 18);
+    if (item.feedStatus == DownloadFeedStatus.completed ||
+        item.feedStatus == null) {
+      return Icon(
+        Icons.check_circle_outline_rounded,
+        color: Colors.green.shade500,
+        size: 18,
+      );
     }
     if (item.feedStatus == DownloadFeedStatus.paused) {
-      return Icon(Icons.pause_circle_outline_rounded, color: Colors.orange.shade500, size: 18);
+      return Icon(
+        Icons.pause_circle_outline_rounded,
+        color: Colors.orange.shade500,
+        size: 18,
+      );
     }
     return Icon(Icons.downloading_rounded, color: theme.primaryColor, size: 18);
   }
 
-  Future<void> _openCompletedContent(BuildContext context, WidgetRef ref, String? contentId) async {
+  Future<void> _openCompletedContent(
+    BuildContext context,
+    WidgetRef ref,
+    String? contentId,
+  ) async {
     if (contentId == null || contentId.isEmpty) {
-      UiUtils.showFlushBar(context, msg: 'This download has no linked content yet.');
+      UiUtils.showFlushBar(
+        context,
+        msg: 'This download has no linked content yet.',
+      );
       return;
     }
 
     final content = await ModuleContentRepo.getByUid(contentId);
     if (content == null) {
-      GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: 'Could not find the content record.'));
+      GlobalNav.withContext(
+        (context) => UiUtils.showFlushBar(
+          context,
+          msg: 'Could not find the content record.',
+        ),
+      );
       return;
     }
 
     final localPath = content.path.local;
-    if (localPath == null || localPath.isEmpty || !await File(localPath).exists()) {
-      GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: 'The downloaded file is missing.'));
+    if (localPath == null ||
+        localPath.isEmpty ||
+        !await File(localPath).exists()) {
+      GlobalNav.withContext(
+        (context) => UiUtils.showFlushBar(
+          context,
+          msg: 'The downloaded file is missing.',
+        ),
+      );
       return;
     }
 
@@ -337,7 +430,10 @@ class _DownloadTile extends ConsumerWidget {
         await ContentViewGateActions.redirectToViewer(ref, content);
       } catch (_) {
         GlobalNav.withContext(
-          (context) => UiUtils.showFlushBar(context, msg: 'Failed to open content: ${content.title}'),
+          (context) => UiUtils.showFlushBar(
+            context,
+            msg: 'Failed to open content: ${content.title}',
+          ),
         );
       }
     }
@@ -356,7 +452,9 @@ class _DownloadTile extends ConsumerWidget {
     if (bytes <= 0) return '0 B';
     if (bytes < 1024) return '$bytes B';
     if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
-    if (bytes < 1024 * 1024 * 1024) return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    if (bytes < 1024 * 1024 * 1024) {
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    }
     return '${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(1)} GB';
   }
 
@@ -376,17 +474,23 @@ class _EmptyState extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(28),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.download_outlined, size: 42, color: theme.supportingText.withValues(alpha: 0.8)),
+            Icon(
+              Icons.download_outlined,
+              size: 42,
+              color: theme.supportingText.withValues(alpha: 0.8),
+            ),
             const SizedBox(height: 10),
             CustomText(
-              selectedType == null ? 'No downloads yet' : 'No downloads in this filter',
+              selectedType == null
+                  ? 'No downloads yet'
+                  : 'No downloads in this filter',
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: theme.onBackground,
@@ -479,7 +583,9 @@ class _UnifiedDownloadItem {
           feedStatus == DownloadFeedStatus.queued);
 
   bool get canOpenContent =>
-      contentId != null && contentId!.isNotEmpty && (feedStatus == DownloadFeedStatus.completed || (!isFeed));
+      contentId != null &&
+      contentId!.isNotEmpty &&
+      (feedStatus == DownloadFeedStatus.completed || (!isFeed));
 
   String get statusLabel {
     if (!isFeed) return 'Completed';

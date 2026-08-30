@@ -10,7 +10,7 @@ class ShowAnswerButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     return ValueListenableBuilder<int>(
       valueListenable: state.currentQuestionIndexNotifier,
@@ -26,11 +26,17 @@ class ShowAnswerButton extends ConsumerWidget {
                 backgroundColor: isShown ? theme.secondary : theme.primary,
                 foregroundColor: isShown ? theme.onSecondary : theme.onPrimary,
                 padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
               ),
               child: Text(
                 isShown ? 'Hide Answer' : 'Show Answer',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, fontFamily: theme.fontFamily),
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                  fontFamily: theme.fontFamily,
+                ),
               ),
             );
           },

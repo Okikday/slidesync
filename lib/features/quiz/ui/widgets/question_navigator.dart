@@ -10,7 +10,7 @@ class QuestionNavigator extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
 
     return Container(
       height: 60,
@@ -26,7 +26,9 @@ class QuestionNavigator extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                 itemCount: state.shuffledQuestions.length,
                 itemBuilder: (context, index) {
-                  final isAnswered = selectedAnswers.containsKey(index) && selectedAnswers[index]!.isNotEmpty;
+                  final isAnswered =
+                      selectedAnswers.containsKey(index) &&
+                      selectedAnswers[index]!.isNotEmpty;
                   final isCurrent = index == currentIndex;
 
                   return Padding(
@@ -43,7 +45,9 @@ class QuestionNavigator extends ConsumerWidget {
                               : theme.surface,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color: isCurrent ? theme.primary : theme.onSurface.withValues(alpha: 0.2),
+                            color: isCurrent
+                                ? theme.primary
+                                : theme.onSurface.withValues(alpha: 0.2),
                             width: 2,
                           ),
                         ),
@@ -51,7 +55,9 @@ class QuestionNavigator extends ConsumerWidget {
                           child: Text(
                             '${index + 1}',
                             style: TextStyle(
-                              color: isCurrent ? theme.onPrimary : theme.onSurface,
+                              color: isCurrent
+                                  ? theme.onPrimary
+                                  : theme.onSurface,
                               fontWeight: FontWeight.bold,
                               fontFamily: theme.fontFamily,
                             ),

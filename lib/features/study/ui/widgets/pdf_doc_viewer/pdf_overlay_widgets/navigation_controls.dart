@@ -13,8 +13,10 @@ class NavigationControls extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
-    final s = ref.watch(PdfDocViewerProvider.searchState(contentId).select((s) => s.searchResult));
+    final theme = Theme.of(context).custom;
+    final s = ref.watch(
+      PdfDocViewerProvider.searchState(contentId).select((s) => s.searchResult),
+    );
     final hasMatches = s?.hasResult == true;
     final inProgress = s != null && !s.isSearchCompleted;
 
@@ -24,8 +26,9 @@ class NavigationControls extends ConsumerWidget {
 
     final canNavigate = hasMatches;
 
-    Future<void> onNavigateToInstance(bool isNext) async =>
-        await (ref.read(PdfDocViewerProvider.searchState(contentId))).navigateToInstance(isNext);
+    Future<void> onNavigateToInstance(bool isNext) async => await (ref.read(
+      PdfDocViewerProvider.searchState(contentId),
+    )).navigateToInstance(isNext);
 
     return Row(
       mainAxisSize: MainAxisSize.min,
@@ -36,7 +39,9 @@ class NavigationControls extends ConsumerWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 14,
-              color: canNavigate ? theme.onBackground : theme.onBackground.withValues(alpha: 0.5),
+              color: canNavigate
+                  ? theme.onBackground
+                  : theme.onBackground.withValues(alpha: 0.5),
             ),
           ),
         ConstantSizing.rowSpacing(4),

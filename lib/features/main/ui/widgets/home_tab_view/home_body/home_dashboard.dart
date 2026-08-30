@@ -29,7 +29,7 @@ class HomeDashboard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = ref;
+    final theme = Theme.of(context).custom;
     // final previewPath = jsonDecode(data.metadataJson)['previewPath'];
     // final isPreviewPathValid = previewPath != null && previewPath is String;
     final title = data.title.isEmpty ? "Unknown material" : data.title;
@@ -113,7 +113,7 @@ class HomeDashboard extends ConsumerWidget {
                     pixelHeight: 48,
                     elevation: 100,
                     borderRadius: 0,
-                    overlayColor: ref.onPrimary.withAlpha(20),
+                    overlayColor: theme.onPrimary.withAlpha(20),
                     backgroundColor: theme.primaryColor,
                     child: CustomText(
                       buttonText ??

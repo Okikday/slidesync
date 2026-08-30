@@ -21,7 +21,11 @@ int fileImageVersion(File file) {
 }
 
 class VersionedFileImage extends FileImage {
-  const VersionedFileImage(super.file, {super.scale = 1.0, required this.version});
+  const VersionedFileImage(
+    super.file, {
+    super.scale = 1.0,
+    required this.version,
+  });
 
   final Object version;
 
@@ -53,7 +57,8 @@ class BuildImagePathWidget extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<ConsumerStatefulWidget> createState() => _BuildImagePathWidgetState();
+  ConsumerState<ConsumerStatefulWidget> createState() =>
+      _BuildImagePathWidgetState();
 }
 
 class _BuildImagePathWidgetState extends ConsumerState<BuildImagePathWidget> {
@@ -77,7 +82,6 @@ class _BuildImagePathWidgetState extends ConsumerState<BuildImagePathWidget> {
         width: width,
         height: height,
         fallbackWidget: fallbackWidget,
-        ref: ref,
       ).animate().fadeIn();
     } else if (fileDetails.url != null) {
       return ImageFromNetwork(
@@ -101,7 +105,6 @@ class ImageFromFile extends StatelessWidget {
     required this.width,
     required this.height,
     required this.fallbackWidget,
-    required this.ref,
   });
 
   final FilePath fileDetails;
@@ -109,29 +112,51 @@ class ImageFromFile extends StatelessWidget {
   final double? width;
   final double? height;
   final Widget fallbackWidget;
-  final WidgetRef ref;
 
   @override
   Widget build(BuildContext context) {
     final imageFile = File(fileDetails.local ?? '');
+    final customTheme = Theme.of(context).custom;
     return Image(
-      image: VersionedFileImage(imageFile, version: fileImageVersion(imageFile)),
+      image: VersionedFileImage(
+        imageFile,
+        version: fileImageVersion(imageFile),
+      ),
       fit: fit,
       width: width,
       height: height,
       errorBuilder: (context, error, stackTrace) => fallbackWidget,
-      frameBuilder: (BuildContext context, Widget child, int? frame, bool wasSynchronouslyLoaded) {
-        if (wasSynchronouslyLoaded || frame != null) {
-          return child;
-        } else {
-          return SizedBox.expand(child: ColoredBox(color: ref.primaryColor.withAlpha(40)))
-              .animate(onInit: (controller) => controller.repeat())
-              .shimmer(duration: const Duration(seconds: 1), curve: Curves.decelerate)
-              .blurXY(begin: 2, end: 0, duration: Duration(seconds: 1))
-              .animate(onComplete: (controller) => controller.repeat(reverse: true))
-              .tint(color: ref.primaryColor.withAlpha(10), duration: Duration(seconds: 1));
-        }
-      },
+      frameBuilder:
+          (
+            BuildContext context,
+            Widget child,
+            int? frame,
+            bool wasSynchronouslyLoaded,
+          ) {
+            if (wasSynchronouslyLoaded || frame != null) {
+              return child;
+            } else {
+              return SizedBox.expand(
+                    child: ColoredBox(
+                      color: customTheme.primaryColor.withAlpha(40),
+                    ),
+                  )
+                  .animate(onInit: (controller) => controller.repeat())
+                  .shimmer(
+                    duration: const Duration(seconds: 1),
+                    curve: Curves.decelerate,
+                  )
+                  .blurXY(begin: 2, end: 0, duration: Duration(seconds: 1))
+                  .animate(
+                    onComplete: (controller) =>
+                        controller.repeat(reverse: true),
+                  )
+                  .tint(
+                    color: customTheme.primaryColor.withAlpha(10),
+                    duration: Duration(seconds: 1),
+                  );
+            }
+          },
     );
   }
 }
@@ -185,23 +210,43 @@ class ImageFromMemory extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final customTheme = Theme.of(context).custom;
     return Image.memory(
       imageBytes!,
       fit: fit,
       width: width,
       height: height,
-      frameBuilder: (BuildContext context, Widget child, int? frame, bool wasSynchronouslyLoaded) {
-        if (wasSynchronouslyLoaded || frame != null) {
-          return child;
-        } else {
-          return SizedBox.expand(child: ColoredBox(color: ref.primaryColor.withAlpha(40)))
-              .animate(onComplete: (controller) => controller.repeat())
-              .shimmer(duration: const Duration(seconds: 1), curve: Curves.decelerate)
-              .blurXY(begin: 2, end: 0, duration: Duration(seconds: 1))
-              .animate(onComplete: (controller) => controller.repeat(reverse: true))
-              .tint(color: ref.primaryColor.withAlpha(10), duration: Duration(seconds: 1));
-        }
-      },
+      frameBuilder:
+          (
+            BuildContext context,
+            Widget child,
+            int? frame,
+            bool wasSynchronouslyLoaded,
+          ) {
+            if (wasSynchronouslyLoaded || frame != null) {
+              return child;
+            } else {
+              return SizedBox.expand(
+                    child: ColoredBox(
+                      color: customTheme.primaryColor.withAlpha(40),
+                    ),
+                  )
+                  .animate(onComplete: (controller) => controller.repeat())
+                  .shimmer(
+                    duration: const Duration(seconds: 1),
+                    curve: Curves.decelerate,
+                  )
+                  .blurXY(begin: 2, end: 0, duration: Duration(seconds: 1))
+                  .animate(
+                    onComplete: (controller) =>
+                        controller.repeat(reverse: true),
+                  )
+                  .tint(
+                    color: customTheme.primaryColor.withAlpha(10),
+                    duration: Duration(seconds: 1),
+                  );
+            }
+          },
       errorBuilder: (context, error, stackTrace) => fallbackWidget,
     );
   }
