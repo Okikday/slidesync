@@ -61,7 +61,7 @@ jobs:
           echo "=== firebase_options.dart (first 5 lines) ===" && head -5 lib/firebase_options.dart
 
       - name: Build runner
-        run: dart run build_runner build
+        run: dart run build_runner build --delete-conflicting-outputs
         
       - name: Get dependencies
         run: flutter pub get
