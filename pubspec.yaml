@@ -118,7 +118,7 @@ dependencies:
   sidebarx: ^0.17.2
   multi_split_view: 
     git:
-      url: github.com/okikday/multi_split_view
+      url: github.com/okikday/multi_split_view.git
 
 flutter_native_splash:
   android: true
