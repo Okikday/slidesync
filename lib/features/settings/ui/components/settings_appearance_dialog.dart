@@ -117,7 +117,7 @@ class _SettingsAppearanceDialogState
                         forceBrightness: usb
                             ? null
                             : (context.mediaQuery.platformBrightness),
-                        crossAxisCount: DeviceUtils.isDesktop()
+                        crossAxisCount: DeviceUtils.isDesktopSize(context)
                             ? ((context.deviceWidth ~/ 200).clamp(1, 100))
                             : 2,
                         spacing: 12,

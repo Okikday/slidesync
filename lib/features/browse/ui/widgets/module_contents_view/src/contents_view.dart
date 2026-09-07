@@ -21,7 +21,11 @@ class ContentsView extends ConsumerWidget {
   final Module collection;
   final bool isFullScreen;
 
-  const ContentsView({super.key, required this.collection, required this.isFullScreen});
+  const ContentsView({
+    super.key,
+    required this.collection,
+    required this.isFullScreen,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -33,7 +37,7 @@ class ContentsView extends ConsumerWidget {
 
     final gridCrossAxisCount = isFullScreen
         ? context.deviceWidth ~/ 200
-        : (context.deviceWidth / (DeviceUtils.isDesktop() ? 3 : 1)) ~/ 160;
+        : (context.deviceWidth / (DeviceUtils.isDesktopSize(context) ? 3 : 1)) ~/ 160;
 
     return AbsorberWatch(
       listenable: contentsProvider.select((s) => (s.cardViewType, s.isLoading)),
@@ -77,7 +81,8 @@ class _FlatContentsView extends StatelessWidget {
   });
 
   final Module collection;
-  final NotifierProvider<ModuleContentsNotifier, ModuleContentsState> contentsProvider;
+  final NotifierProvider<ModuleContentsNotifier, ModuleContentsState>
+  contentsProvider;
   final ModuleContentsNotifier contentsNotifier;
   final ModuleContentsPaginationNotifier paginationNotifier;
   final CardViewType cardViewType;
@@ -152,8 +157,9 @@ class _FlatContentsView extends StatelessWidget {
     if (!isSelecting) return null;
     return (
       isSelected: notifier.isContentSelected(item),
-      onSelect: (content) =>
-          notifier.isContentSelected(item) ? notifier.unselectContent(item) : notifier.selectContent(item),
+      onSelect: (content) => notifier.isContentSelected(item)
+          ? notifier.unselectContent(item)
+          : notifier.selectContent(item),
     );
   }
 }
@@ -189,7 +195,9 @@ class _OrganizedContentsView extends StatelessWidget {
             fetchNextPage: fetchNextPage,
             // gridDelegateBuilder takes (childCount) → SliverSimpleGridDelegate.
             gridDelegateBuilder: (_) =>
-                SliverSimpleGridDelegateWithFixedCrossAxisCount(crossAxisCount: isFullScreen ? 3 : 2),
+                SliverSimpleGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: isFullScreen ? 3 : 2,
+                ),
             mainAxisSpacing: isFullScreen ? 24 : 16,
             crossAxisSpacing: isFullScreen ? 24 : 12,
             builderDelegate: PagedChildBuilderDelegate<Object>(

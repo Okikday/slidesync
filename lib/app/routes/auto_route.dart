@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/misc.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/app/routes/routes.dart';
 
 typedef OverrideBuilder<In> =
     List<Override> Function(

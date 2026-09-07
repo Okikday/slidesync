@@ -35,8 +35,8 @@ class BuildButton extends ConsumerWidget {
         filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
         child: CustomElevatedButton(
           contentPadding: EdgeInsets.zero,
-          pixelHeight: size?.height ?? (DeviceUtils.isDesktop() ? 44 : 48),
-          pixelWidth: size?.width ?? (DeviceUtils.isDesktop() ? 44 : 48),
+          pixelHeight: size?.height ?? (DeviceUtils.isDesktopSize(context) ? 44 : 48),
+          pixelWidth: size?.width ?? (DeviceUtils.isDesktopSize(context) ? 44 : 48),
           backgroundColor:
               backgroundColor ??
               theme.altBackgroundPrimary.withValues(alpha: 0.8),

@@ -2,54 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kickin_utilities/kickin_utilities.dart' as ku;
-import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
+import 'package:multi_split_view/multi_split_view.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/features/auth/logic/usecases/auth_uc/user_data_functions.dart';
 import 'package:slidesync/features/main/pod/home/home_pod.dart';
 import 'package:slidesync/features/main/pod/main_pod.dart';
 import 'package:slidesync/features/main/ui/actions/main_view_actions.dart';
 import 'package:slidesync/features/main/ui/entities/main_view_entity.dart';
+import 'package:slidesync/features/main/ui/widgets/main_view/content_sidebar/content_sidebar.dart';
+import 'package:slidesync/features/main/ui/widgets/main_view/nav_rail/nav_rail.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/library_tab_f_a_b.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/above/home_drawer.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
-import 'package:slidesync/shared/widgets/decorations/back_soft_edge_blur.dart';
+import 'package:slidesync/shared/widgets/animations/animated_sizing.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';
-import 'package:slidesync/shared/widgets/state/absorber.dart';
-import 'package:soft_edge_blur/soft_edge_blur.dart';
-import 'package:flutter/material.dart';
-import 'package:hugeicons_pro/hugeicons.dart';
-import 'package:slidesync/features/main/ui/screens/home_tab_view.dart';
-import 'package:slidesync/features/main/ui/screens/library_tab_view.dart';
-import 'package:slidesync/features/sync/ui/screens/sync_view.dart';
 
 import '../widgets/main_view/bottom_nav_bar/bottom_nav_bar.dart';
 
-typedef _TabDetails = ({
-  String label,
-  String tooltip,
-  IconData icon,
-  IconData activeIcon,
-});
-final mainViewTabOptions = <Widget, _TabDetails>{
-  const HomeTabView(): (
-    label: "Home",
-    tooltip: "Home",
-    icon: HugeIconsStroke.home01,
-    activeIcon: HugeIconsSolid.home01,
-  ),
-  const LibraryTabView(): (
-    label: "Library",
-    tooltip: "Library holding all your courses",
-    icon: HugeIconsStroke.folder01,
-    activeIcon: HugeIconsSolid.folder01,
-  ),
-  const SyncView(): (
-    label: "Sync",
-    tooltip: "Sync details",
-    icon: HugeIconsStroke.fileSync,
-    activeIcon: HugeIconsSolid.fileSync,
-  ),
-};
+enum MainPanes { navRail, mainContent, contentSidebar }
 
 class MainView extends ConsumerStatefulWidget {
   final int tabIndex;
@@ -94,49 +64,79 @@ class _MainViewState extends ConsumerState<MainView> with MainViewActions {
     super.dispose();
   }
 
-  void _animateToTab(int index) => pageController.animateToPage(
-    index,
-    duration: NumDurationExtension(450).inMs,
-    curve: ku.KCurves.defaultIosSpring,
-  );
+  void _animateToTab(int index) => DeviceUtils.isDesktopSize()
+      ? pageController.jumpToPage(index)
+      : pageController.animateToPage(
+          index,
+          duration: NumDurationExtension(450).inMs,
+          curve: ku.KCurves.defaultIosSpring,
+        );
+
+  void _onTapNavItem(int index) {
+    if (MainPod.me.read(ref).tabIndex == index) {
+      // Tapping the active tab scrolls to top
+      PrimaryScrollController.of(context).animateTo(
+        0,
+        duration: NumDurationExtension(200).inMs,
+        curve: Curves.easeInOutCubicEmphasized,
+      );
+      return;
+    }
+    _animateToTab(index);
+    MainPod.me.not(ref).setTabIndex(index);
+  }
 
   @override
   Widget build(BuildContext context) {
+    final isDesktop = DeviceUtils.isDesktopSize(context);
+
     return Consumer(
       builder: (context, ref, body) {
-        final isScrolled = HomePod.me.select((s) => s.isScrolled).watch(ref);
-
         return AppScaffold(
           title: "",
           canPop: false,
-          onPopInvokedWithResult: (didPop, result) =>
-              MainPod.me.act(ref).setTabIndex(0),
+          onPopInvokedWithResult: (didPop, result) {
+            MainPod.me.act(ref).setTabIndex(0);
+          },
           extendBody: true,
           drawer: const HomeDrawer(),
           floatingActionButton: const LibraryTabFAB(),
-          systemUiOverlayStyle: _deriveSystemUiOverlayStyle(
-            context,
-            isScrolled,
-          ),
-          body: body!,
-          footer: BottomNavBar(
-            onTap: (index) {
-              if (MainPod.me.read(ref).tabIndex == index) {
-                // Tapping the active tab scrolls to top
-                PrimaryScrollController.of(context).animateTo(
-                  0,
-                  duration: NumDurationExtension(200).inMs,
-                  curve: Curves.easeInOutCubicEmphasized,
-                );
-                return;
-              }
-              _animateToTab(index);
-              MainPod.me.not(ref).setTabIndex(index);
+          body: Consumer(
+            builder: (context, ref, child) {
+              final isScrolled = HomePod.me
+                  .select((s) => s.isScrolled)
+                  .watch(ref);
+              return AnnotatedRegion(
+                value: _deriveSystemUiOverlayStyle(context, isScrolled),
+                child: child!,
+              );
             },
+            child: MultiSplitView(
+              resizable: true,
+              dividerThickness: 4,
+              dividerHighlightColor: Colors.blueGrey.withAlpha(50),
+              builder: (context, area) => isDesktop
+                  ? _buildAreaWidget(area.id, isDesktop)
+                  : area.id == MainPanes.mainContent
+                  ? _buildAreaWidget(area.id, isDesktop)
+                  : null,
+              initialAreas: [
+                Area(id: MainPanes.navRail, min: 200, max: 240, size: 240),
+                Area(id: MainPanes.mainContent),
+              ],
+            ),
           ),
+          footer: isDesktop ? null : BottomNavBar(onTap: _onTapNavItem),
         );
       },
-      child: PageView(
+    );
+  }
+
+  Widget _buildAreaWidget(MainPanes pane, bool isDesktop) {
+    // if (!isDesktop && pane != .mainContent) return const SizedBox.shrink();
+    return switch (pane) {
+      .mainContent => PageView(
+        physics: isDesktop ? const NeverScrollableScrollPhysics() : null,
         controller: pageController,
         onPageChanged: (index) => MainPod.me.act(ref).setTabIndex(index),
         children:
@@ -145,37 +145,11 @@ class _MainViewState extends ConsumerState<MainView> with MainViewActions {
                     : mainViewTabOptions.keys.take(2))
                 .toList(),
       ),
-      // child: GestureDetector(
-      //   onHorizontalDragStart: (_) => _horizontalDragDistance = 0,
-      //   onHorizontalDragUpdate: _handleHorizontalDragUpdate,
-      //   onHorizontalDragEnd: (_) => _handleHorizontalDragEnd(ref),
-      //   child: AbsorberWatch(
-      //     listenable: MainPod.me.select((s) => s.tabIndex),
-      //     builder: (_, tabIndex, ref, _) {
-      //       // return IndexedStack(index: tabIndex, children: tabs);
-      //       return AnimatedSwitcher(
-      //         duration: 200.inMs,
-      //         switchInCurve: Curves.easeInOut,
-      //         switchOutCurve: Curves.easeInOut,
-      //         // swap
-      //         transitionBuilder: (child, animation) {
-      //           return FadeTransition(opacity: animation, child: child);
-      //         },
-      //         layoutBuilder: (currentChild, previousChildren) {
-      //           return Stack(
-      //             fit: StackFit.expand,
-      //             children: <Widget>[...previousChildren, ?currentChild],
-      //           );
-      //         },
-      //         child: KeyedSubtree(
-      //           key: ValueKey(tabIndex),
-      //           child: tabs[tabIndex],
-      //         ),
-      //       );
-      //     },
-      //   ),
-      // ),
-    );
+      .navRail => AnimatedSizing.normal(
+        child: NavRail(onTabChanged: _onTapNavItem),
+      ),
+      .contentSidebar => const ContentSidebar(),
+    };
   }
 }
 

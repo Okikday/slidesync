@@ -12,10 +12,11 @@ import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/empty_library_view.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/courses_view/course_card.dart';
 import 'package:slidesync/shared/global/providers/course_providers.dart';
+import 'package:slidesync/shared/widgets/layout/for_desktop.dart';
 
 import 'package:slidesync/shared/widgets/progress_indicator/loading_view.dart';
 
-import 'courses_view/course_card/grid_course_card.dart';
+import 'courses_view/course_card/grid/grid_course_card.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class CoursesView extends ConsumerStatefulWidget {
@@ -48,61 +49,76 @@ class _CoursesViewState extends ConsumerState<CoursesView>
                   child: LoadingListCourseCardSkeletonizer(count: 2),
                 );
               }
-              if (libState.cardType == CardViewType.grid) {
-                return PagedSliverGrid<int, Course>(
-                  state: state,
-                  fetchNextPage: fetchNextPage,
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: DeviceUtils.isDesktop()
-                        ? ((context.deviceWidth / 3) ~/ 140)
-                        : context.deviceWidth ~/ 160,
-                    crossAxisSpacing: 12,
-                  ),
+              if (libState.cardType == .grid) {
+                return DesktopWidget(
+                  builder: (context, isDesktop) {
+                    return PagedSliverGrid<int, Course>(
+                      state: state,
+                      fetchNextPage: fetchNextPage,
+                      gridDelegate: isDesktop
+                          ? const SliverGridDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: 200,
+                              crossAxisSpacing: 12,
+                              mainAxisExtent: 200,
+                            )
+                          : const SliverGridDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: 180,
+                              crossAxisSpacing: 12,
+                              mainAxisExtent: 180,
+                            ),
 
-                  builderDelegate: PagedChildBuilderDelegate(
-                    noItemsFoundIndicatorBuilder: (context) =>
-                        EmptyLibraryView(asSliver: false),
-                    newPageProgressIndicatorBuilder: (context) =>
-                        Center(child: LoadingView(msg: "")),
-                    firstPageProgressIndicatorBuilder: (context) =>
-                        LoadingGridCourseCardSkeletonizer(count: 2),
-                    firstPageErrorIndicatorBuilder: (context) => RotatedBox(
-                      quarterTurns: 2,
-                      child: Icon(Iconsax.info_circle),
-                    ),
-                    itemBuilder: (context, item, index) => CourseCard(
-                      item,
-                      libState.cardType,
-                      onTap: () => onTapCourseCard(ref, course: item),
-                      onLongPress: () => onHoldCourseCard(ref, course: item),
-                      onTapDown: (det) => onTapDown(ref, det.globalPosition),
-                    ),
-                  ),
+                      builderDelegate: PagedChildBuilderDelegate(
+                        noItemsFoundIndicatorBuilder: (context) =>
+                            EmptyLibraryView(asSliver: false),
+                        newPageProgressIndicatorBuilder: (context) =>
+                            Center(child: LoadingView(msg: "")),
+                        firstPageProgressIndicatorBuilder: (context) =>
+                            LoadingGridCourseCardSkeletonizer(count: 2),
+                        firstPageErrorIndicatorBuilder: (context) => RotatedBox(
+                          quarterTurns: 2,
+                          child: Icon(Iconsax.info_circle),
+                        ),
+                        itemBuilder: (context, item, index) => CourseCard(
+                          item,
+                          libState.cardType,
+                          onTap: () => onTapCourseCard(ref, course: item),
+                          onLongPress: () =>
+                              onHoldCourseCard(ref, course: item),
+                          onTapDown: (det) =>
+                              onTapDown(ref, det.globalPosition),
+                        ),
+                      ),
+                    );
+                  },
                 );
               }
-              return PagedSliverList<int, Course>(
-                state: state,
-                itemExtent: 120,
-                fetchNextPage: fetchNextPage,
-                builderDelegate: PagedChildBuilderDelegate(
-                  noItemsFoundIndicatorBuilder: (context) =>
-                      EmptyLibraryView(asSliver: false),
-                  newPageProgressIndicatorBuilder: (context) =>
-                      LoadingListCourseCardSkeletonizer(count: 1),
-                  firstPageProgressIndicatorBuilder: (context) =>
-                      LoadingListCourseCardSkeletonizer(count: 2),
-                  firstPageErrorIndicatorBuilder: (context) => RotatedBox(
-                    quarterTurns: 2,
-                    child: Icon(Iconsax.info_circle),
-                  ),
-                  itemBuilder: (context, item, index) => CourseCard(
-                    item,
-                    libState.cardType,
-                    onTap: () => onTapCourseCard(ref, course: item),
-                    onLongPress: () => onHoldCourseCard(ref, course: item),
-                    onTapDown: (det) => onTapDown(ref, det.globalPosition),
-                  ),
-                ),
+              return DesktopWidget(
+                builder: (context, isDesktop) {
+                  return PagedSliverList<int, Course>(
+                    state: state,
+                    itemExtent: 120,
+                    fetchNextPage: fetchNextPage,
+                    builderDelegate: PagedChildBuilderDelegate(
+                      noItemsFoundIndicatorBuilder: (context) =>
+                          EmptyLibraryView(asSliver: false),
+                      newPageProgressIndicatorBuilder: (context) =>
+                          LoadingListCourseCardSkeletonizer(count: 1),
+                      firstPageProgressIndicatorBuilder: (context) =>
+                          LoadingListCourseCardSkeletonizer(count: 2),
+                      firstPageErrorIndicatorBuilder: (context) => RotatedBox(
+                        quarterTurns: 2,
+                        child: Icon(Iconsax.info_circle),
+                      ),
+                      itemBuilder: (context, item, index) => CourseCard(
+                        item,
+                        libState.cardType,
+                        onTap: () => onTapCourseCard(ref, course: item),
+                        onLongPress: () => onHoldCourseCard(ref, course: item),
+                        onTapDown: (det) => onTapDown(ref, det.globalPosition),
+                      ),
+                    ),
+                  );
+                },
               );
             },
           );

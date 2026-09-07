@@ -1,12 +1,10 @@
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:isar_community/isar.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/features/main/pod/home/home_pod.dart';
-import 'package:slidesync/features/main/pod/main_pod.dart';
 import 'package:slidesync/features/main/ui/actions/home/home_tab_actions.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/body/dashboard/home_dashboard.dart';
 // import 'package:slidesync/features/main/ui/widgets/home_tab_view/home_body/more_section.dart';
@@ -15,7 +13,6 @@ import 'package:slidesync/features/main/ui/widgets/home_tab_view/body/recents_se
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
-import 'package:slidesync/shared/widgets/state/absorber.dart';
 
 class HomeBody extends ConsumerStatefulWidget {
   const HomeBody({super.key});

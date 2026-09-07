@@ -2,7 +2,6 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/features/browse/ui/widgets/course/course_view/course_view_header/src/progress_shape_animated_widget.dart';
@@ -13,6 +12,7 @@ import 'package:slidesync/shared/global/providers/course_providers.dart';
 import 'package:slidesync/shared/global/providers/course_track_providers.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
+import 'package:slidesync/shared/widgets/decorations/backdrop_shadow.dart';
 import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
@@ -55,12 +55,22 @@ class CourseViewHeader extends ConsumerWidget {
           ),
         ),
         titlePadding: EdgeInsets.zero,
-        title: ColoredBox(
-          color: theme.background.withAlpha(200),
-          child: _HeaderContent(
-            courseId: courseId,
-            scrollOffsetNotifier: scrollOffsetNotifier,
-          ),
+        title: Stack(
+          children: [
+            BackdropShadow(
+              height: courseDetailsAppBarHeight + 8,
+              color: theme.background.withValues(alpha: 0.5),
+              shadowDirection: (.topCenter, .bottomCenter),
+              applyBlur: true,
+            ),
+            Padding(
+              padding: const .only(top: 8),
+              child: _HeaderContent(
+                courseId: courseId,
+                scrollOffsetNotifier: scrollOffsetNotifier,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -210,7 +220,7 @@ class _AboveHeader extends ConsumerWidget {
               spacing: 8,
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (!DeviceUtils.isDesktop()) AppBackButton(),
+                const AppBackButton(),
 
                 if (courseSelectData.courseCode.isNotEmpty)
                   CustomTextButton(

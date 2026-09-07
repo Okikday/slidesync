@@ -23,7 +23,8 @@ class CourseView extends ConsumerStatefulWidget {
   ConsumerState<CourseView> createState() => _CourseViewState();
 }
 
-class _CourseViewState extends ConsumerState<CourseView> with ScrollOffsetNotifierMixin {
+class _CourseViewState extends ConsumerState<CourseView>
+    with ScrollOffsetNotifierMixin {
   @override
   Widget build(BuildContext context) {
     ref.listen(CourseProviders.watchCourseProvider(widget.courseId), (p, n) {});
@@ -40,9 +41,14 @@ class _CourseViewState extends ConsumerState<CourseView> with ScrollOffsetNotifi
         controller: scrollController,
         physics: const NeverScrollableScrollPhysics(),
         headerSliverBuilder: (context, innerBoxIsScrolled) => [
-          CourseViewHeader(courseId: widget.courseId, scrollOffsetNotifier: scrollOffsetNotifier),
-          if (!DeviceUtils.isDesktop())
-            PinnedHeaderSliver(child: AdjustSpacing(scrollOffsetNotifier: scrollOffsetNotifier)),
+          CourseViewHeader(
+            courseId: widget.courseId,
+            scrollOffsetNotifier: scrollOffsetNotifier,
+          ),
+          if (!DeviceUtils.isDesktopSize(context))
+            PinnedHeaderSliver(
+              child: AdjustSpacing(scrollOffsetNotifier: scrollOffsetNotifier),
+            ),
         ],
         body: ModulesListWithSearchScrollView(
           courseId: widget.courseId,
@@ -68,8 +74,10 @@ class AdjustSpacing extends ConsumerWidget {
 
     return ValueListenableBuilder(
       valueListenable: scrollOffsetNotifier,
-      builder: (context, scrollOffset, child) =>
-          ConstantSizing.columnSpacing(lerpDouble(0, maxHeight, (scrollOffset / totalHeight).clamp(0, 1)) ?? 0.0),
+      builder: (context, scrollOffset, child) => ConstantSizing.columnSpacing(
+        lerpDouble(0, maxHeight, (scrollOffset / totalHeight).clamp(0, 1)) ??
+            0.0,
+      ),
     );
   }
 }

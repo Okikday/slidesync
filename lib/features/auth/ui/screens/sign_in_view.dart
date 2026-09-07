@@ -7,7 +7,7 @@ import 'package:slidesync/core/storage/hive_data/hive_data_paths.dart';
 import 'package:slidesync/features/ask_ai/ui/widgets/shimmery_gradient_background.dart';
 import 'package:slidesync/features/auth/ui/actions/sign_in_actions.dart';
 
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/app/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/app/assets/assets.gen.dart';
 import 'package:slidesync/shared/widgets/layout/app_scaffold.dart';

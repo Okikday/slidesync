@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:slidesync/routes/transition.dart';
+import 'package:slidesync/app/routes/transition.dart';
 
 class ScaleClickWrapper extends ConsumerStatefulWidget {
   final double borderRadius;

@@ -11,7 +11,7 @@ import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/features/browse/ui/screens/course_view.dart';
 import 'package:slidesync/features/browse/ui/widgets/module/modules_list/src/collections_search_bar.dart';
 import 'package:slidesync/features/settings/providers/settings_provider.dart';
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/app/routes/routes.dart';
 import 'package:slidesync/features/browse/ui/widgets/module/module_card.dart';
 import 'package:slidesync/features/browse/ui/widgets/course/shared/create_collection_bottom_sheet.dart';
 import 'package:slidesync/features/browse/ui/widgets/module/no_collection_view.dart';
@@ -38,10 +38,12 @@ class ModulesListWithSearchScrollView extends ConsumerStatefulWidget {
   final void Function(Module module)? onTapModuleCard;
   final bool readOnly;
   @override
-  ConsumerState<ModulesListWithSearchScrollView> createState() => ModulesListWithSearchScrollViewState();
+  ConsumerState<ModulesListWithSearchScrollView> createState() =>
+      ModulesListWithSearchScrollViewState();
 }
 
-class ModulesListWithSearchScrollViewState extends ConsumerState<ModulesListWithSearchScrollView> {
+class ModulesListWithSearchScrollViewState
+    extends ConsumerState<ModulesListWithSearchScrollView> {
   final textSearchNotifier = ValueNotifier<String>('');
 
   @override
@@ -55,9 +57,12 @@ class ModulesListWithSearchScrollViewState extends ConsumerState<ModulesListWith
     return SmoothCustomScrollView(
       controller: widget.controller,
       slivers: [
-        if (widget.topPadding != null) SliverToBoxAdapter(child: TopPadding(withHeight: widget.topPadding)),
+        if (widget.topPadding != null)
+          SliverToBoxAdapter(child: TopPadding(withHeight: widget.topPadding)),
 
-        widget.isPinned ? PinnedHeaderSliver(child: _buildSearchBar()) : SliverFloatingHeader(child: _buildSearchBar()),
+        widget.isPinned
+            ? PinnedHeaderSliver(child: _buildSearchBar())
+            : SliverFloatingHeader(child: _buildSearchBar()),
 
         ModulesListView(
           courseId: widget.courseId,
@@ -66,7 +71,11 @@ class ModulesListWithSearchScrollViewState extends ConsumerState<ModulesListWith
           readOnly: widget.readOnly,
         ),
 
-        const SliverToBoxAdapter(child: BottomPadding(withHeight: kToolbarHeight + ConstantSizing.spaceMedium)),
+        const SliverToBoxAdapter(
+          child: BottomPadding(
+            withHeight: kToolbarHeight + ConstantSizing.spaceMedium,
+          ),
+        ),
       ],
     );
   }
@@ -76,10 +85,12 @@ class ModulesListWithSearchScrollViewState extends ConsumerState<ModulesListWith
     onChanged: (text) => textSearchNotifier.value = text,
 
     onTap: () {
-      if (!DeviceUtils.isDesktop()) {
-        PrimaryScrollController.of(
-          context,
-        ).animateTo((courseDetailsAppBarHeight + 8), duration: Durations.medium4, curve: CustomCurves.defaultIosSpring);
+      if (!DeviceUtils.isDesktopSize(context)) {
+        PrimaryScrollController.of(context).animateTo(
+          (courseDetailsAppBarHeight + 8),
+          duration: Durations.medium4,
+          curve: CustomCurves.defaultIosSpring,
+        );
       }
     },
     showTrailing: widget.showMoreOptionsButton,
@@ -99,13 +110,18 @@ class ModulesListView extends ConsumerWidget {
   final void Function(Module module)? onTapModuleCard;
   final bool readOnly;
 
-  List<Module> filterModules(List<Module> modules, String search) => search.trim().isEmpty
+  List<Module> filterModules(List<Module> modules, String search) =>
+      search.trim().isEmpty
       ? modules
-      : modules.where((e) => e.title.toLowerCase().contains(search.toLowerCase())).toList();
+      : modules
+            .where((e) => e.title.toLowerCase().contains(search.toLowerCase()))
+            .toList();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final watchCollectionsAsync = ref.watch(CollectionsProviders.watchCollectionsInCourseProvider(courseId));
+    final watchCollectionsAsync = ref.watch(
+      CollectionsProviders.watchCollectionsInCourseProvider(courseId),
+    );
     return watchCollectionsAsync.when(
       data: (collections) {
         if (collections.isEmpty) {
@@ -136,7 +152,8 @@ class ModulesListView extends ConsumerWidget {
               padding: EdgeInsets.symmetric(horizontal: 16),
               sliver: SliverList.separated(
                 itemCount: filteredModules.length,
-                separatorBuilder: (context, index) => const SizedBox(height: 16),
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 16),
                 itemBuilder: (context, index) {
                   final animEffect = <Effect>[
                     const FadeEffect(end: 1, begin: 0),
@@ -170,9 +187,14 @@ class ModulesListView extends ConsumerWidget {
     if (onTapModuleCard != null) {
       onTapModuleCard!(module);
     } else {
-      final isFullScreen = DeviceUtils.isDesktop() ? (await ref.readSettings).showMaterialsInFullScreen : false;
+      final isFullScreen = DeviceUtils.isDesktopSize(ref.context)
+          ? (await ref.readSettings).showMaterialsInFullScreen
+          : false;
       Result.tryRun(
-        () => ref.context.pushNamed("${Routes.moduleContentsView.name}${isFullScreen ? "full" : ''}", extra: module),
+        () => ref.context.pushNamed(
+          "${Routes.moduleContentsView.name}${isFullScreen ? "full" : ''}",
+          extra: module,
+        ),
       );
     }
   }
@@ -181,7 +203,10 @@ class ModulesListView extends ConsumerWidget {
     child: Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        RotatedBox(quarterTurns: 2, child: Icon(HugeIconsSolid.informationCircle, size: 48)),
+        RotatedBox(
+          quarterTurns: 2,
+          child: Icon(HugeIconsSolid.informationCircle, size: 48),
+        ),
         CustomText("Error loading course!"),
       ],
     ),

@@ -1,5 +1,5 @@
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/app/routes/routes.dart';
 import 'package:slidesync/features/settings/ui/screens/settings_view.dart';
 
 final settingsRoute = GoRoute(

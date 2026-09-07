@@ -14,7 +14,7 @@ import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/features/main/pod/main_pod.dart';
 import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/app/routes/routes.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:window_manager/window_manager.dart';
@@ -27,7 +27,7 @@ mixin HomeTabActions {
       prev = cb;
       return !cb;
     });
-    if (DeviceUtils.isDesktop()) {
+    if (DeviceUtils.isDesktopSize(ref.context)) {
       windowManager.setFullScreen(!prev);
       windowManager.maximize(vertically: true);
     }

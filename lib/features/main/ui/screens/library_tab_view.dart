@@ -31,7 +31,7 @@ class _LibraryTabViewState extends ConsumerState<LibraryTabView>
   void scrollListener() {
     final currOffset = scrollController.offset;
     final lastOffset = ref.read(LibraryPod.scrollOffset);
-    final tolerance = libraryAppBarMaxHeight + scrollTolerance;
+    final tolerance = libraryAppBarMaxHeight(context) + scrollTolerance;
     if ((currOffset > tolerance && lastOffset > tolerance) ||
         (currOffset - lastOffset).abs() < 0.5) {
       return;

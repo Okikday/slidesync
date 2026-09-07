@@ -25,8 +25,8 @@ class _SearchNavItem extends ConsumerWidget {
             context,
             PageAnimation.pageRouteBuilder(
               const LibrarySearchView(),
-              curve: CustomCurves.defaultIosSpring,
-              duration: 700.inMs,
+              curve: KCurves.defaultIosSpring,
+              duration: KNumDurationExtension(700).inMs,
               type: TransitionType.combine(
                 transitions: [
                   TransitionType.scale(
@@ -71,6 +71,7 @@ class _BuildNavItem extends StatelessWidget {
       triggerMode: TooltipTriggerMode.longPress,
       message: tooltip,
       child: CustomElevatedButton(
+        overlayColor: Colors.transparent,
         onClick: onTap,
         fixedSize: Size(72, 64),
         // minimumSize: Size(70, 64),
@@ -80,7 +81,7 @@ class _BuildNavItem extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             icon,
-            ConstantSizing.columnSpacing(4),
+            4.toHBox,
             AppText(
               label,
               fontSize: 11,

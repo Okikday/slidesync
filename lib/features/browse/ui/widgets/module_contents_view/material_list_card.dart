@@ -16,7 +16,7 @@ import 'package:slidesync/features/browse/ui/widgets/module_contents_view/previe
 // import 'package:slidesync/features/browse/ui/actions/module_contents/modify_contents_action.dart';
 import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
 import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/app/routes/routes.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/formatter.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
@@ -144,7 +144,7 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard>
             final content = widget.content;
             final module = await ModuleRepo.getByUid(content.parentId);
             if (module == null) return;
-            if ((DeviceUtils.isDesktop())) GlobalNav.popGlobal();
+            if ((DeviceUtils.isDesktopSize(context))) GlobalNav.popGlobal();
             await 100.inMs.delay();
             GlobalNav.withContext(
               (c) => (context.mounted ? context : c).pushNamed(
@@ -169,7 +169,7 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard>
       //   },
       // ),
       CourseMaterialListCardActionModel(
-        label: DeviceUtils.isDesktop() ? "Copy content" : "Share",
+        label: DeviceUtils.isDesktopSize(context) ? "Copy content" : "Share",
         icon: Iconsax.share_copy,
         onTap: () {
           ShareContentActions.shareContent(context, content.uid);
@@ -301,7 +301,9 @@ class _CourseMaterialListCardState extends ConsumerState<MaterialListCard>
                       ),
                       ConstantSizing.rowSpacingMedium,
                       CustomElevatedButton(
-                        pixelHeight: DeviceUtils.isDesktop() ? 32 : null,
+                        pixelHeight: DeviceUtils.isDesktopSize(context)
+                            ? 32
+                            : null,
                         backgroundColor: theme.onSurface.withAlpha(10),
                         onClick: () {
                           // context.pushNamed(Routes.contentGate.name, extra: content);
@@ -365,7 +367,7 @@ class _AnimatedCourseMaterialListCardMenuState
             scale: widget.expandAnim,
             child: CustomElevatedButton(
               borderRadius: 24,
-              pixelHeight: DeviceUtils.isDesktop() ? 32 : null,
+              pixelHeight: DeviceUtils.isDesktopSize(context) ? 32 : null,
               backgroundColor: theme.primaryColor.withAlpha(40),
               onClick: cam[index].onTap,
               child: Row(

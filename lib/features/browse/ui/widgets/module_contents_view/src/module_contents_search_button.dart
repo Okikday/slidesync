@@ -29,7 +29,7 @@ class ModuleContentsSearchButton extends ConsumerWidget {
       dividerColor: theme.supportingText.withAlpha(40),
 
       builder: (context, controller) => BuildButton(
-        size: DeviceUtils.isDesktop() ? Size.square(48) : null,
+        size: DeviceUtils.isDesktopSize(context) ? Size.square(48) : null,
         onTap: () {
           controller.openView();
         },

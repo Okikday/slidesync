@@ -7,7 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:slidesync/app/assets/assets.dart';
 import 'package:slidesync/core/constants/src/enums/enums.dart';
 import 'package:slidesync/data/models/progress_track_models/content_track.dart';
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/app/routes/routes.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 
 class HomeDashboard extends ConsumerWidget {

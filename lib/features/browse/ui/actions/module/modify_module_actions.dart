@@ -9,7 +9,7 @@ import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
-import 'package:slidesync/routes/app_router.dart';
+import 'package:slidesync/app/routes/app_router.dart';
 import 'package:slidesync/features/browse/logic/src/collections/modify_collection_uc.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 
@@ -25,7 +25,9 @@ class ModifyModuleActions {
       return "Collections under a course must be under 30";
     }
     final newCollection = Module.create(parentId: course.uid, title: title);
-    final String? result = await ModuleRepo.addCollectionNoDuplicateTitle(newCollection);
+    final String? result = await ModuleRepo.addCollectionNoDuplicateTitle(
+      newCollection,
+    );
     return result;
   }
 
@@ -34,8 +36,12 @@ class ModifyModuleActions {
     required String text,
     required String collectionTitle,
   }) async {
-    void showMessage(String message) =>
-        UiUtils.showFlushBar(context, msg: message, flushbarPosition: FlushbarPosition.TOP, vibe: FlushbarVibe.warning);
+    void showMessage(String message) => UiUtils.showFlushBar(
+      context,
+      msg: message,
+      flushbarPosition: FlushbarPosition.TOP,
+      vibe: FlushbarVibe.warning,
+    );
     final String message;
     if (text.trim().isEmpty) {
       message = "Try typing into the Field!";
@@ -54,7 +60,11 @@ class ModifyModuleActions {
     }
   }
 
-  Future<String?> onCreateNewCollection(BuildContext context, {required String text, required String courseId}) async {
+  Future<String?> onCreateNewCollection(
+    BuildContext context, {
+    required String text,
+    required String courseId,
+  }) async {
     if (text.isNotEmpty && text.length > 1 && text.length < 256) {
       final Result<String?> createOutcome = await Result.tryRunAsync<String?>(
         () async => await _addCollectionToCourse(courseId, text),
@@ -73,10 +83,16 @@ class ModifyModuleActions {
   }
 
   Future<String?> renameCollectionAction(Module collection) async {
-    final Result<String?> renameOutcome = await Result.tryRunAsync<String?>(() async {
-      final String? result = await ModuleRepo.addCollectionNoDuplicateTitle(collection);
-      return (result == null ? result : "An error occured while renaming collection!");
-    });
+    final Result<String?> renameOutcome = await Result.tryRunAsync<String?>(
+      () async {
+        final String? result = await ModuleRepo.addCollectionNoDuplicateTitle(
+          collection,
+        );
+        return (result == null
+            ? result
+            : "An error occured while renaming collection!");
+      },
+    );
     if (renameOutcome.isSuccess && renameOutcome.data == null) {
       return null;
     } else if (renameOutcome.isSuccess) {
@@ -87,11 +103,16 @@ class ModifyModuleActions {
     }
   }
 
-  Future<Course?> pickMoveTargetCourse(BuildContext context, {required String excludeCourseId}) async {
+  Future<Course?> pickMoveTargetCourse(
+    BuildContext context, {
+    required String excludeCourseId,
+  }) async {
     final courses = await CourseRepo.getAllCourses();
     if (!context.mounted || courses.isEmpty) return null;
 
-    final availableCourses = courses.where((course) => course.uid != excludeCourseId).toList();
+    final availableCourses = courses
+        .where((course) => course.uid != excludeCourseId)
+        .toList();
     if (availableCourses.isEmpty) return null;
 
     return await showModalBottomSheet<Course>(
@@ -106,7 +127,11 @@ class ModifyModuleActions {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CustomText('Move collection to', fontSize: 18, fontWeight: FontWeight.w700),
+                CustomText(
+                  'Move collection to',
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                ),
                 const SizedBox(height: 12),
                 Flexible(
                   child: ListView.separated(
@@ -116,9 +141,17 @@ class ModifyModuleActions {
                     itemBuilder: (_, index) {
                       final course = availableCourses[index];
                       return ListTile(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        tileColor: Theme.of(sheetContext).colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
-                        title: CustomText(course.title, fontWeight: FontWeight.w600),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        tileColor: Theme.of(sheetContext)
+                            .colorScheme
+                            .surfaceContainerHighest
+                            .withValues(alpha: 0.35),
+                        title: CustomText(
+                          course.title,
+                          fontWeight: FontWeight.w600,
+                        ),
                         subtitle: CustomText(course.description, fontSize: 12),
                         onTap: () => Navigator.of(sheetContext).pop(course),
                       );
@@ -133,9 +166,18 @@ class ModifyModuleActions {
     );
   }
 
-  Future<void> onRenameCollection(BuildContext context, {required String newText, required Module collection}) async {
-    if (newText.isNotEmpty && newText != collection.title && newText.length >= 2 && newText.length < 256) {
-      final String? outcome = await renameCollectionAction(collection.copyWith(title: newText));
+  Future<void> onRenameCollection(
+    BuildContext context, {
+    required String newText,
+    required Module collection,
+  }) async {
+    if (newText.isNotEmpty &&
+        newText != collection.title &&
+        newText.length >= 2 &&
+        newText.length < 256) {
+      final String? outcome = await renameCollectionAction(
+        collection.copyWith(title: newText),
+      );
       if (context.mounted) CustomDialog.hide(context);
       if (context.mounted) {
         if (outcome == null) {
@@ -145,7 +187,11 @@ class ModifyModuleActions {
             vibe: FlushbarVibe.success,
           );
         } else {
-          await UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.warning);
+          await UiUtils.showFlushBar(
+            context,
+            msg: outcome,
+            vibe: FlushbarVibe.warning,
+          );
         }
         return;
       }
@@ -154,7 +200,10 @@ class ModifyModuleActions {
     }
   }
 
-  Future<void> onDeleteCollection(BuildContext context, {required Module collection}) async {
+  Future<void> onDeleteCollection(
+    BuildContext context, {
+    required Module collection,
+  }) async {
     GlobalNav.popGlobal();
     final BuildContext? newContext = rootNavigatorKey.currentContext;
 
@@ -183,7 +232,11 @@ class ModifyModuleActions {
       } else {
         log("${deleteOutcome.message}");
         if (newContext.mounted) {
-          await UiUtils.showFlushBar(newContext, msg: "Error deleting collection", vibe: FlushbarVibe.error);
+          await UiUtils.showFlushBar(
+            newContext,
+            msg: "Error deleting collection",
+            vibe: FlushbarVibe.error,
+          );
         }
       }
     }

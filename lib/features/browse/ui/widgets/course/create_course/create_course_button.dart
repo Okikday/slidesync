@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/shared/global/notifiers/primitive_type_notifiers.dart';
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/app/routes/routes.dart';
 import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/course/course.dart';
@@ -86,7 +86,7 @@ class CreateCourseButton extends ConsumerWidget {
             .doNext((value) async {
               GlobalNav.withContextAsync((context) async {
                 if (pushToCreated) {
-                  DeviceUtils.isDesktop()
+                  DeviceUtils.isDesktopSize(context)
                       ? context.pushReplacementNamed(
                           Routes.courseDetails.name,
                           extra: value.uid,

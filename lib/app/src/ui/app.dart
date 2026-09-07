@@ -6,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/core/interop/src/receive_sharing_handler.dart';
 import 'package:slidesync/core/utils/storage_utils/file_utils.dart';
 import 'package:slidesync/features/main/pod/main_pod.dart';
-import 'package:slidesync/routes/app_router.dart';
+import 'package:slidesync/app/routes/app_router.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/theme/pod/theme_pod.dart';
 

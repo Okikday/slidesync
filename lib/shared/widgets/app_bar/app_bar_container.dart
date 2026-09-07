@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
-import 'package:soft_edge_blur/soft_edge_blur.dart';
+import 'package:slidesync/shared/widgets/decorations/backdrop_shadow.dart';
 
 export 'app_bar_container_child.dart';
 
@@ -60,35 +60,20 @@ class _AppBarContainerWidget extends ConsumerWidget {
     final topPadding = context.topPadding;
     return Column(
       children: [
-        SizedBox(
-          height: topPadding,
-          child: ColoredBox(color: scaffoldBgColor ?? context.scaffoldBackgroundColor, child: SizedBox.expand()),
-        ),
         Stack(
           children: [
             ClipRRect(
               child: SizedBox(
                 height: 72,
 
-                child: SoftEdgeBlur(
-                  edges: [
-                    EdgeBlur(
-                      type: EdgeType.topEdge,
-                      size: 72,
-                      sigma: 30,
-                      tintColor: scaffoldBgColor ?? context.scaffoldBackgroundColor,
-                      controlPoints: [
-                        ControlPoint(position: 0.4, type: ControlPointType.visible),
-                        ControlPoint(position: 1.0, type: ControlPointType.transparent),
-                      ],
-                    ),
-                  ],
-                  child: SizedBox.expand(),
+                child: BackdropShadow(
+                  height: 72 + topPadding,
+                  shadowDirection: (.topCenter, .bottomCenter),
                 ),
               ),
             ),
 
-            child,
+            Padding(padding: const .only(top: 8), child: child),
           ],
         ),
       ],

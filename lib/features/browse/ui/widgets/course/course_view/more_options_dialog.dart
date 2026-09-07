@@ -21,7 +21,7 @@ import 'package:slidesync/features/sync/providers/upload_feed_provider.dart';
 import 'package:slidesync/features/sync/providers/transfer_state_provider.dart';
 import 'package:slidesync/features/auth/logic/usecases/auth_uc/user_data_functions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/app/routes/routes.dart';
 import 'package:slidesync/features/browse/ui/widgets/course/course_view/course_view_header/src/animated_shape.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 

@@ -28,6 +28,18 @@ class ThemePod extends Notifier<ThemeState> {
     ref.read(_themeNotifier.notifier).set(state);
   }
 
+  void toggleThemeMode() {
+    final currentTheme = state.theme;
+    state = state.copyWith(
+      theme: currentTheme.copyWith(
+        currentBrightness: currentTheme.currentBrightness == .light
+            ? .dark
+            : .light,
+      ),
+      useSystemBrightness: false,
+    );
+  }
+
   void setUseSystemBrightness(bool useSystemBrightness) {
     state = state.copyWith(useSystemBrightness: useSystemBrightness);
     ref.read(_themeNotifier.notifier).set(state);

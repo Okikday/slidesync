@@ -4,7 +4,13 @@ import 'package:slidesync/features/main/ui/screens/home_tab_view.dart';
 import 'package:slidesync/features/main/ui/screens/library_tab_view.dart';
 import 'package:slidesync/features/sync/ui/screens/sync_view.dart';
 
-final mainViewTabOptions = <Widget, ({String label, String tooltip, IconData icon, IconData activeIcon})>{
+typedef TabOptionDetails = ({
+  String label,
+  String tooltip,
+  IconData icon,
+  IconData activeIcon,
+});
+final mainViewTabOptions = <Widget, TabOptionDetails>{
   const HomeTabView(): (
     label: "Home",
     tooltip: "Home",

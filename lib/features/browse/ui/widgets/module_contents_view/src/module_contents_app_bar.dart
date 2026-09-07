@@ -9,7 +9,7 @@ import 'package:slidesync/core/utils/result.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/features/browse/providers/module_contents_provider.dart';
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/app/routes/routes.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/helpers/icon_helper.dart';
 import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
@@ -34,7 +34,7 @@ class ModuleContentsAppBar extends ConsumerWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (DeviceUtils.isDesktop() && !isFullScreen) ...[
+        if (DeviceUtils.isDesktopSize(context) && !isFullScreen) ...[
           CustomElevatedButton(
             onClick: () async {
               context.pop();
@@ -173,7 +173,7 @@ class ModuleContentsAppBar extends ConsumerWidget {
                   },
                 ),
 
-                if (DeviceUtils.isDesktop())
+                if (DeviceUtils.isDesktopSize(context))
                   PopupMenuAction(
                     title: "Go back to Course Details",
                     iconData: HugeIconsStroke.arrowLeft01,

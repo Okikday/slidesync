@@ -11,7 +11,7 @@ import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
 import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
 import 'package:slidesync/features/study/ui/actions/content_view_gate_actions.dart';
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/app/routes/routes.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 
 mixin RecentDialogActions {
@@ -20,12 +20,21 @@ mixin RecentDialogActions {
   //==============================================================================
 
   /// Removes content from recents by setting its lastRead to null and progress to 0.0
-  Future<void> onRemoveFromRecents(BuildContext context, ContentTrack contentTrack) async {
+  Future<void> onRemoveFromRecents(
+    BuildContext context,
+    ContentTrack contentTrack,
+  ) async {
     // final contentId = contentId;
     if (context.mounted) UiUtils.hideDialog(context);
-    await Result.tryRunAsync(() => ContentTrackRepo.clearLastRead(contentTrack.uid));
+    await Result.tryRunAsync(
+      () => ContentTrackRepo.clearLastRead(contentTrack.uid),
+    );
     if (context.mounted) {
-      await UiUtils.showFlushBar(context, msg: "Removed from recent reads!", vibe: FlushbarVibe.none);
+      await UiUtils.showFlushBar(
+        context,
+        msg: "Removed from recent reads!",
+        vibe: FlushbarVibe.none,
+      );
     }
   }
 
@@ -40,7 +49,8 @@ mixin RecentDialogActions {
       }
       return;
     }
-    if (context.mounted) ContentViewGateActions.redirectToViewer(ref, newContent);
+    if (context.mounted)
+      ContentViewGateActions.redirectToViewer(ref, newContent);
   }
 
   /// Adds content to bookmarks collection
@@ -48,11 +58,20 @@ mixin RecentDialogActions {
     final content = await ModuleContentRepo.getByUid(contentId);
     if (ref.context.mounted) UiUtils.hideDialog(ref.context);
     if (content == null) {
-      GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "Couldn't add content..."));
+      GlobalNav.withContext(
+        (context) =>
+            UiUtils.showFlushBar(context, msg: "Couldn't add content..."),
+      );
       return;
     }
-    await ModuleRepo.addContentsToAppCollection(AppDefaultModules.bookmarks, contents: [content]);
-    GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "Added content to bookmarks"));
+    await ModuleRepo.addContentsToAppCollection(
+      AppDefaultModules.bookmarks,
+      contents: [content],
+    );
+    GlobalNav.withContext(
+      (context) =>
+          UiUtils.showFlushBar(context, msg: "Added content to bookmarks"),
+    );
   }
 
   /// Opens content viewer for the contentId provided, with openOutsideApp flag set to true
@@ -75,7 +94,10 @@ mixin RecentDialogActions {
     if (url != null) {
       Clipboard.setData(ClipboardData(text: url));
       GlobalNav.withContext(
-        (c) => UiUtils.showFlushBar(context.mounted ? context : c, msg: "Link copied to clipboard"),
+        (c) => UiUtils.showFlushBar(
+          context.mounted ? context : c,
+          msg: "Link copied to clipboard",
+        ),
       );
     }
   }
@@ -87,7 +109,10 @@ mixin RecentDialogActions {
     final collection = await ModuleRepo.getByUid(content.parentId);
     if (collection == null) return;
     GlobalNav.withContext((c) {
-      (context.mounted ? context : c).pushReplacementNamed(Routes.moduleContentsView.name, extra: collection);
+      (context.mounted ? context : c).pushReplacementNamed(
+        Routes.moduleContentsView.name,
+        extra: collection,
+      );
     });
   }
 }

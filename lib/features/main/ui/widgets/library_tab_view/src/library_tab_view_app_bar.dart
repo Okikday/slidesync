@@ -14,7 +14,8 @@ import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/state/absorber.dart';
 import 'package:soft_edge_blur/soft_edge_blur.dart';
 
-final double libraryAppBarMaxHeight = DeviceUtils.isDesktop() ? 160 : 220;
+double libraryAppBarMaxHeight(BuildContext context) =>
+    DeviceUtils.isDesktopSize(context) ? 160.0 : 220.0;
 const double libraryAppBarMinHeight = kToolbarHeight;
 
 class LibraryTabViewAppBar extends ConsumerWidget {
@@ -27,7 +28,7 @@ class LibraryTabViewAppBar extends ConsumerWidget {
     return SliverAppBar(
       pinned: true,
       collapsedHeight: libraryAppBarMinHeight,
-      expandedHeight: libraryAppBarMaxHeight,
+      expandedHeight: libraryAppBarMaxHeight(context),
       surfaceTintColor: Colors.transparent,
       backgroundColor: Colors.transparent,
       // backgroundColor: theme.background.withAlpha(200),

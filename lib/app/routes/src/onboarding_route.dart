@@ -1,8 +1,8 @@
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/app/routes/routes.dart';
 import 'package:slidesync/features/auth/ui/screens/onboarding_1.dart';
 import 'package:slidesync/features/auth/ui/screens/welcome_view.dart';
-import 'package:slidesync/routes/transition.dart';
+import 'package:slidesync/app/routes/transition.dart';
 
 final onboardingRoute = GoRoute(
   name: Routes.welcome.name,
@@ -12,7 +12,8 @@ final onboardingRoute = GoRoute(
     GoRoute(
       name: Routes.onboarding1.name,
       path: Routes.onboarding1.subPath,
-      pageBuilder: (context, state) => defaultTransition(state.pageKey, child: Onboarding1()),
+      pageBuilder: (context, state) =>
+          defaultTransition(state.pageKey, child: Onboarding1()),
     ),
   ],
 );

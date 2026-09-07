@@ -9,8 +9,8 @@ import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/features/browse/ui/actions/course/modify_course_actions.dart';
 import 'package:slidesync/features/browse/ui/widgets/course/shared/edit_course_bottom_sheet.dart';
 import 'package:slidesync/features/share/ui/screens/export/course_export_manager.dart';
-import 'package:slidesync/routes/app_router.dart';
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/app/routes/app_router.dart';
+import 'package:slidesync/app/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/file_path/file_path.dart';
 import 'package:slidesync/data/models/course/course.dart';
@@ -100,7 +100,9 @@ class CourseCardContextMenu extends ConsumerWidget {
                         spacing: 12,
                         children: [
                           SizedBox.square(
-                            dimension: DeviceUtils.isDesktop() ? 60 : 50,
+                            dimension: DeviceUtils.isDesktopSize(context)
+                                ? 60
+                                : 50,
                             child: Stack(
                               clipBehavior: Clip.hardEdge,
                               fit: StackFit.expand,

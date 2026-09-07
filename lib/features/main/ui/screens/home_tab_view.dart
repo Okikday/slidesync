@@ -61,7 +61,7 @@ class _HomeTabViewState extends ConsumerState<HomeTabView>
     // final tabIndex = MainPod.me.select((s) => s.tabIndex).watch(ref);
     return NestedScrollView(
       controller: scrollController,
-      physics: DeviceUtils.isDesktop()
+      physics: DeviceUtils.isDesktopSize(context)
           ? const NeverScrollableScrollPhysics()
           : null,
       headerSliverBuilder: (context, isInnerBoxScrolled) {

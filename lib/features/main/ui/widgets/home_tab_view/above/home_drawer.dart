@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:slidesync/features/auth/ui/actions/sign_in_actions.dart';
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/app/routes/routes.dart';
 import 'package:slidesync/features/auth/logic/usecases/auth_uc/user_data_functions.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/progress_indicator/loading_logo.dart';
@@ -16,6 +16,7 @@ class HomeDrawer extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context).custom;
+    final data = UserDataFunctions.me.getUserDetails().data;
     return PopScope(
       onPopInvokedWithResult: (didPop, result) =>
           Scaffold.of(context).closeDrawer(),
@@ -29,109 +30,44 @@ class HomeDrawer extends ConsumerWidget {
                 padding: const EdgeInsets.only(left: 12, right: 12),
                 child: Row(
                   children: [
-                    FutureBuilder(
-                      future: UserDataFunctions.me.getUserDetails(),
-                      builder: (context, asyncSnapshot) {
-                        if (asyncSnapshot.hasData &&
-                            asyncSnapshot.data != null &&
-                            asyncSnapshot.data?.data != null) {
-                          return DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: theme.onSecondaryColor,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: theme.supportingText.withValues(
-                                  alpha: 0.1,
-                                ),
-                                width: 2,
-                              ),
-                            ),
-                            child: CircleAvatar(
-                              radius: 40,
-                              backgroundColor: theme.altBackgroundPrimary,
-                              backgroundImage: CachedNetworkImageProvider(
-                                asyncSnapshot.data!.data!.photoURL!,
-                              ),
-                            ),
-                          );
-                        }
-                        return Container(
-                          width: 64,
-                          height: 64,
-                          decoration: BoxDecoration(
-                            color: theme.onSecondaryColor,
-                            shape: BoxShape.circle,
-                            border: Border.all(
-                              color: theme.supportingText.withValues(
-                                alpha: 0.1,
-                              ),
-                            ),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16.0),
-                            child: LoadingLogo(
-                              size: 24,
-                              animate: false,
-                              color: theme.secondary,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
+                    ProfileAvatar(photoURL: data?.photoURL ?? ""),
 
                     ConstantSizing.rowSpacingMedium,
-                    FutureBuilder(
-                      future: UserDataFunctions.me.getUserDetails(),
-                      builder: (context, asyncSnapshot) {
-                        if (asyncSnapshot.hasData &&
-                            asyncSnapshot.data != null &&
-                            asyncSnapshot.data?.data != null) {
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              CustomText(
-                                asyncSnapshot.data!.data!.displayName,
-                                color: theme.onBackground,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              ConstantSizing.columnSpacingSmall,
-                              CustomText(
-                                asyncSnapshot.data!.data!.email,
+                    Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        CustomText(
+                          data?.displayName ?? "Guest User",
+                          color: theme.onBackground,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        ConstantSizing.columnSpacingSmall,
+                        data?.email != null
+                            ? CustomText(
+                                data!.email,
                                 color: theme.supportingText.withValues(
                                   alpha: 0.6,
                                 ),
                                 overflow: TextOverflow.ellipsis,
+                              )
+                            : CustomElevatedButton(
+                                label: "Sign in",
+                                backgroundColor: theme.primary,
+                                textColor: theme.onPrimary,
+                                pixelWidth: 80,
+                                pixelHeight: 32,
+                                borderRadius: 16,
+                                onClick: () async {
+                                  await SignInActions().signInWithGoogle(
+                                    context,
+                                  );
+                                  if (context.mounted) {
+                                    Scaffold.of(context).closeDrawer();
+                                  }
+                                },
                               ),
-                            ],
-                          );
-                        }
-                        return Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            CustomText(
-                              "Unknown User",
-                              color: theme.onBackground,
-                            ),
-                            ConstantSizing.columnSpacingSmall,
-                            CustomElevatedButton(
-                              label: "Sign in",
-                              backgroundColor: theme.primary,
-                              textColor: theme.onPrimary,
-                              pixelWidth: 80,
-                              pixelHeight: 32,
-                              borderRadius: 16,
-                              onClick: () async {
-                                await SignInActions().signInWithGoogle(context);
-                                if (context.mounted) {
-                                  Scaffold.of(context).closeDrawer();
-                                }
-                              },
-                            ),
-                          ],
-                        );
-                      },
+                      ],
                     ),
                   ],
                 ),
@@ -172,6 +108,36 @@ class HomeDrawer extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class ProfileAvatar extends StatelessWidget {
+  final String photoURL;
+  const ProfileAvatar({super.key, required this.photoURL});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context).custom;
+
+    return Builder(
+      builder: (context) {
+        return DecoratedBox(
+          decoration: BoxDecoration(
+            color: theme.onSecondaryColor,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: theme.supportingText.withValues(alpha: 0.1),
+              width: 2,
+            ),
+          ),
+          child: CircleAvatar(
+            radius: 40,
+            backgroundColor: theme.altBackgroundPrimary,
+            backgroundImage: CachedNetworkImageProvider(photoURL),
+          ),
+        );
+      },
     );
   }
 }

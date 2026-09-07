@@ -11,9 +11,18 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 
 class ShareContentUc {
-  Future<void> shareText(BuildContext context, String text, {String? title, File? previewThumbnail}) async {
+  Future<void> shareText(
+    BuildContext context,
+    String text, {
+    String? title,
+    File? previewThumbnail,
+  }) async {
     await SharePlus.instance.share(
-      ShareParams(text: text, subject: title ?? 'SlideSync', previewThumbnail: await _genPreview(previewThumbnail)),
+      ShareParams(
+        text: text,
+        subject: title ?? 'SlideSync',
+        previewThumbnail: await _genPreview(previewThumbnail),
+      ),
     );
   }
 
@@ -27,15 +36,22 @@ class ShareContentUc {
     final String path;
 
     if (filename != null) {
-      final res = await FileUtils.storeFile(file: file, base: AppDirType.temporary, newFileName: filename);
+      final res = await FileUtils.storeFile(
+        file: file,
+        base: AppDirType.temporary,
+        newFileName: filename,
+      );
       path = res;
     } else {
       path = file.path;
     }
 
-    if (DeviceUtils.isDesktop()) {
+    if (DeviceUtils.isDesktopSize()) {
       await Pasteboard.writeFiles([path]);
-      GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "Copied file to clipboard"));
+      GlobalNav.withContext(
+        (context) =>
+            UiUtils.showFlushBar(context, msg: "Copied file to clipboard"),
+      );
       return;
     }
 
@@ -65,27 +81,36 @@ class ShareContentUc {
     // Normalize filenames length
     filenames ??= List<String?>.filled(files.length, null);
     if (filenames.length < files.length) {
-      filenames = [...filenames, ...List<String?>.filled(files.length - filenames.length, null)];
+      filenames = [
+        ...filenames,
+        ...List<String?>.filled(files.length - filenames.length, null),
+      ];
     }
 
     // Resolve all file paths in parallel
     final resolvedPaths = await Future.wait([
-      for (int i = 0; i < files.length; i++) _resolvePath(files[i], filenames[i]),
+      for (int i = 0; i < files.length; i++)
+        _resolvePath(files[i], filenames[i]),
     ]);
 
     final validPaths = resolvedPaths.whereType<String>().toList();
     if (validPaths.isEmpty) return;
 
-    if (DeviceUtils.isDesktop()) {
+    if (DeviceUtils.isDesktopSize()) {
       await Pasteboard.writeFiles(validPaths);
-      GlobalNav.withContext((context) => UiUtils.showFlushBar(context, msg: "Copied files to clipboard"));
+      GlobalNav.withContext(
+        (context) =>
+            UiUtils.showFlushBar(context, msg: "Copied files to clipboard"),
+      );
       return;
     }
 
     final xfiles = validPaths.map(XFile.new).toList();
 
     // Append link texts to the share body if provided
-    final String? shareText = (linkTexts != null && linkTexts.isNotEmpty) ? linkTexts.join('\n\n') : title;
+    final String? shareText = (linkTexts != null && linkTexts.isNotEmpty)
+        ? linkTexts.join('\n\n')
+        : title;
 
     await SharePlus.instance.share(
       ShareParams(
@@ -93,7 +118,9 @@ class ShareContentUc {
         title: 'Sharing from SlideSync',
         text: shareText,
         subject: title ?? 'SlideSync',
-        previewThumbnail: previewThumbnail != null ? await _genPreview(previewThumbnail) : null,
+        previewThumbnail: previewThumbnail != null
+            ? await _genPreview(previewThumbnail)
+            : null,
       ),
     );
   }
@@ -124,7 +151,11 @@ class ShareContentUc {
   Future<String?> _resolvePath(File file, String? desiredName) async {
     if (desiredName != null && desiredName.trim().isNotEmpty) {
       return Result.fromAsync(
-        () => FileUtils.storeFile(file: file, base: AppDirType.temporary, newFileName: desiredName),
+        () => FileUtils.storeFile(
+          file: file,
+          base: AppDirType.temporary,
+          newFileName: desiredName,
+        ),
         fallback: null,
       );
     }
@@ -133,6 +164,8 @@ class ShareContentUc {
 
   Future<XFile?> _genPreview(File? previewThumbnail) async {
     if (previewThumbnail == null) return null;
-    return await previewThumbnail.exists() ? XFile(previewThumbnail.path) : null;
+    return await previewThumbnail.exists()
+        ? XFile(previewThumbnail.path)
+        : null;
   }
 }

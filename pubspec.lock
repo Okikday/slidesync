@@ -1545,6 +1545,13 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.18.0"
+  multi_split_view:
+    dependency: "direct main"
+    description:
+      path: "../../External/multi_split_view"
+      relative: true
+    source: path
+    version: "3.6.2"
   native_file_preview:
     dependency: "direct main"
     description:
@@ -1985,6 +1992,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.0"
+  sidebarx:
+    dependency: "direct main"
+    description:
+      name: sidebarx
+      sha256: "970cba4be128f217b0f714322203e6933fb3a12602fef0c39248f5800184068e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.17.2"
   skeletonizer:
     dependency: "direct main"
     description:

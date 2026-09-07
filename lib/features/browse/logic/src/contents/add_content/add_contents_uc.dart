@@ -13,7 +13,7 @@ import 'package:slidesync/features/browse/logic/src/contents/add_content/select_
 import 'package:slidesync/features/browse/logic/src/contents/add_content/store_contents.dart';
 import 'package:slidesync/features/browse/logic/entities/add_content_result.dart';
 import 'package:slidesync/features/browse/logic/entities/store_content_args.dart';
-import 'package:slidesync/routes/app_router.dart';
+import 'package:slidesync/app/routes/app_router.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:uuid/uuid.dart';
 

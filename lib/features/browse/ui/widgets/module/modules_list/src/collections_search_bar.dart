@@ -41,7 +41,7 @@ class _CollectionsViewSearchBarState
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context).custom;
-    final isDesktop = DeviceUtils.isDesktop();
+    final isDesktop = DeviceUtils.isDesktopSize(context);
     // final searchNotifier = ref.read(CourseDetailsProvider.state.select((s) => s.searchCollectionTextNotifier));
     return BackSoftEdgeBlur(
       color: isDesktop ? theme.background : theme.background.withAlpha(200),

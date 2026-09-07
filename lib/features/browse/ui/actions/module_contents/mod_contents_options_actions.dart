@@ -7,8 +7,8 @@ import 'package:slidesync/data/repos/course_repo/module_repo.dart';
 import 'package:slidesync/features/browse/providers/src/module_contents_notifier/module_contents_notifier.dart';
 import 'package:slidesync/features/browse/ui/actions/module_contents/content_card_context_menu_actions.dart';
 import 'package:slidesync/features/share/ui/actions/share_content_actions.dart';
-import 'package:slidesync/routes/app_router.dart';
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/app/routes/app_router.dart';
+import 'package:slidesync/app/routes/routes.dart';
 import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 
 class ModContentsOptionsActions {
@@ -27,12 +27,20 @@ class ModContentsOptionsActions {
   static void onShare(BuildContext context, ModuleContentsNotifier n) async {
     final contents = n.selectedContents.toList();
     n.unselectAllContents();
-    await ShareContentActions.shareContents(context, contents.map((e) => e.uid).toList());
+    await ShareContentActions.shareContents(
+      context,
+      contents.map((e) => e.uid).toList(),
+    );
   }
 
-  static void onSelectAll(BuildContext context, ModuleContentsNotifier n) async {
+  static void onSelectAll(
+    BuildContext context,
+    ModuleContentsNotifier n,
+  ) async {
     if (n.selectedContents.isEmpty) return;
-    final anyContent = n.selectedContents.firstWhereOrNull((c) => c.parentId.isNotEmpty);
+    final anyContent = n.selectedContents.firstWhereOrNull(
+      (c) => c.parentId.isNotEmpty,
+    );
     if (anyContent == null) return;
     final collection = await ModuleRepo.getByUid(anyContent.parentId);
     if (collection == null) return;
@@ -62,12 +70,20 @@ class ModContentsOptionsActions {
           } else {
             rootNavigatorKey.currentContext?.pop();
           }
-          UiUtils.showLoadingDialog(context, message: "Removing contents", canPop: false);
+          UiUtils.showLoadingDialog(
+            context,
+            message: "Removing contents",
+            canPop: false,
+          );
 
           final String? outcome = (await Result.tryRunAsync(() async {
             String? outcome;
             for (final e in n.selectedContents) {
-              outcome = await ContentCardContextMenuActions.onDeleteContent(context, e, false);
+              outcome = await ContentCardContextMenuActions.onDeleteContent(
+                context,
+                e,
+                false,
+              );
             }
             return outcome;
           })).data;
@@ -75,11 +91,23 @@ class ModContentsOptionsActions {
           rootNavigatorKey.currentContext?.pop();
           if (context.mounted) {
             if (outcome == null) {
-              UiUtils.showFlushBar(context, msg: "Successfully removed contents!", vibe: FlushbarVibe.success);
+              UiUtils.showFlushBar(
+                context,
+                msg: "Successfully removed contents!",
+                vibe: FlushbarVibe.success,
+              );
             } else if (outcome.toLowerCase().contains("error")) {
-              UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.error);
+              UiUtils.showFlushBar(
+                context,
+                msg: outcome,
+                vibe: FlushbarVibe.error,
+              );
             } else {
-              UiUtils.showFlushBar(context, msg: outcome, vibe: FlushbarVibe.warning);
+              UiUtils.showFlushBar(
+                context,
+                msg: outcome,
+                vibe: FlushbarVibe.warning,
+              );
             }
           }
         },

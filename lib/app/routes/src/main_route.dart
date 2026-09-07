@@ -1,17 +1,12 @@
-import 'dart:io';
-
 import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/features/main/ui/screens/desktop_home_view.dart';
 import 'package:slidesync/features/main/ui/screens/main_view.dart';
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/app/routes/routes.dart';
 import 'package:slidesync/features/main/ui/widgets/home_tab_view/body/recents_section/recents_view.dart';
 
 final mainRoute = GoRoute(
   path: '/',
-  builder: (context, state) => Platform.isWindows
-      ? const DesktopHomeView()
-      : const MainView(tabIndex: 0),
+  builder: (context, state) => const MainView(tabIndex: 0),
   routes: [
     // HOME ROUTE
     GoRoute(
@@ -19,15 +14,12 @@ final mainRoute = GoRoute(
       path: Routes.home.subPath,
       pageBuilder: (context, state) => PageAnimation.buildCustomTransitionPage(
         state.pageKey,
-        child:
-            // Platform.isWindows ? const DesktopMainView(tabIndex: 0) :
-            const MainView(tabIndex: 0),
+        child: const MainView(tabIndex: 0),
       ),
       routes: [
         GoRoute(
           name: Routes.recentsView.name,
           path: Routes.recentsView.subPath,
-          // pageBuilder: (context, state) => defaultTransition(state.pageKey, child: const RecentsView()),
           builder: (context, state) => const RecentsView(),
         ),
       ],
@@ -39,9 +31,7 @@ final mainRoute = GoRoute(
       path: Routes.library.subPath,
       pageBuilder: (context, state) => PageAnimation.buildCustomTransitionPage(
         state.pageKey,
-        child: Platform.isWindows
-            ? const DesktopHomeView()
-            : const MainView(tabIndex: 1),
+        child: const MainView(tabIndex: 1),
       ),
     ),
 
@@ -51,9 +41,7 @@ final mainRoute = GoRoute(
       path: Routes.explore.subPath,
       pageBuilder: (context, state) => PageAnimation.buildCustomTransitionPage(
         state.pageKey,
-        child: Platform.isWindows
-            ? const DesktopHomeView()
-            : const MainView(tabIndex: 2),
+        child: const MainView(tabIndex: 2),
       ),
     ),
   ],

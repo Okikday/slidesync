@@ -24,7 +24,8 @@ class LibraryTabViewHeaderText extends ConsumerWidget {
       fontWeight: FontWeight.bold,
       color: onBackground,
     );
-    final allowedHeight = libraryAppBarMaxHeight - libraryAppBarMinHeight;
+    final allowedHeight =
+        libraryAppBarMaxHeight(context) - libraryAppBarMinHeight;
     final topPadding = context.topPadding;
     final height = math.max(0.0, allowedHeight - topPadding);
 

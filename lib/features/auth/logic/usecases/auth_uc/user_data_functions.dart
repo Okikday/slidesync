@@ -63,11 +63,9 @@ class UserDataFunctions {
     }
   }
 
-  Future<Result<UserCredentialModel?>> getUserDetails() async {
+  Result<UserCredentialModel?> getUserDetails() {
     try {
-      final userData = await store.getData(
-        key: "$_path/$_pathUserCredentialMap",
-      );
+      final userData = store.getData(key: "$_path/$_pathUserCredentialMap");
 
       if (userData == null) return Result.error("Couldn't load user's data");
 
@@ -81,11 +79,9 @@ class UserDataFunctions {
     }
   }
 
-  Future<Result<String>> getUserId() async {
+  Result<String> getUserId() {
     try {
-      final userData = await store.getData(
-        key: "$_path/$_pathUserCredentialMap",
-      );
+      final userData = store.getData(key: "$_path/$_pathUserCredentialMap");
       if (userData == null) return Result.error("Unable to fetch user data");
       // Create the UserCredentialModel from the fetched data
       final UserCredentialModel user = UserCredentialModel.fromMap(

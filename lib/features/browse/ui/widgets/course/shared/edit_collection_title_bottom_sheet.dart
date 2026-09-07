@@ -2,7 +2,7 @@ import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/routes/app_router.dart';
+import 'package:slidesync/app/routes/app_router.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/features/browse/ui/actions/module/modify_module_actions.dart';

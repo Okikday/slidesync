@@ -115,6 +115,9 @@ dependencies:
   pdfx: ^2.9.0
   equatable: ^2.1.0
   kickin_utilities: ^0.0.1
+  sidebarx: ^0.17.2
+  multi_split_view: 
+    path: ../../External/multi_split_view
 
 flutter_native_splash:
   android: true

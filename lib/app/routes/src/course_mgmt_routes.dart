@@ -1,6 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:slidesync/features/browse/ui/screens/create_course_view.dart';
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/app/routes/routes.dart';
 
 final courseMgmtRoutes = [
   //CREATE COURSE VIEW NAVIGATION

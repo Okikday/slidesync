@@ -4,7 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:slidesync/core/utils/device_utils.dart';
 import 'package:slidesync/data/models/course/course.dart';
 import 'package:slidesync/features/main/pod/library/library_pod.dart';
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/app/routes/routes.dart';
 import 'package:slidesync/core/utils/ui_utils.dart';
 
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/course_card_context_menu.dart';
@@ -20,7 +20,7 @@ mixin CoursesViewActions {
     await Future.delayed(Durations.short4);
 
     if (context.mounted) {
-      if (DeviceUtils.isDesktop()) {
+      if (DeviceUtils.isDesktopSize(context)) {
         context.goNamed(Routes.courseDetails.name, extra: course.uid);
       } else {
         context.pushNamed(Routes.courseDetails.name, extra: course.uid);

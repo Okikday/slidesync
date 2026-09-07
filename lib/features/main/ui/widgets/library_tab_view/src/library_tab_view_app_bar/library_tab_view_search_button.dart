@@ -19,7 +19,7 @@ import 'package:slidesync/shared/widgets/buttons/app_popup_menu_button.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/layout/smooth_list_view.dart';
 import 'package:go_router/go_router.dart';
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/app/routes/routes.dart';
 
 final _searchTypeProvider = NotifierProvider.autoDispose(IntNotifier.new);
 const strCategories = ['Courses', 'Collections', 'Materials'];

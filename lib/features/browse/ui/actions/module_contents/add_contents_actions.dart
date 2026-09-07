@@ -12,7 +12,7 @@ import 'package:slidesync/features/browse/ui/widgets/module_contents_view/src/ad
 import 'package:slidesync/features/browse/logic/entities/add_content_result.dart';
 import 'package:slidesync/features/browse/ui/widgets/module_contents_view/src/add_contents/loading_overlay.dart';
 import 'package:slidesync/features/browse/logic/src/contents/add_content/add_contents_uc.dart';
-import 'package:slidesync/routes/app_router.dart';
+import 'package:slidesync/app/routes/app_router.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/dialogs/app_alert_dialog.dart';
@@ -21,7 +21,8 @@ class AddContentsActions {
   // Shared method for the common flow
   static Future<void> _executeAddContentFlow({
     required Module collection,
-    required Future<List<AddContentResult>> Function(ValueNotifier<String>) addContentOperation,
+    required Future<List<AddContentResult>> Function(ValueNotifier<String>)
+    addContentOperation,
     String initialMessage = "Loading...",
     bool permissionIssue = false,
   }) async {
@@ -33,7 +34,10 @@ class AddContentsActions {
           message: value,
           onCancel: (ref) {
             GlobalNav.withContext(
-              (c) => UiUtils.showFlushBar(context, msg: "Can't cancel operation Please keep app open"),
+              (c) => UiUtils.showFlushBar(
+                context,
+                msg: "Can't cancel operation Please keep app open",
+              ),
             );
           },
         ),
@@ -49,7 +53,8 @@ class AddContentsActions {
     valueNotifier.dispose();
 
     log("result: $result");
-    final hasDuplicate = result.firstWhereOrNull((a) => a.hasDuplicate)?.hasDuplicate ?? false;
+    final hasDuplicate =
+        result.firstWhereOrNull((a) => a.hasDuplicate)?.hasDuplicate ?? false;
 
     // Show result feedback
     if (result.isNotEmpty) {
@@ -75,7 +80,11 @@ class AddContentsActions {
                       "No folder selected or access denied.\n\nPlease try selecting individual files instead - you can still pick multiple files at once!.\n\nWould you like to select instead?",
                   onCancel: null,
                   onConfirm: () {
-                    onClickToAddContent(context, collection: collection, type: ModuleContentType.unknown);
+                    onClickToAddContent(
+                      context,
+                      collection: collection,
+                      type: ModuleContentType.unknown,
+                    );
                   },
                   onPop: () => context.pop(),
                 ).animate().scaleXY(
@@ -133,15 +142,19 @@ class AddContentsActions {
     );
   }
 
-  static Future<void> onClickToAddContentNoRef({required Module collection, required List<String> filePaths}) async {
+  static Future<void> onClickToAddContentNoRef({
+    required Module collection,
+    required List<String> filePaths,
+  }) async {
     await _executeAddContentFlow(
       collection: collection,
       initialMessage: "Offloading contents",
-      addContentOperation: (valueNotifier) => AddContentsUc.addToCollectionNoRef(
-        collection: collection,
-        valueNotifier: valueNotifier,
-        filePaths: filePaths,
-      ),
+      addContentOperation: (valueNotifier) =>
+          AddContentsUc.addToCollectionNoRef(
+            collection: collection,
+            valueNotifier: valueNotifier,
+            filePaths: filePaths,
+          ),
     );
   }
 }

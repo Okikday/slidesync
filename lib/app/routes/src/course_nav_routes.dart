@@ -3,9 +3,9 @@ import 'package:go_router/go_router.dart';
 import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/features/browse/ui/screens/modules_view.dart';
 import 'package:slidesync/features/browse/ui/screens/course_view.dart';
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/app/routes/routes.dart';
 import 'package:slidesync/features/browse/ui/screens/module_contents_view.dart';
-import 'package:slidesync/routes/transition.dart';
+import 'package:slidesync/app/routes/transition.dart';
 
 final courseNavRoutes = [
   GoRoute(
@@ -29,7 +29,10 @@ final courseNavRoutes = [
         //   outgoing: TransitionType.fade,
         //   child: CollectionMaterialsView(collection: state.extra as CourseCollection, isFullScreen: false),
         // ),
-        builder: (context, state) => ModuleContentsView(collection: state.extra as Module, isFullScreen: false),
+        builder: (context, state) => ModuleContentsView(
+          collection: state.extra as Module,
+          isFullScreen: false,
+        ),
       ),
     ],
   ),

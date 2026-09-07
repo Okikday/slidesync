@@ -4,7 +4,7 @@ import 'package:slidesync/core/utils/ui_utils.dart';
 import 'package:slidesync/data/models/module_content/module_content.dart';
 import 'package:slidesync/data/repos/course_repo/module_content_repo.dart';
 import 'package:slidesync/features/browse/logic/src/contents/modify_content_uc.dart';
-import 'package:slidesync/routes/app_router.dart';
+import 'package:slidesync/app/routes/app_router.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/widgets/dialogs/confirm_deletion_dialog.dart';
 
@@ -22,14 +22,20 @@ class ModifyContentsAction {
             GlobalNav.popGlobal();
 
             GlobalNav.withContext(
-              (context) => UiUtils.showLoadingDialog(context, message: "Removing content", canPop: false),
+              (context) => UiUtils.showLoadingDialog(
+                context,
+                message: "Removing content",
+                canPop: false,
+              ),
             );
             final content = await ModuleContentRepo.getByUid(contentId);
             if (content == null) {
               GlobalNav.popGlobal();
               return;
             }
-            final outcome = await Result.fromAsyncNullable(() async => await ModifyContentUc().deleteContent(content));
+            final outcome = await Result.fromAsyncNullable(
+              () async => await ModifyContentUc().deleteContent(content),
+            );
 
             GlobalNav.popGlobal();
 
@@ -39,7 +45,9 @@ class ModifyContentsAction {
                 msg: outcome ?? "Deleted content(s)",
                 vibe: outcome == null
                     ? FlushbarVibe.success
-                    : (outcome.toLowerCase().contains("error") ? FlushbarVibe.error : FlushbarVibe.warning),
+                    : (outcome.toLowerCase().contains("error")
+                          ? FlushbarVibe.error
+                          : FlushbarVibe.warning),
               );
             });
           },
@@ -48,10 +56,18 @@ class ModifyContentsAction {
     );
   }
 
-  Future<String?> onRenameContent(ModuleContent content, {required String newTitle}) async {
-    if (newTitle.isEmpty || newTitle == content.title || newTitle.length < 2) return "Try inputting a valid title!";
+  Future<String?> onRenameContent(
+    ModuleContent content, {
+    required String newTitle,
+  }) async {
+    if (newTitle.isEmpty || newTitle == content.title || newTitle.length < 2)
+      return "Try inputting a valid title!";
     if (rootNavigatorKey.currentContext!.mounted) {
-      UiUtils.showLoadingDialog(rootNavigatorKey.currentContext!, canPop: false, message: "Renaming content...");
+      UiUtils.showLoadingDialog(
+        rootNavigatorKey.currentContext!,
+        canPop: false,
+        message: "Renaming content...",
+      );
     }
     final Result<String?> renameOutcome = await Result.tryRunAsync(() async {
       return await ModifyContentUc().renameContent(content, newTitle);

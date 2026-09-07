@@ -6,9 +6,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
 import 'package:iconsax_flutter/iconsax_flutter.dart';
+import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/build_button.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
 import 'package:slidesync/shared/widgets/animations/animated_sizing.dart';
 import 'package:slidesync/shared/widgets/decorations/backdrop_shadow.dart';
+import 'package:slidesync/shared/widgets/layout/for_desktop.dart';
 
 class HomeAppBar extends ConsumerWidget {
   const HomeAppBar({
@@ -70,28 +72,18 @@ class HomeAppBar extends ConsumerWidget {
                     child: Row(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        ClipOval(
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-                            child: CustomElevatedButton(
-                              onClick: onClickHamburger,
-                              pixelHeight: 48,
-                              pixelWidth: 48,
-                              contentPadding: EdgeInsets.zero,
-                              backgroundColor: theme.scaffoldBackgroundColor
-                                  .withValues(alpha: 0.6),
-                              shape: CircleBorder(
-                                side: BorderSide(
-                                  color: theme.onSurface.withValues(alpha: .1),
+                        DesktopWidget(
+                          builder: (context, isDesktop) => isDesktop
+                              ? const SizedBox.shrink()
+                              : BuildButton(
+                                  onTap: onClickHamburger,
+                                  iconData: null,
+                                  child: Icon(
+                                    Iconsax.menu_1_copy,
+                                    color: theme.onBackground,
+                                    size: 48 * 0.5,
+                                  ),
                                 ),
-                              ),
-                              child: Icon(
-                                Iconsax.menu_1_copy,
-                                color: theme.onBackground,
-                                size: 48 * 0.5,
-                              ),
-                            ),
-                          ),
                         ),
 
                         ConstantSizing.rowSpacingMedium,

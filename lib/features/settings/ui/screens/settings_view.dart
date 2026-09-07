@@ -21,7 +21,7 @@ import 'package:slidesync/features/settings/logic/models/settings_model.dart';
 import 'package:slidesync/features/settings/providers/settings_provider.dart';
 import 'package:slidesync/features/settings/ui/components/settings_appearance_dialog.dart';
 import 'package:slidesync/data/repos/course_track_repo/content_track_repo.dart';
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/app/routes/routes.dart';
 import 'package:slidesync/shared/helpers/global_nav.dart';
 import 'package:slidesync/shared/theme/pod/theme_pod.dart';
 import 'package:slidesync/shared/widgets/app_bar/app_bar_container.dart';
@@ -141,7 +141,7 @@ class SettingsView extends ConsumerWidget {
                     trailing: Switch(
                       value:
                           settingsModel.useBuiltInViewer ??
-                          !DeviceUtils.isDesktop(),
+                          !DeviceUtils.isDesktopSize(context),
                       onChanged: (p) async {
                         log("p: $p");
                         final newValue = (await ref.read(
@@ -160,7 +160,7 @@ class SettingsView extends ConsumerWidget {
 
                   ConstantSizing.columnSpacingMedium,
 
-                  if (DeviceUtils.isDesktop())
+                  if (DeviceUtils.isDesktopSize(context))
                     SettingsCard(
                       title: "Show materials in full view always",
                       iconData: Iconsax.sun,
@@ -272,7 +272,7 @@ class SettingsView extends ConsumerWidget {
                                 message: 'Exporting courses...',
                               );
                               Result<String?> exportResult;
-                              if (DeviceUtils.isDesktop()) {
+                              if (DeviceUtils.isDesktopSize(context)) {
                                 exportResult =
                                     await CourseFolderExportManager.exportAllCoursesWindows(
                                       context,
@@ -344,9 +344,10 @@ class SettingsView extends ConsumerWidget {
 
                   ConstantSizing.columnSpacingMedium,
 
-                  FutureBuilder(
-                    future: UserDataFunctions.me.getUserDetails(),
-                    builder: (context, asyncSnapshot) {
+                  Builder(
+                    builder: (context) {
+                      final user = UserDataFunctions.me.getUserDetails();
+                      if (user.data == null) return const SizedBox.shrink();
                       return SettingsCard(
                         title: "Sign out",
                         iconData: Iconsax.logout,

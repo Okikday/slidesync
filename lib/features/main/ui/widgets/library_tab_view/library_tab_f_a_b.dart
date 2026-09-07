@@ -21,7 +21,7 @@ class LibraryTabFAB extends ConsumerWidget {
     // final isAtElsewhere = !isAtHome && !isAtLibrary;
     if (!isAtLibrary && !isDesktop) return const SizedBox();
     final theme = Theme.of(context).custom;
-    final tolerance = libraryAppBarMaxHeight + scrollTolerance;
+    final tolerance = libraryAppBarMaxHeight(context) + scrollTolerance;
 
     return Consumer(
       builder: (context, ref, child) {

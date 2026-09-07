@@ -9,7 +9,7 @@ import 'package:slidesync/data/models/module/module.dart';
 import 'package:slidesync/data/repos/course_repo/course_repo.dart';
 import 'explore_card.dart';
 import 'package:slidesync/features/sync/providers/transfer_state_provider.dart';
-import 'package:slidesync/routes/routes.dart';
+import 'package:slidesync/app/routes/routes.dart';
 
 /// ============================================================================
 /// EXPLORE DOWNLOAD HELPER
@@ -49,16 +49,30 @@ class ExploreDownloadHelper {
   // COURSE DOWNLOAD
   // =========================================================================
 
-  Future<void> _downloadCourse(BuildContext context, WidgetRef ref, ExploreCardData data) async {
+  Future<void> _downloadCourse(
+    BuildContext context,
+    WidgetRef ref,
+    ExploreCardData data,
+  ) async {
     // Check if course already exists locally
     final existingCourse = await CourseRepo.getByUid(data.id);
 
     if (existingCourse != null) {
       // Show merge dialog
-      await _showMergeDialog(context: context, ref: ref, data: data, existingCourse: existingCourse);
+      await _showMergeDialog(
+        context: context,
+        ref: ref,
+        data: data,
+        existingCourse: existingCourse,
+      );
     } else {
       // Direct download as new course
-      await _startCourseDownload(context: context, ref: ref, remoteCourseId: data.id, courseName: data.title);
+      await _startCourseDownload(
+        context: context,
+        ref: ref,
+        remoteCourseId: data.id,
+        courseName: data.title,
+      );
     }
   }
 
@@ -77,10 +91,19 @@ class ExploreDownloadHelper {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('A course with ID "${data.id}" already exists locally.', style: TextStyle(fontSize: 14)),
+            Text(
+              'A course with ID "${data.id}" already exists locally.',
+              style: TextStyle(fontSize: 14),
+            ),
             const SizedBox(height: 16),
-            Text('Local: ${existingCourse.title}', style: TextStyle(fontWeight: FontWeight.bold)),
-            Text('Remote: ${data.title}', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(
+              'Local: ${existingCourse.title}',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Text(
+              'Remote: ${data.title}',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             const SizedBox(height: 16),
             const Text(
               'Would you like to merge missing collections and contents into the existing course?',
@@ -89,8 +112,14 @@ class ExploreDownloadHelper {
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Merge')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Merge'),
+          ),
         ],
       ),
     );
@@ -127,7 +156,8 @@ class ExploreDownloadHelper {
 
     try {
       // Create a transfer ID for this download
-      final transferId = '$remoteCourseId-${DateTime.now().millisecondsSinceEpoch}';
+      final transferId =
+          '$remoteCourseId-${DateTime.now().millisecondsSinceEpoch}';
 
       // Add transfer to state
       final transfer = TransferState(
@@ -163,7 +193,9 @@ class ExploreDownloadHelper {
       );
 
       // Update transfer state to completed
-      ref.read(transferStateProvider.notifier).updateStatus(id: transferId, status: TransferStatus.completed);
+      ref
+          .read(transferStateProvider.notifier)
+          .updateStatus(id: transferId, status: TransferStatus.completed);
 
       // TODO: Navigate to course after download completes
       // For now, just show success
@@ -179,14 +211,22 @@ class ExploreDownloadHelper {
   // COLLECTION DOWNLOAD
   // =========================================================================
 
-  Future<void> _downloadCollection(BuildContext context, WidgetRef ref, ExploreCardData data) async {
+  Future<void> _downloadCollection(
+    BuildContext context,
+    WidgetRef ref,
+    ExploreCardData data,
+  ) async {
     // Show course selection dialog
     final selectedCourse = await _showCourseSelectionDialog(context);
 
     if (selectedCourse == null || !context.mounted) return;
 
     // Show loading dialog
-    UiUtils.showLoadingDialog(context, message: 'Downloading collection...', canPop: false);
+    UiUtils.showLoadingDialog(
+      context,
+      message: 'Downloading collection...',
+      canPop: false,
+    );
 
     try {
       // Create a transfer ID for this download
@@ -214,10 +254,16 @@ class ExploreDownloadHelper {
       if (!context.mounted) return;
       Navigator.pop(context);
 
-      UiUtils.showFlushBar(context, msg: 'Successfully downloaded "${data.title}"', vibe: FlushbarVibe.success);
+      UiUtils.showFlushBar(
+        context,
+        msg: 'Successfully downloaded "${data.title}"',
+        vibe: FlushbarVibe.success,
+      );
 
       // Update transfer state to completed
-      ref.read(transferStateProvider.notifier).updateStatus(id: transferId, status: TransferStatus.completed);
+      ref
+          .read(transferStateProvider.notifier)
+          .updateStatus(id: transferId, status: TransferStatus.completed);
 
       // Navigate to collection
       context.pushNamed(Routes.moduleContentsView.name, extra: selectedCourse);
@@ -244,7 +290,9 @@ class ExploreDownloadHelper {
           child: courses.isEmpty
               ? const Padding(
                   padding: EdgeInsets.all(16),
-                  child: Text('No courses found. Please create a course first.'),
+                  child: Text(
+                    'No courses found. Please create a course first.',
+                  ),
                 )
               : ListView.builder(
                   shrinkWrap: true,
@@ -260,7 +308,10 @@ class ExploreDownloadHelper {
                 ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           if (courses.isEmpty)
             TextButton(
               onPressed: () {
@@ -278,14 +329,22 @@ class ExploreDownloadHelper {
   // CONTENT DOWNLOAD
   // =========================================================================
 
-  Future<void> _downloadContent(BuildContext context, WidgetRef ref, ExploreCardData data) async {
+  Future<void> _downloadContent(
+    BuildContext context,
+    WidgetRef ref,
+    ExploreCardData data,
+  ) async {
     // Show collection selection dialog
     final selectedCollection = await _showCollectionSelectionDialog(context);
 
     if (selectedCollection == null || !context.mounted) return;
 
     // Show loading dialog
-    UiUtils.showLoadingDialog(context, message: 'Downloading content...', canPop: false);
+    UiUtils.showLoadingDialog(
+      context,
+      message: 'Downloading content...',
+      canPop: false,
+    );
 
     try {
       // Create a transfer ID for this download
@@ -313,13 +372,22 @@ class ExploreDownloadHelper {
       if (!context.mounted) return;
       Navigator.pop(context);
 
-      UiUtils.showFlushBar(context, msg: 'Successfully downloaded "${data.title}"', vibe: FlushbarVibe.success);
+      UiUtils.showFlushBar(
+        context,
+        msg: 'Successfully downloaded "${data.title}"',
+        vibe: FlushbarVibe.success,
+      );
 
       // Update transfer state to completed
-      ref.read(transferStateProvider.notifier).updateStatus(id: transferId, status: TransferStatus.completed);
+      ref
+          .read(transferStateProvider.notifier)
+          .updateStatus(id: transferId, status: TransferStatus.completed);
 
       // Navigate to collection
-      context.pushNamed(Routes.moduleContentsView.name, extra: selectedCollection);
+      context.pushNamed(
+        Routes.moduleContentsView.name,
+        extra: selectedCollection,
+      );
     } catch (e) {
       if (!context.mounted) return;
       Navigator.pop(context);
@@ -352,7 +420,9 @@ class ExploreDownloadHelper {
           child: collections.isEmpty
               ? const Padding(
                   padding: EdgeInsets.all(16),
-                  child: Text('No collections found. Please create a collection first.'),
+                  child: Text(
+                    'No collections found. Please create a collection first.',
+                  ),
                 )
               : ListView.builder(
                   shrinkWrap: true,
@@ -367,7 +437,12 @@ class ExploreDownloadHelper {
                   },
                 ),
         ),
-        actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel'))],
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+        ],
       ),
     );
   }

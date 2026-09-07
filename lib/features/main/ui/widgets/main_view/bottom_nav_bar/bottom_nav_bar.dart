@@ -1,14 +1,14 @@
-import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart';
+import 'package:custom_widgets_toolkit/custom_widgets_toolkit.dart'
+    show CustomElevatedButton;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hugeicons_pro/hugeicons.dart';
+import 'package:kickin_utilities/kickin_utilities.dart';
 import 'package:slidesync/features/auth/logic/usecases/auth_uc/user_data_functions.dart';
 import 'package:slidesync/features/main/pod/main_pod.dart';
 import 'package:slidesync/features/main/ui/entities/main_view_entity.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_search_view/library_search_view.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
-import 'package:slidesync/shared/theme/src/app_theme_extension.dart';
-import 'package:slidesync/shared/theme/theme.dart';
 import 'package:slidesync/shared/widgets/decorations/backdrop_shadow.dart';
 import 'package:slidesync/shared/widgets/layout/app_padding.dart';
 import 'package:slidesync/shared/widgets/layout/app_text.dart';
@@ -55,33 +55,61 @@ class _BottomNavBarState extends ConsumerState<BottomNavBar> {
                           .select((s) => s.tabIndex)
                           .watch(ref);
 
-                      return Row(
-                        mainAxisSize: .min,
-                        mainAxisAlignment: .spaceAround,
-                        children: List.generate(
-                          tabValues.length +
-                              (UserDataFunctions.me.isUserSignedIn() ? 0 : -1),
-                          (index) {
-                            final isActive = tabIndex == index;
-                            final option = tabValues[index];
-                            return _BuildNavItem(
-                              label: option.label,
-                              tooltip: option.tooltip,
-                              isActive: isActive,
-                              onTap: () => widget.onTap(index),
-                              labelColor: isActive
-                                  ? theme.custom.onBackground
-                                  : theme.custom.supportingText,
-                              icon: Icon(
-                                isActive ? option.activeIcon : option.icon,
-                                color: isActive
-                                    ? theme.primaryColor
-                                    : theme.custom.onBackground,
-                                size: 25,
+                      return Stack(
+                        children: [
+                          Row(
+                            mainAxisSize: .min,
+                            mainAxisAlignment: .spaceAround,
+                            children: List.generate(
+                              tabValues.length +
+                                  (UserDataFunctions.me.isUserSignedIn()
+                                      ? 0
+                                      : -1),
+                              (index) {
+                                final isActive = tabIndex == index;
+                                final option = tabValues[index];
+                                return _BuildNavItem(
+                                  label: option.label,
+                                  tooltip: option.tooltip,
+                                  isActive: isActive,
+                                  onTap: () => widget.onTap(index),
+                                  labelColor: isActive
+                                      ? theme.custom.onBackground
+                                      : theme.custom.supportingText,
+                                  icon: Icon(
+                                    isActive ? option.activeIcon : option.icon,
+                                    color: isActive
+                                        ? theme.custom.primaryColor
+                                        : theme.custom.onBackground,
+                                    size: 25,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+
+                          // highlight indicator
+                          AnimatedPositioned(
+                            duration: const Duration(milliseconds: 600),
+                            curve: KCurves.bouncySpring,
+                            left: tabIndex * 72,
+                            child: IgnorePointer(
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  color: theme.custom.onBackground.withValues(
+                                    alpha: 0.15,
+                                  ),
+                                  // color: theme.custom.onBackground.withAlpha(
+                                  //   20,
+                                  // ),
+                                  borderRadius: .circular(40),
+                                ),
+                                width: 72,
+                                height: 60,
                               ),
-                            );
-                          },
-                        ),
+                            ),
+                          ),
+                        ],
                       );
                     },
                   ),
@@ -113,7 +141,6 @@ class _BackdropWidget extends StatelessWidget {
   const _BackdropWidget();
 
   @override
-  Widget build(BuildContext context) {
-    return BackdropShadow(height: context.bottomPadding + 72);
-  }
+  Widget build(BuildContext context) =>
+      BackdropShadow(height: KExtensionOnContext(context).bottomPadding + 72);
 }
