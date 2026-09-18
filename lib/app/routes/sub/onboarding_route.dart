@@ -2,7 +2,7 @@ import 'package:go_router/go_router.dart';
 import 'package:slidesync/app/routes/routes.dart';
 import 'package:slidesync/features/auth/ui/screens/onboarding_1.dart';
 import 'package:slidesync/features/auth/ui/screens/welcome_view.dart';
-import 'package:slidesync/app/routes/transition.dart';
+import 'package:slidesync/app/routes/src/transition.dart';
 
 final onboardingRoute = GoRoute(
   name: Routes.welcome.name,

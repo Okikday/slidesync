@@ -11,6 +11,7 @@ import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/library_tab_view_layout_button.dart';
 import 'package:slidesync/features/main/ui/widgets/library_tab_view/src/library_tab_view_app_bar/library_tab_view_search_button.dart';
 import 'package:slidesync/shared/helpers/extensions/extensions.dart';
+import 'package:slidesync/shared/widgets/decorations/backdrop_shadow.dart';
 import 'package:slidesync/shared/widgets/state/absorber.dart';
 import 'package:soft_edge_blur/soft_edge_blur.dart';
 
@@ -43,31 +44,9 @@ class LibraryTabViewAppBar extends ConsumerWidget {
         background: _bgDecoration(theme),
         title: Stack(
           children: [
-            ClipRRect(
-              child: SizedBox(
-                height: 80,
-                child: SoftEdgeBlur(
-                  edges: [
-                    EdgeBlur(
-                      type: EdgeType.topEdge,
-                      size: 60,
-                      sigma: 30,
-                      tintColor: theme.background,
-                      controlPoints: [
-                        ControlPoint(
-                          position: 0.4,
-                          type: ControlPointType.visible,
-                        ),
-                        ControlPoint(
-                          position: 1.0,
-                          type: ControlPointType.transparent,
-                        ),
-                      ],
-                    ),
-                  ],
-                  child: SizedBox.expand(),
-                ),
-              ),
+            BackdropShadow(
+              height: 80,
+              shadowDirection: (.topCenter, .bottomCenter),
             ),
 
             // Stack

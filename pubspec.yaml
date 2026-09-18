@@ -21,7 +21,7 @@ dependencies:
   # heroine: ^0.4.0
   # marquee: ^2.3.0
   # wave: ^0.2.2
-  lottie: ^3.3.1
+v  lottie: ^3.3.1
   uuid: ^4.5.1
   hive: ^2.2.3
   hive_flutter: ^1.1.0

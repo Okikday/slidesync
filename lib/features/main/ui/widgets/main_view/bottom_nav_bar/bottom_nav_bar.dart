@@ -33,10 +33,10 @@ class _BottomNavBarState extends ConsumerState<BottomNavBar> {
       alignment: .bottomCenter,
       children: [
         _BackdropWidget(),
-        SizedBox(
-          height: 72,
-          child: BottomPadding(
-            withHeight: 4,
+        BottomPadding(
+          withHeight: 4,
+          child: SizedBox(
+            height: 64,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -56,6 +56,7 @@ class _BottomNavBarState extends ConsumerState<BottomNavBar> {
                           .watch(ref);
 
                       return Stack(
+                        alignment: .center,
                         children: [
                           Row(
                             mainAxisSize: .min,
@@ -105,7 +106,7 @@ class _BottomNavBarState extends ConsumerState<BottomNavBar> {
                                   borderRadius: .circular(40),
                                 ),
                                 width: 72,
-                                height: 60,
+                                height: 56,
                               ),
                             ),
                           ),

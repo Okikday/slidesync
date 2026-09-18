@@ -62,15 +62,9 @@ class _AppBarContainerWidget extends ConsumerWidget {
       children: [
         Stack(
           children: [
-            ClipRRect(
-              child: SizedBox(
-                height: 72,
-
-                child: BackdropShadow(
-                  height: 72 + topPadding,
-                  shadowDirection: (.topCenter, .bottomCenter),
-                ),
-              ),
+            BackdropShadow(
+              height: 72 + topPadding,
+              shadowDirection: (.topCenter, .bottomCenter),
             ),
 
             Padding(padding: const .only(top: 8), child: child),
